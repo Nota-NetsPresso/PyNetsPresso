@@ -1,0 +1,8 @@
+loguru==0.7.0
+urllib3==2.0.2
+PyJWT==2.7.0
+pydantic==1.10.4
+requests==2.30.0
+email-validator==2.0.0
+pytz==2023.3
+typing_extensions==4.5.0

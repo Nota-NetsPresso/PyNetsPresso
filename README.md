@@ -1,1 +1,1 @@
-# netspresso-python
+# NetsPresso Python Package
