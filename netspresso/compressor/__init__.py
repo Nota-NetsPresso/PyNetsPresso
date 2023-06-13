@@ -430,6 +430,10 @@ class ModelCompressor:
             for available_layers in compression.available_layers:
                 if available_layers.values != [""]:
                     available_layers.use = True
+            
+            all_layers_false = all(available_layer.values == [""] for available_layer in compression.available_layers)
+            if all_layers_false:
+                raise Exception(f"The available_layer.values all empty. please put in the available_layer.values to compress.")
 
             data = CompressionRequest(
                 compression_id=compression_info.compression_id,
