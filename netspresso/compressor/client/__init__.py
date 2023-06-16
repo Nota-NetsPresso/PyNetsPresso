@@ -28,7 +28,7 @@ class ModelCompressorAPIClient:
 
     def login(self, data) -> LoginResponse:
         url = f"{self.url}/login"
-        response = requests.post(url, data=data.dict())
+        response = requests.post(url, data=data.dict(), headers=get_headers())
         response_body = json.loads(response.text)
 
         if response.status_code == 200 or response.status_code == 201:
