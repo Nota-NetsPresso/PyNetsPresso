@@ -1,10 +1,12 @@
 from os.path import basename
+
 from netspresso import __version__
+from netspresso.compressor.client.utils.system import ENV_STR
 
 
 def get_headers(access_token=None, json_type=False):
     headers = {
-        "User-Agent": f"NetsPresso Model Compressor API Client v{__version__}",
+        "User-Agent": f"NetsPresso Python Package v{__version__} ({ENV_STR})",
     }
     if access_token:
         headers["Authorization"] = f"Bearer {access_token}"
