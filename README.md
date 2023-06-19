@@ -5,49 +5,29 @@
 # NetsPresso Python Package
 
 <div align="center">
-    <img src="imgs/banner/pynp_main.png"/>
+    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/pynp_main.png"/>
 </div>
 </br>
 
 <div align="center">
-    <a href="https://github.com/Nota-NetsPresso" style="text-decoration:none;">
-        <picture>
-            <source media="(prefers-color-scheme: dark)" srcset="imgs/common/github_white.png">
-            <source media="(prefers-color-scheme: light)" srcset="imgs/common/github.png">
-            <img alt="github" src="imgs/common/github.png" width="3%">
-        </picture>
+    <a href="https://github.com/Nota-NetsPresso">
+        <img alt="github" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/github.png" width="3%">
     </a>
-    <img src="imgs/common/logo-transparent.png" width="3%" alt="" />
-    <a href="https://www.facebook.com/NotaAI" style="text-decoration:none;">
-        <picture>
-            <source media="(prefers-color-scheme: dark)" srcset="imgs/common/facebook_white.png">
-            <source media="(prefers-color-scheme: light)" srcset="imgs/common/facebook.png">
-            <img alt="facebook" src="imgs/common/facebook.png" width="3%">
-        </picture>
+    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%"/>
+    <a href="https://www.facebook.com/NotaAI">
+        <img alt="facebook" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/facebook.png" width="3%">
     </a>
-    <img src="imgs/common/logo-transparent.png" width="3%" alt="" />
-    <a href="https://twitter.com/nota_ai" style="text-decoration:none;">
-        <picture>
-            <source media="(prefers-color-scheme: dark)" srcset="imgs/common/twitter_white.png">
-            <source media="(prefers-color-scheme: light)" srcset="imgs/common/twitter.png">
-            <img alt="twitter" src="imgs/common/twitter.png" width="3%">
-        </picture>
+    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%"/>
+    <a href="https://twitter.com/nota_ai">
+        <img alt="twitter" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/twitter.png" width="3%">
     </a>
-    <img src="imgs/common/logo-transparent.png" width="3%" alt="" />
-    <a href="https://www.youtube.com/channel/UCeewYFAqb2EqwEXZCfH9DVQ" style="text-decoration:none;">
-        <picture>
-            <source media="(prefers-color-scheme: dark)" srcset="imgs/common/youtube_white.png">
-            <source media="(prefers-color-scheme: light)" srcset="imgs/common/youtube.png">
-            <img alt="youtube" src="imgs/common/youtube.png" width="3%">
-        </picture>
+    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%"/>
+    <a href="https://www.youtube.com/channel/UCeewYFAqb2EqwEXZCfH9DVQ">
+        <img alt="youtube" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/youtube.png" width="3%">
     </a>
-    <img src="imgs/common/logo-transparent.png" width="3%" alt="" />
-    <a href="https://www.linkedin.com/company/nota-incorporated" style="text-decoration:none;">
-        <picture>
-            <source media="(prefers-color-scheme: dark)" srcset="imgs/common/linkedin_white.png">
-            <source media="(prefers-color-scheme: light)" srcset="imgs/common/linkedin.png">
-            <img alt="youtube" src="imgs/common/linkedin.png" width="3%">
-        </picture>
+    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%"/>
+    <a href="https://www.linkedin.com/company/nota-incorporated">
+        <img alt="youtube" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/linkedin.png" width="3%">
     </a>
 </div>
 </br>
