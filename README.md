@@ -1,5 +1,8 @@
-# NetsPresso Python Package
+<div align=right>
+  <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FNota-NetsPresso%2Fnetspresso-python&count_bg=%2323E7E7E7&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
+</div>
 
+# NetsPresso Python Package
 
 <div align="center">
     <img src="imgs/banner/pynp_main.png"/>
@@ -142,7 +145,3 @@ Or you can also do it via email([contact@nota.ai]) or phone(+82 2-555-8659)!
 [PyNetsPresso]: https://py.netspresso.ai/?utm_source=git&utm_medium=text_py&utm_campaign=py_launch
 [here]: https://www.nota.ai/contact-us
 [contact@nota.ai]: mailto:contact@nota.ai
-=======
-<div align=right>
-  <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FNota-NetsPresso%2Fnetspresso-python&count_bg=%2323E7E7E7&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
-</div>
