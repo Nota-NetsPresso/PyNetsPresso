@@ -141,7 +141,7 @@ Or you can also do it via email([contact@nota.ai]) or phone(+82 2-555-8659)!
 
 [Docs]: https://nota-netspresso.github.io/netspresso-python-docs/build/html/index.html
 [Discussion Forum]: https://github.com/orgs/Nota-NetsPresso/discussions
-[NetsPresso]: https://netspresso.ai?utm_source=git&utm_medium=text_np&utm_campaign=py_launch
-[PyNetsPresso]: https://py.netspresso.ai/?utm_source=git&utm_medium=text_py&utm_campaign=py_launch
+[NetsPresso]: https://netspresso.ai?utm_source=git_comp&utm_medium=text_np&utm_campaign=py_launch
+[PyNetsPresso]: https://py.netspresso.ai/?utm_source=git_comp&utm_medium=text_py&utm_campaign=py_launch
 [here]: https://www.nota.ai/contact-us
 [contact@nota.ai]: mailto:contact@nota.ai
