@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, Union
+from typing import Any, List
 
 
 @dataclass
@@ -74,3 +74,65 @@ class ModelCollection(Model):
     """
 
     compressed_models: List[CompressedModel] = field(default_factory=list)
+
+
+class ModelFactory:
+    @staticmethod
+    def create_input_shapes(input_layers):
+        return [InputShape(**layer.dict()) for layer in input_layers]
+
+    @staticmethod
+    def create_model_object(model_info):
+        input_shapes = ModelFactory.create_input_shapes(model_info.spec.input_layers)
+
+        model = Model(
+            model_id=model_info.model_id,
+            model_name=model_info.model_name,
+            task=model_info.task,
+            framework=model_info.framework,
+            input_shapes=input_shapes,
+            model_size=model_info.spec.model_size,
+            flops=model_info.spec.flops,
+            trainable_parameters=model_info.spec.trainable_parameters,
+            non_trainable_parameters=model_info.spec.non_trainable_parameters,
+            number_of_layers=model_info.spec.number_of_layers,
+        )
+        return model
+
+    @staticmethod
+    def create_compressed_model_object(model_info):
+        input_shapes = [InputShape(**layer.dict()) for layer in model_info.spec.input_layers]
+
+        compressed_model = CompressedModel(
+            model_id=model_info.model_id,
+            model_name=model_info.model_name,
+            task=model_info.task,
+            framework=model_info.framework,
+            input_shapes=input_shapes,
+            model_size=model_info.spec.model_size,
+            flops=model_info.spec.flops,
+            trainable_parameters=model_info.spec.trainable_parameters,
+            non_trainable_parameters=model_info.spec.non_trainable_parameters,
+            number_of_layers=model_info.spec.number_of_layers,
+            compression_id=model_info.original_compression_id,
+            original_model_id=model_info.original_model_id,
+        )
+        return compressed_model
+
+    @staticmethod
+    def create_model_collection_object(model_info):
+        input_shapes = [InputShape(**layer.dict()) for layer in model_info.spec.input_layers]
+
+        model_collection = ModelCollection(
+            model_id=model_info.model_id,
+            model_name=model_info.model_name,
+            task=model_info.task,
+            framework=model_info.framework,
+            input_shapes=input_shapes,
+            model_size=model_info.spec.model_size,
+            flops=model_info.spec.flops,
+            trainable_parameters=model_info.spec.trainable_parameters,
+            non_trainable_parameters=model_info.spec.non_trainable_parameters,
+            number_of_layers=model_info.spec.number_of_layers,
+        )
+        return model_collection
