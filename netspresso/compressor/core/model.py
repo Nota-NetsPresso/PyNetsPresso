@@ -1,22 +1,24 @@
-from typing import Any, List
-from pydantic import BaseModel, Field
+from dataclasses import dataclass, field
+from typing import Any, List, Optional, Union
 
 
-class InputShape(BaseModel):
+@dataclass
+class InputShape:
     """Represents the shape of an input tensor.
 
     Attributes:
-        batch (int): The batch size of the input tensor.
+        batch (Any): The batch size of the input tensor.
         channel (int): The number of channels in the input tensor.
         dimension (List[int]): The dimensions of the input tensor.
     """
 
-    batch: Any = Field(None, description="Input Batch")
-    channel: int = Field(0, description="Input Channel")
-    dimension: List[int] = Field([0], description="Input Diemension ex) [height, width]")
+    batch: Any
+    channel: int
+    dimension: List[int]
 
 
-class Model(BaseModel):
+@dataclass
+class Model:
     """Represents a uploaded model.
 
     Attributes:
@@ -27,7 +29,7 @@ class Model(BaseModel):
         input_shapes (List[InputShape]): The input shapes of the model.
 
             InputShape Attributes:
-                - batch (int): The batch size of the input tensor.
+                - batch (Any): The batch size of the input tensor.
                 - channel (int): The number of channels in the input tensor.
                 - dimension (List[int]): The dimensions of the input tensor.
 
@@ -38,18 +40,19 @@ class Model(BaseModel):
         number_of_layers (float): The number of layers in the model.
     """
 
-    model_id: str = Field(..., description="Model ID")
-    model_name: str = Field(..., description="Model Name")
-    task: str = Field(..., description="Task")
-    framework: str = Field(..., description="Framework")
-    input_shapes: List[InputShape] = Field([], description="Input Shapes")
-    model_size: float = Field(0, description="Model Size")
-    flops: float = Field(0, description="FLOPs")
-    trainable_parameters: float = Field(0, description="Trainable Parameters")
-    non_trainable_parameters: float = Field(0, description="Non Trainable Parameters")
-    number_of_layers: int = Field(0, description="Number of Layers")
+    model_id: str
+    model_name: str
+    task: str
+    framework: str
+    input_shapes: List[InputShape]
+    model_size: float
+    flops: float
+    trainable_parameters: float
+    non_trainable_parameters: float
+    number_of_layers: int
 
 
+@dataclass
 class CompressedModel(Model):
     """Represents a compressed model.
 
@@ -58,10 +61,11 @@ class CompressedModel(Model):
         original_model_id (str): The ID of the uploaded model.
     """
 
-    compression_id: str = Field("", description="Compression ID")
-    original_model_id: str = Field(..., description="Original Model ID")
+    compression_id: str
+    original_model_id: str
 
 
+@dataclass
 class ModelCollection(Model):
     """A collection of models that includes the uploaded model and its compressed models.
 
@@ -69,4 +73,4 @@ class ModelCollection(Model):
         compressed_models (List[CompressedModel]): A list of compressed models compressed from this model.
     """
 
-    compressed_models: List[CompressedModel] = Field([], description="Compressed Models")
+    compressed_models: List[CompressedModel] = field(default_factory=list)

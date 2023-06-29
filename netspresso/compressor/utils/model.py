@@ -1,13 +1,17 @@
-from netspresso.compressor.core.model import CompressedModel, Model, ModelCollection
+from netspresso.compressor.core.model import CompressedModel, InputShape, Model, ModelCollection
 
 
 def get_model_object(model_info):
+    input_shapes = [
+        InputShape(**layer.dict())
+        for layer in model_info.spec.input_layers
+    ]
     model = Model(
         model_id=model_info.model_id,
         model_name=model_info.model_name,
         task=model_info.task,
         framework=model_info.framework,
-        input_shapes=model_info.spec.input_layers,
+        input_shapes=input_shapes,
         model_size=model_info.spec.model_size,
         flops=model_info.spec.flops,
         trainable_parameters=model_info.spec.trainable_parameters,

@@ -1,8 +1,9 @@
+from dataclasses import dataclass, field
 from typing import Any, List
-from pydantic import BaseModel, Field
 
 
-class AvailableLayer(BaseModel):
+@dataclass
+class AvailableLayer:
     """Represents an available layer for compression.
 
     Attributes:
@@ -12,13 +13,14 @@ class AvailableLayer(BaseModel):
         channels (List[int]): The channel information for the layer.
     """
 
-    name: str = Field(..., description="Layer Name")
-    values: List[Any] = Field([], description="Compression Parameters")
-    use: bool = Field(False, description="Compression Selection Status")
-    channels: List[int] = Field([], description="Channel Info")
+    name: str
+    values: List[Any] = field(default_factory=list)
+    use: bool = False
+    channels: List[int] = field(default_factory=list)
 
 
-class CompressionInfo(BaseModel):
+@dataclass
+class CompressionInfo:
     """Represents compression information for a model.
 
     Attributes:
@@ -36,8 +38,8 @@ class CompressionInfo(BaseModel):
         original_model_id (str): The ID of the original model.
     """
 
-    compressed_model_id: str = Field("", description="Compressed Model ID")
-    compression_id: str = Field("", description="Compression ID")
-    compression_method: str = Field(..., description="Compression Method")
-    available_layers: List[AvailableLayer] = Field([], description="Compressible Layers")
-    original_model_id: str = Field("", description="Original Model ID")
+    compressed_model_id: str = ""
+    compression_id: str = ""
+    compression_method: str
+    available_layers: List[AvailableLayer] = field(default_factory=list)
+    original_model_id: str = ""
