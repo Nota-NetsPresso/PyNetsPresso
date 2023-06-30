@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Any, List
 
+from netspresso.compressor.client.schemas.model import InputLayer, ModelResponse
+
 
 @dataclass
 class InputShape:
@@ -78,11 +80,11 @@ class ModelCollection(Model):
 
 class ModelFactory:
     @staticmethod
-    def create_input_shapes(input_layers):
+    def create_input_shapes(input_layers: List[InputLayer]) -> List[InputShape]:
         return [InputShape(**layer.dict()) for layer in input_layers]
 
     @staticmethod
-    def create_model_object(model_info):
+    def create_model_object(model_info: ModelResponse) -> Model:
         input_shapes = ModelFactory.create_input_shapes(model_info.spec.input_layers)
 
         model = Model(
@@ -100,7 +102,7 @@ class ModelFactory:
         return model
 
     @staticmethod
-    def create_compressed_model_object(model_info):
+    def create_compressed_model_object(model_info: ModelResponse) -> CompressedModel:
         input_shapes = [InputShape(**layer.dict()) for layer in model_info.spec.input_layers]
 
         compressed_model = CompressedModel(
@@ -120,7 +122,7 @@ class ModelFactory:
         return compressed_model
 
     @staticmethod
-    def create_model_collection_object(model_info):
+    def create_model_collection_object(model_info: ModelResponse) -> ModelCollection:
         input_shapes = [InputShape(**layer.dict()) for layer in model_info.spec.input_layers]
 
         model_collection = ModelCollection(
