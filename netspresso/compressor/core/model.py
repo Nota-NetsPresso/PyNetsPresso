@@ -103,7 +103,7 @@ class ModelFactory:
 
     @staticmethod
     def create_compressed_model_object(model_info: ModelResponse) -> CompressedModel:
-        input_shapes = [InputShape(**layer.dict()) for layer in model_info.spec.input_layers]
+        input_shapes = ModelFactory.create_input_shapes(model_info.spec.input_layers)
 
         compressed_model = CompressedModel(
             model_id=model_info.model_id,
@@ -122,8 +122,12 @@ class ModelFactory:
         return compressed_model
 
     @staticmethod
-    def create_model_collection_object(model_info: ModelResponse) -> ModelCollection:
-        input_shapes = [InputShape(**layer.dict()) for layer in model_info.spec.input_layers]
+    def create_model_collection_object(model_info: ModelResponse, children_models: List[ModelResponse]) -> ModelCollection:
+        input_shapes = ModelFactory.create_input_shapes(model_info.spec.input_layers)
+        compressed_models = [
+            ModelFactory.create_compressed_model_object(model_info=children_model_info)
+            for children_model_info in children_models
+        ]
 
         model_collection = ModelCollection(
             model_id=model_info.model_id,
@@ -136,5 +140,6 @@ class ModelFactory:
             trainable_parameters=model_info.spec.trainable_parameters,
             non_trainable_parameters=model_info.spec.non_trainable_parameters,
             number_of_layers=model_info.spec.number_of_layers,
+            compressed_models=compressed_models
         )
         return model_collection

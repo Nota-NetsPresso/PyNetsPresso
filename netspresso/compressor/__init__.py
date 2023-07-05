@@ -150,17 +150,14 @@ class ModelCompressor:
 
             for parent_model_info in parent_models:
                 if parent_model_info.origin_from == "custom":
-                    model = ModelFactory.create_model_collection_object(model_info=parent_model_info)
-
                     children_models = self.client.get_children_models(
-                        model_id=model.model_id, access_token=self.access_token
+                        model_id=parent_model_info.model_id, access_token=self.access_token
                     )
-                    model.compressed_models = [
-                        ModelFactory.create_compressed_model_object(model_info=children_model_info)
-                        for children_model_info in children_models
-                    ]
+                    model_collection = ModelFactory.create_model_collection_object(
+                        model_info=parent_model_info, children_models=children_models
+                    )
 
-                models.append(model)
+                models.append(model_collection)
             logger.info("Get model list successful.")
 
             return models
