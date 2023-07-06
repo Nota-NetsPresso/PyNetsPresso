@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Union
 
 from urllib import request
 from loguru import logger
@@ -121,8 +121,8 @@ class ModelCompressor:
             logger.info("Uploading Model...")
             data = UploadModelRequest(
                 model_name=model_name,
-                task=task.value,
-                framework=framework.value,
+                task=task,
+                framework=framework,
                 file_path=file_path,
                 input_layers=input_shapes,
             )
@@ -329,11 +329,11 @@ class ModelCompressor:
         """
         try:
             logger.info("Selecting compression method...")
-            data = GetAvailableLayersRequest(model_id=model_id, compression_method=compression_method.value)
+            data = GetAvailableLayersRequest(model_id=model_id, compression_method=compression_method)
             response = self.client.get_available_layers(data=data, access_token=self.access_token)
             compression_info = CompressionInfo(
                 original_model_id=model_id,
-                compression_method=compression_method.value,
+                compression_method=compression_method,
                 available_layers=response.available_layers,
             )
             logger.info("Select compression method successful.")
@@ -424,16 +424,18 @@ class ModelCompressor:
             )
             compression_info = self.client.create_compression(data=data, access_token=self.access_token)
 
-            if dataset_path and compression.compression_method == CompressionMethod.PR_NN.value:
+            if dataset_path and compression.compression_method == CompressionMethod.PR_NN:
                 self.__upload_dataset(model_id=compression.original_model_id, dataset_path=dataset_path)
 
             for available_layers in compression.available_layers:
                 if available_layers.values != [""]:
                     available_layers.use = True
-            
+
             all_layers_false = all(available_layer.values == [""] for available_layer in compression.available_layers)
             if all_layers_false:
-                raise Exception(f"The available_layer.values all empty. please put in the available_layer.values to compress.")
+                raise Exception(
+                    f"The available_layer.values all empty. please put in the available_layer.values to compress."
+                )
 
             data = CompressionRequest(
                 compression_id=compression_info.compression_id,
@@ -487,7 +489,7 @@ class ModelCompressor:
 
             if compression_method in [CompressionMethod.PR_ID, CompressionMethod.FD_CP]:
                 raise Exception(
-                    f"The {compression_method.value} compression method you choose doesn't provide a recommendation."
+                    f"The {compression_method} compression method you choose doesn't provide a recommendation."
                 )
 
             if (
@@ -495,7 +497,7 @@ class ModelCompressor:
                 and recommendation_method != RecommendationMethod.SLAMP
             ):
                 raise Exception(
-                    f"The {compression_method.value} compression method is only available the SLAMP recommendation method."
+                    f"The {compression_method} compression method is only available the SLAMP recommendation method."
                 )
 
             if (
@@ -503,13 +505,13 @@ class ModelCompressor:
                 and recommendation_method != RecommendationMethod.VBMF
             ):
                 raise Exception(
-                    f"The {compression_method.value} compression method is only available the VBMF recommendation method."
+                    f"The {compression_method} compression method is only available the VBMF recommendation method."
                 )
 
             data = CreateCompressionRequest(
                 model_id=model_id,
                 model_name=model_name,
-                compression_method=compression_method.value,
+                compression_method=compression_method,
             )
             compression_info = self.client.create_compression(data=data, access_token=self.access_token)
 
@@ -519,7 +521,7 @@ class ModelCompressor:
             data = RecommendationRequest(
                 model_id=model_id,
                 compression_id=compression_info.compression_id,
-                recommendation_method=recommendation_method.value,
+                recommendation_method=recommendation_method,
                 recommendation_ratio=recommendation_ratio,
             )
             recommendation_result = self.client.get_recommendation(data=data, access_token=self.access_token)
@@ -532,7 +534,7 @@ class ModelCompressor:
 
             data = CompressionRequest(
                 compression_id=compression_info.compression_id,
-                compression_method=compression_method.value,
+                compression_method=compression_method,
                 layers=compression_info.available_layers,
                 compressed_model_id=compression_info.new_model_id,
             )
