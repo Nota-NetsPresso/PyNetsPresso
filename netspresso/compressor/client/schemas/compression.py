@@ -2,15 +2,15 @@ from typing import Dict, List, Any
 
 from pydantic import BaseModel, Field, root_validator
 
-from .common import COMPRESSION_METHOD, RECOMMENDATION_METHOD
-from ..utils.validator import CompressionParamsValidator
+from netspresso.compressor.client.utils.validator import CompressionParamsValidator
+from netspresso.compressor.client.utils.enum import compression_literal, recommendation_literal
 
 
 class CreateCompressionRequest(BaseModel):
     model_id: str = Field(..., description="Model ID")
     model_name: str = Field(..., description="Model Name")
     description: str = Field("", description="Description")
-    compression_method: COMPRESSION_METHOD = Field(..., description="Compression Method")
+    compression_method: compression_literal = Field(..., description="Compression Method")
 
 
 class AvailableLayerBase(BaseModel):
@@ -26,14 +26,14 @@ class AvailableLayer(AvailableLayerBase):
 class CompressionResponse(BaseModel):
     new_model_id: str = Field(..., description="Model ID")
     compression_id: str = Field(..., description="Compression ID")
-    compression_method: COMPRESSION_METHOD = Field(..., description="Compression Method")
+    compression_method: compression_literal = Field(..., description="Compression Method")
     available_layers: List[AvailableLayer] = Field([], description="Compressible Layers")
 
 
 class RecommendationRequest(BaseModel):
     model_id: str = Field(..., description="Model ID")
     compression_id: str = Field(..., description="Compression ID")
-    recommendation_method: RECOMMENDATION_METHOD = Field(..., description="Recommendation Method")
+    recommendation_method: recommendation_literal = Field(..., description="Recommendation Method")
     recommendation_ratio: float = Field(..., description="Recommendation Ratio")
 
     @root_validator
@@ -59,7 +59,7 @@ class RecommendationResponse(BaseModel):
 
 class CompressionRequest(BaseModel):
     compression_id: str = Field(..., description="Compression ID")
-    compression_method: COMPRESSION_METHOD = Field(..., description="Compression Method")
+    compression_method: compression_literal = Field(..., description="Compression Method")
     layers: List[AvailableLayer] = Field([], description="Compressible Layers")
     options: Dict[str, str] = Field({"policy": "average"}, description="Compression Options")
     compressed_model_id: str = Field(..., description="Compressed Model ID")
@@ -90,9 +90,9 @@ class UploadDatasetRequest(BaseModel):
 
 class GetAvailableLayersRequest(BaseModel):
     model_id: str = Field(..., description="Model ID")
-    compression_method: COMPRESSION_METHOD = Field(..., description="Compression Method")
+    compression_method: compression_literal = Field(..., description="Compression Method")
 
 
 class GetAvailableLayersReponse(BaseModel):
-    compression_method: COMPRESSION_METHOD = Field(..., description="Compression Method")
+    compression_method: compression_literal = Field(..., description="Compression Method")
     available_layers: List[AvailableLayer] = Field([], description="Compressible Layers")
