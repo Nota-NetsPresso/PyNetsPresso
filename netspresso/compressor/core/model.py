@@ -123,7 +123,11 @@ class ModelFactory:
 
     def create_compressed_model(self, model_info: ModelResponse) -> CompressedModel:
         attributes = self.extract_model_attributes(model_info)
-        compressed_model = CompressedModel(*attributes)
+        compressed_model = CompressedModel(
+            *attributes,
+            compression_id=model_info.original_compression_id,
+            original_model_id=model_info.original_model_id
+        )
         compressed_model.set_input_shapes(input_layers=model_info.spec.input_layers)
 
         return compressed_model
