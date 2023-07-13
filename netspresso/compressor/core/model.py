@@ -51,11 +51,10 @@ class Model:
     trainable_parameters: float
     non_trainable_parameters: float
     number_of_layers: int
-    _input_layers: List[InputLayer] = field(repr=False, default_factory=list)
     input_shapes: List[InputShape] = field(default_factory=list)
 
-    def __post_init__(self):
-        self.input_shapes = [InputShape(**layer.dict()) for layer in self._input_layers]
+    def set_input_shapes(self, input_layers):
+        self.input_shapes = [InputShape(**layer.dict()) for layer in input_layers]
 
 
 @dataclass
@@ -79,13 +78,11 @@ class ModelCollection(Model):
         compressed_models (List[CompressedModel]): A list of compressed models compressed from this model.
     """
 
-    _compressed_models: List[ModelResponse] = field(repr=False, default_factory=list)
     compressed_models: List[CompressedModel] = field(default_factory=list)
 
-    def __post_init__(self):
-        self.input_shapes = [InputShape(**layer.dict()) for layer in self._input_layers]
-        self.compressed_models = [
-            CompressedModel(
+    def set_compressed_models(self, children_models):
+        for children_model_info in children_models:
+            compressed_model = CompressedModel(
                 model_id=children_model_info.model_id,
                 model_name=children_model_info.model_name,
                 task=children_model_info.task,
@@ -97,56 +94,46 @@ class ModelCollection(Model):
                 number_of_layers=children_model_info.spec.number_of_layers,
                 compression_id=children_model_info.original_compression_id,
                 original_model_id=children_model_info.original_model_id,
-                _input_layers=children_model_info.spec.input_layers,
             )
-            for children_model_info in self._compressed_models
-        ]
+            compressed_model.set_input_shapes(input_layers=children_model_info.spec.input_layers)
+            self.compressed_models.append(compressed_model)
 
 
 class ModelFactory:
-    def create_model(self, model_info: ModelResponse) -> Model:
-        return Model(
-            model_id=model_info.model_id,
-            model_name=model_info.model_name,
-            task=model_info.task,
-            framework=model_info.framework,
-            model_size=model_info.spec.model_size,
-            flops=model_info.spec.flops,
-            trainable_parameters=model_info.spec.trainable_parameters,
-            non_trainable_parameters=model_info.spec.non_trainable_parameters,
-            number_of_layers=model_info.spec.number_of_layers,
-            _input_layers=model_info.spec.input_layers,
+    @staticmethod
+    def extract_model_attributes(model_info: ModelResponse):
+        return (
+            model_info.model_id,
+            model_info.model_name,
+            model_info.task,
+            model_info.framework,
+            model_info.spec.model_size,
+            model_info.spec.flops,
+            model_info.spec.trainable_parameters,
+            model_info.spec.non_trainable_parameters,
+            model_info.spec.number_of_layers,
         )
 
+    def create_model(self, model_info: ModelResponse) -> Model:
+        attributes = self.extract_model_attributes(model_info)
+        model = Model(*attributes)
+        model.set_input_shapes(input_layers=model_info.spec.input_layers)
+
+        return model
+
     def create_compressed_model(self, model_info: ModelResponse) -> CompressedModel:
-        return CompressedModel(
-            model_id=model_info.model_id,
-            model_name=model_info.model_name,
-            task=model_info.task,
-            framework=model_info.framework,
-            model_size=model_info.spec.model_size,
-            flops=model_info.spec.flops,
-            trainable_parameters=model_info.spec.trainable_parameters,
-            non_trainable_parameters=model_info.spec.non_trainable_parameters,
-            number_of_layers=model_info.spec.number_of_layers,
-            compression_id=model_info.original_compression_id,
-            original_model_id=model_info.original_model_id,
-            _input_layers=model_info.spec.input_layers,
-        )
+        attributes = self.extract_model_attributes(model_info)
+        compressed_model = CompressedModel(*attributes)
+        compressed_model.set_input_shapes(input_layers=model_info.spec.input_layers)
+
+        return compressed_model
 
     def create_model_collection(
         self, model_info: ModelResponse, children_models: List[ModelResponse]
     ) -> ModelCollection:
-        return ModelCollection(
-            model_id=model_info.model_id,
-            model_name=model_info.model_name,
-            task=model_info.task,
-            framework=model_info.framework,
-            model_size=model_info.spec.model_size,
-            flops=model_info.spec.flops,
-            trainable_parameters=model_info.spec.trainable_parameters,
-            non_trainable_parameters=model_info.spec.non_trainable_parameters,
-            number_of_layers=model_info.spec.number_of_layers,
-            _input_layers=model_info.spec.input_layers,
-            _compressed_models=children_models,
-        )
+        attributes = self.extract_model_attributes(model_info)
+        model_collection = ModelCollection(*attributes)
+        model_collection.set_input_shapes(input_layers=model_info.spec.input_layers)
+        model_collection.set_compressed_models(children_models=children_models)
+
+        return model_collection
