@@ -20,6 +20,7 @@ from netspresso.compressor.client.schemas.compression import (
     CreateCompressionRequest,
     RecommendationRequest,
     UploadDatasetRequest,
+    AvailableLayer,
 )
 from netspresso.compressor.core.model import CompressedModel, Model, ModelCollection, ModelFactory
 from netspresso.compressor.core.compression import CompressionInfo
@@ -329,8 +330,8 @@ class ModelCompressor:
             compression_info = CompressionInfo(
                 original_model_id=model_id,
                 compression_method=compression_method,
-                available_layers=response.available_layers,
             )
+            compression_info.set_available_layers(response.available_layers)
             logger.info("Select compression method successful.")
 
             return compression_info
@@ -361,8 +362,8 @@ class ModelCompressor:
                 compressed_model_id=compression_info.new_model_id,
                 compression_id=compression_info.compression_id,
                 compression_method=compression_info.compression_method,
-                available_layers=compression_info.available_layers,
             )
+            compression_info.set_available_layers(compression_info.compression_method)
             logger.info("Get compression successful.")
 
             return compression_info
@@ -432,10 +433,15 @@ class ModelCompressor:
                     f"The available_layer.values all empty. please put in the available_layer.values to compress."
                 )
 
+            available_layers = [
+                AvailableLayer(name=layer.name, values=layer.values, channels=layer.channels, use=layer.use)
+                for layer in compression.available_layers
+            ]
+
             data = CompressionRequest(
                 compression_id=compression_info.compression_id,
                 compression_method=compression.compression_method,
-                layers=compression.available_layers,
+                layers=available_layers,
                 compressed_model_id=compression_info.new_model_id,
             )
             self.client.compress_model(data=data, access_token=self.access_token)

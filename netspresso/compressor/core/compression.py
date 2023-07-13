@@ -15,7 +15,7 @@ class AvailableLayer:
 
     name: str
     values: List[Any] = field(default_factory=list)
-    use: bool = False
+    use: bool = field(default=False, repr=False)
     channels: List[int] = field(default_factory=list)
 
 
@@ -32,7 +32,6 @@ class CompressionInfo:
             AvailableLayer Attributes:
                 - name (str): The name of the layer.
                 - values (List[Any]): The compression parameters for the layer.
-                - use (bool): The compression selection status for the layer.
                 - channels (List[int]): The channel information for the layer.
 
         original_model_id (str): The ID of the original model.
@@ -43,3 +42,6 @@ class CompressionInfo:
     compression_method: str = ""
     available_layers: List[AvailableLayer] = field(default_factory=list)
     original_model_id: str = ""
+
+    def set_available_layers(self, available_layers):
+        self.available_layers = [AvailableLayer(**available_layer.dict()) for available_layer in available_layers]
