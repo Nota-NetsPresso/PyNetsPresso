@@ -40,6 +40,6 @@ class CompressionInfo:
 
     compressed_model_id: str = ""
     compression_id: str = ""
-    compression_method: str
+    compression_method: str = ""
     available_layers: List[AvailableLayer] = field(default_factory=list)
     original_model_id: str = ""

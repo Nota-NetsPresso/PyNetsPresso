@@ -21,13 +21,8 @@ from netspresso.compressor.client.schemas.compression import (
     RecommendationRequest,
     UploadDatasetRequest,
 )
-from netspresso.compressor.core.model import CompressedModel, Model, ModelCollection
+from netspresso.compressor.core.model import CompressedModel, Model, ModelCollection, ModelFactory
 from netspresso.compressor.core.compression import CompressionInfo
-from netspresso.compressor.utils.model import (
-    get_compressed_model_object,
-    get_model_collection_object,
-    get_model_object,
-)
 from netspresso.compressor.utils.token import check_jwt_exp
 
 
@@ -43,6 +38,7 @@ class ModelCompressor:
         self.email = email
         self.password = password
         self.client = ModelCompressorAPIClient()
+        self.model_factory = ModelFactory()
         self.__login()
 
     def __login(self) -> None:
@@ -127,7 +123,7 @@ class ModelCompressor:
                 input_layers=input_shapes,
             )
             model_info = self.client.upload_model(data=data, access_token=self.access_token)
-            model = get_model_object(model_info=model_info)
+            model = self.model_factory.create_model(model_info=model_info)
 
             logger.info(f"Upload model successful. Model ID: {model.model_id}")
 
@@ -155,16 +151,14 @@ class ModelCompressor:
 
             for parent_model_info in parent_models:
                 if parent_model_info.origin_from == "custom":
-                    model = get_model_collection_object(model_info=parent_model_info)
-
                     children_models = self.client.get_children_models(
-                        model_id=model.model_id, access_token=self.access_token
+                        model_id=parent_model_info.model_id, access_token=self.access_token
                     )
-                    model.compressed_models = [
-                        get_compressed_model_object(children_model) for children_model in children_models
-                    ]
+                    model_collection = self.model_factory.create_model_collection(
+                        model_info=parent_model_info, children_models=children_models
+                    )
 
-                models.append(model)
+                models.append(model_collection)
             logger.info("Get model list successful.")
 
             return models
@@ -188,7 +182,7 @@ class ModelCompressor:
             logger.info("Getting uploaded model list...")
             parent_models = self.client.get_parent_models(is_simple=True, access_token=self.access_token)
             uploaded_models = [
-                get_model_object(model_info=parent_model_info)
+                self.model_factory.create_model(model_info=parent_model_info)
                 for parent_model_info in parent_models
                 if parent_model_info.origin_from == "custom"
             ]
@@ -218,7 +212,8 @@ class ModelCompressor:
             logger.info("Getting compressed model list...")
             children_models = self.client.get_children_models(model_id=model_id, access_token=self.access_token)
             compressed_models = [
-                get_compressed_model_object(model_info=children_model_info) for children_model_info in children_models
+                self.model_factory.create_compressed_model(model_info=children_model_info)
+                for children_model_info in children_models
             ]
             logger.info("Get compressed model list successful.")
 
@@ -247,9 +242,9 @@ class ModelCompressor:
             logger.info("Getting model...")
             model_info = self.client.get_model_info(model_id=model_id, access_token=self.access_token)
             if model_info.status.is_compressed:
-                model = get_compressed_model_object(model_info=model_info)
+                model = self.model_factory.create_compressed_model(model_info=model_info)
             else:
-                model = get_model_object(model_info=model_info)
+                model = self.model_factory.create_model(model_info=model_info)
             logger.info("Get model successful.")
 
             return model
@@ -579,7 +574,7 @@ class ModelCompressor:
             )
             model_info = self.client.auto_compression(data=data, access_token=self.access_token)
             self.download_model(model_id=model_info.model_id, local_path=output_path)
-            compressed_model = get_compressed_model_object(model_info=model_info)
+            compressed_model = self.model_factory.create_compressed_model(model_info=model_info)
             logger.info(f"Automatic compression successful. Compressed Model ID: {compressed_model.model_id}")
             logger.info("25 credits have been consumed.")
 
