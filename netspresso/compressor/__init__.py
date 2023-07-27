@@ -1,4 +1,3 @@
-from functools import wraps
 from typing import Dict, List, Union
 
 from urllib import request
@@ -11,7 +10,7 @@ from netspresso.compressor.client import (
     CompressionMethod,
     RecommendationMethod,
 )
-from netspresso.compressor.client.schemas.auth import LoginRequest, RefreshTokenRequest
+from netspresso.schemas.auth import LoginRequest, RefreshTokenRequest
 from netspresso.compressor.client.schemas.model import UploadModelRequest
 from netspresso.compressor.client.schemas.compression import (
     AutoCompressionRequest,
@@ -24,10 +23,11 @@ from netspresso.compressor.client.schemas.compression import (
 )
 from netspresso.compressor.core.model import CompressedModel, Model, ModelCollection, ModelFactory
 from netspresso.compressor.core.compression import CompressionInfo
-from netspresso.compressor.utils.token import check_jwt_exp
+from netspresso import UserSession, BaseClient, validate_token
 
 
-class ModelCompressor:
+class ModelCompressor(BaseClient):
+    user_session: UserSession
     def __init__(self, email: str, password: str):
         """Initialize the Model Compressor.
 
@@ -35,64 +35,9 @@ class ModelCompressor:
             email (str): The email address for a user account.
             password (str): The password for a user account.
         """
-
-        self.email = email
-        self.password = password
+        super().__init__(email=email, password=password)
         self.client = ModelCompressorAPIClient()
         self.model_factory = ModelFactory()
-        self.__login()
-
-    def __login(self) -> None:
-        try:
-            data = LoginRequest(username=self.email, password=self.password)
-            response = self.client.login(data)
-            self.access_token = response.access_token
-            self.refresh_token = response.refresh_token
-            logger.info("Login successful")
-
-        except Exception as e:
-            logger.error(f"Login failed. Error: {e}")
-            raise e
-
-    def validate_token(func) -> None:
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            if not check_jwt_exp(self.access_token):
-                self.__reissue_token()
-            return func(self, *args, **kwargs)
-
-        return wrapper
-
-    def __reissue_token(self) -> None:
-        try:
-            data = RefreshTokenRequest(access_token=self.access_token, refresh_token=self.refresh_token)
-            response = self.client.refresh_token(data)
-            self.access_token = response.access_token
-            self.refresh_token = response.refresh_token
-
-        except Exception as e:
-            raise e
-
-    @validate_token
-    def get_credit(self) -> int:
-        """Get the available NetsPresso credits.
-
-        Raises:
-            e: If an error occurs while getting credit information.
-
-        Returns:
-            int: The total amount of available NetsPresso credits.
-        """
-
-        try:
-            credit = self.client.get_credit(access_token=self.access_token)
-            logger.info(f"Get Credit successful. Credit: {credit.total}")
-
-            return credit.total
-
-        except Exception as e:
-            logger.error(f"Get Credit failed. Error: {e}")
-            raise e
 
     @validate_token
     def upload_model(
