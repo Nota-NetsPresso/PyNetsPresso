@@ -13,7 +13,7 @@ from netspresso.compressor.client.schemas.compression import (
     RecommendationResponse,
 )
 from netspresso.compressor.client.schemas.model import UploadModelRequest, ModelResponse, GetDownloadLinkResponse
-from netspresso.compressor.client.utils.common import get_files, get_headers
+from netspresso.client.utils.common import get_files, get_headers
 from netspresso.compressor.client.utils.enum import (
     Task,
     Framework,
@@ -33,46 +33,6 @@ class ModelCompressorAPIClient:
         self.port = self.config.PORT
         self.prefix = self.config.API_PREFIX
         self.url = f"{self.ip}:{self.port}{self.prefix}"
-
-    def login(self, data) -> LoginResponse:
-        url = f"{self.url}/login"
-        response = requests.post(url, data=data.dict(), headers=get_headers())
-        response_body = json.loads(response.text)
-
-        if response.status_code == 200 or response.status_code == 201:
-            return LoginResponse(**response_body)
-        else:
-            raise Exception(response_body["detail"])
-
-    def refresh_token(self, data) -> RefreshTokenResponse:
-        url = f"{self.url}/token"
-        response = requests.post(url, data=data.json(), headers=get_headers(json_type=True))
-        response_body = json.loads(response.text)
-
-        if response.status_code == 200 or response.status_code == 201:
-            return RefreshTokenResponse(**response_body)
-        else:
-            raise Exception(response_body["detail"])
-
-    def get_credit(self, access_token) -> CreditResponse:
-        url = f"{self.url}/credit"
-        response = requests.get(url, headers=get_headers(access_token))
-        response_body = json.loads(response.text)
-
-        if response.status_code == 200 or response.status_code == 201:
-            return CreditResponse(**response_body)
-        else:
-            raise Exception(response_body["detail"])
-
-    def get_user(self, access_token) -> UserRespone:
-        url = f"{self.url}/user"
-        response = requests.get(url, headers=get_headers(access_token))
-        response_body = json.loads(response.text)
-
-        if response.status_code == 200 or response.status_code == 201:
-            return UserRespone(**response_body)
-        else:
-            raise Exception(response_body["detail"])
 
     def upload_model(self, data: UploadModelRequest, access_token) -> ModelResponse:
         url = f"{self.url}/models"
