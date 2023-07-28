@@ -3,8 +3,8 @@ from functools import wraps
 from loguru import logger
 
 from netspresso.schemas.auth import LoginRequest, RefreshTokenRequest, LoginResponse, RefreshTokenResponse
-from netspresso.utils.common import get_headers
-from netspresso.utils.token import check_jwt_exp
+from netspresso.client.utils.common import get_headers
+from netspresso.client.utils.token import check_jwt_exp
 from netspresso.client.config import Config, EndPoint
 
 def validate_token(func) -> None:
