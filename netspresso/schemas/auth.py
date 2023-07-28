@@ -8,14 +8,14 @@ class LoginRequest(BaseModel):
     password: str = Field(..., description="Password")
 
 
-class LoginResponse(BaseModel):
-    email: EmailStr = Field(..., description="Email")
-    username: str = Field(..., description="User Name")
-    user_id: UUID = Field(..., description="User ID")
+class SessionToken(BaseModel):
     access_token: str = Field(..., description="Access Token")
     refresh_token: str = Field(..., description="Refresh Token")
-    # session_id: UUID = Field(..., description="Session ID")
-    # current_time: str = Field(..., description="Current Time")
+
+class LoginResponse(BaseModel):
+    current_time: str = Field(..., description="Login Time")
+    region: str = Field(..., description="User Resion")
+    tokens: SessionToken = Field(default_factory=SessionToken, description="Session Token")
 
 
 class RefreshTokenRequest(BaseModel):
