@@ -10,6 +10,9 @@ from netspresso.compressor.client import (
     Framework,
     CompressionMethod,
     RecommendationMethod,
+    Policy,
+    LayerNorm,
+    GroupPolicy,
 )
 from netspresso.compressor.client.schemas.auth import LoginRequest, RefreshTokenRequest
 from netspresso.compressor.client.schemas.model import UploadModelRequest
@@ -21,6 +24,7 @@ from netspresso.compressor.client.schemas.compression import (
     RecommendationRequest,
     UploadDatasetRequest,
     AvailableLayer,
+    Options,
 )
 from netspresso.compressor.core.model import CompressedModel, Model, ModelCollection, ModelFactory
 from netspresso.compressor.core.compression import CompressionInfo
@@ -310,7 +314,9 @@ class ModelCompressor:
             raise e
 
     @validate_token
-    def select_compression_method(self, model_id: str, compression_method: CompressionMethod) -> CompressionInfo:
+    def select_compression_method(
+        self, model_id: str, compression_method: CompressionMethod, options: Options = Options()
+    ) -> CompressionInfo:
         """Select a compression method for a model.
 
         Args:
@@ -325,11 +331,10 @@ class ModelCompressor:
         """
         try:
             logger.info("Selecting compression method...")
-            data = GetAvailableLayersRequest(model_id=model_id, compression_method=compression_method)
+            data = GetAvailableLayersRequest(model_id=model_id, compression_method=compression_method, options=options)
             response = self.client.get_available_layers(data=data, access_token=self.access_token)
             compression_info = CompressionInfo(
-                original_model_id=model_id,
-                compression_method=compression_method,
+                original_model_id=model_id, compression_method=compression_method, options=options.dict()
             )
             compression_info.set_available_layers(response.available_layers)
             logger.info("Select compression method successful.")
@@ -417,6 +422,7 @@ class ModelCompressor:
                 model_id=compression.original_model_id,
                 model_name=model_name,
                 compression_method=compression.compression_method,
+                options=compression.options,
             )
             compression_info = self.client.create_compression(data=data, access_token=self.access_token)
 
@@ -443,6 +449,7 @@ class ModelCompressor:
                 compression_method=compression.compression_method,
                 layers=available_layers,
                 compressed_model_id=compression_info.new_model_id,
+                options=compression.options,
             )
             self.client.compress_model(data=data, access_token=self.access_token)
             self.download_model(model_id=compression_info.new_model_id, local_path=output_path)
@@ -465,6 +472,7 @@ class ModelCompressor:
         recommendation_method: RecommendationMethod,
         recommendation_ratio: float,
         output_path: str,
+        options: Options = Options(),
         dataset_path: str = None,
     ) -> CompressedModel:
         """Compress a recommendation-based model using the given compression and recommendation methods.
@@ -510,9 +518,7 @@ class ModelCompressor:
                 )
 
             data = CreateCompressionRequest(
-                model_id=model_id,
-                model_name=model_name,
-                compression_method=compression_method,
+                model_id=model_id, model_name=model_name, compression_method=compression_method, options=options.dict()
             )
             compression_info = self.client.create_compression(data=data, access_token=self.access_token)
 
@@ -524,6 +530,7 @@ class ModelCompressor:
                 compression_id=compression_info.compression_id,
                 recommendation_method=recommendation_method,
                 recommendation_ratio=recommendation_ratio,
+                options=options.dict(),
             )
             recommendation_result = self.client.get_recommendation(data=data, access_token=self.access_token)
 
@@ -538,6 +545,7 @@ class ModelCompressor:
                 compression_method=compression_method,
                 layers=compression_info.available_layers,
                 compressed_model_id=compression_info.new_model_id,
+                options=options.dict(),
             )
             self.client.compress_model(data=data, access_token=self.access_token)
             self.download_model(model_id=compression_info.new_model_id, local_path=output_path)

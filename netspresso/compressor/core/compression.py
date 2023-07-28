@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Any, List
 
+from netspresso.compressor.client.utils.enum import Policy, LayerNorm, GroupPolicy
+
 
 @dataclass
 class AvailableLayer:
@@ -17,6 +19,23 @@ class AvailableLayer:
     values: List[Any] = field(default_factory=list)
     use: bool = field(default=False, repr=False)
     channels: List[int] = field(default_factory=list)
+
+
+@dataclass
+class Options:
+    """Represents an options for compression.
+
+    Attributes:
+        reshape_channel_axis (int): 
+        policy (str): 
+        layer_norm (str): 
+        group_policy (str): 
+    """
+
+    reshape_channel_axis: int = -1
+    policy: Policy = Policy.AVERAGE
+    layer_norm: LayerNorm = LayerNorm.TSS_NORM
+    group_policy: GroupPolicy = GroupPolicy.COUNT
 
 
 @dataclass
@@ -42,6 +61,7 @@ class CompressionInfo:
     compression_method: str = ""
     available_layers: List[AvailableLayer] = field(default_factory=list)
     original_model_id: str = ""
+    options: Options = field(default_factory=Options)
 
     def set_available_layers(self, available_layers):
         self.available_layers = [AvailableLayer(**available_layer.dict()) for available_layer in available_layers]
