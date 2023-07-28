@@ -13,7 +13,6 @@ from netspresso.compressor.client import (
     LayerNorm,
     GroupPolicy,
 )
-from netspresso.schemas.auth import LoginRequest, RefreshTokenRequest
 from netspresso.compressor.client.schemas.model import UploadModelRequest
 from netspresso.compressor.client.schemas.compression import (
     AutoCompressionRequest,
@@ -27,7 +26,7 @@ from netspresso.compressor.client.schemas.compression import (
 )
 from netspresso.compressor.core.model import CompressedModel, Model, ModelCollection, ModelFactory
 from netspresso.compressor.core.compression import CompressionInfo
-from netspresso.client import SessionClient, BaseClient, validate_token
+from netspresso.client import BaseClient, validate_token
 
 
 class ModelCompressor(BaseClient):
