@@ -1,7 +1,7 @@
 import json
 import requests
 
-from netspresso.compressor.client.schemas.auth import (
+from netspresso.schemas.auth import (
     CreditResponse,
     LoginResponse,
     UserRespone,
@@ -15,16 +15,16 @@ from netspresso.compressor.client.schemas.compression import (
 from netspresso.compressor.client.schemas.model import UploadModelRequest, ModelResponse, GetDownloadLinkResponse
 from netspresso.utils.common import get_files, get_headers
 from netspresso.compressor.client.utils.enum import Task, Framework, CompressionMethod, RecommendationMethod  # noqa
-from netspresso.compressor.client.config import Config
+from netspresso.client import Config, EndPoint
 
 
 class ModelCompressorAPIClient:
     def __init__(self):
-        self.config = Config()
-        self.ip = self.config.IP
+        self.config = Config(EndPoint.COMPRESSOR)
+        self.host = self.config.HOST
         self.port = self.config.PORT
-        self.prefix = self.config.API_PREFIX
-        self.url = f"{self.ip}:{self.port}{self.prefix}"
+        self.prefix = self.config.URI_PREFIX
+        self.url = f"{self.host}:{self.port}{self.prefix}"
 
     def upload_model(self, data: UploadModelRequest, access_token) -> ModelResponse:
         url = f"{self.url}/models"
