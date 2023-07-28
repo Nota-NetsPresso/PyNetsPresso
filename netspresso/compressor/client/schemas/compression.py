@@ -1,6 +1,6 @@
-from typing import Dict, List, Any
+from typing import List, Any
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, root_validator, validator
 
 from netspresso.compressor.client.utils.validator import CompressionParamsValidator
 from netspresso.compressor.client.utils.enum import (
@@ -17,6 +17,13 @@ from netspresso.compressor.client.utils.enum import (
 
 class OptionsBase(BaseModel):
     reshape_channel_axis: int = Field(-1, description="Reshape Channel Axis")
+    
+    @validator("reshape_channel_axis")
+    def validate_reshape_channel_axis(cls, value):
+        valid_values = [0, 1, -1, -2]
+        if value not in valid_values:
+            raise ValueError(f"The reshape_channel_axis value is in the range [0, 1, -1, -2], but got {value}")
+        return value
 
 
 class Options(OptionsBase):
