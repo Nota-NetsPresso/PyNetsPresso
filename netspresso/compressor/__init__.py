@@ -39,30 +39,7 @@ class ModelCompressor(BaseClient):
             ModelCompressor(email='USER_EMAIL',password='PASSWORD')
             ModelCompressor(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
-
-        email = kwargs.get('email', None)
-        password = kwargs.get('password', None)
-        user_session = kwargs.get('user_session', None)
-
-        if (email is not None and type(email) is str
-            and password is not None and type(password) is str):
-            super().__init__(user_session=SessionClient(email=email, password=password))
-
-        elif (len(args) == 2
-              and args[0] is not None and type(args[0]) is str
-              and args[1] is not None and type(args[1]) is str):
-            super().__init__(user_session=SessionClient(email=args[0], password=args[1]))
-
-        elif user_session is not None and type(user_session) is SessionClient :
-            super().__init__(user_session=user_session)
-
-        elif (len(args) == 1
-              and args[0] is not None and type(args[0]) is SessionClient):
-            super().__init__(user_session=args[0])
-
-        else:
-            raise NotImplementedError("There is no avaliable constructors for given paremeters.")
-
+        super(self.__class__, self).__init__(*args, **kwargs)
         self.client = ModelCompressorAPIClient()
         self.model_factory = ModelFactory()
 

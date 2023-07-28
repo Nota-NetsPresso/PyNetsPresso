@@ -1,5 +1,3 @@
-__version__ = "1.0.5"
-
 import requests, json
 from functools import wraps
 from loguru import logger
@@ -76,13 +74,41 @@ class SessionClient:
 
 class BaseClient:
     user_session: SessionClient = None
-    def __init__(self, user_session: SessionClient):
-        """Initialize with the User Session.
+    def __init__(self, *args, **kwargs):
+        """Initialize the Model Compressor.
 
         Args:
-            user_session (UserSession): 
+            email (str): The email address for a user account.
+            password (str): The password for a user account.
+            user_session (SessionClient): The SessionClient object.
+
+        Available constructors: 
+            BaseClient(email='USER_EMAIL',password='PASSWORD')
+            BaseClient(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
-        self.user_session = user_session
+
+        email = kwargs.get('email', None)
+        password = kwargs.get('password', None)
+        tmp_session = kwargs.get('user_session', None)
+
+        if tmp_session is not None and type(tmp_session) is SessionClient :
+            self.user_session = tmp_session
+
+        elif (len(args) == 1
+              and args[0] is not None and type(args[0]) is SessionClient):
+            self.user_session = args[0]
+        
+        elif (email is not None and type(email) is str
+            and password is not None and type(password) is str):
+            self.user_session = SessionClient(email=email, password=password)
+
+        elif (len(args) == 2
+              and args[0] is not None and type(args[0]) is str
+              and args[1] is not None and type(args[1]) is str):
+            self.user_session = SessionClient(email=args[0], password=args[1])
+
+        else:
+            raise NotImplementedError("There is no avaliable constructors for given paremeters.")
 
     @validate_token
     def get_credit(self) -> int:
