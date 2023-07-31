@@ -10,7 +10,7 @@ DEPLOYMENT_MODE = os.getenv("DEPLOYMENT_MODE", "PROD")
 logger.info(f"Read {DEPLOYMENT_MODE} config")
 config.read(f"{BASE_DIR}/configs/config.ini")
 
-class EnvironmenType(str, Enum):
+class EnvironmentType(str, Enum):
     PROD = "PROD"
     LOCAL = "LOCAL"
 
@@ -49,14 +49,14 @@ class EndPointProperty(str, Enum):
     
 
 class Config:
-    ENVIRONMENT_TYPE: EnvironmenType = EnvironmenType.PROD
+    ENVIRONMENT_TYPE: EnvironmentType = EnvironmentType.PROD
     CONFIG_SESSION: str = f"{EndPoint.GENRAL}.{ENVIRONMENT_TYPE}"
     HOST: str = config[CONFIG_SESSION][EndPointProperty.HOST]
     PORT: int = int(config[CONFIG_SESSION][EndPointProperty.PORT])
     URI_PREFIX: str = config[CONFIG_SESSION][EndPointProperty.URI_PREFIX]
 
     def __init__(self, endpoint: EndPoint = EndPoint.GENRAL):
-        self.ENVIRONMENT_TYPE = EnvironmenType(DEPLOYMENT_MODE.upper())
+        self.ENVIRONMENT_TYPE = EnvironmentType(DEPLOYMENT_MODE.upper())
         self.CONFIG_SESSION = f"{endpoint}.{self.ENVIRONMENT_TYPE}"
         self.HOST = config[self.CONFIG_SESSION][EndPointProperty.HOST]
         self.PORT = int(config[self.CONFIG_SESSION][EndPointProperty.PORT])
