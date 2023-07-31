@@ -19,7 +19,7 @@ compressor = ModelCompressor(email=EMAIL, password=PASSWORD)
 # Upload Model
 UPLOAD_MODEL_NAME = "test_pt"
 TASK = Task.IMAGE_CLASSIFICATION
-FRAMEWORK = Framework.TENSORFLOW_KERAS
+FRAMEWORK = Framework.PYTORCH
 UPLOAD_MODEL_PATH = "./examples/sample_models/graphmodule.pt"
 INPUT_SHAPES = [{"batch": 2, "channel": 3, "dimension": [224, 224]}]
 model = compressor.upload_model(
