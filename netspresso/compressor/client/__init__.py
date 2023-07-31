@@ -4,7 +4,7 @@ import requests
 from netspresso.schemas.auth import (
     CreditResponse,
     LoginResponse,
-    UserRespone,
+    UserResponese,
     RefreshTokenResponse,
 )
 from netspresso.compressor.client.schemas.compression import (
