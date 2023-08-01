@@ -34,8 +34,8 @@ class Options:
 
     reshape_channel_axis: int = -1
     policy: Policy = Policy.AVERAGE
-    layer_norm: LayerNorm = LayerNorm.TSS_NORM
-    group_policy: GroupPolicy = GroupPolicy.COUNT
+    layer_norm: LayerNorm = LayerNorm.STANDARD_SCORE
+    group_policy: GroupPolicy = GroupPolicy.AVERAGE
 
 
 @dataclass

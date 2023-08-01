@@ -28,8 +28,8 @@ class OptionsBase(BaseModel):
 
 class Options(OptionsBase):
     policy: policy_literal = Field(Policy.AVERAGE, description="Policy")
-    layer_norm: layernorm_literal = Field(LayerNorm.TSS_NORM, description="layer Norm")
-    group_policy: grouppolicy_literal = Field(GroupPolicy.COUNT, description="Group Policy")
+    layer_norm: layernorm_literal = Field(LayerNorm.STANDARD_SCORE, description="layer Norm")
+    group_policy: grouppolicy_literal = Field(GroupPolicy.AVERAGE, description="Group Policy")
 
 
 class CreateCompressionRequest(BaseModel):
