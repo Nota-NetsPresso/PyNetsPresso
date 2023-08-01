@@ -2,7 +2,7 @@ import requests, json
 from functools import wraps
 from loguru import logger
 
-from netspresso.schemas.auth import LoginRequest, RefreshTokenRequest, LoginResponse, RefreshTokenResponse
+from netspresso.schemas.auth import LoginRequest, RefreshTokenRequest, LoginResponse, RefreshTokenResponse, UserResponese
 from netspresso.client.utils.common import get_headers
 from netspresso.client.utils.token import check_jwt_exp
 from netspresso.client.config import Config, EndPoint
@@ -32,7 +32,9 @@ class SessionClient:
         self.port = self.config.PORT
         self.uri_prefix = self.config.URI_PREFIX
         self.base_url = f"{self.host}:{self.port}{self.uri_prefix}"
+        self.user_id = None
         self.__login()
+        self.__get_user_info()
 
     def __login(self) -> None:
         try:
@@ -53,7 +55,22 @@ class SessionClient:
             logger.error(f"Login failed. Error: {e}")
             raise e
 
-    
+    def __get_user_info(self):
+        try:
+            url = f"{self.base_url}/user"
+            response = requests.get(url, headers=get_headers(access_token=self.access_token))
+            response_body = json.loads(response.text)
+
+            if response.status_code == 200 or response.status_code == 201:
+                user_info = UserResponese(**response_body)
+                self.user_id = user_info.user_id
+                logger.info("successfully got user information")
+            else:
+                raise Exception(response_body["detail"])
+
+        except Exception as e:
+            logger.error(f"Failed to get user information. Error: {e}")
+            raise e
 
     def __reissue_token(self) -> None:
         try:
