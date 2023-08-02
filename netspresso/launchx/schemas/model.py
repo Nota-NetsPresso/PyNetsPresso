@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
 
 from netspresso.launchx.schemas import DataType, DeviceName, TaskStatus, ModelFramework
@@ -28,7 +28,7 @@ class Model(BaseModel):
     filename: str = Field(default=None)
     input_shape: InputShape = Field(default=None)
     data_type: DataType = Field(default=None)
-    available_devices: List[TargetDevice] = Field(default_factory=list)
+    available_devices: list[TargetDevice] = Field(default_factory=list)
     model_uuid: str = Field(default=None)
     file_size: float = Field(default=None)
 

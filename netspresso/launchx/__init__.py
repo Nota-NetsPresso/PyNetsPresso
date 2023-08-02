@@ -4,7 +4,7 @@ from loguru import logger
 from urllib import request
 
 from netspresso.client import BaseClient, validate_token
-from netspresso.launchx.schemas import LaunchXFunction, DeviceName, ModelFramework, TaskStatus, DataType
+from netspresso.launchx.schemas import LaunchXFunction, ModelFramework, TaskStatus, DataType
 from netspresso.launchx.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
 from netspresso.launchx.client import LaunchXAPIClient
 
