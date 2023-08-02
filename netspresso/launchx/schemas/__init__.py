@@ -86,9 +86,10 @@ class TaskStatus(StrEnumBase):
     IN_PROGRESS = "IN_PROGRESS"
     FINISHED = "FINISHED"
     ERROR = "ERROR"
+    USER_CANCEL = "USER_CANCEL"
 
     @classmethod
     def create_literal(cls):
         return Literal[
-            "IN_QUEUE", "IN_PROGRESS", "FINISHED", "ERROR",
+            "IN_QUEUE", "IN_PROGRESS", "FINISHED", "ERROR", "USER_CANCEL"
         ]
