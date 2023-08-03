@@ -11,7 +11,7 @@ from netspresso.launchx.client import LaunchXAPIClient
 class LaunchX(BaseClient):
     target_function: LaunchXFunction = LaunchXFunction.GENERAL
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, email=None, password=None, user_session=None):
         """Initialize the Model Compressor.
 
         Args:
@@ -23,7 +23,7 @@ class LaunchX(BaseClient):
             LaunchX(email='USER_EMAIL',password='PASSWORD')
             LaunchX(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(email=email, password=password, user_session=user_session)
         self.client = LaunchXAPIClient(user_sessoin=self.user_session)
 
     @validate_token

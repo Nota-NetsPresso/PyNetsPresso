@@ -12,7 +12,7 @@ if __name__ == '__main__':
     PASSWORD = "YOUR_PASSWORD"
     CONVERTED_MODEL_PATH = "converted_model.zip"
     session = SessionClient(email=EMAIL, password=PASSWORD)
-    converter = ModelConverter(session)
+    converter = ModelConverter(user_session=session)
     model: Model = converter.upload_model("./test.onnx")
 
     available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RENESAS_RZ_V2L,
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     converter.download_converted_model(conversion_task, dst=CONVERTED_MODEL_PATH)
 
     
-    benchmarker = ModelBenchmarker(session)
+    benchmarker = ModelBenchmarker(user_session=session)
     benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
                                                                 target_device=target_device,
