@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 from netspresso.launchx.schemas import DataType, DeviceName, TaskStatus, ModelFramework
 
@@ -12,9 +12,14 @@ class InputShape(BaseModel):
         dimension (str): The dimensions of the input tensor. ex: height = 416, width = 640, [416, 640].
     """
 
-    batch: int
+    batch: Optional[int] = Field(default=1)
     channel: int
     input_size: str
+
+    @validator("batch", always=True)
+    def set_batch(cls, v, values, **kwargs):
+        """Set the eggs field based upon a spam value."""
+        return v if v is not None else 1
 
 class TargetDevice(BaseModel):
     display_name: str = Field(default=None)
