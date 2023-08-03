@@ -8,8 +8,8 @@ from netspresso.launchx.schemas.model import BenchmarkTask, ConversionTask, Mode
 
 
 if __name__ == '__main__':
-    EMAIL = "sanggeon.park@nota.ai"
-    PASSWORD = "jwuatxbh"
+    EMAIL = "YOUR_EMAIL"
+    PASSWORD = "YOUR_PASSWORD"
     CONVERTED_MODEL_PATH = "converted_model.tflite"
     session = SessionClient(email=EMAIL, password=PASSWORD)
     converter = LaunchXConverter(session)
