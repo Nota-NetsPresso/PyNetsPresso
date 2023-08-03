@@ -23,7 +23,7 @@ setup(
     description="NetsPresso Python Package",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Nota-NetsPresso/netspresso-python",
+    url="https://github.com/Nota-NetsPresso/PyNP-python-package",
     install_requires=install_requires,
     packages=find_packages(exclude=("tests",)),
     package_data={"netspresso.compressor.client": ["configs/*.ini"]},
