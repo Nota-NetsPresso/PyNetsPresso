@@ -322,6 +322,7 @@ class ModelCompressor:
         Args:
             model_id (str): The ID of the model.
             compression_method (CompressionMethod): The selected compression method.
+            options(Options, optional): The options for pruning method.
 
         Raises:
             e: If an error occurs while selecting the compression method.
@@ -484,6 +485,7 @@ class ModelCompressor:
             recommendation_method (RecommendationMethod): The selected recommendation method.
             recommendation_ratio (float): The compression ratio recommended by the recommendation method.
             output_path (str): The local path to save the compressed model.
+            options(Options, optional): The options for pruning method.
             dataset_path (str, optional): The path of the dataset used for nuclear norm compression method. Default is None.
 
         Raises:
