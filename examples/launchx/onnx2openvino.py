@@ -1,18 +1,18 @@
 import time
 from loguru import logger
 from netspresso.client import SessionClient
-from netspresso.launchx import LaunchXConverter, LaunchXBenchmarker
+from netspresso.launchx import ModelConverter, ModelBenchmarker
 from netspresso.launchx.utils.devices import filter_devices_with_device_name
 from netspresso.launchx.schemas import ModelFramework, TaskStatus, DeviceName
 from netspresso.launchx.schemas.model import BenchmarkTask, ConversionTask, Model, TargetDevice
 
 
 if __name__ == '__main__':
-    EMAIL = "sanggeon.park@nota.ai"
-    PASSWORD = "jwuatxbh"
+    EMAIL = "YOUR_EMAIL"
+    PASSWORD = "YOUR_PASSWORD"
     CONVERTED_MODEL_PATH = "converted_model.zip"
     session = SessionClient(email=EMAIL, password=PASSWORD)
-    converter = LaunchXConverter(session)
+    converter = ModelConverter(session)
     model: Model = converter.upload_model("./test.onnx")
 
     available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.Intel_XEON_W_2233,
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     converter.download_converted_model(conversion_task, dst=CONVERTED_MODEL_PATH)
 
     
-    benchmarker = LaunchXBenchmarker(session)
+    benchmarker = ModelBenchmarker(session)
     benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model, target_device=target_device)
 
