@@ -1,7 +1,7 @@
 from typing import Dict, List, Union
-
 from loguru import logger
 from urllib import request
+import time
 
 from netspresso.client import BaseClient, validate_token
 from netspresso.launchx.schemas import LaunchXFunction, ModelFramework, TaskStatus, DataType
@@ -41,7 +41,8 @@ class ModelConverter(LaunchX):
     def convert_model(self, model: Union[str, Model],
                       input_shape: InputShape,
                       target_framework: Union[str, ModelFramework],
-                      target_device: TargetDevice) -> ConversionTask:
+                      target_device: TargetDevice,
+                      wait_until_done: bool = True) -> ConversionTask:
         model_uuid = model
         if type(model) is Model:
             model_uuid = model.model_uuid
@@ -52,11 +53,21 @@ class ModelConverter(LaunchX):
 
         logger.info(f"Converting Model for {target_device.device_name} ({target_framework})")
             
-        return self.client.convert_model(model_uuid=model_uuid,
-                                         input_shape=input_shape,
-                                         target_framework=target_framework,
-                                         target_device=target_device.device_name,
-                                         software_version=target_device.software_version)
+        conversion_task = self.client.convert_model(model_uuid=model_uuid,
+                                                   input_shape=input_shape,
+                                                   target_framework=target_framework,
+                                                   target_device=target_device.device_name,
+                                                   software_version=target_device.software_version)
+
+        conversion_task = self.get_conversion_task(conversion_task)
+
+        if wait_until_done:
+            while conversion_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
+                conversion_task = self.get_conversion_task(conversion_task)
+                time.sleep(1)
+
+        return conversion_task
+
 
     @validate_token
     def get_conversion_task(self, conversion_task: Union[str, ConversionTask]) -> ConversionTask:
@@ -66,7 +77,7 @@ class ModelConverter(LaunchX):
         elif type(conversion_task) is ConversionTask:
             conversion_task_uuid = conversion_task.convert_task_uuid
         else:
-            raise NotImplementedError("There is no avaliable function for given paremeter. conversion_task should be uuid string or ModelConversion object.")
+            raise NotImplementedError("There is no available function for the given parameter. The 'conversion_task' should be a UUID string or a ModelConversion object.")
         return self.client.get_conversion_task(conversion_task_uuid=conversion_task_uuid)
 
     @validate_token
@@ -79,20 +90,21 @@ class ModelConverter(LaunchX):
 
         conversion_result: ConversionTask = self.get_conversion_task(conversion_task_uuid)
         if conversion_result.status is TaskStatus.ERROR:
-            raise FileNotFoundError("Conversion is Failed. No file to download.")
+            raise FileNotFoundError("The conversion is Failed. There is no file available for download.")
         if conversion_result.status is not TaskStatus.FINISHED:
-            raise FileNotFoundError("Conversion is running. No file to download yet.")
+            raise FileNotFoundError("The conversion is in progress. There is no file available for download at the moment.")
 
         download_url = self.client.get_converted_model(conversion_task_uuid=conversion_result.convert_task_uuid)
         request.urlretrieve(download_url, dst)
-        logger.info(f"Download model successful. Local Path: {dst}")
+        logger.info(f"The file has been successfully downloaded at : {dst}")
 
 class ModelBenchmarker(LaunchX):
     target_function: LaunchXFunction = LaunchXFunction.BENCHMARK
     @validate_token
     def benchmark_model(self, model: Union[str, Model, ConversionTask],
                         target_device: TargetDevice = None,
-                        data_type: DataType = DataType.FP16) -> BenchmarkTask:
+                        data_type: DataType = DataType.FP16,
+                        wait_until_done: bool = True) -> BenchmarkTask:
         model_uuid = None
         benchmark_data_type = None
         target_device_name = target_device.device_name if target_device is not None else None
@@ -112,12 +124,18 @@ class ModelBenchmarker(LaunchX):
             if target_software_version is None:
                 target_software_version = model.software_version
         if target_device_name is None:
-            raise NotImplementedError("There is no avaliable function for given paremeter. Please specify target device.")
+            raise NotImplementedError("There is no avaliable function for given paremeter. Please specify the target device.")
 
         model_benchmark: BenchmarkTask = self.client.benchmark_model(model_uuid=model_uuid,
                                                                       target_device=target_device_name,
                                                                       data_type=benchmark_data_type,
                                                                       software_version=target_software_version)
+        model_benchmark = self.get_benchmark_task(benchmark_task=model_benchmark)
+
+        if wait_until_done:
+            while model_benchmark.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
+                model_benchmark = self.get_benchmark_task(benchmark_task=model_benchmark)
+                time.sleep(1)
 
         return model_benchmark
     
@@ -129,6 +147,6 @@ class ModelBenchmarker(LaunchX):
         elif type(benchmark_task) is BenchmarkTask:
             task_uuid = benchmark_task.benchmark_task_uuid
         else:
-            raise NotImplementedError("There is no avaliable function for given paremeter. benchmark_task should be uuid string or ModelBenchmark object.")
+            raise NotImplementedError("There is no available function for the given parameter. The 'benchmark_task' should be a UUID string or a ModelBenchmark object.")
 
         return self.client.get_benchmark(benchmark_task_uuid=task_uuid)
