@@ -8,7 +8,7 @@ from netspresso.launchx.schemas import LaunchXFunction, ModelFramework, TaskStat
 from netspresso.launchx.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
 from netspresso.launchx.client import LaunchXAPIClient
 
-class LaunchXClient(BaseClient):
+class LaunchX(BaseClient):
     target_function: LaunchXFunction = LaunchXFunction.GENERAL
 
     def __init__(self, *args, **kwargs):
@@ -20,8 +20,8 @@ class LaunchXClient(BaseClient):
             user_session (SessionClient): The SessionClient object.
 
         Available constructors: 
-            LaunchXClient(email='USER_EMAIL',password='PASSWORD')
-            LaunchXClient(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
+            LaunchX(email='USER_EMAIL',password='PASSWORD')
+            LaunchX(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
         super().__init__(*args, **kwargs)
         self.client = LaunchXAPIClient(user_sessoin=self.user_session)
@@ -34,7 +34,7 @@ class LaunchXClient(BaseClient):
     def download_model(self, model: Union[str, Model]):
         pass
 
-class LaunchXConverter(LaunchXClient):
+class ModelConverter(LaunchX):
     target_function: LaunchXFunction = LaunchXFunction.CONVERT
 
     @validate_token
@@ -87,7 +87,7 @@ class LaunchXConverter(LaunchXClient):
         request.urlretrieve(download_url, dst)
         logger.info(f"Download model successful. Local Path: {dst}")
 
-class LaunchXBenchmarker(LaunchXClient):
+class ModelBenchmarker(LaunchX):
     target_function: LaunchXFunction = LaunchXFunction.BENCHMARK
     @validate_token
     def benchmark_model(self, model: Union[str, Model, ConversionTask],
