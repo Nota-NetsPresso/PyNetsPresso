@@ -2,7 +2,7 @@ import requests, json
 from functools import wraps
 from loguru import logger
 
-from netspresso.schemas.auth import LoginRequest, RefreshTokenRequest, LoginResponse, RefreshTokenResponse, UserResponese
+from netspresso.schemas.auth import LoginRequest, RefreshTokenRequest, LoginResponse, RefreshTokenResponse, UserResponse
 from netspresso.client.utils.common import get_headers
 from netspresso.client.utils.token import check_jwt_exp
 from netspresso.client.config import Config, EndPoint
@@ -62,7 +62,7 @@ class SessionClient:
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
-                user_info = UserResponese(**response_body)
+                user_info = UserResponse(**response_body)
                 self.user_id = user_info.user_id
                 logger.info("successfully got user information")
             else:
