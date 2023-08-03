@@ -37,6 +37,8 @@ class ModelFramework(StrEnumBase):
     OPENVINO = "openvino"
     TENSORFLOW_LITE = "tensorflow_lite"
     DRPAI = "drpai"
+    KERAS = "keras"
+    TENSORFLOW = "saved_model"
 
     @classmethod
     def create_literal(cls):
@@ -46,6 +48,8 @@ class ModelFramework(StrEnumBase):
             "openvino",
             "tensorflow_lite",
             "drpai",
+            "keras",
+            "saved_model",
         ]
     
 class DeviceName(StrEnumBase):
