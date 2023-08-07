@@ -1,10 +1,10 @@
 import json
 import requests
 
-from netspresso.compressor.client.schemas.auth import (
+from netspresso.schemas.auth import (
     CreditResponse,
     LoginResponse,
-    UserRespone,
+    UserResponse,
     RefreshTokenResponse,
 )
 from netspresso.compressor.client.schemas.compression import (
@@ -13,58 +13,25 @@ from netspresso.compressor.client.schemas.compression import (
     RecommendationResponse,
 )
 from netspresso.compressor.client.schemas.model import UploadModelRequest, ModelResponse, GetDownloadLinkResponse
-from netspresso.compressor.client.utils.common import get_files, get_headers
-from netspresso.compressor.client.utils.enum import Task, Framework, CompressionMethod, RecommendationMethod  # noqa
-from netspresso.compressor.client.config import Config
-
+from netspresso.client.utils.common import get_files, get_headers
+from netspresso.compressor.client.utils.enum import (
+    Task,
+    Framework,
+    CompressionMethod,
+    RecommendationMethod,
+    Policy,
+    LayerNorm,
+    GroupPolicy,
+)  # noqa
+from netspresso.client.config import Config, EndPoint
 
 class ModelCompressorAPIClient:
     def __init__(self):
-        self.config = Config()
-        self.ip = self.config.IP
+        self.config = Config(EndPoint.COMPRESSOR)
+        self.host = self.config.HOST
         self.port = self.config.PORT
-        self.prefix = self.config.API_PREFIX
-        self.url = f"{self.ip}:{self.port}{self.prefix}"
-
-    def login(self, data) -> LoginResponse:
-        url = f"{self.url}/login"
-        response = requests.post(url, data=data.dict(), headers=get_headers())
-        response_body = json.loads(response.text)
-
-        if response.status_code == 200 or response.status_code == 201:
-            return LoginResponse(**response_body)
-        else:
-            raise Exception(response_body["detail"])
-
-    def refresh_token(self, data) -> RefreshTokenResponse:
-        url = f"{self.url}/token"
-        response = requests.post(url, data=data.json(), headers=get_headers(json_type=True))
-        response_body = json.loads(response.text)
-
-        if response.status_code == 200 or response.status_code == 201:
-            return RefreshTokenResponse(**response_body)
-        else:
-            raise Exception(response_body["detail"])
-
-    def get_credit(self, access_token) -> CreditResponse:
-        url = f"{self.url}/credit"
-        response = requests.get(url, headers=get_headers(access_token))
-        response_body = json.loads(response.text)
-
-        if response.status_code == 200 or response.status_code == 201:
-            return CreditResponse(**response_body)
-        else:
-            raise Exception(response_body["detail"])
-
-    def get_user(self, access_token) -> UserRespone:
-        url = f"{self.url}/user"
-        response = requests.get(url, headers=get_headers(access_token))
-        response_body = json.loads(response.text)
-
-        if response.status_code == 200 or response.status_code == 201:
-            return UserRespone(**response_body)
-        else:
-            raise Exception(response_body["detail"])
+        self.prefix = self.config.URI_PREFIX
+        self.url = f"{self.host}:{self.port}{self.prefix}"
 
     def upload_model(self, data: UploadModelRequest, access_token) -> ModelResponse:
         url = f"{self.url}/models"

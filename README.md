@@ -2,11 +2,44 @@
   <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FNota-NetsPresso%2Fnetspresso-python&count_bg=%2323E7E7E7&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
 </div>
 
-# NetsPresso Python Package
+# PyNetsPresso
 
 <div align="center">
     <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/pynp_main.png"/>
 </div>
+</br>
+
+<div align="center">
+    <a href="https://github.com/Nota-NetsPresso/yolox_nota"> YOLOX </a>
+    | <a href="https://github.com/Nota-NetsPresso/ultralytics_nota"> YOLOv8 </a> 
+    | <a href="https://github.com/Nota-NetsPresso/yolov5_nota"> YOLOv5 </a> 
+    | <a href="https://github.com/Nota-NetsPresso/PIDNet_nota"> PIDNet </a>     
+    | <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota"> PyTorch-CIFAR-Models</a>
+</div>
+</br>
+
+<div align="center">
+    <p align="center">
+        <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue" />
+        <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.5.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
+        <a href="https://pytorch.org/" target="_blank"><img src="https://img.shields.io/badge/PyTorch-1.11.x ~ 1.13.x.-EE4C2C?style=flat&logo=pytorch&logoColor=#EE4C2C"/></a>
+        <br>
+        <a href="https://netspresso.ai?utm_source=git&utm_medium=text_np&utm_campaign=py_launch"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
+        <a href="https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo"><img src="https://img.shields.io/badge/ModelZoo-Open in Github-181717?style=flat&logo=github&logoColor=#181717"/></a>
+        <a href="https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo/tree/main/best_practices"><img src="https://img.shields.io/badge/Best Practice-Open in Colab-F9AB00?style=flat&logo=googlecolab&logoColor=#F9AB00"/></a>
+    </p>
+</div>
+</br>
+
+Use **PyNetsPresso** for a seamless model optimization process. 
+PyNetsPresso resolves AI-related constraints in business use cases and enables cost-efficiency and enhanced performance by removing the requirement for high-spec servers and network connectivity and preventing high latency and personal data breaches.
+
+The **PyNetsPresso** is a python interface with the NetsPresso web application and REST API.
+
+Easily compress various models with our resources. Please browse the [Docs] for details, and join our [Discussion Forum] for providing feedback or sharing your use cases.
+
+To get started with the PyNetsPresso, you will need to sign up either at [NetsPresso] or [PyNetsPresso].</a>
+</br>
 </br>
 
 <div align="center">
@@ -33,27 +66,61 @@
 </br>
 
 <div align="center">
-    <p align="center">
-        <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue" />
-        <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.5.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
-        <a href="https://pytorch.org/" target="_blank"><img src="https://img.shields.io/badge/PyTorch-1.11.x ~ 1.13.x.-EE4C2C?style=flat&logo=pytorch&logoColor=#EE4C2C"/></a>
-    </p>
+    <img width="100%" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/workflow_banner.png">
 </div>
 </br>
 
-Use **PyNetsPresso** for a seamless model optimization process. 
-PyNetsPresso resolves AI-related constraints in business use cases and enables cost-efficiency and enhanced performance by removing the requirement for high-spec servers and network connectivity and preventing high latency and personal data breaches.
-
-The **NetsPresso Python package** is a python interface with the NetsPresso web application and REST API.
-
-Easily compress various models with our resources. Please browse the [Docs] for details, and join our [Discussion Forum] for providing feedback or sharing your use cases.
-
-To get started with the NetsPresso Python package, you will need to sign up either at [NetsPresso] or [PyNetsPresso].</a>
+<div width="9%" align="center">
+    <table width="90%" align="center">
+        <tr>
+            <td width="30%" align="center">Steps</td>
+            <td width="30%" align="center">Types</td>
+            <td width="40%" align="center">Description</td>
+        </tr>
+        <tr>
+            <td width="30%" align="center">
+                Train
+                <br>
+                (Model Zoo)
+            </td>
+            <td width="30%" align="center">
+                <details open>
+                    <summary>Image Classification</summary>
+                    <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota">PyTorch-CIFAR-Models</a>
+                </details>
+                <details open>
+                    <summary>Object Detection</summary>
+                    <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a> <br>
+                    <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a>
+                </details>
+                <details open>
+                    <summary>Semantic Segmentation</summary>
+                    <a href="https://github.com/Nota-NetsPresso/PIDNet_nota">PIDNet</a>
+                </details>
+                <details open>
+                    <summary>Pose Estimation</summary>
+                    <a href="https://github.com/Nota-NetsPresso/ultralytics_nota">YOLOv8</a>
+                </details>
+            </td>
+            <td width="40%" align="center">Build and train models.</td>
+        </tr>
+        <tr>
+            <td width="30%" align="center">Compress</td>
+            <td width="30%" align="center">np.compressor</td>
+            <td width="40%" align="center">Compress and optimize the user’s pre-trained model.</td>
+        </tr>
+        <tr>
+            <td width="30%" align="center">Convert</td>
+            <td width="30%" align="center">np.launcher</td>
+            <td width="40%" align="center">Convert AI models to run efficiently on the desired hardware and provide easy installation for seamless usage of the converted AI models.</td>
+        </tr>
+    </table>
+</div>
 
 
 ## Installation
 
-There are two ways you can install the NetsPresso Python Package: using pip or manually through our project GitHub repository.
+There are two ways you can install the PyNetsPresso: using pip or manually through our project GitHub repository.
 
 To install this package, please use Python 3.8 or higher.
 
@@ -64,20 +131,23 @@ pip install netspresso
 
 From Github
 ```bash
-git clone https://github.com/Nota-NetsPresso/netspresso-python.git
+git clone https://github.com/nota-netspresso/pynetspresso.git
 pip install -e .
 ```
+
 
 ## Quick Start
 
 ### Login
 
-To use the NetsPresso Python package, please enter the email and password registered in NetsPresso.
+To use the PyNetsPresso, please enter the email and password registered in NetsPresso.
 
 ```python
+from netspresso.client import SessionClient
 from netspresso.compressor import ModelCompressor
 
-compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+session = SessionClient(email='YOUR_EMAIL', password='YOUR_PASSWORD')
+compressor = ModelCompressor(user_session=session)
 ```
 
 ### Upload Model
@@ -113,6 +183,49 @@ compressed_model = compressor.automatic_compression(
 )
 ```
 
+### Convert Model and Benchmark the Converted Model
+Convert an ONNX model into a TensorRT model, and benchmark the TensorRT model on the Jetson Nano.
+
+```python
+from loguru import logger
+from netspresso.launcher import ModelConverter, ModelBenchmarker
+from netspresso.launcher.utils.devices import filter_devices_with_device_name
+from netspresso.launcher.schemas import ModelFramework, TaskStatus, DeviceName
+from netspresso.launcher.schemas.model import BenchmarkTask, ConversionTask, Model, TargetDevice
+
+converter = ModelConverter(user_session=session)
+
+model: Model = converter.upload_model("./examples/sample_models/test.onnx")
+
+available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.JETSON_NANO,
+                                                                        devices=model.available_devices)
+target_device = available_devices[0] # Jetson Nano - Jetpack 4.6
+conversion_task: ConversionTask = converter.convert_model(model=model,
+                                                            input_shape=model.input_shape,
+                                                            target_framework=ModelFramework.TENSORRT,
+                                                            target_device=available_devices[0],
+                                                            wait_until_done=True)
+
+logger.info(conversion_task)
+
+CONVERTED_MODEL_PATH = "converted_model.trt"
+converter.download_converted_model(conversion_task, dst=CONVERTED_MODEL_PATH)
+
+
+benchmarker = ModelBenchmarker(user_session=session)
+benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
+benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
+                                                            target_device=target_device,
+                                                            wait_until_done=True)
+logger.info(f"model inference latency: {benchmark_task.latency} ms")
+logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} ms")
+logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} ms")
+```
+
+## NetsPresso Model Compressor Best Practice
+
+If you want to experience Model Compressor online without any installation, please refer to the [NetsPresso-Model-Compressor-ModelZoo] repo that runs on Google Colab.
+
 ## Contact
 
 Join our [Discussion Forum] for providing feedback or sharing your use cases, and if you want to talk more with Nota, please contact us [here].</br>
@@ -125,3 +238,4 @@ Or you can also do it via email([contact@nota.ai]) or phone(+82 2-555-8659)!
 [PyNetsPresso]: https://py.netspresso.ai/?utm_source=git_comp&utm_medium=text_py&utm_campaign=py_launch
 [here]: https://www.nota.ai/contact-us
 [contact@nota.ai]: mailto:contact@nota.ai
+[NetsPresso-Model-Compressor-ModelZoo]: https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo
