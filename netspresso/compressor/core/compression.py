@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Any, List
 
+from netspresso.compressor.client.utils.enum import Policy, LayerNorm, GroupPolicy
+
 
 @dataclass
 class AvailableLayer:
@@ -20,6 +22,23 @@ class AvailableLayer:
 
 
 @dataclass
+class Options:
+    """Represents an options for compression.
+
+    Attributes:
+        reshape_channel_axis (int): 
+        policy (str): 
+        layer_norm (str): 
+        group_policy (str): 
+    """
+
+    reshape_channel_axis: int = -1
+    policy: Policy = Policy.AVERAGE
+    layer_norm: LayerNorm = LayerNorm.STANDARD_SCORE
+    group_policy: GroupPolicy = GroupPolicy.AVERAGE
+
+
+@dataclass
 class CompressionInfo:
     """Represents compression information for a model.
 
@@ -33,6 +52,8 @@ class CompressionInfo:
                 - name (str): The name of the layer.
                 - values (List[Any]): The compression parameters for the layer.
                 - channels (List[int]): The channel information for the layer.
+        
+        options(Options, optional): The options for pruning method.
 
         original_model_id (str): The ID of the original model.
     """
@@ -42,6 +63,7 @@ class CompressionInfo:
     compression_method: str = ""
     available_layers: List[AvailableLayer] = field(default_factory=list)
     original_model_id: str = ""
+    options: Options = field(default_factory=Options)
 
     def set_available_layers(self, available_layers):
         self.available_layers = [AvailableLayer(**available_layer.dict()) for available_layer in available_layers]

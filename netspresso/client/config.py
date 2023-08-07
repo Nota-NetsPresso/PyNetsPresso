@@ -25,7 +25,6 @@ class EndPoint(str, Enum):
     GENRAL = "general"
     COMPRESSOR = "compressor"
     LAUNCHER = "launcher"
-
     @classmethod
     def create_literal(cls):
         return Literal[
