@@ -1,7 +1,7 @@
 from os.path import basename
 
 from netspresso import __version__
-from netspresso.compressor.client.utils.system import ENV_STR
+from netspresso.utils.system import ENV_STR
 
 
 def get_headers(access_token=None, json_type=False):

@@ -8,14 +8,14 @@ class LoginRequest(BaseModel):
     password: str = Field(..., description="Password")
 
 
-class LoginResponse(BaseModel):
-    email: EmailStr = Field(..., description="Email")
-    username: str = Field(..., description="User Name")
-    user_id: UUID = Field(..., description="User ID")
+class SessionToken(BaseModel):
     access_token: str = Field(..., description="Access Token")
     refresh_token: str = Field(..., description="Refresh Token")
-    # session_id: UUID = Field(..., description="Session ID")
-    # current_time: str = Field(..., description="Current Time")
+
+class LoginResponse(BaseModel):
+    current_time: str = Field(..., description="Login Time")
+    region: str = Field(..., description="User Resion")
+    tokens: SessionToken = Field(default_factory=SessionToken, description="Session Token")
 
 
 class RefreshTokenRequest(BaseModel):
@@ -41,14 +41,16 @@ class Authorities(BaseModel):
     searcher: bool = Field(False, description="Searcher Authority")
     launcher: bool = Field(False, description="Launcher Authority")
 
-
-class UserRespone(BaseModel):
-    user_id: UUID = Field(..., description="User ID")
-    email: EmailStr = Field(..., description="Email")
-    username: str = Field(..., description="User Name")
+class UserDetailResponse(BaseModel):
     first_name: str = Field(..., description="First Name")
     last_name: str = Field(..., description="Last Name")
     company: str = Field(..., description="Company")
+
+class UserResponse(BaseModel):
+    user_id: str = Field(..., description="User ID")
+    email: EmailStr = Field(..., description="Email")
+    username: str = Field(..., description="User Name")
+    detail_data: UserDetailResponse = Field(..., description="User Detail")
     # credit: int = Field(..., description="Credit")
     # is_active: bool = Field(..., description="Active Status")
     # is_admin: bool = Field(..., description="Admin Status")

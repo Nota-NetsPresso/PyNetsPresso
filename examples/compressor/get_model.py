@@ -11,7 +11,7 @@ uploaded_models = compressor.get_uploaded_models()
 logger.info(uploaded_models)
 
 for uploaded_model in uploaded_models:
-    compressed_models = compressor.get_compressed_models(uploaded_model["model_id"])
+    compressed_models = compressor.get_compressed_models(uploaded_model.model_id)
     logger.info(compressed_models)
 
 models = compressor.get_models()

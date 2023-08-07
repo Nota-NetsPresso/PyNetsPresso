@@ -143,9 +143,11 @@ pip install -e .
 To use the PyNetsPresso, please enter the email and password registered in NetsPresso.
 
 ```python
+from netspresso.client import SessionClient
 from netspresso.compressor import ModelCompressor
 
-compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+session = SessionClient(email='YOUR_EMAIL', password='YOUR_PASSWORD')
+compressor = ModelCompressor(user_session=session)
 ```
 
 ### Upload Model
@@ -181,11 +183,48 @@ compressed_model = compressor.automatic_compression(
 )
 ```
 
+### Convert Model and Benchmark the Converted Model
+Convert an ONNX model into a TensorRT model, and benchmark the TensorRT model on the Jetson Nano.
+
+```python
+from loguru import logger
+from netspresso.launcher import ModelConverter, ModelBenchmarker
+from netspresso.launcher.utils.devices import filter_devices_with_device_name
+from netspresso.launcher.schemas import ModelFramework, TaskStatus, DeviceName
+from netspresso.launcher.schemas.model import BenchmarkTask, ConversionTask, Model, TargetDevice
+
+converter = ModelConverter(user_session=session)
+
+model: Model = converter.upload_model("./examples/sample_models/test.onnx")
+
+available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.JETSON_NANO,
+                                                                        devices=model.available_devices)
+target_device = available_devices[0] # Jetson Nano - Jetpack 4.6
+conversion_task: ConversionTask = converter.convert_model(model=model,
+                                                            input_shape=model.input_shape,
+                                                            target_framework=ModelFramework.TENSORRT,
+                                                            target_device=available_devices[0],
+                                                            wait_until_done=True)
+
+logger.info(conversion_task)
+
+CONVERTED_MODEL_PATH = "converted_model.trt"
+converter.download_converted_model(conversion_task, dst=CONVERTED_MODEL_PATH)
+
+
+benchmarker = ModelBenchmarker(user_session=session)
+benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
+benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
+                                                            target_device=target_device,
+                                                            wait_until_done=True)
+logger.info(f"model inference latency: {benchmark_task.latency} ms")
+logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} ms")
+logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} ms")
+```
 
 ## NetsPresso Model Compressor Best Practice
 
 If you want to experience Model Compressor online without any installation, please refer to the [NetsPresso-Model-Compressor-ModelZoo] repo that runs on Google Colab.
-
 
 ## Contact
 
