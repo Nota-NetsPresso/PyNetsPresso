@@ -13,7 +13,7 @@ from netspresso.compressor.client.schemas.compression import (
     RecommendationResponse,
 )
 from netspresso.compressor.client.schemas.model import UploadModelRequest, ModelResponse, GetDownloadLinkResponse
-from netspresso.utils.common import get_files, get_headers
+from netspresso.client.utils.common import get_files, get_headers
 from netspresso.compressor.client.utils.enum import (
     Task,
     Framework,

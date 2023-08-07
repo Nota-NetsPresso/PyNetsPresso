@@ -26,7 +26,7 @@ setup(
     url="https://github.com/Nota-NetsPresso/PyNP-python-package",
     install_requires=install_requires,
     packages=find_packages(exclude=("tests",)),
-    package_data={"netspresso.compressor.client": ["configs/*.ini"]},
+    package_data={"netspresso.client": ["configs/*.ini"]},
     python_requires=">=3.8",
     classifiers=[
         "Programming Language :: Python :: 3.8",
