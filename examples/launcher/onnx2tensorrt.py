@@ -10,16 +10,17 @@ from netspresso.launcher.schemas.model import BenchmarkTask, ConversionTask, Mod
 if __name__ == '__main__':
     EMAIL = "YOUR_EMAIL"
     PASSWORD = "YOUR_PASSWORD"
-    CONVERTED_MODEL_PATH = "converted_model.tflite"
+    CONVERTED_MODEL_PATH = "converted_model.trt"
     session = SessionClient(email=EMAIL, password=PASSWORD)
     converter = ModelConverter(user_session=session)
-    model: Model = converter.upload_model("./mobilenetv1.h5")
+    model: Model = converter.upload_model("./examples/sample_models/test.onnx")
 
-    available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
+    available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.JETSON_NANO,
                                                                             devices=model.available_devices)
+    target_device = available_devices[0] # Jetson Nano - Jetpack 4.6
     conversion_task: ConversionTask = converter.convert_model(model=model,
                                                               input_shape=model.input_shape,
-                                                              target_framework=ModelFramework.TENSORFLOW_LITE,
+                                                              target_framework=ModelFramework.TENSORRT,
                                                               target_device=available_devices[0],
                                                               wait_until_done=True)
     ########################
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     ########################
     # conversion_task: ConversionTask = converter.convert_model(model=model,
     #                                                           input_shape=model.input_shape,
-    #                                                           target_framework=ModelFramework.TENSORFLOW_LITE,
+    #                                                           target_framework=ModelFramework.TENSORRT,
     #                                                           target_device=available_devices[0],
     #                                                           wait_until_done=False)
 
@@ -45,17 +46,15 @@ if __name__ == '__main__':
     
     benchmarker = ModelBenchmarker(user_session=session)
     benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
-    benchmark_available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
-                                                                                      devices=benchmark_model.available_devices)
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
-                                                                target_device=benchmark_available_devices[0],
+                                                                target_device=target_device,
                                                                 wait_until_done=True)
     ########################
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
     # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
-    #                                                             target_device=benchmark_available_devices[0],
+    #                                                             target_device=target_device,
     #                                                             wait_until_done=False)
 
     # while benchmark_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
@@ -64,3 +63,5 @@ if __name__ == '__main__':
     #     time.sleep(1)
 
     logger.info(f"model inference latency: {benchmark_task.latency} ms")
+    logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} ms")
+    logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} ms")

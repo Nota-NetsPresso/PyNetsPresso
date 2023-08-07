@@ -37,7 +37,7 @@ class ModelFramework(StrEnumBase):
     OPENVINO = "openvino"
     TENSORFLOW_LITE = "tensorflow_lite"
     DRPAI = "drpai"
-    KERAS = "keras"
+    TENSORFLOW_KERAS = "keras"
     TENSORFLOW = "saved_model"
 
     @classmethod

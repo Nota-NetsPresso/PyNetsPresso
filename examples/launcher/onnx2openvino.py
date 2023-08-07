@@ -13,7 +13,7 @@ if __name__ == '__main__':
     CONVERTED_MODEL_PATH = "converted_model.zip"
     session = SessionClient(email=EMAIL, password=PASSWORD)
     converter = ModelConverter(user_session=session)
-    model: Model = converter.upload_model("./test.onnx")
+    model: Model = converter.upload_model("./examples/sample_models/test.onnx")
 
     available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.Intel_XEON_W_2233,
                                                                             devices=model.available_devices)
