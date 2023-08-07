@@ -6,7 +6,7 @@ with open("./netspresso/__init__.py", "r") as f:
     version = re.search(r'__version__\s*=\s*[\'"]([^\'"]*)[\'"]', content).group(1)
 
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="UTF8") as fh:
     long_description = fh.read()
 
 # we are using the packages in `requirements.txt` for now,
