@@ -8,7 +8,7 @@ compressor = ModelCompressor(email=EMAIL, password=PASSWORD)
 UPLOAD_MODEL_NAME = "test_h5"
 TASK = Task.IMAGE_CLASSIFICATION
 FRAMEWORK = Framework.TENSORFLOW_KERAS
-UPLOAD_MODEL_PATH = "./mobilenetv1.h5"
+UPLOAD_MODEL_PATH = "./examples/sample_models/mobilenetv1.h5"
 INPUT_SHAPES = [{"batch": 1, "channel": 3, "dimension": [32, 32]}]
 
 # Upload Model

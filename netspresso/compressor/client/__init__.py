@@ -14,7 +14,15 @@ from netspresso.compressor.client.schemas.compression import (
 )
 from netspresso.compressor.client.schemas.model import UploadModelRequest, ModelResponse, GetDownloadLinkResponse
 from netspresso.compressor.client.utils.common import get_files, get_headers
-from netspresso.compressor.client.utils.enum import Task, Framework, CompressionMethod, RecommendationMethod  # noqa
+from netspresso.compressor.client.utils.enum import (
+    Task,
+    Framework,
+    CompressionMethod,
+    RecommendationMethod,
+    Policy,
+    LayerNorm,
+    GroupPolicy,
+)  # noqa
 from netspresso.compressor.client.config import Config
 
 
