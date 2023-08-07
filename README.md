@@ -10,6 +10,15 @@
 </br>
 
 <div align="center">
+    <a href="https://github.com/Nota-NetsPresso/yolox_nota"> YOLOX </a>
+    | <a href="https://github.com/Nota-NetsPresso/ultralytics_nota"> YOLOv8 </a> 
+    | <a href="https://github.com/Nota-NetsPresso/yolov5_nota"> YOLOv5 </a> 
+    | <a href="https://github.com/Nota-NetsPresso/PIDNet_nota"> PIDNet </a>     
+    | <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota"> PyTorch-CIFAR-Models</a>
+</div>
+</br>
+
+<div align="center">
     <p align="center">
         <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue" />
         <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.5.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
@@ -102,9 +111,7 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
         </tr>
         <tr>
             <td width="30%" align="center">Convert</td>
-            <td width="30%" align="center">np.launcher 
-                <br>(to be released)
-            </td>
+            <td width="30%" align="center">np.launcher</td>
             <td width="40%" align="center">Convert AI models to run efficiently on the desired hardware and provide easy installation for seamless usage of the converted AI models.</td>
         </tr>
     </table>
