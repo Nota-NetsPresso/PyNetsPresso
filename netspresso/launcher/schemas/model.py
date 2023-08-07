@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, Field, validator
 
 from netspresso.launcher.schemas import DataType, DeviceName, TaskStatus, ModelFramework
@@ -16,7 +16,7 @@ class InputShape(BaseModel):
     channel: int
     input_size: str
 
-    @validator("batch", always=True)
+    @validator("batch", always=True, allow_reuse=True)
     def set_batch(cls, v, values, **kwargs):
         return v if v is not None else 1
 
@@ -44,7 +44,7 @@ class Model(BaseModel):
         filename (str): the file name of the model.
         input_shape (InputShape): the input shape of the model.
         data_type (DataType): the data_type of the model.
-        available_devices (list[TargetDevice]): avaliable devices for conversion or benchmark.
+        available_devices (List[TargetDevice]): avaliable devices for conversion or benchmark.
         model_uuid (str): the launcher model uuid.
         file_size (float): the size of the model.
     """
@@ -52,7 +52,7 @@ class Model(BaseModel):
     filename: str = Field(default=None)
     input_shape: InputShape = Field(default=None)
     data_type: DataType = Field(default=None)
-    available_devices: list[TargetDevice] = Field(default_factory=list)
+    available_devices: List[TargetDevice] = Field(default_factory=list)
     model_uuid: str = Field(default=None)
     file_size: float = Field(default=None)
 
