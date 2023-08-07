@@ -1,10 +1,10 @@
 import time
 from loguru import logger
 from netspresso.client import SessionClient
-from netspresso.launchx import ModelConverter, ModelBenchmarker
-from netspresso.launchx.utils.devices import filter_devices_with_device_name
-from netspresso.launchx.schemas import ModelFramework, TaskStatus, DeviceName
-from netspresso.launchx.schemas.model import BenchmarkTask, ConversionTask, Model, TargetDevice
+from netspresso.launcher import ModelConverter, ModelBenchmarker
+from netspresso.launcher.utils.devices import filter_devices_with_device_name
+from netspresso.launcher.schemas import ModelFramework, TaskStatus, DeviceName
+from netspresso.launcher.schemas.model import BenchmarkTask, ConversionTask, Model, TargetDevice
 
 
 if __name__ == '__main__':

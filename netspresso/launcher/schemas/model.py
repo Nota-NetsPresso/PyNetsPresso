@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, Field, validator
 
-from netspresso.launchx.schemas import DataType, DeviceName, TaskStatus, ModelFramework
+from netspresso.launcher.schemas import DataType, DeviceName, TaskStatus, ModelFramework
 
 class InputShape(BaseModel):
     """Represents the shape of an input tensor.

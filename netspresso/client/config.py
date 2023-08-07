@@ -24,14 +24,14 @@ class EnvironmentType(str, Enum):
 class EndPoint(str, Enum):
     GENRAL = "general"
     COMPRESSOR = "compressor"
-    LAUNCHX = "launchx"
+    LAUNCHER = "launcher"
 
     @classmethod
     def create_literal(cls):
         return Literal[
             "general",
             "compressor",
-            "lauchx"
+            "laucher"
         ]
     
 class EndPointProperty(str, Enum):

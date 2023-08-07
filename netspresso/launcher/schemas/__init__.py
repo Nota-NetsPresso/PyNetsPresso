@@ -5,7 +5,7 @@ class StrEnumBase(str, Enum):
     def __repr__(self) -> str:
         return str.__repr__(self.value)
 
-class LaunchXFunction(StrEnumBase):
+class LauncherFunction(StrEnumBase):
     GENERAL = "GENERAL"
     CONVERT = "CONVERT"
     BENCHMARK = "BENCHMARK"

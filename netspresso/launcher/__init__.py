@@ -4,12 +4,12 @@ from urllib import request
 import time
 
 from netspresso.client import BaseClient, validate_token
-from netspresso.launchx.schemas import LaunchXFunction, ModelFramework, TaskStatus, DataType
-from netspresso.launchx.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
-from netspresso.launchx.client import LaunchXAPIClient
+from netspresso.launcher.schemas import LauncherFunction, ModelFramework, TaskStatus, DataType
+from netspresso.launcher.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
+from netspresso.launcher.client import LauncherAPIClient
 
-class LaunchX(BaseClient):
-    target_function: LaunchXFunction = LaunchXFunction.GENERAL
+class Launcher(BaseClient):
+    target_function: LauncherFunction = LauncherFunction.GENERAL
 
     def __init__(self, email=None, password=None, user_session=None):
         """Initialize the Model Compressor.
@@ -20,11 +20,11 @@ class LaunchX(BaseClient):
             user_session (SessionClient): The SessionClient object.
 
         Available constructors: 
-            LaunchX(email='USER_EMAIL',password='PASSWORD')
-            LaunchX(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
+            Launcher(email='USER_EMAIL',password='PASSWORD')
+            Launcher(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
         super().__init__(email=email, password=password, user_session=user_session)
-        self.client = LaunchXAPIClient(user_sessoin=self.user_session)
+        self.client = LauncherAPIClient(user_sessoin=self.user_session)
 
     @validate_token
     def upload_model(self, model_file_path: str) -> Model:
@@ -34,8 +34,8 @@ class LaunchX(BaseClient):
     def download_model(self, model: Union[str, Model]):
         pass
 
-class ModelConverter(LaunchX):
-    target_function: LaunchXFunction = LaunchXFunction.CONVERT
+class ModelConverter(Launcher):
+    target_function: LauncherFunction = LauncherFunction.CONVERT
 
     @validate_token
     def convert_model(self, model: Union[str, Model],
@@ -98,8 +98,8 @@ class ModelConverter(LaunchX):
         request.urlretrieve(download_url, dst)
         logger.info(f"The file has been successfully downloaded at : {dst}")
 
-class ModelBenchmarker(LaunchX):
-    target_function: LaunchXFunction = LaunchXFunction.BENCHMARK
+class ModelBenchmarker(Launcher):
+    target_function: LauncherFunction = LauncherFunction.BENCHMARK
     @validate_token
     def benchmark_model(self, model: Union[str, Model, ConversionTask],
                         target_device: TargetDevice = None,

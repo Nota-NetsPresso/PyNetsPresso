@@ -3,20 +3,20 @@ import requests
 
 from netspresso.client.utils.common import get_files, get_headers
 from netspresso.client import Config, EndPoint, SessionClient
-from netspresso.launchx.schemas.model import Model, ModelBenchmarkRequest, BenchmarkTask, ModelConversionRequest, ConversionTask, InputShape
-from netspresso.launchx.schemas import LaunchXFunction, ModelFramework, DeviceName, DataType
+from netspresso.launcher.schemas.model import Model, ModelBenchmarkRequest, BenchmarkTask, ModelConversionRequest, ConversionTask, InputShape
+from netspresso.launcher.schemas import LauncherFunction, ModelFramework, DeviceName, DataType
 
 
-class LaunchXAPIClient:
+class LauncherAPIClient:
     def __init__(self, user_sessoin: SessionClient):
-        self.config = Config(EndPoint.LAUNCHX)
+        self.config = Config(EndPoint.LAUNCHER)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.prefix = self.config.URI_PREFIX
         self.user_session = user_sessoin
         self.url = f"{self.host}:{self.port}{self.prefix}"
 
-    def upload_model(self, model_file_path: str, target_function: LaunchXFunction):
+    def upload_model(self, model_file_path: str, target_function: LauncherFunction):
         url = f"{self.url}/{target_function.value.lower()}/upload_model"
         files = get_files(model_file_path)
         # files = {"file": open(model_file_path, "rb")}
