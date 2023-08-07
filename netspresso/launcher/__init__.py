@@ -28,11 +28,19 @@ class Launcher(BaseClient):
 
     @validate_token
     def upload_model(self, model_file_path: str) -> Model:
+        """Upload a model for launcher.
+
+        Args:
+            model_file_path (str): The file path of the model.
+
+        Raises:
+            e: If an error occurs while uploading the model.
+
+        Returns:
+            Model: Uploaded launcher model object.
+        """
         return self.client.upload_model(model_file_path=model_file_path,
                                         target_function=self.__class__.target_function)
-    @validate_token
-    def download_model(self, model: Union[str, Model]):
-        pass
 
 class ModelConverter(Launcher):
     target_function: LauncherFunction = LauncherFunction.CONVERT
@@ -43,6 +51,21 @@ class ModelConverter(Launcher):
                       target_framework: Union[str, ModelFramework],
                       target_device: TargetDevice,
                       wait_until_done: bool = True) -> ConversionTask:
+        """Convert a model into the type the specific framework.
+
+        Args:
+            model (str): The uuid of the model or Launcher Model Object.
+            input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
+            target_framework (ModelFramework | str): the target framework name.
+            target_device (TargetDevice): target device.
+            wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
+
+        Raises:
+            e: If an error occurs while converting the model.
+
+        Returns:
+            ConversionTask: model conversion task object.
+        """
         model_uuid = model
         if type(model) is Model:
             model_uuid = model.model_uuid
@@ -71,6 +94,17 @@ class ModelConverter(Launcher):
 
     @validate_token
     def get_conversion_task(self, conversion_task: Union[str, ConversionTask]) -> ConversionTask:
+        """Get the conversion task information with given conversion task or conversion task uuid.
+
+        Args:
+            conversion_task (ConversionTask | str): Launcher Model Object or the uuid of the conversion task.
+
+        Raises:
+            e: If an error occurs while getting the conversion task information.
+
+        Returns:
+            ConversionTask: model conversion task object.
+        """
         conversion_task_uuid = None
         if type(conversion_task) is str:
             conversion_task_uuid = conversion_task
@@ -82,6 +116,17 @@ class ModelConverter(Launcher):
 
     @validate_token
     def download_converted_model(self, conversion_task: Union[str, ConversionTask], dst: str):
+        """Download the converted model with given conversion task or conversion task uuid.
+
+        Args:
+            conversion_task (ConversionTask | str): Launcher Model Object or the uuid of the conversion task.
+
+        Raises:
+            e: If an error occurs while getting the conversion task information.
+
+        Returns:
+            ConversionTask: model conversion task object.
+        """
         conversion_task_uuid = None
         if type(conversion_task) is str:
             conversion_task_uuid = conversion_task
@@ -101,10 +146,24 @@ class ModelConverter(Launcher):
 class ModelBenchmarker(Launcher):
     target_function: LauncherFunction = LauncherFunction.BENCHMARK
     @validate_token
-    def benchmark_model(self, model: Union[str, Model, ConversionTask],
+    def benchmark_model(self, model: Union[ConversionTask,  Model, str],
                         target_device: TargetDevice = None,
                         data_type: DataType = DataType.FP16,
                         wait_until_done: bool = True) -> BenchmarkTask:
+        """Benchmark given model on the specified device.
+
+        Args:
+            model (ConversionTask | Model | str): The conversion task object, Launcher Model Object or the uuid of the model.
+            target_device (TargetDevice): target device.
+            data_type (DataType): data type of the model.
+            wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
+
+        Raises:
+            e: If an error occurs while benchmarking of the model.
+
+        Returns:
+            BenchmarkTask: model benchmark task object.
+        """
         model_uuid = None
         benchmark_data_type = None
         target_device_name = target_device.device_name if target_device is not None else None
@@ -141,6 +200,17 @@ class ModelBenchmarker(Launcher):
     
     @validate_token
     def get_benchmark_task(self, benchmark_task: Union[str, BenchmarkTask]) -> BenchmarkTask:
+        """Get the benchmark task information with given benchmark task or benchmark task uuid.
+
+        Args:
+            benchmark_task (BenchmarkTask | str): Launcher Benchmark Object or the uuid of the benchmark task.
+
+        Raises:
+            e: If an error occurs while getting the benchmark task information.
+
+        Returns:
+            BenchmarkTask: model benchmark task object.
+        """
         task_uuid = None
         if type(benchmark_task) is str:
             task_uuid = benchmark_task
