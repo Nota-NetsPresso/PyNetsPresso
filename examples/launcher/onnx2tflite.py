@@ -1,7 +1,6 @@
 import time
 from loguru import logger
 from typing import List
-from typing import List
 from netspresso.client import SessionClient
 from netspresso.launcher import ModelConverter, ModelBenchmarker
 from netspresso.launcher.utils.devices import filter_devices_with_device_name
@@ -17,7 +16,7 @@ if __name__ == '__main__':
     converter = ModelConverter(user_session=session)
     model: Model = converter.upload_model("./examples/sample_models/test.onnx")
 
-    available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
+    available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
                                                                             devices=model.available_devices)
     
     conversion_task: ConversionTask = converter.convert_model(model=model,

@@ -1,5 +1,6 @@
 import time
 from loguru import logger
+from typing import List
 from netspresso.client import SessionClient
 from netspresso.launcher import ModelConverter, ModelBenchmarker
 from netspresso.launcher.utils.devices import filter_devices_with_device_name
@@ -15,7 +16,7 @@ if __name__ == '__main__':
     converter = ModelConverter(user_session=session)
     model: Model = converter.upload_model("./examples/sample_models/mobilenetv1.h5")
 
-    available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
+    available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
                                                                             devices=model.available_devices)
     conversion_task: ConversionTask = converter.convert_model(model=model,
                                                               input_shape=model.input_shape,
@@ -45,7 +46,7 @@ if __name__ == '__main__':
     
     benchmarker = ModelBenchmarker(user_session=session)
     benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
-    benchmark_available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
+    benchmark_available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
                                                                                       devices=benchmark_model.available_devices)
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
                                                                 target_device=benchmark_available_devices[0],
