@@ -1,5 +1,6 @@
 import time
 from loguru import logger
+from typing import List
 from netspresso.client import SessionClient
 from netspresso.launcher import ModelConverter, ModelBenchmarker
 from netspresso.launcher.utils.devices import filter_devices_with_device_name
@@ -15,7 +16,7 @@ if __name__ == '__main__':
     converter = ModelConverter(user_session=session)
     model: Model = converter.upload_model("./examples/sample_models/test.onnx")
 
-    available_devices: list[TargetDevice] = filter_devices_with_device_name(name=DeviceName.JETSON_NANO,
+    available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.JETSON_NANO,
                                                                             devices=model.available_devices)
     target_device = available_devices[0] # Jetson Nano - Jetpack 4.6
     conversion_task: ConversionTask = converter.convert_model(model=model,
