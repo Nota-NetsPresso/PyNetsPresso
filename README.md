@@ -232,7 +232,7 @@ Join our [Discussion Forum] for providing feedback or sharing your use cases, an
 Or you can also do it via email([contact@nota.ai]) or phone(+82 2-555-8659)!
 
 
-[Docs]: https://nota-netspresso.github.io/PyNP-python-package-docs/build/html/index.html
+[Docs]: https://nota-netspresso.github.io/PyNetsPresso-docs
 [Discussion Forum]: https://github.com/orgs/Nota-NetsPresso/discussions
 [NetsPresso]: https://netspresso.ai?utm_source=git_comp&utm_medium=text_np&utm_campaign=py_launch
 [PyNetsPresso]: https://py.netspresso.ai/?utm_source=git_comp&utm_medium=text_py&utm_campaign=py_launch
