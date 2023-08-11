@@ -132,6 +132,7 @@ pip install netspresso
 From Github
 ```bash
 git clone https://github.com/nota-netspresso/pynetspresso.git
+cd pynetspresso
 pip install -e .
 ```
 
