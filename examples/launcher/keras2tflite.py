@@ -15,6 +15,20 @@ if __name__ == '__main__':
     session = SessionClient(email=EMAIL, password=PASSWORD)
     converter = ModelConverter(user_session=session)
     model: Model = converter.upload_model("./examples/sample_models/mobilenetv1.h5")
+    
+    ###
+    # Available Target Frameworks for Conversion with Keras Models
+    #
+    # ModelFramework.TENSORFLOW_LITE
+    #
+
+    ###
+    # Available Devices for ModelFramework.TENSORFLOW_LITE (target_framework)
+    # DeviceName.RASPBERRY_PI_4B
+    # DeviceName.RASPBERRY_PI_3B_PLUS
+    # DeviceName.RASPBERRY_PI_ZERO_W
+    # DeviceName.RASPBERRY_PI_ZERO_2W
+    #
 
     available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
                                                                             devices=model.available_devices)
@@ -43,7 +57,14 @@ if __name__ == '__main__':
     logger.info(conversion_task)
     converter.download_converted_model(conversion_task, dst=CONVERTED_MODEL_PATH)
 
-    
+    ###
+    # Benchmark available Devices with TFLite models(ModelFramework.TENSORFLOW_LITE)
+    # DeviceName.RASPBERRY_PI_4B
+    # DeviceName.RASPBERRY_PI_3B_PLUS
+    # DeviceName.RASPBERRY_PI_ZERO_W
+    # DeviceName.RASPBERRY_PI_ZERO_2W
+    #
+
     benchmarker = ModelBenchmarker(user_session=session)
     benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
     benchmark_available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,

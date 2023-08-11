@@ -16,6 +16,23 @@ if __name__ == '__main__':
     converter = ModelConverter(user_session=session)
     model: Model = converter.upload_model("./examples/sample_models/test.onnx")
 
+    ###
+    # Available Target Frameworks for Conversion with ONNX Models
+    #
+    # ModelFramework.TENSORRT <-- For NVIDIA Devices
+    # ModelFramework.OPENVINO <-- For Intel CPUs
+    # ModelFramework.TENSORFLOW_LITE <-- For the devices like Raspberry Pi devices
+    # ModelFramework.DRPAI <-- For Renesas Devices like RZ/V2M, RZ/V2L
+    #
+
+    ###
+    # Available Devices for ModelFramework.TENSORFLOW_LITE (target_framework)
+    # DeviceName.RASPBERRY_PI_4B
+    # DeviceName.RASPBERRY_PI_3B_PLUS
+    # DeviceName.RASPBERRY_PI_ZERO_W
+    # DeviceName.RASPBERRY_PI_ZERO_2W
+    #
+
     available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
                                                                             devices=model.available_devices)
     
@@ -46,6 +63,15 @@ if __name__ == '__main__':
     
     benchmarker = ModelBenchmarker(user_session=session)
     benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
+
+    ###
+    # Benchmark available Devices with TFLite models(ModelFramework.TENSORFLOW_LITE)
+    # DeviceName.RASPBERRY_PI_4B
+    # DeviceName.RASPBERRY_PI_3B_PLUS
+    # DeviceName.RASPBERRY_PI_ZERO_W
+    # DeviceName.RASPBERRY_PI_ZERO_2W
+    #
+
     benchmark_available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
                                                                                       devices=benchmark_model.available_devices)
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,

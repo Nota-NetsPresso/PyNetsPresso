@@ -16,9 +16,24 @@ if __name__ == '__main__':
     converter = ModelConverter(user_session=session)
     model: Model = converter.upload_model("./examples/sample_models/test.onnx")
 
+    ###
+    # Available Target Frameworks for Conversion with ONNX Models
+    #
+    # ModelFramework.TENSORRT <-- For NVIDIA Devices
+    # ModelFramework.OPENVINO <-- For Intel CPUs
+    # ModelFramework.TENSORFLOW_LITE <-- For the devices like Raspberry Pi devices
+    # ModelFramework.DRPAI <-- For Renesas Devices like RZ/V2M, RZ/V2L
+    #
+
+    ###
+    # Available Devices for ModelFramework.OPENVINO (target_framework)
+    #
+    # DeviceName.Intel_XEON_W_2233
+    #
+
     available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.Intel_XEON_W_2233,
                                                                             devices=model.available_devices)
-    target_device = available_devices[0] # Jetson Nano - Jetpack 4.6
+    target_device = available_devices[0]
     conversion_task: ConversionTask = converter.convert_model(model=model,
                                                               input_shape=model.input_shape,
                                                               target_framework=ModelFramework.OPENVINO,
