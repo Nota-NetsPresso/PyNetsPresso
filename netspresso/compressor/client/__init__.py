@@ -17,6 +17,8 @@ from netspresso.client.utils.common import get_files, get_headers
 from netspresso.compressor.client.utils.enum import (
     Task,
     Framework,
+    Extension,
+    OriginFrom,
     CompressionMethod,
     RecommendationMethod,
     Policy,

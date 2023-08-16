@@ -7,6 +7,8 @@ from netspresso.compressor.client import (
     ModelCompressorAPIClient,
     Task,
     Framework,
+    Extension,
+    OriginFrom,
     CompressionMethod,
     RecommendationMethod,
     Policy,
@@ -78,7 +80,7 @@ class ModelCompressor(BaseClient):
             model_info = self.client.upload_model(data=data, access_token=self.user_session.access_token)
             model = self.model_factory.create_model(model_info=model_info)
 
-            logger.info(f"Upload model successful. Model ID: {model.model_id}")
+            logger.info(f"Upload model successfully. Model ID: {model.model_id}")
 
             return model
 
@@ -112,7 +114,7 @@ class ModelCompressor(BaseClient):
                     )
 
                 models.append(model_collection)
-            logger.info("Get model list successful.")
+            logger.info("Get model list successfully.")
 
             return models
 
@@ -139,7 +141,7 @@ class ModelCompressor(BaseClient):
                 for parent_model_info in parent_models
                 if parent_model_info.origin_from == "custom"
             ]
-            logger.info("Get uploaded model list successful.")
+            logger.info("Get uploaded model list successfully.")
 
             return uploaded_models
 
@@ -168,7 +170,7 @@ class ModelCompressor(BaseClient):
                 self.model_factory.create_compressed_model(model_info=children_model_info)
                 for children_model_info in children_models
             ]
-            logger.info("Get compressed model list successful.")
+            logger.info("Get compressed model list successfully.")
 
             return compressed_models
 
@@ -198,7 +200,7 @@ class ModelCompressor(BaseClient):
                 model = self.model_factory.create_compressed_model(model_info=model_info)
             else:
                 model = self.model_factory.create_model(model_info=model_info)
-            logger.info("Get model successful.")
+            logger.info("Get model successfully.")
 
             return model
 
@@ -222,7 +224,7 @@ class ModelCompressor(BaseClient):
             logger.info("Downloading model...")
             download_link = self.client.get_download_model_link(model_id=model_id, access_token=self.user_session.access_token)
             request.urlretrieve(download_link.url, local_path)
-            logger.info(f"Download model successful. Local Path: {local_path}")
+            logger.info(f"Download model successfully. Local Path: {local_path}")
 
         except Exception as e:
             logger.error(f"Download model failed. Error: {e}")
@@ -251,11 +253,11 @@ class ModelCompressor(BaseClient):
                 else:
                     logger.info("The compressed model for that model will also be deleted.")
                     self.client.delete_model(model_id=model_id, access_token=self.user_session.access_token)
-                    logger.info("Delete model successful.")
+                    logger.info("Delete model successfully.")
             else:
                 logger.info("The model will be deleted.")
                 self.client.delete_model(model_id=model_id, access_token=self.user_session.access_token)
-                logger.info("Delete model successful.")
+                logger.info("Delete model successfully.")
 
         except Exception as e:
             logger.error(f"Delete model failed. Error: {e}")
@@ -286,7 +288,7 @@ class ModelCompressor(BaseClient):
                 original_model_id=model_id, compression_method=compression_method, options=options.dict()
             )
             compression_info.set_available_layers(response.available_layers)
-            logger.info("Select compression method successful.")
+            logger.info("Select compression method successfully.")
 
             return compression_info
 
@@ -318,7 +320,7 @@ class ModelCompressor(BaseClient):
                 compression_method=compression_info.compression_method,
             )
             compression_info.set_available_layers(compression_info.compression_method)
-            logger.info("Get compression successful.")
+            logger.info("Get compression successfully.")
 
             return compression_info
 
@@ -341,7 +343,7 @@ class ModelCompressor(BaseClient):
             logger.info(f"Uploading dataset...")
             data = UploadDatasetRequest(model_id=model_id, file_path=dataset_path)
             self.client.upload_dataset(data=data, access_token=self.user_session.access_token)
-            logger.info(f"Upload dataset successful.")
+            logger.info(f"Upload dataset successfully.")
 
         except Exception as e:
             logger.error(f"Upload dataset failed. Error: {e}")
@@ -403,7 +405,7 @@ class ModelCompressor(BaseClient):
             self.client.compress_model(data=data, access_token=self.user_session.access_token)
             self.download_model(model_id=compression_info.new_model_id, local_path=output_path)
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
-            logger.info(f"Compress model successful. Compressed Model ID: {compressed_model.model_id}")
+            logger.info(f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}")
             logger.info("50 credits have been consumed.")
 
             return compressed_model
@@ -500,7 +502,7 @@ class ModelCompressor(BaseClient):
             self.client.compress_model(data=data, access_token=self.user_session.access_token)
             self.download_model(model_id=compression_info.new_model_id, local_path=output_path)
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
-            logger.info(f"Recommendation compression successful. Compressed Model ID: {compressed_model.model_id}")
+            logger.info(f"Recommendation compression successfully. Compressed Model ID: {compressed_model.model_id}")
             logger.info("50 credits have been consumed.")
 
             return compressed_model
@@ -539,7 +541,7 @@ class ModelCompressor(BaseClient):
             model_info = self.client.auto_compression(data=data, access_token=self.user_session.access_token)
             self.download_model(model_id=model_info.model_id, local_path=output_path)
             compressed_model = self.model_factory.create_compressed_model(model_info=model_info)
-            logger.info(f"Automatic compression successful. Compressed Model ID: {compressed_model.model_id}")
+            logger.info(f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}")
             logger.info("25 credits have been consumed.")
 
             return compressed_model
