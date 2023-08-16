@@ -64,5 +64,5 @@ if __name__ == '__main__':
     #     time.sleep(1)
 
     logger.info(f"model inference latency: {benchmark_task.latency} ms")
-    logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} ms")
-    logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} ms")
+    logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} MB")
+    logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} MB")
