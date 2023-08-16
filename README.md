@@ -219,8 +219,8 @@ benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_mode
                                                             target_device=target_device,
                                                             wait_until_done=True)
 logger.info(f"model inference latency: {benchmark_task.latency} ms")
-logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} ms")
-logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} ms")
+logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} MB")
+logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} MB")
 ```
 
 ## NetsPresso Model Compressor Best Practice
