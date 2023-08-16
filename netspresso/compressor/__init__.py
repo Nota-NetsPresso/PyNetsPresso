@@ -112,8 +112,7 @@ class ModelCompressor(BaseClient):
                     model_collection = self.model_factory.create_model_collection(
                         model_info=parent_model_info, children_models=children_models
                     )
-
-                models.append(model_collection)
+                    models.append(model_collection)
             logger.info("Get model list successfully.")
 
             return models
