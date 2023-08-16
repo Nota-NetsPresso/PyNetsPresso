@@ -16,6 +16,26 @@ if __name__ == '__main__':
     converter = ModelConverter(user_session=session)
     model: Model = converter.upload_model("./examples/sample_models/test.onnx")
 
+    ###
+    # Available Target Frameworks for Conversion with ONNX Models
+    #
+    # ModelFramework.TENSORRT <-- For NVIDIA Devices
+    # ModelFramework.OPENVINO <-- For Intel CPUs
+    # ModelFramework.TENSORFLOW_LITE <-- For the devices like Raspberry Pi devices
+    # ModelFramework.DRPAI <-- For Renesas Devices like RZ/V2M, RZ/V2L
+    #
+
+    ###
+    # Available Devices for ModelFramework.TENSORRT (target_framework)
+    # DeviceName.JETSON_NANO
+    # DeviceName.JETSON_TX2
+    # DeviceName.JETSON_XAVIER
+    # DeviceName.JETSON_NX
+    # DeviceName.JETSON_AGX_ORIN
+    # DeviceName.AWS_T4
+    # DeviceName.JETSON_NANO
+    #
+
     available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.JETSON_NANO,
                                                                             devices=model.available_devices)
     target_device = available_devices[0] # Jetson Nano - Jetpack 4.6
@@ -44,7 +64,13 @@ if __name__ == '__main__':
     logger.info(conversion_task)
     converter.download_converted_model(conversion_task, dst=CONVERTED_MODEL_PATH)
 
-    
+    ###
+    # !!WARNING!!
+    # 
+    # For NVIDIA GPUs and Jetson devices,
+    # DeviceName and Software Version have to be matched with the target_device of the conversion.
+    # TensorRT Model has strong dependency with the device type and its jetpack version.
+
     benchmarker = ModelBenchmarker(user_session=session)
     benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
@@ -64,5 +90,5 @@ if __name__ == '__main__':
     #     time.sleep(1)
 
     logger.info(f"model inference latency: {benchmark_task.latency} ms")
-    logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} ms")
-    logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} ms")
+    logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} MB")
+    logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} MB")

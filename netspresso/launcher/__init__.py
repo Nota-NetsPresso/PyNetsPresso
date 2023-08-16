@@ -4,7 +4,7 @@ from urllib import request
 import time
 
 from netspresso.client import BaseClient, validate_token
-from netspresso.launcher.schemas import LauncherFunction, ModelFramework, TaskStatus, DataType
+from netspresso.launcher.schemas import LauncherFunction, ModelFramework, TaskStatus, DataType, DeviceName
 from netspresso.launcher.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
 from netspresso.launcher.client import LauncherAPIClient
 

@@ -47,7 +47,7 @@ class SessionClient:
                 session = LoginResponse(**response_body)
                 self.access_token = session.tokens.access_token
                 self.refresh_token = session.tokens.refresh_token
-                logger.info("Login successful")
+                logger.info("Login successfully")
             else:
                 raise Exception(response_body["detail"])
 
@@ -127,7 +127,7 @@ class BaseClient:
 
         try:
             credit = self.client.get_credit(access_token=self.access_token)
-            logger.info(f"Get Credit successful. Credit: {credit.total}")
+            logger.info(f"Get Credit successfully. Credit: {credit.total}")
 
             return credit.total
 
