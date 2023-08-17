@@ -12,6 +12,7 @@
 <div align="center">
     <a href="https://github.com/Nota-NetsPresso/yolox_nota"> YOLOX </a>
     | <a href="https://github.com/Nota-NetsPresso/ultralytics_nota"> YOLOv8 </a> 
+    | <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7"> YOLOv7 </a> 
     | <a href="https://github.com/Nota-NetsPresso/yolov5_nota"> YOLOv5 </a> 
     | <a href="https://github.com/Nota-NetsPresso/PIDNet_nota"> PIDNet </a>     
     | <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota"> PyTorch-CIFAR-Models</a>
@@ -90,8 +91,9 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
                 </details>
                 <details open>
                     <summary>Object Detection</summary>
-                    <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a> <br>
-                    <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a>
+                    <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
+                    <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
+                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
                 </details>
                 <details open>
                     <summary>Semantic Segmentation</summary>
