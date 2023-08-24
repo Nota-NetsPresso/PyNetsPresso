@@ -33,13 +33,10 @@ if __name__ == '__main__':
     # DeviceName.RASPBERRY_PI_ZERO_2W
     #
 
-    available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
-                                                                            devices=model.available_devices)
-    
     conversion_task: ConversionTask = converter.convert_model(model=model,
                                                               input_shape=model.input_shape,
                                                               target_framework=ModelFramework.TENSORFLOW_LITE,
-                                                              target_device=available_devices[0],
+                                                              target_device_name=DeviceName.RASPBERRY_PI_4B,
                                                               wait_until_done=True)
     ########################
     # Asynchronous Procedure
@@ -48,7 +45,7 @@ if __name__ == '__main__':
     # conversion_task: ConversionTask = converter.convert_model(model=model,
     #                                                           input_shape=model.input_shape,
     #                                                           target_framework=ModelFramework.TENSORFLOW_LITE,
-    #                                                           target_device=available_devices[0]
+    #                                                           target_device_name=DeviceName.RASPBERRY_PI_4B,
     #                                                           wait_until_done=False)
 
     # while conversion_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
@@ -72,17 +69,15 @@ if __name__ == '__main__':
     # DeviceName.RASPBERRY_PI_ZERO_2W
     #
 
-    benchmark_available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.RASPBERRY_PI_4B,
-                                                                                      devices=benchmark_model.available_devices)
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
-                                                                target_device=benchmark_available_devices[0],
+                                                                target_device_name=DeviceName.RASPBERRY_PI_4B,
                                                                 wait_until_done=True)
     ########################
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
     # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
-    #                                                             target_device=benchmark_available_devices[0],
+    #                                                             target_device_name=DeviceName.RASPBERRY_PI_4B,
     #                                                             wait_until_done=False)
 
     # while benchmark_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:

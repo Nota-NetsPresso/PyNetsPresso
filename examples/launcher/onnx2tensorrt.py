@@ -4,7 +4,7 @@ from typing import List
 from netspresso.client import SessionClient
 from netspresso.launcher import ModelConverter, ModelBenchmarker
 from netspresso.launcher.utils.devices import filter_devices_with_device_name
-from netspresso.launcher.schemas import ModelFramework, TaskStatus, DeviceName
+from netspresso.launcher.schemas import ModelFramework, TaskStatus, DeviceName, SoftwareVersion
 from netspresso.launcher.schemas.model import BenchmarkTask, ConversionTask, Model, TargetDevice
 
 
@@ -33,7 +33,15 @@ if __name__ == '__main__':
     # DeviceName.JETSON_NX
     # DeviceName.JETSON_AGX_ORIN
     # DeviceName.AWS_T4
-    # DeviceName.JETSON_NANO
+    #
+
+    ###
+    # Available Software Versions for Jetson Devices
+    # DeviceName.JETSON_NANO : SoftwareVersion.JETPACK_4_6, SoftwareVersion.JETPACK_4_4_1
+    # DeviceName.JETSON_TX2 : SoftwareVersion.JETPACK_4_6
+    # DeviceName.JETSON_XAVIER : SoftwareVersion.JETPACK_4_6
+    # DeviceName.JETSON_NX : SoftwareVersion.JETPACK_5_0_2, SoftwareVersion.JETPACK_4_6,
+    # DeviceName.JETSON_AGX_ORIN : SoftwareVersion.JETPACK_5_0_1
     #
 
     available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.JETSON_NANO,
@@ -42,7 +50,8 @@ if __name__ == '__main__':
     conversion_task: ConversionTask = converter.convert_model(model=model,
                                                               input_shape=model.input_shape,
                                                               target_framework=ModelFramework.TENSORRT,
-                                                              target_device=available_devices[0],
+                                                              target_device_name=DeviceName.JETSON_AGX_ORIN,
+                                                              target_software_version=SoftwareVersion.JETPACK_5_0_1,
                                                               wait_until_done=True)
     ########################
     # Asynchronous Procedure
@@ -51,7 +60,8 @@ if __name__ == '__main__':
     # conversion_task: ConversionTask = converter.convert_model(model=model,
     #                                                           input_shape=model.input_shape,
     #                                                           target_framework=ModelFramework.TENSORRT,
-    #                                                           target_device=available_devices[0],
+    #                                                           target_device_name=DeviceName.JETSON_AGX_ORIN,
+    #                                                           target_software_version=SoftwareVersion.JETPACK_5_0_1,
     #                                                           wait_until_done=False)
 
     # while conversion_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
@@ -74,14 +84,16 @@ if __name__ == '__main__':
     benchmarker = ModelBenchmarker(user_session=session)
     benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
-                                                                target_device=target_device,
+                                                                target_device_name=DeviceName.JETSON_AGX_ORIN,
+                                                                target_software_version=SoftwareVersion.JETPACK_5_0_1,
                                                                 wait_until_done=True)
     ########################
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
     # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
-    #                                                             target_device=target_device,
+    #                                                             target_device_name=DeviceName.JETSON_AGX_ORIN,
+    #                                                             target_software_version=SoftwareVersion.JETPACK_5_0_1,
     #                                                             wait_until_done=False)
 
     # while benchmark_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
