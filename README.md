@@ -217,7 +217,8 @@ benchmarker = ModelBenchmarker(user_session=session)
 benchmark_model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
 benchmark_task = benchmarker.benchmark_model(
     model=benchmark_model,
-    target_device=target_device,
+    target_device_name=DeviceName.JETSON_AGX_ORIN,
+    target_software_version=SoftwareVersion.JETPACK_5_0_1,
     wait_until_done=True
 )
 logger.info(f"model inference latency: {benchmark_task.latency} ms")
