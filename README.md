@@ -191,19 +191,19 @@ Convert an ONNX model into a TensorRT model, and benchmark the TensorRT model on
 
 ```python
 from loguru import logger
-from netspresso.launcher import ModelConverter, ModelBenchmarker, ModelFramework, TaskStatus, DeviceName
+from netspresso.launcher import ModelConverter, ModelBenchmarker, ModelFramework, TaskStatus, DeviceName, SoftwareVersion
 
 converter = ModelConverter(user_session=session)
 
 model = converter.upload_model("./examples/sample_models/test.onnx")
 
-available_devices = filter_devices_with_device_name(name=DeviceName.JETSON_NANO, devices=model.available_devices)
-target_device = available_devices[0] # Jetson Nano - Jetpack 4.6
+
 conversion_task = converter.convert_model(
     model=model,
     input_shape=model.input_shape,
     target_framework=ModelFramework.TENSORRT,
-    target_device=available_devices[0],
+    target_device_name=DeviceName.JETSON_AGX_ORIN,
+    target_software_version=SoftwareVersion.JETPACK_5_0_1,
     wait_until_done=True
 )
 
