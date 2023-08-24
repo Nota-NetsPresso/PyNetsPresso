@@ -1,11 +1,6 @@
-import time
 from loguru import logger
-from typing import List
 from netspresso.client import SessionClient
-from netspresso.launcher import ModelConverter, ModelBenchmarker
-from netspresso.launcher.utils.devices import filter_devices_with_device_name
-from netspresso.launcher.schemas import ModelFramework, TaskStatus, DeviceName, SoftwareVersion
-from netspresso.launcher.schemas.model import BenchmarkTask, ConversionTask, Model, TargetDevice
+from netspresso.launcher import ModelConverter, ModelBenchmarker, ModelFramework, DeviceName, SoftwareVersion, BenchmarkTask, ConversionTask, Model
 
 
 if __name__ == '__main__':
@@ -44,9 +39,6 @@ if __name__ == '__main__':
     # DeviceName.JETSON_AGX_ORIN : SoftwareVersion.JETPACK_5_0_1
     #
 
-    available_devices: List[TargetDevice] = filter_devices_with_device_name(name=DeviceName.JETSON_NANO,
-                                                                            devices=model.available_devices)
-    target_device = available_devices[0] # Jetson Nano - Jetpack 4.6
     conversion_task: ConversionTask = converter.convert_model(model=model,
                                                               input_shape=model.input_shape,
                                                               target_framework=ModelFramework.TENSORRT,
