@@ -84,6 +84,27 @@ class DeviceName(StrEnumBase):
             "AWS-T4",
             "Intel-Xeon",
         ]
+    
+JETSON_DEVICES = [DeviceName.JETSON_NANO, DeviceName.JETSON_TX2, DeviceName.JETSON_XAVIER, DeviceName.JETSON_NX, DeviceName.JETSON_AGX_ORIN]
+RASPBERRY_PI_DEVICES = [DeviceName.RASPBERRY_PI_4B, DeviceName.RASPBERRY_PI_3B_PLUS, DeviceName.RASPBERRY_PI_ZERO_W, DeviceName.RASPBERRY_PI_ZERO_2W]
+RENESAS_DEVICES = [DeviceName.RENESAS_RZ_V2L, DeviceName.RENESAS_RZ_V2M]
+NVIDIA_GRAPHIC_CARDS = [DeviceName.AWS_T4]
+INTEL_DEVICES = [DeviceName.Intel_XEON_W_2233]
+
+class SoftwareVersion(StrEnumBase):
+    JETPACK_4_4_1   = '4.4.1-b50'
+    JETPACK_4_6     = '4.6-b199'
+    JETPACK_5_0_1   = '5.0.1-b118'
+    JETPACK_5_0_2   = '5.0.2-b231'
+
+    @classmethod
+    def create_literal(cls):
+        return Literal[
+            '4.4.1-b50',
+            '4.6-b199',
+            '5.0.1-b118',
+            '5.0.2-b231',
+        ]
 
 class TaskStatus(StrEnumBase):
     IN_QUEUE = "IN_QUEUE"

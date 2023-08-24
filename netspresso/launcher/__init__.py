@@ -4,8 +4,9 @@ from urllib import request
 import time
 
 from netspresso.client import BaseClient, validate_token
-from netspresso.launcher.schemas import LauncherFunction, ModelFramework, TaskStatus, DataType, DeviceName
+from netspresso.launcher.schemas import LauncherFunction, ModelFramework, TaskStatus, DataType, SoftwareVersion, DeviceName, JETSON_DEVICES
 from netspresso.launcher.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
+from netspresso.launcher.utils.devices import filter_devices_with_device_name, filter_devices_with_device_software_version
 from netspresso.launcher.client import LauncherAPIClient
 
 class Launcher(BaseClient):
@@ -49,16 +50,20 @@ class ModelConverter(Launcher):
     def convert_model(self, model: Union[str, Model],
                       input_shape: InputShape,
                       target_framework: Union[str, ModelFramework],
-                      target_device: TargetDevice,
-                      wait_until_done: bool = True) -> ConversionTask:
+                      target_device: TargetDevice = None,
+                      wait_until_done: bool = True,
+                      target_device_name: DeviceName = None,
+                      target_software_version: SoftwareVersion = None) -> ConversionTask:
         """Convert a model into the type the specific framework.
 
         Args:
             model (str): The uuid of the model or Launcher Model Object.
             input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
             target_framework (ModelFramework | str): the target framework name.
-            target_device (TargetDevice): target device.
+            target_device (TargetDevice): target device. If it's not set, target_device_name and target_software_version have to be set.
             wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
+            target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
+            target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
 
         Raises:
             e: If an error occurs while converting the model.
@@ -73,6 +78,28 @@ class ModelConverter(Launcher):
                 input_shape = model.input_shape
             if target_framework is None and model.framework is not None:
                 target_framework = model.framework
+        
+        if target_device is None:
+
+            if target_device_name is None:
+                raise NotImplementedError("The conversion is unavailable. Please set target_device or target_device_name.")
+
+            elif target_device_name in JETSON_DEVICES and target_software_version is None:
+                raise NotImplementedError("The conversion is unavailable. Please set JetPack version with target_software_version for Jetson Devices.")
+            
+            if type(model) is not Model:
+                raise NotImplementedError("The conversion is unavailable. Please set target_device while using model's uuid string for the conversion.")
+            
+            devices = filter_devices_with_device_name(name=target_device_name, devices=model.available_devices)
+            
+            if target_device_name in JETSON_DEVICES:
+                devices = filter_devices_with_device_software_version(software_version=target_software_version, devices=devices)
+
+            if len(devices) < 1:
+                raise NotImplementedError("The conversion is unavailable. There is no available device with given target_device_name and target_software_version.")
+            
+            target_device = devices[0]
+
 
         logger.info(f"Converting Model for {target_device.device_name} ({target_framework})")
             
@@ -149,14 +176,18 @@ class ModelBenchmarker(Launcher):
     def benchmark_model(self, model: Union[ConversionTask,  Model, str],
                         target_device: TargetDevice = None,
                         data_type: DataType = DataType.FP16,
-                        wait_until_done: bool = True) -> BenchmarkTask:
+                        wait_until_done: bool = True,
+                        target_device_name: DeviceName = None,
+                        target_software_version: SoftwareVersion = None) -> BenchmarkTask:
         """Benchmark given model on the specified device.
 
         Args:
             model (ConversionTask | Model | str): The conversion task object, Launcher Model Object or the uuid of the model.
-            target_device (TargetDevice): target device.
+            target_device (TargetDevice): target device. If it's not set, target_device_name and target_software_version have to be set.
             data_type (DataType): data type of the model.
             wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
+            target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
+            target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
 
         Raises:
             e: If an error occurs while benchmarking of the model.
@@ -166,6 +197,27 @@ class ModelBenchmarker(Launcher):
         """
         model_uuid = None
         benchmark_data_type = None
+
+        if target_device is None and type(model) is not ConversionTask:
+            if target_device_name is None:
+                raise NotImplementedError("The benchmark is unavailable. Please set target_device or target_device_name.")
+
+            elif target_device_name in JETSON_DEVICES and target_software_version is None:
+                raise NotImplementedError("The benchmark is unavailable. Please set JetPack version with target_software_version for Jetson Devices.")
+            
+            if type(model) is not Model:
+                raise NotImplementedError("The benchmark is unavailable. Please set target_device while using model's uuid string for the conversion.")
+            
+            devices = filter_devices_with_device_name(name=target_device_name, devices=model.available_devices)
+            
+            if target_device_name in JETSON_DEVICES:
+                devices = filter_devices_with_device_software_version(software_version=target_software_version, devices=devices)
+
+            if len(devices) < 1:
+                raise NotImplementedError("The benchmark is unavailable. There is no available device with given target_device_name and target_software_version.")
+            
+            target_device = devices[0]
+
         target_device_name = target_device.device_name if target_device is not None else None
         target_software_version = target_device.software_version if target_device is not None else None
 
@@ -182,6 +234,7 @@ class ModelBenchmarker(Launcher):
                 target_device_name = model.target_device_name
             if target_software_version is None:
                 target_software_version = model.software_version
+
         if target_device_name is None:
             raise NotImplementedError("There is no avaliable function for given paremeter. Please specify the target device.")
 

@@ -28,6 +28,6 @@ def filter_devices_with_device_software_version(software_version: str, devices: 
     """
     filtered_devices: List = []
     for device in devices:
-        if device.device_name == software_version:
+        if device.software_version == software_version:
             filtered_devices.append(device)
     return filtered_devices
