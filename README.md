@@ -226,6 +226,49 @@ logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} 
 logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} MB")
 ```
 
+## Available Options for Launcher (Convert, Benchmark)
+
+### Available Target Frameworks for Conversion with Source Models
+
+| Target / Source Model | ONNX | TENSORFLOW_KERAS | TENSORFLOW |
+| :-------------------- | :--: | :--------------: | :--------: |
+| TENSORRT              |  ✔️  |                  |            |
+| DRPAI                 |  ✔️  |                  |            |
+| OPENVINO              |  ✔️  |                  |            |
+| TENSORFLOW_LITE       |  ✔️  |        ✔️        |     ✔️     |
+
+
+### Available Devices for Framework
+
+| Device / Framework   | ONNX | TENSORRT | TENSORFLOW_LITE | DRPAI | OPENVINO |
+| :------------------- | :--: | :------: | :-------------: | :---: | :------: |
+| RASPBERRY_PI_4B      |  ✔️  |          |       ✔️        |       |          |
+| RASPBERRY_PI_3B_PLUS |  ✔️  |          |       ✔️        |       |          |
+| RASPBERRY_PI_ZERO_W  |  ✔️  |          |       ✔️        |       |          |
+| RASPBERRY_PI_ZERO_2W |  ✔️  |          |       ✔️        |       |          |
+| RENESAS_RZ_V2L       |  ✔️  |          |                 |  ✔️   |          |
+| RENESAS_RZ_V2M       |  ✔️  |          |                 |  ✔️   |          |
+| JETSON_NANO          |  ✔️  |    ✔️    |                 |       |          |
+| JETSON_TX2           |  ✔️  |    ✔️    |                 |       |          |
+| JETSON_XAVIER        |  ✔️  |    ✔️    |                 |       |          |
+| JETSON_NX            |  ✔️  |    ✔️    |                 |       |          |
+| JETSON_AGX_ORIN      |  ✔️  |    ✔️    |                 |       |          |
+| AWS_T4               |  ✔️  |    ✔️    |                 |       |          |
+| Intel_XEON_W_2233    |      |          |                 |       |    ✔️    |
+
+
+### Available Software Versions for Jetson Devices
+
+Software Versions requires only Jetson Device. If you are using a different device, you do not need to enter it.
+
+| Software Version / Device | JETSON_NANO | JETSON_TX2 | JETSON_XAVIER | JETSON_NX | JETSON_AGX_ORIN |
+| :------------------------ | :---------: | :--------: | :-----------: | :-------: | :-------------: |
+| JETPACK_4_4_1             |     ✔️      |            |               |           |                 |
+| JETPACK_4_6               |     ✔️      |     ✔️     |      ✔️       |    ✔️     |                 |
+| JETPACK_5_0_1             |             |            |               |           |       ✔️        |
+| JETPACK_5_0_2             |             |            |               |    ✔️     |                 |
+
+
 ## NetsPresso Model Compressor Best Practice
 
 If you want to experience Model Compressor online without any installation, please refer to the [NetsPresso-Model-Compressor-ModelZoo] repo that runs on Google Colab.
