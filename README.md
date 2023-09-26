@@ -276,7 +276,7 @@ If you want to experience Model Compressor online without any installation, plea
 ## Contact
 
 Join our [Discussion Forum] for providing feedback or sharing your use cases, and if you want to talk more with Nota, please contact us [here].</br>
-Or you can also do it via email([contact@nota.ai]) or phone(+82 2-555-8659)!
+Or you can also do it via email([netspresso@nota.ai]) or phone(+82 2-555-8659)!
 
 
 [Docs]: https://nota-netspresso.github.io/PyNetsPresso-docs
@@ -284,5 +284,5 @@ Or you can also do it via email([contact@nota.ai]) or phone(+82 2-555-8659)!
 [NetsPresso]: https://netspresso.ai?utm_source=git_comp&utm_medium=text_np&utm_campaign=py_launch
 [PyNetsPresso]: https://py.netspresso.ai/?utm_source=git_comp&utm_medium=text_py&utm_campaign=py_launch
 [here]: https://www.nota.ai/contact-us
-[contact@nota.ai]: mailto:contact@nota.ai
+[netspresso@nota.ai]: mailto:netspresso@nota.ai
 [NetsPresso-Model-Compressor-ModelZoo]: https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo
