@@ -19,7 +19,7 @@ setup(
     name="netspresso",
     version=version,
     author="NetsPresso",
-    author_email="bmlee@nota.ai",
+    author_email="netspresso@nota.ai",
     description="PyNetsPresso",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -29,8 +29,12 @@ setup(
     package_data={"netspresso.client": ["configs/*.ini"]},
     python_requires=">=3.8",
     classifiers=[
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "Operating System :: OS Independent",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
 )
