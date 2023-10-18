@@ -485,11 +485,12 @@ class ModelCompressor(BaseClient):
             )
             recommendation_result = self.client.get_recommendation(data=data, access_token=self.user_session.access_token)
 
-            for available_layer, recommended_info in zip(
-                compression_info.available_layers, recommendation_result.recommended_layers
-            ):
-                available_layer.use = True
-                available_layer.values = recommended_info.values
+            for recommended_layer in recommendation_result.recommended_layers:
+                for available_layer in compression_info.available_layers:
+                    # Find the matching available_layer by name
+                    if available_layer.name == recommended_layer.name:
+                        available_layer.use = True
+                        available_layer.values = recommended_layer.values
 
             data = CompressionRequest(
                 compression_id=compression_info.compression_id,
