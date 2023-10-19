@@ -1,19 +1,12 @@
+from pathlib import Path
 from setuptools import setup, find_packages
-import re
-
-with open("./netspresso/__init__.py", "r") as f:
-    content = f.read()
-    version = re.search(r'__version__\s*=\s*[\'"]([^\'"]*)[\'"]', content).group(1)
 
 
-with open("README.md", "r", encoding="UTF8") as fh:
-    long_description = fh.read()
+version = (Path("netspresso") / "VERSION").read_text().strip()
 
-# we are using the packages in `requirements.txt` for now,
-# not 100% ideal but will do
-with open("requirements.txt", "r") as fh:
-    install_requires = fh.read().split("\n")
+long_description = Path("README.md").read_text(encoding="UTF8")
 
+install_requires = Path("requirements.txt").read_text().split('\n')
 
 setup(
     name="netspresso",
@@ -26,7 +19,7 @@ setup(
     url="https://github.com/Nota-NetsPresso/PyNetsPresso",
     install_requires=install_requires,
     packages=find_packages(exclude=("tests",)),
-    package_data={"netspresso.client": ["configs/*.ini"]},
+    package_data={"netspresso.client": ["configs/*.ini"], "netspresso": ["VERSION"]},
     python_requires=">=3.8",
     classifiers=[
         "Intended Audience :: Developers",
