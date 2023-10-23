@@ -1,4 +1,4 @@
-from netspresso import ModelTrainerV1, ModelTrainerV2
+from netspresso.trainer import ModelTrainerV1, ModelTrainerV2
 
 
 # 1. 학습에 필요한 정보 받아서 처리하기
