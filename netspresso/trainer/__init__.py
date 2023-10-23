@@ -1,4 +1,4 @@
-from netspresso_trainer import train, set_arguments
+from netspresso_trainer import trainer, train, set_arguments
 
 
 class ModelTrainerV1:
@@ -10,9 +10,8 @@ class ModelTrainerV1:
         self.logging = logging
         self.environment = environment
 
-    def train(is_graphmodule_training):
-        args_parsed, args = set_arguments(is_graphmodule_training=is_graphmodule_training)
-        train(args_parsed, args, is_graphmodule_training=is_graphmodule_training)
+    def train():
+        trainer()
 
 
 class ModelTrainerV2:
