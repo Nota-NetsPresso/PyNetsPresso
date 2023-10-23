@@ -36,7 +36,7 @@ RECOMMENDATION_METHOD = RecommendationMethod.SLAMP
 RECOMMENDATION_RATIO = 0.5
 OUTPUT_PATH = "./graphmodule_recommend.pt"
 OPTIONS = Options(
-    policy=Policy.AVERAGE, layer_norm=LayerNorm.TSS_NORM, group_policy=GroupPolicy.COUNT, reshape_channel_axis=-1
+    policy=Policy.AVERAGE, layer_norm=LayerNorm.STANDARD_SCORE, group_policy=GroupPolicy.AVERAGE, reshape_channel_axis=-1
 )
 compressed_model = compressor.recommendation_compression(
     model_id=model.model_id,

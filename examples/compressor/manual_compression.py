@@ -33,7 +33,7 @@ model = compressor.upload_model(
 # Select Compression Method
 COMPRESSION_METHOD = CompressionMethod.PR_L2
 OPTIONS = Options(
-    policy=Policy.AVERAGE, layer_norm=LayerNorm.TSS_NORM, group_policy=GroupPolicy.COUNT, reshape_channel_axis=-1
+    policy=Policy.AVERAGE, layer_norm=LayerNorm.STANDARD_SCORE, group_policy=GroupPolicy.AVERAGE, reshape_channel_axis=-1
 )
 compression_1 = compressor.select_compression_method(
     model_id=model.model_id,
