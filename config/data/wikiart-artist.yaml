@@ -1,0 +1,11 @@
+data:
+  name: wikiart_artist
+  task: classification
+  format: huggingface
+  metadata:
+    custom_cache_dir: ./data/huggingface 
+    repo: huggan/wikiart
+    subset:
+    features:
+      image: image
+      label: artist
