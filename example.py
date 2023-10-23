@@ -1,10 +1,9 @@
 from netspresso.trainer import ModelTrainerV1, ModelTrainerV2
 
 
-# 1. 학습에 필요한 정보 받아서 처리하기
 # 1-1. yaml
 '''
-    yaml path를 입력
+    yaml path
 '''
 data_yaml = "config/data/beans.yaml"
 augmentation_yaml = "config/augmentation/resnet.yaml"
@@ -37,5 +36,5 @@ trainer_v2 = ModelTrainerV2(
 trainer_v2.train()
 
 
-# 2. fx에 대한 구분
-# 3. 멀티 GPU (이건 내 영역이 아니니 물어보면서 하기)
+# 2. fx
+# 3. multi GPU
