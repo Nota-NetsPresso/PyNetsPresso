@@ -19,7 +19,7 @@ trainer_v1 = ModelTrainerV1(
     logging=logging_yaml,
     environment=environment_yaml,
 )
-trainer_v1.train(is_graphmodule_training=False)
+trainer_v1.train()
 
 # 1-2. function argument
 '''
@@ -30,10 +30,10 @@ trainer_v1.train(is_graphmodule_training=False)
     Logging
     Environment
 '''
-trainer_v2 = ModelTrainerV2(
+# trainer_v2 = ModelTrainerV2(
 
-)
-trainer_v2.train()
+# )
+# trainer_v2.train()
 
 
 # 2. fx
