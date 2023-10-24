@@ -1,4 +1,5 @@
 from netspresso_trainer import trainer, train, set_arguments
+import subprocess
 
 
 class ModelTrainerV1:
@@ -10,8 +11,25 @@ class ModelTrainerV1:
         self.logging = logging
         self.environment = environment
 
-    def train():
-        trainer()
+    def train(self):
+        subprocess.run(
+            [
+                "netspresso-train", 
+                "--data",
+                self.data,
+                "--augmentation",
+                self.augmentation,
+                "--model",
+                self.model,
+                "--training",
+                self.training,
+                "--logging",
+                self.logging,
+                "--environment",
+                self.environment,        
+            ],
+            stdout=subprocess.PIPE
+        )
 
 
 class ModelTrainerV2:
