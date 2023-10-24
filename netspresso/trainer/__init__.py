@@ -14,19 +14,13 @@ class ModelTrainerV1:
     def train(self):
         subprocess.run(
             [
-                "netspresso-train", 
-                "--data",
-                self.data,
-                "--augmentation",
-                self.augmentation,
-                "--model",
-                self.model,
-                "--training",
-                self.training,
-                "--logging",
-                self.logging,
-                "--environment",
-                self.environment,        
+                "netspresso-train",
+                "--data", self.data,
+                "--augmentation", self.augmentation,
+                "--model", self.model,
+                "--training", self.training,
+                "--logging", self.logging,
+                "--environment", self.environment,
             ],
             stdout=subprocess.PIPE
         )
