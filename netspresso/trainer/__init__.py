@@ -1,6 +1,7 @@
 import subprocess
 
 
+# TODO trainer config
 class ModelTrainer:
     def __init__(self, data, augmentation, model, training, logging, environment) -> None:
         self.data = data
@@ -10,10 +11,11 @@ class ModelTrainer:
         self.logging = logging
         self.environment = environment
 
-    def train(self, nproc_per_node):
+    def train(self, nproc_per_node=1):
         subprocess.run([
-            "netspresso-train", "-m", "torch.distributed.launch",
+            "python", "-m", "torch.distributed.launch",
             "--nproc_per_node", str(nproc_per_node),
+            "netspresso/trainer/_train.py",
             "--data", self.data,
             "--augmentation", self.augmentation,
             "--model", self.model,
