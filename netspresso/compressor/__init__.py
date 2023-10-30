@@ -280,11 +280,16 @@ class ModelCompressor(BaseClient):
             CompressionInfo: The compression information for the selected compression method.
         """
         try:
+            model = self.get_model(model_id)
+
             logger.info("Selecting compression method...")
-            data = GetAvailableLayersRequest(model_id=model_id, compression_method=compression_method, options=options)
+            if model.framework == Framework.PYTORCH and compression_method == CompressionMethod.PR_NN:
+                raise Exception("The Nuclear Norm is only supported in the TensorFlow-Keras framework.")
+
+            data = GetAvailableLayersRequest(model_id=model.model_id, compression_method=compression_method, options=options)
             response = self.client.get_available_layers(data=data, access_token=self.user_session.access_token)
             compression_info = CompressionInfo(
-                original_model_id=model_id, compression_method=compression_method, options=options.dict()
+                original_model_id=model.model_id, compression_method=compression_method, options=options.dict()
             )
             compression_info.set_available_layers(response.available_layers)
             logger.info("Select compression method successfully.")
@@ -445,7 +450,12 @@ class ModelCompressor(BaseClient):
         """
 
         try:
+            model = self.get_model(model_id)
+
             logger.info("Compressing recommendation-based model...")
+
+            if model.framework == Framework.PYTORCH and compression_method == CompressionMethod.PR_NN:
+                raise Exception("The Nuclear Norm is only supported in the TensorFlow-Keras framework.")
 
             if compression_method in [CompressionMethod.PR_ID, CompressionMethod.FD_CP]:
                 raise Exception(
@@ -469,15 +479,15 @@ class ModelCompressor(BaseClient):
                 )
 
             data = CreateCompressionRequest(
-                model_id=model_id, model_name=model_name, compression_method=compression_method, options=options.dict()
+                model_id=model.model_id, model_name=model_name, compression_method=compression_method, options=options.dict()
             )
             compression_info = self.client.create_compression(data=data, access_token=self.user_session.access_token)
 
             if dataset_path and compression_method == CompressionMethod.PR_NN:
-                self.__upload_dataset(model_id=model_id, dataset_path=dataset_path)
+                self.__upload_dataset(model_id=model.model_id, dataset_path=dataset_path)
 
             data = RecommendationRequest(
-                model_id=model_id,
+                model_id=model.model_id,
                 compression_id=compression_info.compression_id,
                 recommendation_method=recommendation_method,
                 recommendation_ratio=recommendation_ratio,
