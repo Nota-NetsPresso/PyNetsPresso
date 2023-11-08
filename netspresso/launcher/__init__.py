@@ -6,7 +6,7 @@ import time
 from netspresso.client import BaseClient, validate_token
 from netspresso.launcher.schemas import LauncherFunction, ModelFramework, TaskStatus, DataType, SoftwareVersion, DeviceName, JETSON_DEVICES, HardwareType, ONLY_INT8_DEVICES
 from netspresso.launcher.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
-from netspresso.launcher.utils.devices import filter_devices_with_device_name, filter_devices_with_device_software_version
+from netspresso.launcher.utils.devices import filter_devices_with_device_name, filter_devices_with_device_software_version, filter_devices_with_hardware_type
 from netspresso.launcher.client import LauncherAPIClient
 
 class Launcher(BaseClient):
@@ -235,6 +235,9 @@ class ModelBenchmarker(Launcher):
             
             if target_device_name in JETSON_DEVICES:
                 devices = filter_devices_with_device_software_version(software_version=target_software_version, devices=devices)
+
+            if hardware_type:
+                devices = filter_devices_with_hardware_type(hardware_type=hardware_type, devices=devices)
 
             if len(devices) < 1:
                 raise NotImplementedError("The benchmark is unavailable. There is no available device with given target_device_name and target_software_version.")

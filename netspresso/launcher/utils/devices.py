@@ -35,3 +35,19 @@ def filter_devices_with_device_software_version(
         if device.software_version == software_version:
             filtered_devices.append(device)
     return filtered_devices
+
+
+def filter_devices_with_hardware_type(hardware_type: str, devices: List[TargetDevice]) -> List[TargetDevice]:
+    """Filter the devices with given hardware type.
+
+    Args:
+        software_version (DeviceName): The hardware type of device.
+        devices (List[TargetDevice]): The list of devices
+    Returns:
+        List[TargetDevice]: filtered list of devices.
+    """
+    filtered_devices: List = []
+    for device in devices:
+        if device.hardware_type == hardware_type:
+            filtered_devices.append(device)
+    return filtered_devices
