@@ -60,7 +60,7 @@ if __name__ == "__main__":
         model=benchmark_model,
         target_device_name=TARGET_DEVICE_NAME,
         data_type=DATA_TYPE,
-        HARDWARE_TYPE=HardwareType.HELIUM,
+        hardware_type=HardwareType.HELIUM,
         wait_until_done=True
     )
 
