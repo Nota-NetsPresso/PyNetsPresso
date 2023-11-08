@@ -43,6 +43,7 @@ class LauncherAPIClient:
                       input_shape: InputShape,
                       target_framework: ModelFramework,
                       target_device: DeviceName,
+                      data_type:DataType,
                       software_version: str) -> ConversionTask:
         
         """Convert a model into the type the specific framework.
@@ -52,6 +53,7 @@ class LauncherAPIClient:
             input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
             target_framework (ModelFramework): the target framework name.
             target_device (DeviceName): target device.
+            data_type (DataType): data type of the model.
             software_version (str): target device's software version.
 
         Raises:
@@ -66,6 +68,7 @@ class LauncherAPIClient:
                                               target_device_name=target_device,
                                               input_model_uuid=model_uuid,
                                               target_framework=target_framework,
+                                              data_type=data_type,
                                               input_shape=input_shape,
                                               software_version=software_version)
         if software_version is not None:

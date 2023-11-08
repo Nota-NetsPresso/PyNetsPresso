@@ -4,7 +4,7 @@ from urllib import request
 import time
 
 from netspresso.client import BaseClient, validate_token
-from netspresso.launcher.schemas import LauncherFunction, ModelFramework, TaskStatus, DataType, SoftwareVersion, DeviceName, JETSON_DEVICES
+from netspresso.launcher.schemas import LauncherFunction, ModelFramework, TaskStatus, DataType, SoftwareVersion, DeviceName, JETSON_DEVICES, HardwareType
 from netspresso.launcher.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
 from netspresso.launcher.utils.devices import filter_devices_with_device_name, filter_devices_with_device_software_version
 from netspresso.launcher.client import LauncherAPIClient
@@ -50,6 +50,7 @@ class ModelConverter(Launcher):
     def convert_model(self, model: Union[str, Model],
                       input_shape: InputShape,
                       target_framework: Union[str, ModelFramework],
+                      data_type: DataType = DataType.FP16,
                       target_device: TargetDevice = None,
                       wait_until_done: bool = True,
                       target_device_name: DeviceName = None,
@@ -60,6 +61,7 @@ class ModelConverter(Launcher):
             model (str): The uuid of the model or Launcher Model Object.
             input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
             target_framework (ModelFramework | str): the target framework name.
+            data_type (DataType): data type of the model.
             target_device (TargetDevice): target device. If it's not set, target_device_name and target_software_version have to be set.
             wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
             target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
@@ -89,9 +91,17 @@ class ModelConverter(Launcher):
             
             if type(model) is not Model:
                 raise NotImplementedError("The conversion is unavailable. Please set target_device while using model's uuid string for the conversion.")
-            
+
+            # Check available int8 converting devices
+            if data_type == DataType.INT8:
+                if target_device_name not in [DeviceName.ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]:
+                    raise Exception("int8 converting supports only Ensemble-E7-DevKit-Gen2 and Renesas-RA8D1 devices.")
+            else:  # FP16, FP32
+                if target_device_name in [DeviceName.ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]:
+                    raise Exception("Ensemble-E7-DevKit-Gen2 and Renesas-RA8D1 only support int8 data types.")
+                
             devices = filter_devices_with_device_name(name=target_device_name, devices=model.available_devices)
-            
+
             if target_device_name in JETSON_DEVICES:
                 devices = filter_devices_with_device_software_version(software_version=target_software_version, devices=devices)
 
@@ -107,6 +117,7 @@ class ModelConverter(Launcher):
                                                    input_shape=input_shape,
                                                    target_framework=target_framework,
                                                    target_device=target_device.device_name,
+                                                   data_type=data_type,
                                                    software_version=target_device.software_version)
 
         conversion_task = self.get_conversion_task(conversion_task)
@@ -178,7 +189,8 @@ class ModelBenchmarker(Launcher):
                         data_type: DataType = DataType.FP16,
                         wait_until_done: bool = True,
                         target_device_name: DeviceName = None,
-                        target_software_version: SoftwareVersion = None) -> BenchmarkTask:
+                        target_software_version: SoftwareVersion = None,
+                        hardware_type: HardwareType = None) -> BenchmarkTask:
         """Benchmark given model on the specified device.
 
         Args:
@@ -196,7 +208,7 @@ class ModelBenchmarker(Launcher):
             BenchmarkTask: model benchmark task object.
         """
         model_uuid = None
-        benchmark_data_type = None
+        benchmark_data_type = data_type
 
         if target_device is None and type(model) is not ConversionTask:
             if target_device_name is None:
@@ -207,7 +219,18 @@ class ModelBenchmarker(Launcher):
             
             if type(model) is not Model:
                 raise NotImplementedError("The benchmark is unavailable. Please set target_device while using model's uuid string for the conversion.")
-            
+
+            # Check available int8 converting devices
+            if data_type == DataType.INT8:
+                if target_device_name not in [DeviceName.ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]:
+                    raise Exception("int8 converting supports only Ensemble-E7-DevKit-Gen2 and Renesas-RA8D1 devices.")
+            else:  # FP16, FP32
+                if target_device_name in [DeviceName.ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]:
+                    raise Exception("Ensemble-E7-DevKit-Gen2 and Renesas-RA8D1 only support int8 data types.")
+                
+            if hardware_type == HardwareType.HELIUM and target_device_name not in [DeviceName.ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]:
+                raise Exception("Ensemble-E7-DevKit-Gen2 and Renesas-RA8D1 only support helium hardware type.")
+
             devices = filter_devices_with_device_name(name=target_device_name, devices=model.available_devices)
             
             if target_device_name in JETSON_DEVICES:
@@ -223,13 +246,10 @@ class ModelBenchmarker(Launcher):
 
         if type(model) is str:
             model_uuid = model
-            benchmark_data_type = data_type
         elif type(model) is Model:
             model_uuid = model.model_uuid
-            benchmark_data_type = model.data_type
         elif type(model) is ConversionTask: 
             model_uuid = model.output_model_uuid
-            benchmark_data_type = model.data_type
             if target_device_name is None:
                 target_device_name = model.target_device_name
             if target_software_version is None:
