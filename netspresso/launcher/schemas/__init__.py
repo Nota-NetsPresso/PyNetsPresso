@@ -73,7 +73,7 @@ class DeviceName(StrEnumBase):
     JETSON_AGX_ORIN = "Jetson-AGX-Orin"
     AWS_T4 = "AWS-T4"
     Intel_XEON_W_2233 = "Intel-Xeon"
-    ENSEMBLE_E7_DEVKIT_GEN2 = "Ensemble-E7-DevKit-Gen2"
+    ALIF_ENSEMBLE_E7_DEVKIT_GEN2 = "Ensemble-E7-DevKit-Gen2"
     RENESAS_RA8D1 = "Renesas-RA8D1"
 
     @classmethod
