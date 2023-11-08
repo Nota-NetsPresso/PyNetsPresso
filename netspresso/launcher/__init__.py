@@ -4,7 +4,7 @@ from urllib import request
 import time
 
 from netspresso.client import BaseClient, validate_token
-from netspresso.launcher.schemas import LauncherFunction, ModelFramework, TaskStatus, DataType, SoftwareVersion, DeviceName, JETSON_DEVICES, HardwareType
+from netspresso.launcher.schemas import LauncherFunction, ModelFramework, TaskStatus, DataType, SoftwareVersion, DeviceName, JETSON_DEVICES, HardwareType, ONLY_INT8_DEVICES
 from netspresso.launcher.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
 from netspresso.launcher.utils.devices import filter_devices_with_device_name, filter_devices_with_device_software_version
 from netspresso.launcher.client import LauncherAPIClient
@@ -94,11 +94,11 @@ class ModelConverter(Launcher):
 
             # Check available int8 converting devices
             if data_type == DataType.INT8:
-                if target_device_name not in [DeviceName.ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]:
-                    raise Exception("int8 converting supports only Ensemble-E7-DevKit-Gen2 and Renesas-RA8D1 devices.")
+                if target_device_name not in ONLY_INT8_DEVICES:
+                    raise Exception(f"int8 converting supports only {ONLY_INT8_DEVICES}.")
             else:  # FP16, FP32
-                if target_device_name in [DeviceName.ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]:
-                    raise Exception("Ensemble-E7-DevKit-Gen2 and Renesas-RA8D1 only support int8 data types.")
+                if target_device_name in ONLY_INT8_DEVICES:
+                    raise Exception(f"{ONLY_INT8_DEVICES} only support int8 data types.")
                 
             devices = filter_devices_with_device_name(name=target_device_name, devices=model.available_devices)
 
@@ -222,14 +222,14 @@ class ModelBenchmarker(Launcher):
 
             # Check available int8 converting devices
             if data_type == DataType.INT8:
-                if target_device_name not in [DeviceName.ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]:
-                    raise Exception("int8 converting supports only Ensemble-E7-DevKit-Gen2 and Renesas-RA8D1 devices.")
+                if target_device_name not in ONLY_INT8_DEVICES:
+                    raise Exception(f"int8 converting supports only {ONLY_INT8_DEVICES}.")
             else:  # FP16, FP32
-                if target_device_name in [DeviceName.ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]:
-                    raise Exception("Ensemble-E7-DevKit-Gen2 and Renesas-RA8D1 only support int8 data types.")
+                if target_device_name in ONLY_INT8_DEVICES:
+                    raise Exception(f"{ONLY_INT8_DEVICES} only support int8 data types.")
                 
-            if hardware_type == HardwareType.HELIUM and target_device_name not in [DeviceName.ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]:
-                raise Exception("Ensemble-E7-DevKit-Gen2 and Renesas-RA8D1 only support helium hardware type.")
+            if hardware_type == HardwareType.HELIUM and target_device_name not in ONLY_INT8_DEVICES:
+                raise Exception(f"{ONLY_INT8_DEVICES} only support helium hardware type.")
 
             devices = filter_devices_with_device_name(name=target_device_name, devices=model.available_devices)
             
