@@ -267,7 +267,7 @@ class ModelBenchmarker(Launcher):
         model_benchmark: BenchmarkTask = self.client.benchmark_model(model_uuid=model_uuid,
                                                                       target_device=target_device_name,
                                                                       data_type=benchmark_data_type,
-                                                                      software_version=target_software_version
+                                                                      software_version=target_software_version,
                                                                       hardware_type=target_hardware_type)
         model_benchmark = self.get_benchmark_task(benchmark_task=model_benchmark)
 
