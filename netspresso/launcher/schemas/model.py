@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 from pydantic import BaseModel, Field, validator
 
-from netspresso.launcher.schemas import DataType, DeviceName, TaskStatus, ModelFramework
+from netspresso.launcher.schemas import DataType, DeviceName, TaskStatus, ModelFramework, HardwareType
 
 
 class InputShape(BaseModel):
@@ -38,6 +38,7 @@ class TargetDevice(BaseModel):
     device_name: DeviceName = Field(default=None)
     software_version: Optional[str] = Field(default=None)
     software_version_display_name: Optional[str] = Field(default=None)
+    hardware_type: Optional[HardwareType] = Field(default=None)
 
 
 class Model(BaseModel):
@@ -90,6 +91,7 @@ class ModelBenchmarkRequest(BaseRequestModel):
     target_framework: Optional[ModelFramework] = Field(default=None)
     data_type: Optional[DataType] = Field(default=None)
     input_shape: Optional[InputShape] = Field(default=None)
+    hardware_type: Optional[HardwareType] = Field(default=None)
 
 
 class ModelConversionRequest(BaseRequestModel):

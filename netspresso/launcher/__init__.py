@@ -246,6 +246,7 @@ class ModelBenchmarker(Launcher):
 
         target_device_name = target_device.device_name if target_device is not None else None
         target_software_version = target_device.software_version if target_device is not None else None
+        target_hardware_type = target_device.hardware_type if target_device is not None else None
 
         if type(model) is str:
             model_uuid = model
@@ -257,6 +258,8 @@ class ModelBenchmarker(Launcher):
                 target_device_name = model.target_device_name
             if target_software_version is None:
                 target_software_version = model.software_version
+            if target_hardware_type is None:
+                target_hardware_type = model.hardware_type
 
         if target_device_name is None:
             raise NotImplementedError("There is no avaliable function for given paremeter. Please specify the target device.")
@@ -264,7 +267,8 @@ class ModelBenchmarker(Launcher):
         model_benchmark: BenchmarkTask = self.client.benchmark_model(model_uuid=model_uuid,
                                                                       target_device=target_device_name,
                                                                       data_type=benchmark_data_type,
-                                                                      software_version=target_software_version)
+                                                                      software_version=target_software_version
+                                                                      hardware_type=target_hardware_type)
         model_benchmark = self.get_benchmark_task(benchmark_task=model_benchmark)
 
         if wait_until_done:

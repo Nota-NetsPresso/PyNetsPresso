@@ -122,7 +122,7 @@ class LauncherAPIClient:
         else:
             raise Exception(response_body["detail"])
         
-    def benchmark_model(self, model_uuid:str, target_device: DeviceName, data_type:DataType, software_version: str = None) -> BenchmarkTask:
+    def benchmark_model(self, model_uuid:str, target_device: DeviceName, data_type:DataType, software_version: str = None, hardware_type: str = None) -> BenchmarkTask:
         """Benchmark given model on the specified device.
 
         Args:
@@ -142,7 +142,8 @@ class LauncherAPIClient:
                                              input_model_uuid=model_uuid,
                                              target_device=target_device,
                                              data_type=data_type,
-                                             software_version = software_version)
+                                             software_version = software_version,
+                                             hardware_type=hardware_type)
         response = requests.post(url, json=request_data.dict(), headers=get_headers(self.user_session.access_token))
         response_body = json.loads(response.text)
         if response.status_code < 300:
