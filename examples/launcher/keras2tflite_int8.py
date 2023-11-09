@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     ###
     # Available Devices for ModelFramework.TENSORFLOW_LITE and DataType.INT8 (target_framework)
-    # DeviceName.ENSEMBLE_E7_DEVKIT_GEN2
+    # DeviceName.ALIF_ENSEMBLE_E7_DEVKIT_GEN2
     # DeviceName.RENESAS_RA8D1
     #
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     ###
     # Benchmark available Devices with TFLite(int8) models(ModelFramework.TENSORFLOW_LITE)
-    # DeviceName.ENSEMBLE_E7_DEVKIT_GEN2
+    # DeviceName.ALIF_ENSEMBLE_E7_DEVKIT_GEN2
     # DeviceName.RENESAS_RA8D1
     #
 
