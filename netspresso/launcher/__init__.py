@@ -236,8 +236,7 @@ class ModelBenchmarker(Launcher):
             if target_device_name in JETSON_DEVICES:
                 devices = filter_devices_with_device_software_version(software_version=target_software_version, devices=devices)
 
-            if hardware_type:
-                devices = filter_devices_with_hardware_type(hardware_type=hardware_type, devices=devices)
+            devices = filter_devices_with_hardware_type(hardware_type=hardware_type, devices=devices)
 
             if len(devices) < 1:
                 raise NotImplementedError("The benchmark is unavailable. There is no available device with given target_device_name and target_software_version.")
