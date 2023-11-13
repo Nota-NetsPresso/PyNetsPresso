@@ -236,6 +236,7 @@ class ModelBenchmarker(Launcher):
             wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
             target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
             target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
+            hardware_type (HardwareType): hardware_type. Acceleration options for the processor to the model inference.
 
         Raises:
             e: If an error occurs while benchmarking of the model.
