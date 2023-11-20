@@ -1,3 +1,6 @@
+import shutil
+import tempfile
+import os
 from typing import List, Union, Dict, Optional
 from dataclasses import is_dataclass
 from pathlib import Path
@@ -12,89 +15,117 @@ from netspresso_trainer.cfg import (
     LoggingConfig,
     EnvironmentConfig,
     DatasetConfig,
-    PathConfig,
-    ImageLabelPathConfig,
     LocalClassificationDatasetConfig,
     LocalDetectionDatasetConfig,
     LocalSegmentationDatasetConfig,
+    ClassificationAugmentationConfig,
+    DetectionAugmentationConfig,
+    SegmentationAugmentationConfig,
+    ClassificationScheduleConfig,
+    DetectionScheduleConfig,
+    SegmentationScheduleConfig,
 )
+from netspresso_trainer.cfg.data import PathConfig, ImageLabelPathConfig
+from netspresso_trainer.cfg.augmentation import *
 
-from .enums.model import Task, Backbone, Head, SUPPORTED_MODELS
-from .enums.data import Format
+from .enums import Backbone, Head, Format, Task, SUPPORTED_MODELS
+
+
+_DATA_CONFIG_TYPE_DICT = {
+    "classification": LocalClassificationDatasetConfig,
+    "detection": LocalDetectionDatasetConfig,
+    "segmentation": LocalSegmentationDatasetConfig,
+}
+
+_AUGMENTATION_CONFIG_TYPE_DICT = {
+    "classification": ClassificationAugmentationConfig,
+    "detection": DetectionAugmentationConfig,
+    "segmentation": SegmentationAugmentationConfig,
+}
+
+_TRAINING_CONFIG_TYPE_DICT = {
+    "classification": ClassificationScheduleConfig,
+    "detection": DetectionScheduleConfig,
+    "segmentation": SegmentationScheduleConfig,
+}
 
 
 class TrainerConfigs:
     def __init__(
         self,
-        data: Union[DatasetConfig, Path, str],
-        augmentation: Union[AugmentationConfig, Path, str],
-        model: Union[ModelConfig, Path, str],
-        training: Union[ScheduleConfig, Path, str],
-        logging: Union[LoggingConfig, Path, str],
-        environment: Union[EnvironmentConfig, Path, str],
-    ) -> None:
-        self.data = self._export_config_as_yaml(data, "data.yaml")
-        self.augmentation = self._export_config_as_yaml(augmentation, "augmentation.yaml")
-        self.model = self._export_config_as_yaml(model, "model.yaml")
-        self.training = self._export_config_as_yaml(training, "training.yaml")
-        self.logging = self._export_config_as_yaml(logging, "logging.yaml")
-        self.environment = self._export_config_as_yaml(environment, "environment.yaml")
+        data: Union[DatasetConfig, Path],
+        augmentation: Union[AugmentationConfig, Path],
+        model: Union[ModelConfig, Path],
+        training: Union[ScheduleConfig, Path],
+        logging: Union[LoggingConfig, Path],
+        environment: Union[EnvironmentConfig, Path],
+        prefix: str="temp_configs_",
+    ):
+        self.prefix = prefix
+        self.create_temp_folder()
+        self.data = self.process_config(data, "data")
+        self.augmentation = self.process_config(augmentation, "augmentation")
+        self.model = self.process_config(model, "model")
+        self.training = self.process_config(training, "training")
+        self.logging = self.process_config(logging, "logging")
+        self.environment = self.process_config(environment, "environment")
 
-    def _export_config_as_yaml(self, conf, yaml_path):
-        if is_dataclass(conf):
-            conf = OmegaConf.create(conf)
-            yaml_path = Path.cwd() / "temp_config" / yaml_path
-            yaml_path.parent.mkdir(parents=True, exist_ok=True)
-            logger.info(f"Save in {yaml_path}")
-            OmegaConf.save(config=conf, f=yaml_path)
-            return str(yaml_path)
+    def create_temp_folder(self):
+        self.temp_folder = tempfile.mkdtemp(prefix=self.prefix)
+
+    def process_config(self, config, type):
+        if is_dataclass(config):
+            return self._save_config_as_yaml(config, type)
         else:
-            return str(conf)
+            return config
+
+    def _save_config_as_yaml(self, config, type):
+        config = OmegaConf.create({type: config})
+        yaml_path = os.path.join(self.temp_folder, f"{type}.yaml")
+        with open(yaml_path, 'w') as file:
+            OmegaConf.save(config=config, f=yaml_path)
+
+        return yaml_path
 
 
 class ModelTrainer:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, task: Task) -> None:
+        self.task = task
 
-    def get_dataset_config(
+    def set_dataset_config(
         self,
-        task: Task,
-        format: Format,
         name: str,
         root_path: str,
-        id_mapping: Optional[Union[List[str], Dict[str, str]]],
+        train_image: str = "images/train",
+        train_label: str = "labels/train",
+        valid_image: str = "images/val",
+        valid_label: str = "labels/val",
+        id_mapping: Optional[Union[List[str], Dict[str, str]]] = None,
     ):
         common_config = {
             "name": name,
             "path": PathConfig(
                 root=root_path,
-                train=ImageLabelPathConfig(image="images/train", label="labels/train"),
-                valid=ImageLabelPathConfig(image="images/val", label="labels/val"),
+                train=ImageLabelPathConfig(image=train_image, label=train_label),
+                valid=ImageLabelPathConfig(image=valid_image, label=valid_label),
             ),
             "id_mapping": id_mapping,
         }
+        data = _DATA_CONFIG_TYPE_DICT[self.task.value](**common_config)
 
-        if task == Task.Image_Classification:
-            return LocalClassificationDatasetConfig(**common_config)
-        elif task == Task.Object_Detection:
-            return LocalDetectionDatasetConfig(**common_config)
-        elif task == Task.Semantic_Segmentation:
-            return LocalSegmentationDatasetConfig(**common_config)
+        return data
 
-    def _filter_heads_by_backbone(self, backbone: Backbone):
-        return [key[1].name for key in SUPPORTED_MODELS.keys() if key[0] == backbone]
-
-    def get_model_config(self, backbone: Backbone, head: Head):
+    def set_model_config(self, backbone: Backbone, head: Head):
         config_key = (backbone, head)
         model = SUPPORTED_MODELS.get(config_key)
-        available_heads = self._filter_heads_by_backbone(backbone=backbone)
+        available_heads = [key[1].name for key in SUPPORTED_MODELS.keys() if key[0] == backbone]
 
         if model is None:
             raise Exception(f"Unsupported head. Available heads are {available_heads}")
 
         return model
 
-    def get_training_config(
+    def set_training_config(
         self,
         seed: int = 1,
         opt: str = "adamw",
@@ -128,7 +159,7 @@ class ModelTrainer:
 
         return schedule_config
 
-    def get_augmentation_config(self, img_size, transforms, mix_transforms):
+    def set_augmentation_config(self, img_size, transforms, mix_transforms):
         augmentation_config = AugmentationConfig(
             img_size=img_size,
             transforms=transforms,
@@ -140,13 +171,18 @@ class ModelTrainer:
     def train(
         self,
         gpus: str,
-        data: Union[DatasetConfig, Path, str],
-        model: Union[ModelConfig, Path, str],
-        augmentation: Union[AugmentationConfig, Path, str] = None,
-        training: Union[ScheduleConfig, Path, str] = None,
-        logging: Union[LoggingConfig, Path, str] = LoggingConfig(),
-        environment: Union[EnvironmentConfig, Path, str] = EnvironmentConfig(),
+        data: Union[DatasetConfig, Path],
+        model: Union[ModelConfig, Path],
+        training: Union[ScheduleConfig, Path] = None,
+        augmentation: Union[AugmentationConfig, Path] = None,
+        logging: Union[LoggingConfig, Path] = LoggingConfig(),
+        environment: Union[EnvironmentConfig, Path] = EnvironmentConfig(),
     ):
+        if training is None:
+            training = _TRAINING_CONFIG_TYPE_DICT[self.task.value]()
+        if augmentation is None:
+            augmentation = _AUGMENTATION_CONFIG_TYPE_DICT[self.task.value]()
+        
         configs = TrainerConfigs(data, augmentation, model, training, logging, environment)
 
         train_with_yaml(
@@ -158,3 +194,6 @@ class ModelTrainer:
             logging=configs.logging,
             environment=configs.environment,
         )
+
+        # Remove temp config folder
+        shutil.rmtree(configs.temp_folder, ignore_errors=True)
