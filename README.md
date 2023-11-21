@@ -10,7 +10,8 @@
 </br>
 
 <div align="center">
-    <a href="https://github.com/Nota-NetsPresso/yolox_nota"> YOLOX </a>
+      <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85"> YOLO Fastest </a>
+    | <a href="https://github.com/Nota-NetsPresso/yolox_nota"> YOLOX </a>
     | <a href="https://github.com/Nota-NetsPresso/ultralytics_nota"> YOLOv8 </a> 
     | <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7"> YOLOv7 </a> 
     | <a href="https://github.com/Nota-NetsPresso/yolov5_nota"> YOLOv5 </a> 
@@ -112,6 +113,7 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
                 </details>
                 <details open>
                     <summary>Object Detection</summary>
+                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85">YOLO Fastest</a><br>
                     <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
                     <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
                     <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
@@ -269,6 +271,8 @@ logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} 
 | RASPBERRY_PI_ZERO_2W |  ✔️  |          |       ✔️        |       |          |
 | RENESAS_RZ_V2L       |  ✔️  |          |                 |  ✔️   |          |
 | RENESAS_RZ_V2M       |  ✔️  |          |                 |  ✔️   |          |
+| RENESAS_RA8D1       |      |          |        ✔️(only INT8)        |       |          |
+| ALIF_ENSEMBLE_E7_DEVKIT_GEN2       |     |          |        ✔️(only INT8)       |       |          |
 | JETSON_NANO          |  ✔️  |    ✔️    |                 |       |          |
 | JETSON_TX2           |  ✔️  |    ✔️    |                 |       |          |
 | JETSON_XAVIER        |  ✔️  |    ✔️    |                 |       |          |
