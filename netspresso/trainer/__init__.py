@@ -159,7 +159,7 @@ class ModelTrainer:
 
         return schedule_config
 
-    def set_augmentation_config(self, img_size, transforms, mix_transforms):
+    def set_augmentation_config(self, img_size, transforms, mix_transforms=None):
         augmentation_config = AugmentationConfig(
             img_size=img_size,
             transforms=transforms,
@@ -196,4 +196,5 @@ class ModelTrainer:
         )
 
         # Remove temp config folder
+        logger.info(f"Remove {configs.temp_folder} folder.")
         shutil.rmtree(configs.temp_folder, ignore_errors=True)
