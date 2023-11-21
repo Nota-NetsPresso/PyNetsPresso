@@ -19,7 +19,7 @@ if __name__ == "__main__":
     CONVERTED_MODEL_PATH = "converted_model.tflite"
     session = SessionClient(email=EMAIL, password=PASSWORD)
     converter = ModelConverter(user_session=session)
-    model: Model = converter.upload_model("./examples/sample_models/test.onnx")
+    model: Model = converter.upload_model("./examples/sample_models/yolox_nano.onnx")
 
     ###
     # Available Target Frameworks for Conversion with ONNX Models
