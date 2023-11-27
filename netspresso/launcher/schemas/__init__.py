@@ -1,9 +1,11 @@
 from enum import Enum
 from typing import Literal
 
+
 class StrEnumBase(str, Enum):
     def __repr__(self) -> str:
         return str.__repr__(self.value)
+
 
 class LauncherFunction(StrEnumBase):
     GENERAL = "GENERAL"
@@ -18,18 +20,22 @@ class LauncherFunction(StrEnumBase):
             "BENCHMARK",
         ]
 
+
 class DataType(StrEnumBase):
     FP32 = "FP32"
     FP16 = "FP16"
-    # IN8 = "INT8"
+    INT8 = "INT8"
+    NONE = ""
 
     @classmethod
     def create_literal(cls):
         return Literal[
             "FP32",
             "FP16",
-            # "INT8",
+            "INT8",
+            "",
         ]
+
 
 class ModelFramework(StrEnumBase):
     ONNX = "onnx"
@@ -51,7 +57,8 @@ class ModelFramework(StrEnumBase):
             "keras",
             "saved_model",
         ]
-    
+
+
 class DeviceName(StrEnumBase):
     RASPBERRY_PI_4B = "RaspberryPi4B"
     RASPBERRY_PI_3B_PLUS = "RaspberryPi3BPlus"
@@ -66,6 +73,8 @@ class DeviceName(StrEnumBase):
     JETSON_AGX_ORIN = "Jetson-AGX-Orin"
     AWS_T4 = "AWS-T4"
     Intel_XEON_W_2233 = "Intel-Xeon"
+    ALIF_ENSEMBLE_E7_DEVKIT_GEN2 = "Ensemble-E7-DevKit-Gen2"
+    RENESAS_RA8D1 = "Renesas-RA8D1"
 
     @classmethod
     def create_literal(cls):
@@ -83,28 +92,53 @@ class DeviceName(StrEnumBase):
             "Jetson-AGX-Orin",
             "AWS-T4",
             "Intel-Xeon",
+            "Ensemble-E7-DevKit-Gen2",
+            "Renesas-RA8D1",
         ]
-    
-JETSON_DEVICES = [DeviceName.JETSON_NANO, DeviceName.JETSON_TX2, DeviceName.JETSON_XAVIER, DeviceName.JETSON_NX, DeviceName.JETSON_AGX_ORIN]
-RASPBERRY_PI_DEVICES = [DeviceName.RASPBERRY_PI_4B, DeviceName.RASPBERRY_PI_3B_PLUS, DeviceName.RASPBERRY_PI_ZERO_W, DeviceName.RASPBERRY_PI_ZERO_2W]
+
+
+JETSON_DEVICES = [
+    DeviceName.JETSON_NANO,
+    DeviceName.JETSON_TX2,
+    DeviceName.JETSON_XAVIER,
+    DeviceName.JETSON_NX,
+    DeviceName.JETSON_AGX_ORIN,
+]
+RASPBERRY_PI_DEVICES = [
+    DeviceName.RASPBERRY_PI_4B,
+    DeviceName.RASPBERRY_PI_3B_PLUS,
+    DeviceName.RASPBERRY_PI_ZERO_W,
+    DeviceName.RASPBERRY_PI_ZERO_2W,
+]
 RENESAS_DEVICES = [DeviceName.RENESAS_RZ_V2L, DeviceName.RENESAS_RZ_V2M]
 NVIDIA_GRAPHIC_CARDS = [DeviceName.AWS_T4]
 INTEL_DEVICES = [DeviceName.Intel_XEON_W_2233]
+ONLY_INT8_DEVICES = [DeviceName.ALIF_ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]
+
 
 class SoftwareVersion(StrEnumBase):
-    JETPACK_4_4_1   = '4.4.1-b50'
-    JETPACK_4_6     = '4.6-b199'
-    JETPACK_5_0_1   = '5.0.1-b118'
-    JETPACK_5_0_2   = '5.0.2-b231'
+    JETPACK_4_4_1 = "4.4.1-b50"
+    JETPACK_4_6 = "4.6-b199"
+    JETPACK_5_0_1 = "5.0.1-b118"
+    JETPACK_5_0_2 = "5.0.2-b231"
 
     @classmethod
     def create_literal(cls):
         return Literal[
-            '4.4.1-b50',
-            '4.6-b199',
-            '5.0.1-b118',
-            '5.0.2-b231',
+            "4.4.1-b50",
+            "4.6-b199",
+            "5.0.1-b118",
+            "5.0.2-b231",
         ]
+
+
+class HardwareType(StrEnumBase):
+    HELIUM = "helium"
+
+    @classmethod
+    def create_literal(cls):
+        return Literal["helium"]
+
 
 class TaskStatus(StrEnumBase):
     IN_QUEUE = "IN_QUEUE"
@@ -115,6 +149,4 @@ class TaskStatus(StrEnumBase):
 
     @classmethod
     def create_literal(cls):
-        return Literal[
-            "IN_QUEUE", "IN_PROGRESS", "FINISHED", "ERROR", "USER_CANCEL"
-        ]
+        return Literal["IN_QUEUE", "IN_PROGRESS", "FINISHED", "ERROR", "USER_CANCEL"]

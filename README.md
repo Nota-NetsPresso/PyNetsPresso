@@ -10,7 +10,8 @@
 </br>
 
 <div align="center">
-    <a href="https://github.com/Nota-NetsPresso/yolox_nota"> YOLOX </a>
+      <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85"> YOLO Fastest </a>
+    | <a href="https://github.com/Nota-NetsPresso/yolox_nota"> YOLOX </a>
     | <a href="https://github.com/Nota-NetsPresso/ultralytics_nota"> YOLOv8 </a> 
     | <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7"> YOLOv7 </a> 
     | <a href="https://github.com/Nota-NetsPresso/yolov5_nota"> YOLOv5 </a> 
@@ -44,26 +45,47 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
 </br>
 
 <div align="center">
-    <a href="https://github.com/Nota-NetsPresso">
-        <img alt="github" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/github.png" width="3%">
-    </a>
-    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%"/>
-    <a href="https://www.facebook.com/NotaAI">
-        <img alt="facebook" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/facebook.png" width="3%">
-    </a>
-    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%"/>
-    <a href="https://twitter.com/nota_ai">
-        <img alt="twitter" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/twitter.png" width="3%">
-    </a>
-    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%"/>
-    <a href="https://www.youtube.com/channel/UCeewYFAqb2EqwEXZCfH9DVQ">
-        <img alt="youtube" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/youtube.png" width="3%">
-    </a>
-    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%"/>
-    <a href="https://www.linkedin.com/company/nota-incorporated">
-        <img alt="youtube" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/linkedin.png" width="3%">
-    </a>
+  <a href="https://github.com/Nota-NetsPresso" style="text-decoration:none;">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/github_white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/github.png">
+      <img alt="github" src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/github.png" width="3%">
+    </picture>
+  </a>
+  <img src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/logo-transparent.png" width="3%" alt="" />
+  <a href="https://www.facebook.com/NotaAI" style="text-decoration:none;">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/facebook_white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/facebook.png">
+      <img alt="facebook" src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/facebook.png" width="3%">
+    </picture>
+  </a>
+  <img src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/logo-transparent.png" width="3%" alt="" />
+  <a href="https://twitter.com/nota_ai" style="text-decoration:none;">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/twitter_white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/twitter.png">
+      <img alt="twitter" src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/twitter.png" width="3%">
+    </picture>
+  </a>
+  <img src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/logo-transparent.png" width="3%" alt="" />
+  <a href="https://www.youtube.com/channel/UCeewYFAqb2EqwEXZCfH9DVQ" style="text-decoration:none;">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/youtube_white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/youtube.png">
+      <img alt="youtube" src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/youtube.png" width="3%">
+    </picture>
+  </a>
+  <img src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/logo-transparent.png" width="3%" alt="" />
+  <a href="https://www.linkedin.com/company/nota-incorporated" style="text-decoration:none;">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/linkedin_white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/linkedin.png">
+      <img alt="youtube" src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/linkedin.png" width="3%">
+    </picture>
+  </a>
 </div>
+</br>
 </br>
 
 <div align="center">
@@ -91,6 +113,7 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
                 </details>
                 <details open>
                     <summary>Object Detection</summary>
+                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85">YOLO Fastest</a><br>
                     <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
                     <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
                     <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
@@ -248,6 +271,8 @@ logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} 
 | RASPBERRY_PI_ZERO_2W |  ✔️  |          |       ✔️        |       |          |
 | RENESAS_RZ_V2L       |  ✔️  |          |                 |  ✔️   |          |
 | RENESAS_RZ_V2M       |  ✔️  |          |                 |  ✔️   |          |
+| RENESAS_RA8D1       |      |          |        ✔️(only INT8)        |       |          |
+| ALIF_ENSEMBLE_E7_DEVKIT_GEN2       |     |          |        ✔️(only INT8)       |       |          |
 | JETSON_NANO          |  ✔️  |    ✔️    |                 |       |          |
 | JETSON_TX2           |  ✔️  |    ✔️    |                 |       |          |
 | JETSON_XAVIER        |  ✔️  |    ✔️    |                 |       |          |

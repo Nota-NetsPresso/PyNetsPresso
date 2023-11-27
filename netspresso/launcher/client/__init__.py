@@ -3,7 +3,14 @@ import requests
 
 from netspresso.client.utils.common import get_files, get_headers
 from netspresso.client import Config, EndPoint, SessionClient
-from netspresso.launcher.schemas.model import Model, ModelBenchmarkRequest, BenchmarkTask, ModelConversionRequest, ConversionTask, InputShape
+from netspresso.launcher.schemas.model import (
+    Model,
+    ModelBenchmarkRequest,
+    BenchmarkTask,
+    ModelConversionRequest,
+    ConversionTask,
+    InputShape,
+)
 from netspresso.launcher.schemas import LauncherFunction, ModelFramework, DeviceName, DataType
 
 
@@ -39,12 +46,15 @@ class LauncherAPIClient:
         else:
             raise Exception(response_body["detail"])
 
-    def convert_model(self, model_uuid: str,
-                      input_shape: InputShape,
-                      target_framework: ModelFramework,
-                      target_device: DeviceName,
-                      software_version: str) -> ConversionTask:
-        
+    def convert_model(
+        self,
+        model_uuid: str,
+        input_shape: InputShape,
+        target_framework: ModelFramework,
+        target_device: DeviceName,
+        data_type: DataType,
+        software_version: str,
+    ) -> ConversionTask:
         """Convert a model into the type the specific framework.
 
         Args:
@@ -52,6 +62,7 @@ class LauncherAPIClient:
             input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
             target_framework (ModelFramework): the target framework name.
             target_device (DeviceName): target device.
+            data_type (DataType): data type of the model.
             software_version (str): target device's software version.
 
         Raises:
@@ -62,12 +73,15 @@ class LauncherAPIClient:
         """
 
         url = f"{self.url}/convert"
-        request_data = ModelConversionRequest(user_uuid=self.user_session.user_id,
-                                              target_device_name=target_device,
-                                              input_model_uuid=model_uuid,
-                                              target_framework=target_framework,
-                                              input_shape=input_shape,
-                                              software_version=software_version)
+        request_data = ModelConversionRequest(
+            user_uuid=self.user_session.user_id,
+            target_device_name=target_device,
+            input_model_uuid=model_uuid,
+            target_framework=target_framework,
+            data_type=data_type,
+            input_shape=input_shape,
+            software_version=software_version,
+        )
         if software_version is not None:
             request_data.software_version = software_version
 
@@ -77,7 +91,7 @@ class LauncherAPIClient:
             return ConversionTask(**response_body)
         else:
             raise Exception(response_body["detail"])
-        
+
     def get_conversion_task(self, conversion_task_uuid: str) -> ConversionTask:
         """Get the conversion task information with given conversion task uuid.
 
@@ -118,8 +132,15 @@ class LauncherAPIClient:
             return response_body
         else:
             raise Exception(response_body["detail"])
-        
-    def benchmark_model(self, model_uuid:str, target_device: DeviceName, data_type:DataType, software_version: str = None) -> BenchmarkTask:
+
+    def benchmark_model(
+        self,
+        model_uuid: str,
+        target_device: DeviceName,
+        data_type: DataType,
+        software_version: str = None,
+        hardware_type: str = None,
+    ) -> BenchmarkTask:
         """Benchmark given model on the specified device.
 
         Args:
@@ -135,18 +156,21 @@ class LauncherAPIClient:
             BenchmarkTask: model benchmark task object.
         """
         url = f"{self.url}/benchmark"
-        request_data = ModelBenchmarkRequest(user_uuid=self.user_session.user_id,
-                                             input_model_uuid=model_uuid,
-                                             target_device=target_device,
-                                             data_type=data_type,
-                                             software_version = software_version)
+        request_data = ModelBenchmarkRequest(
+            user_uuid=self.user_session.user_id,
+            input_model_uuid=model_uuid,
+            target_device=target_device,
+            data_type=data_type,
+            software_version=software_version,
+            hardware_type=hardware_type,
+        )
         response = requests.post(url, json=request_data.dict(), headers=get_headers(self.user_session.access_token))
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return BenchmarkTask(**response_body)
         else:
             raise Exception(response_body["detail"])
-        
+
     def get_benchmark(self, benchmark_task_uuid: str) -> BenchmarkTask:
         """Get the benchmark task information with given benchmark task uuid.
 
@@ -166,4 +190,3 @@ class LauncherAPIClient:
             return BenchmarkTask(**response_body)
         else:
             raise Exception(response_body["detail"])
-        
