@@ -2,14 +2,11 @@ from netspresso.trainer import ModelTrainer, Task
 
 
 # 1. Declare Trainer
-trainer = ModelTrainer(task=Task.Image_Classification)
+trainer = ModelTrainer(task=Task.OBJECT_DETECTION)
 
-data = "config/data/beans.yaml"
-model = "config/model/resnet50-classification.yaml"
+# 2. Set Config
+trainer.set_dataset_config_with_yaml(yaml_path="config/data/beans.yaml")
+trainer.set_model_config_with_yaml(yaml_path="config/model/resnet50-classification.yaml")
 
-# 2. Train
-trainer.train(
-    gpus="0, 1",
-    data=data,
-    model=model,
-)
+# 3. Train
+trainer.train(gpus="0, 1")
