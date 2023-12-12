@@ -30,6 +30,7 @@ from netspresso.compressor.client.schemas.compression import (
 from netspresso.compressor.core.model import CompressedModel, Model, ModelCollection, ModelFactory
 from netspresso.compressor.core.compression import CompressionInfo
 from netspresso.client import BaseClient, validate_token
+from .utils.onnx import export_onnx
 
 
 class ModelCompressor(BaseClient):
@@ -227,7 +228,7 @@ class ModelCompressor(BaseClient):
                 logger.info(f"The specified folder does not exist. Local Path: {Path(local_path).parent}")
                 Path(local_path).parent.mkdir(parents=True, exist_ok=True)
             request.urlretrieve(download_link.url, local_path)
-            logger.info(f"Model downloaded at {local_path}")
+            logger.info(f"Model downloaded at {Path(local_path)}")
 
         except Exception as e:
             logger.error(f"Download model failed. Error: {e}")
@@ -413,6 +414,8 @@ class ModelCompressor(BaseClient):
             self.client.compress_model(data=data, access_token=self.user_session.access_token)
             self.download_model(model_id=compression_info.new_model_id, local_path=output_path)
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
+            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
+                export_onnx(output_path, compressed_model.input_shapes)
             logger.info(f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}")
             logger.info("50 credits have been consumed.")
 
@@ -516,6 +519,8 @@ class ModelCompressor(BaseClient):
             self.client.compress_model(data=data, access_token=self.user_session.access_token)
             self.download_model(model_id=compression_info.new_model_id, local_path=output_path)
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
+            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
+                export_onnx(output_path, compressed_model.input_shapes)
             logger.info(f"Recommendation compression successfully. Compressed Model ID: {compressed_model.model_id}")
             logger.info("50 credits have been consumed.")
 
@@ -555,6 +560,8 @@ class ModelCompressor(BaseClient):
             model_info = self.client.auto_compression(data=data, access_token=self.user_session.access_token)
             self.download_model(model_id=model_info.model_id, local_path=output_path)
             compressed_model = self.model_factory.create_compressed_model(model_info=model_info)
+            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
+                export_onnx(output_path, compressed_model.input_shapes)
             logger.info(f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}")
             logger.info("25 credits have been consumed.")
 
