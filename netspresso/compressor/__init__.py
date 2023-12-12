@@ -227,7 +227,7 @@ class ModelCompressor(BaseClient):
                 logger.info(f"The specified folder does not exist. Local Path: {Path(local_path).parent}")
                 Path(local_path).parent.mkdir(parents=True, exist_ok=True)
             request.urlretrieve(download_link.url, local_path)
-            logger.info(f"Download model successfully. Local Path: {local_path}")
+            logger.info(f"Model downloaded at {local_path}")
 
         except Exception as e:
             logger.error(f"Download model failed. Error: {e}")

@@ -214,7 +214,7 @@ class ModelConverter(Launcher):
             logger.info(f"The specified folder does not exist. Local Path: {Path(local_path).parent}")
             Path(local_path).parent.mkdir(parents=True, exist_ok=True)
         request.urlretrieve(download_url, local_path)
-        logger.info(f"The file has been successfully downloaded at : {local_path}")
+        logger.info(f"Model downloaded at {local_path}")
 
 
 class ModelBenchmarker(Launcher):
