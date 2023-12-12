@@ -1,7 +1,8 @@
+import time
 from typing import Dict, List, Union
 from loguru import logger
 from urllib import request
-import time
+from pathlib import Path
 
 from netspresso.client import BaseClient, validate_token
 from netspresso.launcher.schemas import (
@@ -182,7 +183,7 @@ class ModelConverter(Launcher):
         return self.client.get_conversion_task(conversion_task_uuid=conversion_task_uuid)
 
     @validate_token
-    def download_converted_model(self, conversion_task: Union[str, ConversionTask], dst: str):
+    def download_converted_model(self, conversion_task: Union[str, ConversionTask], local_path: str):
         """Download the converted model with given conversion task or conversion task uuid.
 
         Args:
@@ -209,8 +210,11 @@ class ModelConverter(Launcher):
             )
 
         download_url = self.client.get_converted_model(conversion_task_uuid=conversion_result.convert_task_uuid)
-        request.urlretrieve(download_url, dst)
-        logger.info(f"The file has been successfully downloaded at : {dst}")
+        if not Path(local_path).parent.exists():
+            logger.info(f"The specified folder does not exist. Local Path: {Path(local_path).parent}")
+            Path(local_path).parent.mkdir(parents=True, exist_ok=True)
+        request.urlretrieve(download_url, local_path)
+        logger.info(f"Model downloaded at {Path(local_path)}")
 
 
 class ModelBenchmarker(Launcher):
