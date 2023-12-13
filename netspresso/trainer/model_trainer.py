@@ -39,9 +39,7 @@ class ModelTrainer:
     def _validate_task(self, task):
         available_tasks = [task.value for task in Task]
         if task not in available_tasks:
-            raise ValueError(
-                f"The task supports {available_tasks}. The entered task is {task}."
-            )
+            raise ValueError(f"The task supports {available_tasks}. The entered task is {task}.")
         return task
 
     def _validate_config(self):
@@ -94,7 +92,7 @@ class ModelTrainer:
             raise ValueError(
                 f"The '{model_name}' model is not supported for the '{self.task}' task. The available models are {self.available_models}."
             )
-        
+
         self.model = model()
 
     def set_model_config_with_yaml(self, yaml_path: Union[Path, str]):
