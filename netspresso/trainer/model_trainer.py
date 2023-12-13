@@ -86,12 +86,14 @@ class ModelTrainer:
         self.data = yaml_path
 
     def set_model(self, model_name):
-        self.model = self._get_available_models().get(model_name)()
+        model = self._get_available_models().get(model_name)
 
-        if self.model is None:
+        if model is None:
             raise ValueError(
                 f"The '{model_name}' model is not supported for the '{self.task}' task. The available models are {self.available_models}."
             )
+        
+        self.model = model()
 
     def set_model_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.model = yaml_path
