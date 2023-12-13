@@ -85,7 +85,7 @@ class ModelTrainer:
     def set_dataset_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.data = yaml_path
 
-    def set_model(self, model_name):
+    def set_model_config(self, model_name):
         model = self._get_available_models().get(model_name)
 
         if model is None:

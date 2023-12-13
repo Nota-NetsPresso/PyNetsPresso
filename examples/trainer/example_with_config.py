@@ -1,4 +1,4 @@
-from netspresso.trainer import ModelTrainer, Task, Backbone, Head, Resize
+from netspresso.trainer import ModelTrainer, Task, Resize
 
 
 # 1. Declare Trainer
@@ -17,7 +17,8 @@ trainer.set_dataset_config(
 )
 
 # 2-2. Model
-trainer.set_model_config(backbone=Backbone.CSPDarkNet, head=Head.YOLOX_Head)
+print(trainer.available_models)
+trainer.set_model_config(model_name="YOLOX")
 
 # 2-3. Augmentation
 trainer.set_augmentation_config(img_size=512, transforms=[Resize(size=512)])
