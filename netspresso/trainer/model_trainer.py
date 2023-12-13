@@ -22,6 +22,7 @@ from .registries import (
     DETECTION_MODELS,
     SEGMENTATION_MODELS,
 )
+from .enums import Task
 
 
 class ModelTrainer:
@@ -36,9 +37,10 @@ class ModelTrainer:
         self.environment = EnvironmentConfig()
 
     def _validate_task(self, task):
-        if task not in ["classification", "detection", "segmentation"]:
+        available_tasks = [task.value for task in Task]
+        if task not in available_tasks:
             raise ValueError(
-                f"The task supports classification, detection, and segmentation. The entered task is {task}."
+                f"The task supports {available_tasks}. The entered task is {task}."
             )
         return task
 
