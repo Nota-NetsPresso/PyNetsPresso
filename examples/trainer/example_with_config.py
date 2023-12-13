@@ -17,7 +17,7 @@ trainer.set_dataset_config(
 )
 
 # 2-2. Model
-print(trainer.available_models)
+print(trainer.available_models)  # ['EfficientFormer', 'YOLOX']
 trainer.set_model_config(model_name="YOLOX")
 
 # 2-3. Augmentation
