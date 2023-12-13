@@ -9,68 +9,19 @@ from netspresso_trainer.cfg import (
     ScheduleConfig,
     LoggingConfig,
     EnvironmentConfig,
-    LocalClassificationDatasetConfig,
-    LocalDetectionDatasetConfig,
-    LocalSegmentationDatasetConfig,
-    ClassificationAugmentationConfig,
-    DetectionAugmentationConfig,
-    SegmentationAugmentationConfig,
-    ClassificationScheduleConfig,
-    DetectionScheduleConfig,
-    SegmentationScheduleConfig,
 )
 from netspresso_trainer.cfg.data import PathConfig, ImageLabelPathConfig
 from netspresso_trainer.cfg.augmentation import *
-from netspresso_trainer.cfg.model import *
 
 from .trainer_configs import TrainerConfigs
-
-
-_DATA_CONFIG_TYPE_DICT = {
-    "classification": LocalClassificationDatasetConfig,
-    "detection": LocalDetectionDatasetConfig,
-    "segmentation": LocalSegmentationDatasetConfig,
-}
-
-_AUGMENTATION_CONFIG_TYPE_DICT = {
-    "classification": ClassificationAugmentationConfig,
-    "detection": DetectionAugmentationConfig,
-    "segmentation": SegmentationAugmentationConfig,
-}
-
-_TRAINING_CONFIG_TYPE_DICT = {
-    "classification": ClassificationScheduleConfig,
-    "detection": DetectionScheduleConfig,
-    "segmentation": SegmentationScheduleConfig,
-}
-
-CLASSIFICATION_MODELS = {
-    "EfficientFormer": ClassificationEfficientFormerModelConfig(),
-    "MobileNetV3": ClassificationMobileNetV3ModelConfig(),
-    "MobileViT": ClassificationMobileViTModelConfig(),
-    "ResNet": ClassificationResNetModelConfig(),
-    "SegFormer": ClassificationSegFormerModelConfig(),
-    "ViT": ClassificationViTModelConfig(),
-    "MixNetS": ClassificationMixNetSmallModelConfig(),
-    "MixNetM": ClassificationMixNetMediumModelConfig(),
-    "MixNetL": ClassificationMixNetLargeModelConfig(),
-}
-
-DETECTION_MODELS = {
-    "EfficientFormer": DetectionEfficientFormerModelConfig(),
-    "YOLOX": DetectionYoloXModelConfig(),
-}
-
-SEGMENTATION_MODELS = {
-    "EfficientFormer": SegmentationEfficientFormerModelConfig(),
-    "MobileNetV3": SegmentationMobileNetV3ModelConfig(),
-    "ResNet": SegmentationResNetModelConfig(),
-    "SegFormer": SegmentationSegFormerModelConfig(),
-    "MixNetS": SegmentationMixNetSmallModelConfig(),
-    "MixNetM": SegmentationMixNetMediumModelConfig(),
-    "MixNetL": SegmentationMixNetLargeModelConfig(),
-    "PIDNet": PIDNetModelConfig(),
-}
+from .registries import (
+    DATA_CONFIG_TYPE,
+    TRAINING_CONFIG_TYPE,
+    AUGMENTATION_CONFIG_TYPE,
+    CLASSIFICATION_MODELS,
+    DETECTION_MODELS,
+    SEGMENTATION_MODELS,
+)
 
 
 class ModelTrainer:
@@ -79,8 +30,8 @@ class ModelTrainer:
         self.available_models = list(self._get_available_models().keys())
         self.data = None
         self.model = None
-        self.training = _TRAINING_CONFIG_TYPE_DICT[self.task]()
-        self.augmentation = _AUGMENTATION_CONFIG_TYPE_DICT[self.task]()
+        self.training = TRAINING_CONFIG_TYPE[self.task]()
+        self.augmentation = AUGMENTATION_CONFIG_TYPE[self.task]()
         self.logging = LoggingConfig()
         self.environment = EnvironmentConfig()
 
@@ -129,13 +80,13 @@ class ModelTrainer:
             ),
             "id_mapping": id_mapping,
         }
-        self.data = _DATA_CONFIG_TYPE_DICT[self.task](**common_config)
+        self.data = DATA_CONFIG_TYPE[self.task](**common_config)
 
     def set_dataset_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.data = yaml_path
 
     def set_model(self, model_name):
-        self.model = self._get_available_models().get(model_name)
+        self.model = self._get_available_models().get(model_name)()
 
         if self.model is None:
             raise ValueError(
