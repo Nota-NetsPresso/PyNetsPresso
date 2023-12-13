@@ -21,9 +21,9 @@ from netspresso_trainer.cfg import (
 )
 from netspresso_trainer.cfg.data import PathConfig, ImageLabelPathConfig
 from netspresso_trainer.cfg.augmentation import *
+from netspresso_trainer.cfg.model import *
 
 from .trainer_configs import TrainerConfigs
-from .enums import Backbone, Head, SUPPORTED_MODELS
 
 
 _DATA_CONFIG_TYPE_DICT = {
@@ -44,10 +44,39 @@ _TRAINING_CONFIG_TYPE_DICT = {
     "segmentation": SegmentationScheduleConfig,
 }
 
+CLASSIFICATION_MODELS = {
+    "EfficientFormer": ClassificationEfficientFormerModelConfig(),
+    "MobileNetV3": ClassificationMobileNetV3ModelConfig(),
+    "MobileViT": ClassificationMobileViTModelConfig(),
+    "ResNet": ClassificationResNetModelConfig(),
+    "SegFormer": ClassificationSegFormerModelConfig(),
+    "ViT": ClassificationViTModelConfig(),
+    "MixNetS": ClassificationMixNetSmallModelConfig(),
+    "MixNetM": ClassificationMixNetMediumModelConfig(),
+    "MixNetL": ClassificationMixNetLargeModelConfig(),
+}
+
+DETECTION_MODELS = {
+    "EfficientFormer": DetectionEfficientFormerModelConfig(),
+    "YOLOX": DetectionYoloXModelConfig(),
+}
+
+SEGMENTATION_MODELS = {
+    "EfficientFormer": SegmentationEfficientFormerModelConfig(),
+    "MobileNetV3": SegmentationMobileNetV3ModelConfig(),
+    "ResNet": SegmentationResNetModelConfig(),
+    "SegFormer": SegmentationSegFormerModelConfig(),
+    "MixNetS": SegmentationMixNetSmallModelConfig(),
+    "MixNetM": SegmentationMixNetMediumModelConfig(),
+    "MixNetL": SegmentationMixNetLargeModelConfig(),
+    "PIDNet": PIDNetModelConfig(),
+}
+
 
 class ModelTrainer:
     def __init__(self, task) -> None:
         self.task = self._validate_task(task)
+        self.available_models = list(self._get_available_models().keys())
         self.data = None
         self.model = None
         self.training = _TRAINING_CONFIG_TYPE_DICT[self.task]()
@@ -57,14 +86,29 @@ class ModelTrainer:
 
     def _validate_task(self, task):
         if task not in ["classification", "detection", "segmentation"]:
-            raise ValueError(f"The training task supports classification, detection, and segmentation. The entered task is {task}.")
+            raise ValueError(
+                f"The task supports classification, detection, and segmentation. The entered task is {task}."
+            )
         return task
 
     def _validate_config(self):
         if self.data is None:
-            raise Exception("The dataset is not set. Use `set_dataset_config` or `set_dataset_config_with_yaml` to set the dataset configuration.")
+            raise Exception(
+                "The dataset is not set. Use `set_dataset_config` or `set_dataset_config_with_yaml` to set the dataset configuration."
+            )
         if self.model is None:
-            raise Exception("The model is not set. Use `set_model_config` or `set_model_config_with_yaml` to set the model configuration.")
+            raise Exception(
+                "The model is not set. Use `set_model_config` or `set_model_config_with_yaml` to set the model configuration."
+            )
+
+    def _get_available_models(self):
+        available_models = {
+            "classification": CLASSIFICATION_MODELS,
+            "detection": DETECTION_MODELS,
+            "segmentation": SEGMENTATION_MODELS,
+        }[self.task]
+
+        return available_models
 
     def set_dataset_config(
         self,
@@ -90,13 +134,13 @@ class ModelTrainer:
     def set_dataset_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.data = yaml_path
 
-    def set_model_config(self, backbone: Backbone, head: Head):
-        config_key = (backbone, head)
-        self.model = SUPPORTED_MODELS.get(config_key)
-        available_heads = [key[1].name for key in SUPPORTED_MODELS.keys() if key[0] == backbone]
+    def set_model(self, model_name):
+        self.model = self._get_available_models().get(model_name)
 
         if self.model is None:
-            raise Exception(f"Unsupported head. Available heads are {available_heads}")
+            raise ValueError(
+                f"The '{model_name}' model is not supported for the '{self.task}' task. The available models are {self.available_models}."
+            )
 
     def set_model_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.model = yaml_path
@@ -157,7 +201,7 @@ class ModelTrainer:
         save_optimizer_state: bool = True,
         validation_epoch: int = 10,
         save_checkpoint_epoch: Optional[int] = None,
-    ):    
+    ):
         self.logging = LoggingConfig(
             project_id=project_id,
             output_dir=output_dir,
