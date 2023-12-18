@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List, Union
+from typing import Union
 from loguru import logger
 from urllib import request
 from pathlib import Path
@@ -44,7 +44,7 @@ class Launcher(BaseClient):
         self.client = LauncherAPIClient(user_sessoin=self.user_session)
 
     @validate_token
-    def upload_model(self, model_file_path: str) -> Model:
+    def _upload_model(self, model_file_path: Union[Path, str]) -> Model:
         """Upload a model for launcher.
 
         Args:
@@ -65,26 +65,28 @@ class ModelConverter(Launcher):
     @validate_token
     def convert_model(
         self,
-        model: Union[str, Model],
-        input_shape: InputShape,
+        model_path: Union[Path, str],
+        output_path: Union[Path, str],
         target_framework: Union[str, ModelFramework],
         data_type: DataType = DataType.FP16,
         target_device: TargetDevice = None,
         wait_until_done: bool = True,
         target_device_name: DeviceName = None,
         target_software_version: SoftwareVersion = None,
+        input_shape: InputShape = None,
     ) -> ConversionTask:
         """Convert a model into the type the specific framework.
 
         Args:
-            model (str): The uuid of the model or Launcher Model Object.
-            input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
+            model (str): The file path where the model is located.
+            output_path (str): The local path to save the converted model.
             target_framework (ModelFramework | str): the target framework name.
             data_type (DataType): data type of the model.
             target_device (TargetDevice): target device. If it's not set, target_device_name and target_software_version have to be set.
             wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
             target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
             target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
+            input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
 
         Raises:
             e: If an error occurs while converting the model.
@@ -92,6 +94,8 @@ class ModelConverter(Launcher):
         Returns:
             ConversionTask: model conversion task object.
         """
+        model = self._upload_model(model_path)
+
         model_uuid = model
         if type(model) is Model:
             model_uuid = model.model_uuid
@@ -155,6 +159,8 @@ class ModelConverter(Launcher):
             while conversion_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
                 conversion_task = self.get_conversion_task(conversion_task)
                 time.sleep(1)
+
+        self.download_converted_model(conversion_task, output_path)
 
         return conversion_task
 
