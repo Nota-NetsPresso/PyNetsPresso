@@ -428,24 +428,30 @@ class ModelCompressor(BaseClient):
     @validate_token
     def recommendation_compression(
         self,
-        model_id: str,
         model_name: str,
         compression_method: CompressionMethod,
         recommendation_method: RecommendationMethod,
         recommendation_ratio: float,
+        input_path: str,
         output_path: str,
+        task: Task,
+        framework: Framework,
+        input_shapes: List[Dict[str, int]],
         options: Options = Options(),
         dataset_path: str = None,
     ) -> CompressedModel:
         """Compress a recommendation-based model using the given compression and recommendation methods.
 
         Args:
-            model_id (str): The ID of the model.
-            model_name (str): The name of the compressed model.
+            model_name (str): The name of the model.
             compression_method (CompressionMethod): The selected compression method.
             recommendation_method (RecommendationMethod): The selected recommendation method.
             recommendation_ratio (float): The compression ratio recommended by the recommendation method.
+            input_path (str): The file path where the model is located.
             output_path (str): The local path to save the compressed model.
+            task (Task): The task of the model.
+            framework (Framework): The framework of the model.
+            input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
             options(Options, optional): The options for pruning method.
             dataset_path (str, optional): The path of the dataset used for nuclear norm compression method. Default is None.
 
@@ -457,9 +463,14 @@ class ModelCompressor(BaseClient):
         """
 
         try:
-            model = self.get_model(model_id)
-
             logger.info("Compressing recommendation-based model...")
+            model = self.upload_model(
+                model_name=model_name,
+                task=task,
+                framework=framework,
+                file_path=input_path,
+                input_shapes=input_shapes,
+            )
 
             if model.framework == Framework.PYTORCH and compression_method == CompressionMethod.PR_NN:
                 raise Exception("The Nuclear Norm is only supported in the TensorFlow-Keras framework.")
@@ -500,6 +511,7 @@ class ModelCompressor(BaseClient):
                 recommendation_ratio=recommendation_ratio,
                 options=options.dict(),
             )
+            logger.info("Compressing model...")
             recommendation_result = self.client.get_recommendation(data=data, access_token=self.user_session.access_token)
 
             for recommended_layer in recommendation_result.recommended_layers:
@@ -532,13 +544,16 @@ class ModelCompressor(BaseClient):
 
     @validate_token
     def automatic_compression(
-        self, model_id: str, model_name: str, output_path: str, compression_ratio: float = 0.5
+        self, model_name: str, task: Task, framework: Framework, input_shapes: List[Dict[str, int]], input_path: str, output_path: str, compression_ratio: float = 0.5
     ) -> CompressedModel:
         """Compress a model automatically based on the given compression ratio.
 
         Args:
-            model_id (str): The ID of the model.
-            model_name (str): The name of the compressed model.
+            model_name (str): The name of the model.
+            task (Task): The task of the model.
+            framework (Framework): The framework of the model.
+            input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
+            input_path (str): The file path where the model is located.
             output_path (str): The local path to save the compressed model.
             compression_ratio (float): The compression ratio for automatic compression. Defaults to 0.5.
 
@@ -551,12 +566,21 @@ class ModelCompressor(BaseClient):
 
         try:
             logger.info("Compressing automatic-based model...")
-            data = AutoCompressionRequest(
-                model_id=model_id,
+            model = self.upload_model(
                 model_name=model_name,
+                task=task,
+                framework=framework,
+                file_path=input_path,
+                input_shapes=input_shapes,
+            )
+
+            data = AutoCompressionRequest(
+                model_id=model.model_id,
+                model_name=f"{model_name}_automatic_{compression_ratio}",
                 recommendation_ratio=compression_ratio,
                 save_path=output_path,
             )
+            logger.info("Compressing model...")
             model_info = self.client.auto_compression(data=data, access_token=self.user_session.access_token)
             self.download_model(model_id=model_info.model_id, local_path=output_path)
             compressed_model = self.model_factory.create_compressed_model(model_info=model_info)
