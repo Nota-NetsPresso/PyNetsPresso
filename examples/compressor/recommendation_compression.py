@@ -4,10 +4,6 @@ from netspresso.compressor import (
     Framework,
     CompressionMethod,
     RecommendationMethod,
-    Policy,
-    LayerNorm,
-    GroupPolicy,
-    Options,
 )
 
 
@@ -16,34 +12,24 @@ PASSWORD = "YOUR_PASSWORD"
 compressor = ModelCompressor(email=EMAIL, password=PASSWORD)
 
 # Upload Model
-UPLOAD_MODEL_NAME = "test_pt"
+MODEL_NAME = "test_pt"
 TASK = Task.IMAGE_CLASSIFICATION
 FRAMEWORK = Framework.PYTORCH
-UPLOAD_MODEL_PATH = "./examples/sample_models/graphmodule.pt"
-INPUT_SHAPES = [{"batch": 2, "channel": 3, "dimension": [224, 224]}]
-model = compressor.upload_model(
-    model_name=UPLOAD_MODEL_NAME,
-    task=TASK,
-    framework=FRAMEWORK,
-    file_path=UPLOAD_MODEL_PATH,
-    input_shapes=INPUT_SHAPES,
-)
-
-# Recommendation Compression
-COMPRESSED_MODEL_NAME = "test_l2norm"
+INPUT_MODEL_PATH = "./examples/sample_models/graphmodule.pt"
+OUTPUT_MODEL_PATH = "./outputs/compressed/graphmodule_recommend.pt"
+INPUT_SHAPES = [{"batch": 1, "channel": 3, "dimension": [224, 224]}]
 COMPRESSION_METHOD = CompressionMethod.PR_L2
 RECOMMENDATION_METHOD = RecommendationMethod.SLAMP
 RECOMMENDATION_RATIO = 0.5
-OUTPUT_PATH = "./graphmodule_recommend.pt"
-OPTIONS = Options(
-    policy=Policy.AVERAGE, layer_norm=LayerNorm.STANDARD_SCORE, group_policy=GroupPolicy.AVERAGE, reshape_channel_axis=-1
-)
+
 compressed_model = compressor.recommendation_compression(
-    model_id=model.model_id,
-    model_name=COMPRESSED_MODEL_NAME,
+    model_name=MODEL_NAME,
+    task=TASK,
+    framework=FRAMEWORK,
     compression_method=COMPRESSION_METHOD,
     recommendation_method=RECOMMENDATION_METHOD,
     recommendation_ratio=RECOMMENDATION_RATIO,
-    options=OPTIONS,
-    output_path=OUTPUT_PATH,
+    input_path=INPUT_MODEL_PATH,
+    output_path=OUTPUT_MODEL_PATH,
+    input_shapes=INPUT_SHAPES,
 )
