@@ -1,15 +1,22 @@
 from loguru import logger
 from netspresso.client import SessionClient
-from netspresso.launcher import ModelConverter, ModelBenchmarker, ModelFramework, DeviceName, BenchmarkTask, ConversionTask, Model
+from netspresso.launcher import (
+    ModelConverter,
+    ModelBenchmarker,
+    ModelFramework,
+    DeviceName,
+    BenchmarkTask,
+    ConversionTask,
+)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     EMAIL = "YOUR_EMAIL"
     PASSWORD = "YOUR_PASSWORD"
-    CONVERTED_MODEL_PATH = "converted_model.tflite"
+    MODEL_PATH = "./examples/sample_models/test.onnx"
+    CONVERTED_MODEL_PATH = "./outputs/converted/converted_model.tflite"
     session = SessionClient(email=EMAIL, password=PASSWORD)
     converter = ModelConverter(user_session=session)
-    model: Model = converter.upload_model("./examples/sample_models/test.onnx")
 
     ###
     # Available Target Frameworks for Conversion with ONNX Models
@@ -28,20 +35,23 @@ if __name__ == '__main__':
     # DeviceName.RASPBERRY_PI_ZERO_2W
     #
 
-    conversion_task: ConversionTask = converter.convert_model(model=model,
-                                                              input_shape=model.input_shape,
-                                                              target_framework=ModelFramework.TENSORFLOW_LITE,
-                                                              target_device_name=DeviceName.RASPBERRY_PI_4B,
-                                                              wait_until_done=True)
+    conversion_task: ConversionTask = converter.convert_model(
+        model_path=MODEL_PATH,
+        target_framework=ModelFramework.TENSORFLOW_LITE,
+        target_device_name=DeviceName.RASPBERRY_PI_4B,
+        output_path=CONVERTED_MODEL_PATH,
+    )
     ########################
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
-    # conversion_task: ConversionTask = converter.convert_model(model=model,
-    #                                                           input_shape=model.input_shape,
-    #                                                           target_framework=ModelFramework.TENSORFLOW_LITE,
-    #                                                           target_device_name=DeviceName.RASPBERRY_PI_4B,
-    #                                                           wait_until_done=False)
+    # conversion_task: ConversionTask = converter.convert_model(
+    #     model_path=MODEL_PATH,
+    #     target_framework=ModelFramework.TENSORFLOW_LITE,
+    #     target_device_name=DeviceName.RASPBERRY_PI_4B,
+    #     output_path=CONVERTED_MODEL_PATH,
+    #     wait_until_done=False,
+    # )
 
     # while conversion_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
     #     conversion_task = converter.get_conversion_task(conversion_task)
@@ -50,11 +60,8 @@ if __name__ == '__main__':
 
     # conversion_task = converter.get_conversion_task(conversion_task)
     logger.info(conversion_task)
-    converter.download_converted_model(conversion_task, dst=CONVERTED_MODEL_PATH)
 
-    
     benchmarker = ModelBenchmarker(user_session=session)
-    benchmark_model: Model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
 
     ###
     # Benchmark available Devices with TFLite models(ModelFramework.TENSORFLOW_LITE)
@@ -64,16 +71,19 @@ if __name__ == '__main__':
     # DeviceName.RASPBERRY_PI_ZERO_2W
     #
 
-    benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
-                                                                target_device_name=DeviceName.RASPBERRY_PI_4B,
-                                                                wait_until_done=True)
+    benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
+        model_path=CONVERTED_MODEL_PATH,
+        target_device_name=DeviceName.RASPBERRY_PI_4B,
+    )
     ########################
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
-    # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(model=benchmark_model,
-    #                                                             target_device_name=DeviceName.RASPBERRY_PI_4B,
-    #                                                             wait_until_done=False)
+    # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
+    #     model_path=CONVERTED_MODEL_PATH,
+    #     target_device_name=DeviceName.RASPBERRY_PI_4B,
+    #     wait_until_done=False,
+    # )
 
     # while benchmark_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
     #     benchmark_task = benchmarker.get_benchmark_task(benchmark_task=benchmark_task)
