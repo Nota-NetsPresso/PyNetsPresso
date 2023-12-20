@@ -14,7 +14,7 @@ from netspresso.compressor.client.utils.enum import (
 
 
 class InputLayer(BaseModel):
-    batch: Any = Field(0, description="Input Batch")
+    batch: Any = Field(1, description="Input Batch")
     channel: int = Field(0, description="Input Channel")
     dimension: List[int] = Field([0], description="Input Diemension")
 

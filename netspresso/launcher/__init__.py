@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List, Union
+from typing import Union
 from loguru import logger
 from urllib import request
 from pathlib import Path
@@ -44,7 +44,7 @@ class Launcher(BaseClient):
         self.client = LauncherAPIClient(user_sessoin=self.user_session)
 
     @validate_token
-    def upload_model(self, model_file_path: str) -> Model:
+    def _upload_model(self, model_file_path: Union[Path, str]) -> Model:
         """Upload a model for launcher.
 
         Args:
@@ -65,26 +65,28 @@ class ModelConverter(Launcher):
     @validate_token
     def convert_model(
         self,
-        model: Union[str, Model],
-        input_shape: InputShape,
+        model_path: Union[Path, str],
+        output_path: Union[Path, str],
         target_framework: Union[str, ModelFramework],
         data_type: DataType = DataType.FP16,
         target_device: TargetDevice = None,
         wait_until_done: bool = True,
         target_device_name: DeviceName = None,
         target_software_version: SoftwareVersion = None,
+        input_shape: InputShape = None,
     ) -> ConversionTask:
         """Convert a model into the type the specific framework.
 
         Args:
-            model (str): The uuid of the model or Launcher Model Object.
-            input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
+            model_path (str): The file path where the model is located.
+            output_path (str): The local path to save the converted model.
             target_framework (ModelFramework | str): the target framework name.
             data_type (DataType): data type of the model.
             target_device (TargetDevice): target device. If it's not set, target_device_name and target_software_version have to be set.
             wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
             target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
             target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
+            input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
 
         Raises:
             e: If an error occurs while converting the model.
@@ -92,6 +94,8 @@ class ModelConverter(Launcher):
         Returns:
             ConversionTask: model conversion task object.
         """
+        model = self._upload_model(model_path)
+
         model_uuid = model
         if type(model) is Model:
             model_uuid = model.model_uuid
@@ -155,6 +159,8 @@ class ModelConverter(Launcher):
             while conversion_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
                 conversion_task = self.get_conversion_task(conversion_task)
                 time.sleep(1)
+
+        self.download_converted_model(conversion_task, output_path)
 
         return conversion_task
 
@@ -223,24 +229,22 @@ class ModelBenchmarker(Launcher):
     @validate_token
     def benchmark_model(
         self,
-        model: Union[ConversionTask, Model, str],
-        target_device: TargetDevice = None,
+        model_path: Union[Path, str],
         data_type: DataType = DataType.FP16,
-        wait_until_done: bool = True,
         target_device_name: DeviceName = None,
         target_software_version: SoftwareVersion = None,
         hardware_type: HardwareType = None,
+        wait_until_done: bool = True,
     ) -> BenchmarkTask:
         """Benchmark given model on the specified device.
 
         Args:
-            model (ConversionTask | Model | str): The conversion task object, Launcher Model Object or the uuid of the model.
-            target_device (TargetDevice): target device. If it's not set, target_device_name and target_software_version have to be set.
+            model_path (str): The file path where the model is located.
             data_type (DataType): data type of the model.
-            wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
             target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
             target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
             hardware_type (HardwareType): hardware_type. Acceleration options for the processor to the model inference.
+            wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
 
         Raises:
             e: If an error occurs while benchmarking of the model.
@@ -248,68 +252,39 @@ class ModelBenchmarker(Launcher):
         Returns:
             BenchmarkTask: model benchmark task object.
         """
-        model_uuid = None
-        benchmark_data_type = data_type
 
-        if target_device is None and type(model) is not ConversionTask:
-            if target_device_name is None:
-                raise NotImplementedError(
-                    "The benchmark is unavailable. Please set target_device or target_device_name."
-                )
+        model = self._upload_model(model_path)
+        model_uuid = model.model_uuid
 
-            elif target_device_name in JETSON_DEVICES and target_software_version is None:
-                raise NotImplementedError(
-                    "The benchmark is unavailable. Please set JetPack version with target_software_version for Jetson Devices."
-                )
+        if target_device_name is None:
+            raise ValueError("The benchmark is unavailable. Please set target_device_name.")
 
-            if type(model) is not Model:
-                raise NotImplementedError(
-                    "The benchmark is unavailable. Please set target_device while using model's uuid string for the conversion."
-                )
+        if target_device_name in JETSON_DEVICES and target_software_version is None:
+            raise ValueError("The benchmark is unavailable. Please set JetPack version with target_software_version for Jetson Devices.")
 
-            # Check available int8 converting devices
-            if data_type == DataType.INT8:
-                if target_device_name not in ONLY_INT8_DEVICES:
-                    raise Exception(f"int8 converting supports only {ONLY_INT8_DEVICES}.")
-            else:  # FP16, FP32
-                if target_device_name in ONLY_INT8_DEVICES:
-                    raise Exception(f"{ONLY_INT8_DEVICES} only support int8 data types.")
+        # Check available int8 converting devices
+        if data_type == DataType.INT8:
+            if target_device_name not in ONLY_INT8_DEVICES:
+                raise ValueError(f"int8 converting supports only {ONLY_INT8_DEVICES}.")
+        else:  # FP16, FP32
+            if target_device_name in ONLY_INT8_DEVICES:
+                raise ValueError(f"{ONLY_INT8_DEVICES} only support int8 data types.")
 
-            if hardware_type == HardwareType.HELIUM and target_device_name not in ONLY_INT8_DEVICES:
-                raise Exception(f"{ONLY_INT8_DEVICES} only support helium hardware type.")
+        if hardware_type == HardwareType.HELIUM and target_device_name not in ONLY_INT8_DEVICES:
+            raise ValueError(f"{ONLY_INT8_DEVICES} only support helium hardware type.")
 
-            devices = filter_devices_with_device_name(name=target_device_name, devices=model.available_devices)
+        devices = filter_devices_with_device_name(name=target_device_name, devices=model.available_devices)
+        if target_device_name in JETSON_DEVICES:
+            devices = filter_devices_with_device_software_version(software_version=target_software_version, devices=devices)
+        devices = filter_devices_with_hardware_type(hardware_type=hardware_type, devices=devices)
 
-            if target_device_name in JETSON_DEVICES:
-                devices = filter_devices_with_device_software_version(
-                    software_version=target_software_version, devices=devices
-                )
+        if not devices:
+            raise NotImplementedError("The benchmark is unavailable. There is no available device with given target_device_name and target_software_version.")
 
-            devices = filter_devices_with_hardware_type(hardware_type=hardware_type, devices=devices)
-
-            if len(devices) < 1:
-                raise NotImplementedError(
-                    "The benchmark is unavailable. There is no available device with given target_device_name and target_software_version."
-                )
-
-            target_device = devices[0]
-
-        target_device_name = target_device.device_name if target_device is not None else None
-        target_software_version = target_device.software_version if target_device is not None else None
-        target_hardware_type = target_device.hardware_type if target_device is not None else None
-
-        if type(model) is str:
-            model_uuid = model
-        elif type(model) is Model:
-            model_uuid = model.model_uuid
-        elif type(model) is ConversionTask:
-            model_uuid = model.output_model_uuid
-            if target_device_name is None:
-                target_device_name = model.target_device_name
-            if target_software_version is None:
-                target_software_version = model.software_version
-            if target_hardware_type is None:
-                target_hardware_type = model.hardware_type
+        target_device = devices[0]
+        target_device_name = target_device.device_name
+        target_software_version = target_device.software_version
+        target_hardware_type = target_device.hardware_type
 
         if target_device_name is None:
             raise NotImplementedError(
@@ -319,7 +294,7 @@ class ModelBenchmarker(Launcher):
         model_benchmark: BenchmarkTask = self.client.benchmark_model(
             model_uuid=model_uuid,
             target_device=target_device_name,
-            data_type=benchmark_data_type,
+            data_type=data_type,
             software_version=target_software_version,
             hardware_type=target_hardware_type,
         )
