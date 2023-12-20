@@ -31,8 +31,8 @@ class GithubDownloader:
 
 def get_args():
     parser = ArgumentParser()
-    parser.add_argument("repo", help="The repo where the file or folder is stored")
-    parser.add_argument("path", help="The folder or file you want to download")
+    parser.add_argument("--repo", help="The repo where the file or folder is stored")
+    parser.add_argument("--path", help="The folder or file you want to download")
     parser.add_argument(
         "-o",
         "--out",
@@ -41,12 +41,6 @@ def get_args():
         help="Path to folder you want to download "
         "to. Default is current folder + "
         "'downloads'",
-    )
-    parser.add_argument(
-        "-r",
-        "--recursive",
-        action="store_true",
-        help="Recursively download directories. Folder " "downloads, only!",
     )
     parser.add_argument(
         "-f",
@@ -60,4 +54,4 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     github_downloader = GithubDownloader(repo=args.repo)
-    github_downloader.download_folder(args.path, args.out, args.recursive)
+    github_downloader.download_folder(args.path, args.out)
