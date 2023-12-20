@@ -12,8 +12,8 @@ from netspresso.launcher import (
 
 
 if __name__ == "__main__":
-    EMAIL = "bmlee@nota.ai"
-    PASSWORD = "Sdlqudaks12!"
+    EMAIL = "YOUR_EMAIL"
+    PASSWORD = "YOUR_PASSWORD"
     MODEL_PATH = "./examples/sample_models/test.onnx"
     CONVERTED_MODEL_PATH = "./outputs/converted/converted_model.trt"
     session = SessionClient(email=EMAIL, password=PASSWORD)

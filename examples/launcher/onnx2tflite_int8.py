@@ -15,7 +15,7 @@ from netspresso.launcher import (
 if __name__ == "__main__":
     EMAIL = "YOUR_EMAIL"
     PASSWORD = "YOUR_PASSWORD"
-    MODEL_PATH = "./examples/sample_models/yolox_nano.onnx"
+    MODEL_PATH = "./examples/sample_models/yolox_auto_compress_0.7.onnx"
     CONVERTED_MODEL_PATH = "./outputs/converted/converted_model.tflite"
     session = SessionClient(email=EMAIL, password=PASSWORD)
     converter = ModelConverter(user_session=session)
