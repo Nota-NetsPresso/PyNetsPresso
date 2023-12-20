@@ -164,7 +164,42 @@ pip install -e .
 
 ## Quick Start
 
-### Download config folder from netspresso-trainer
+### ⭐⭐⭐ (New Feature) Train ⭐⭐⭐
+
+```python
+from loguru import logger
+from netspresso.trainer import ModelTrainer, Task
+
+trainer = ModelTrainer(task=Task.OBJECT_DETECTION)
+logger.info(trainer.available_models)  # ['EfficientFormer', 'YOLOX']
+
+trainer.set_dataset_config(
+    name="traffic_sign_config_example",
+    root_path="/root/traffic-sign",
+    train_image="images/train",
+    train_label="labels/train",
+    valid_image="images/valid",
+    valid_label="labels/valid",
+    id_mapping=["prohibitory", "danger", "mandatory", "other"],
+)
+trainer.set_model_config(model_name="YOLOX")
+trainer.set_training_config(epochs=40, batch_size=16, lr=6e-3, opt="adamw", warmup_epochs=10)
+
+trainer.train(gpus="0, 1")
+```
+
+```python
+from netspresso.trainer import ModelTrainer, Task
+
+trainer = ModelTrainer(task=Task.IMAGE_CLASSIFICATION)
+
+trainer.set_dataset_config_with_yaml(yaml_path="config/data/beans.yaml")
+trainer.set_model_config_with_yaml(yaml_path="config/model/resnet50-classification.yaml")
+
+trainer.train(gpus="0, 1")
+```
+
+#### Download config folder from netspresso-trainer
 
 If you want to train the trainer as a yaml file, download the config folder and use it.
 
@@ -172,35 +207,14 @@ If you want to train the trainer as a yaml file, download the config folder and 
 python tools/github_download.py --repo Nota-NetsPresso/netspresso-trainer --path config
 ```
 
-
 ### Login
 
 To use the PyNetsPresso, please enter the email and password registered in NetsPresso.
 
 ```python
 from netspresso.client import SessionClient
-from netspresso.compressor import ModelCompressor
 
 session = SessionClient(email='YOUR_EMAIL', password='YOUR_PASSWORD')
-compressor = ModelCompressor(user_session=session)
-```
-
-### Upload Model
-
-To upload your trained model, simply enter the required information. 
-
-When a model is successfully uploaded, a unique 'model.model_id' is generated to allow repeated use of the uploaded model.
-
-```python
-from netspresso.compressor import Task, Framework
-
-model = compressor.upload_model(
-    model_name="YOUR_MODEL_NAME",
-    task=Task.IMAGE_CLASSIFICATION,
-    framework=Framework.TENSORFLOW_KERAS,
-    file_path="YOUR_MODEL_PATH", # ex) ./model.h5
-    input_shapes="YOUR_MODEL_INPUT_SHAPES",  # ex) [{"batch": 1, "channel": 3, "dimension": [32, 32]}]
-)
 ```
 
 ### Automatic Compression
@@ -210,10 +224,16 @@ Automatically compress the model by setting the compression ratio for the model.
 Enter the ID of the uploaded model, the name and storage path of the compressed model, and the compression ratio.
 
 ```python
+from netspresso.compressor import ModelCompressor
+
+compressor = ModelCompressor(user_session=session)
 compressed_model = compressor.automatic_compression(
-    model_id=model.model_id,
-    model_name="YOUR_COMPRESSED_MODEL_NAME",
-    output_path="OUTPUT_PATH",  # ex) ./compressed_model.h5
+    model_name="YOUR_MODEL_NAME",
+    task=Task.IMAGE_CLASSIFICATION,
+    framework=Framework.TENSORFLOW_KERAS,
+    input_shapes="YOUR_MODEL_INPUT_SHAPES",  # ex) [{"batch": 1, "channel": 3, "dimension": [32, 32]}]
+    input_path="YOUR_MODEL_PATH",  # ex) "./examples/sample_models/mobilenetv1.h5"
+    output_path="OUTPUT_PATH",  # ex) ./outputs/compressed/compressed_model.h5,
     compression_ratio=0.5,
 )
 ```
@@ -223,35 +243,23 @@ Convert an ONNX model into a TensorRT model, and benchmark the TensorRT model on
 
 ```python
 from loguru import logger
-from netspresso.launcher import ModelConverter, ModelBenchmarker, ModelFramework, TaskStatus, DeviceName, SoftwareVersion
+from netspresso.launcher import ModelConverter, ModelBenchmarker, ModelFramework, DeviceName, SoftwareVersion
 
 converter = ModelConverter(user_session=session)
-
-model = converter.upload_model("./examples/sample_models/test.onnx")
-
-
 conversion_task = converter.convert_model(
-    model=model,
-    input_shape=model.input_shape,
+    model_path="YOUR_MODEL_PATH",  # ex) "./examples/sample_models/test.onnx"
     target_framework=ModelFramework.TENSORRT,
     target_device_name=DeviceName.JETSON_AGX_ORIN,
     target_software_version=SoftwareVersion.JETPACK_5_0_1,
-    wait_until_done=True
+    output_path="CONVERTED_MODEL_PATH"  # ex) "./outputs/converted/converted_model.trt"
 )
-
 logger.info(conversion_task)
 
-CONVERTED_MODEL_PATH = "converted_model.trt"
-converter.download_converted_model(conversion_task, dst=CONVERTED_MODEL_PATH)
-
-
 benchmarker = ModelBenchmarker(user_session=session)
-benchmark_model = benchmarker.upload_model(CONVERTED_MODEL_PATH)
 benchmark_task = benchmarker.benchmark_model(
-    model=benchmark_model,
+    model_path="CONVERTED_MODEL_PATH",  # ex) "./outputs/converted/converted_model.trt"
     target_device_name=DeviceName.JETSON_AGX_ORIN,
     target_software_version=SoftwareVersion.JETPACK_5_0_1,
-    wait_until_done=True
 )
 logger.info(f"model inference latency: {benchmark_task.latency} ms")
 logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} MB")
