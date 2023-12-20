@@ -164,6 +164,15 @@ pip install -e .
 
 ## Quick Start
 
+### Download config folder from netspresso-trainer
+
+If you want to train the trainer as a yaml file, download the config folder and use it.
+
+```bash
+python tools/github_download.py --repo Nota-NetsPresso/netspresso-trainer --path config
+```
+
+
 ### Login
 
 To use the PyNetsPresso, please enter the email and password registered in NetsPresso.

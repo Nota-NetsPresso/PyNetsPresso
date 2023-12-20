@@ -6,6 +6,5 @@ requests==2.30.0
 email-validator==2.0.0
 pytz==2023.3
 typing_extensions==4.5.0
-torch>=1.13.0
-torchvision>=0.14.0
 netspresso_trainer==0.0.10
+PyGithub>=2.1.1
