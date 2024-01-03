@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, List
 
-from netspresso.compressor.client.schemas.model import InputLayer, ModelResponse
+from netspresso.clients.compressor.schemas.model import InputLayer, ModelResponse
 
 
 @dataclass

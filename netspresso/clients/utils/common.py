@@ -1,7 +1,7 @@
 from os.path import basename
 from pathlib import Path
 
-from netspresso.utils.system import ENV_STR
+from netspresso.clients.utils.system import ENV_STR
 
 version = (Path(__file__).parent.parent.parent / "VERSION").read_text().strip()
 
@@ -16,4 +16,9 @@ def get_headers(access_token=None, json_type=False):
 
 
 def get_files(file_path):
-    return [("file", (basename(file_path), open(file_path, "rb"), "application/octet-stream"))]
+    return [
+        (
+            "file",
+            (basename(file_path), open(file_path, "rb"), "application/octet-stream"),
+        )
+    ]

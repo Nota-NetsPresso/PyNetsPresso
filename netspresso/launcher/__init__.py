@@ -4,8 +4,8 @@ from loguru import logger
 from urllib import request
 from pathlib import Path
 
-from netspresso.client import BaseClient, validate_token
-from netspresso.launcher.schemas import (
+from netspresso.clients.auth import BaseClient, validate_token
+from netspresso.clients.launcher.enums import (
     LauncherFunction,
     ModelFramework,
     TaskStatus,
@@ -16,13 +16,13 @@ from netspresso.launcher.schemas import (
     HardwareType,
     ONLY_INT8_DEVICES,
 )
-from netspresso.launcher.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
+from netspresso.clients.launcher.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
 from netspresso.launcher.utils.devices import (
     filter_devices_with_device_name,
     filter_devices_with_device_software_version,
     filter_devices_with_hardware_type,
 )
-from netspresso.launcher.client import LauncherAPIClient
+from netspresso.clients.launcher import ModelLauncherAPIClient
 
 
 class Launcher(BaseClient):
@@ -41,7 +41,7 @@ class Launcher(BaseClient):
             Launcher(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
         super().__init__(email=email, password=password, user_session=user_session)
-        self.client = LauncherAPIClient(user_sessoin=self.user_session)
+        self.client = ModelLauncherAPIClient(user_sessoin=self.user_session)
 
     @validate_token
     def _upload_model(self, model_file_path: Union[Path, str]) -> Model:

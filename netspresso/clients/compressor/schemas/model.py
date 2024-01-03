@@ -1,15 +1,15 @@
 import json
-from typing import List, Any
 from os.path import basename
+from typing import Any, List
 
-from pydantic import BaseModel, Field, validator, root_validator, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, root_validator, validator
 
-from netspresso.compressor.client.utils.enum import (
-    Framework,
+from netspresso.clients.compressor.enums import (
     Extension,
-    task_literal,
+    Framework,
     framework_literal,
     originfrom_literal,
+    task_literal,
 )
 
 
@@ -52,20 +52,35 @@ class UploadModelRequest(BaseModel):
         file_path = values.get("file_path")
         file_extension = basename(file_path).split(".")[1]
 
-        if framework not in [Framework.TENSORFLOW_KERAS, Framework.PYTORCH, Framework.ONNX]:
-            raise Exception("Invalid framework. Supported frameworks are TensorFlow/Keras, PyTorch, and ONNX.")
+        if framework not in [
+            Framework.TENSORFLOW_KERAS,
+            Framework.PYTORCH,
+            Framework.ONNX,
+        ]:
+            raise Exception(
+                "Invalid framework. Supported frameworks are TensorFlow/Keras, PyTorch, and ONNX."
+            )
 
-        if framework == Framework.TENSORFLOW_KERAS and not file_extension in [Extension.H5, Extension.ZIP]:
+        if framework == Framework.TENSORFLOW_KERAS and not file_extension in [
+            Extension.H5,
+            Extension.ZIP,
+        ]:
             raise Exception(
                 "Invalid file extension or framework. TensorFlow/Keras models should have .h5 or .zip extension."
             )
         elif framework == Framework.PYTORCH and not file_extension == Extension.PT:
-            raise Exception("Invalid file extension or framework. PyTorch models should have .pt extension.")
+            raise Exception(
+                "Invalid file extension or framework. PyTorch models should have .pt extension."
+            )
         elif framework == Framework.ONNX and not file_extension == Extension.ONNX:
-            raise Exception("Invalid file extension or framework. ONNX models should have .onnx extension.")
+            raise Exception(
+                "Invalid file extension or framework. ONNX models should have .onnx extension."
+            )
 
         if framework == Framework.PYTORCH and input_layers is None:
-            raise Exception("Invalid input shape. Input shape is required for PyTorch models.")
+            raise Exception(
+                "Invalid input shape. Input shape is required for PyTorch models."
+            )
 
         return values
 
@@ -111,7 +126,9 @@ class ModelResponse(BaseModel):
     original_compression_id: str = Field("", description="Compression ID")
     task: task_literal = Field(..., description="Task")
     framework: framework_literal = Field(..., description="Framework")
-    origin_from: originfrom_literal = Field(..., description="Origin From(Model Source)")
+    origin_from: originfrom_literal = Field(
+        ..., description="Origin From(Model Source)"
+    )
     target_device: str = Field("", description="Target Device")
     metric: Metric = Field(..., description="Metric")
     spec: Spec = Field(..., description="Spec")

@@ -2,26 +2,17 @@ from enum import Enum
 from typing import Literal
 
 
-class StrEnumBase(str, Enum):
-    def __repr__(self) -> str:
-        return str.__repr__(self.value)
-
-
-class LauncherFunction(StrEnumBase):
+class LauncherFunction(str, Enum):
     GENERAL = "GENERAL"
     CONVERT = "CONVERT"
     BENCHMARK = "BENCHMARK"
 
     @classmethod
     def create_literal(cls):
-        return Literal[
-            "GENERAL",
-            "CONVERT",
-            "BENCHMARK",
-        ]
+        return Literal["GENERAL", "CONVERT", "BENCHMARK"]
 
 
-class DataType(StrEnumBase):
+class DataType(str, Enum):
     FP32 = "FP32"
     FP16 = "FP16"
     INT8 = "INT8"
@@ -29,15 +20,10 @@ class DataType(StrEnumBase):
 
     @classmethod
     def create_literal(cls):
-        return Literal[
-            "FP32",
-            "FP16",
-            "INT8",
-            "",
-        ]
+        return Literal["FP32", "FP16", "INT8", ""]
 
 
-class ModelFramework(StrEnumBase):
+class ModelFramework(str, Enum):
     ONNX = "onnx"
     TENSORRT = "tensorrt"
     OPENVINO = "openvino"
@@ -59,7 +45,7 @@ class ModelFramework(StrEnumBase):
         ]
 
 
-class DeviceName(StrEnumBase):
+class DeviceName(str, Enum):
     RASPBERRY_PI_4B = "RaspberryPi4B"
     RASPBERRY_PI_3B_PLUS = "RaspberryPi3BPlus"
     RASPBERRY_PI_ZERO_W = "RaspberryPi-ZeroW"
@@ -97,6 +83,37 @@ class DeviceName(StrEnumBase):
         ]
 
 
+class SoftwareVersion(str, Enum):
+    JETPACK_4_4_1 = "4.4.1-b50"
+    JETPACK_4_6 = "4.6-b199"
+    JETPACK_5_0_1 = "5.0.1-b118"
+    JETPACK_5_0_2 = "5.0.2-b231"
+
+    @classmethod
+    def create_literal(cls):
+        return Literal["4.4.1-b50", "4.6-b199", "5.0.1-b118", "5.0.2-b231"]
+
+
+class HardwareType(str, Enum):
+    HELIUM = "helium"
+
+    @classmethod
+    def create_literal(cls):
+        return Literal["helium"]
+
+
+class TaskStatus(str, Enum):
+    IN_QUEUE = "IN_QUEUE"
+    IN_PROGRESS = "IN_PROGRESS"
+    FINISHED = "FINISHED"
+    ERROR = "ERROR"
+    USER_CANCEL = "USER_CANCEL"
+
+    @classmethod
+    def create_literal(cls):
+        return Literal["IN_QUEUE", "IN_PROGRESS", "FINISHED", "ERROR", "USER_CANCEL"]
+
+
 JETSON_DEVICES = [
     DeviceName.JETSON_NANO,
     DeviceName.JETSON_TX2,
@@ -114,39 +131,3 @@ RENESAS_DEVICES = [DeviceName.RENESAS_RZ_V2L, DeviceName.RENESAS_RZ_V2M]
 NVIDIA_GRAPHIC_CARDS = [DeviceName.AWS_T4]
 INTEL_DEVICES = [DeviceName.Intel_XEON_W_2233]
 ONLY_INT8_DEVICES = [DeviceName.ALIF_ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]
-
-
-class SoftwareVersion(StrEnumBase):
-    JETPACK_4_4_1 = "4.4.1-b50"
-    JETPACK_4_6 = "4.6-b199"
-    JETPACK_5_0_1 = "5.0.1-b118"
-    JETPACK_5_0_2 = "5.0.2-b231"
-
-    @classmethod
-    def create_literal(cls):
-        return Literal[
-            "4.4.1-b50",
-            "4.6-b199",
-            "5.0.1-b118",
-            "5.0.2-b231",
-        ]
-
-
-class HardwareType(StrEnumBase):
-    HELIUM = "helium"
-
-    @classmethod
-    def create_literal(cls):
-        return Literal["helium"]
-
-
-class TaskStatus(StrEnumBase):
-    IN_QUEUE = "IN_QUEUE"
-    IN_PROGRESS = "IN_PROGRESS"
-    FINISHED = "FINISHED"
-    ERROR = "ERROR"
-    USER_CANCEL = "USER_CANCEL"
-
-    @classmethod
-    def create_literal(cls):
-        return Literal["IN_QUEUE", "IN_PROGRESS", "FINISHED", "ERROR", "USER_CANCEL"]

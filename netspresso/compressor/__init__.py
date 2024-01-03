@@ -4,8 +4,8 @@ from pathlib import Path
 from urllib import request
 from loguru import logger
 
-from netspresso.compressor.client import (
-    ModelCompressorAPIClient,
+from netspresso.clients.compressor import ModelCompressorAPIClient
+from netspresso.clients.compressor.enums import (
     Task,
     Framework,
     Extension,
@@ -16,8 +16,8 @@ from netspresso.compressor.client import (
     LayerNorm,
     GroupPolicy,
 )
-from netspresso.compressor.client.schemas.model import UploadModelRequest
-from netspresso.compressor.client.schemas.compression import (
+from netspresso.clients.compressor.schemas.model import UploadModelRequest
+from netspresso.clients.compressor.schemas.compression import (
     AutoCompressionRequest,
     CompressionRequest,
     GetAvailableLayersRequest,
@@ -34,7 +34,7 @@ from netspresso.compressor.core.model import (
     ModelFactory,
 )
 from netspresso.compressor.core.compression import CompressionInfo
-from netspresso.client import BaseClient, validate_token
+from netspresso.clients.auth import BaseClient, validate_token
 from .utils.onnx import export_onnx
 
 
