@@ -1,7 +1,14 @@
 from typing import List, Optional, Union
+
 from pydantic import BaseModel, Field, validator
 
-from netspresso.launcher.schemas import DataType, DeviceName, TaskStatus, ModelFramework, HardwareType
+from netspresso.clients.launcher.enums import (
+    DataType,
+    DeviceName,
+    HardwareType,
+    ModelFramework,
+    TaskStatus,
+)
 
 
 class InputShape(BaseModel):

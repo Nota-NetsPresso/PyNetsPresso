@@ -1,6 +1,6 @@
 from typing import List
-from netspresso.launcher.schemas import DeviceName
-from netspresso.launcher.schemas.model import TargetDevice
+from netspresso.clients.launcher.enums import DeviceName
+from netspresso.clients.launcher.schemas.model import TargetDevice
 
 
 def filter_devices_with_device_name(name: DeviceName, devices: List[TargetDevice]) -> List[TargetDevice]:
