@@ -1,5 +1,6 @@
 import platform
-from pkg_resources import get_distribution, DistributionNotFound
+
+from pkg_resources import DistributionNotFound, get_distribution
 
 
 def get_package_version(package_name):
@@ -23,7 +24,9 @@ def get_installed_packages_version(package_keys):
 
 def generate_env_string(package_keys):
     packages_version = get_installed_packages_version(package_keys)
-    env_str = "; ".join(f"{key} {value}" for key, value in packages_version.items() if value is not None)
+    env_str = "; ".join(
+        f"{key} {value}" for key, value in packages_version.items() if value is not None
+    )
 
     return env_str
 

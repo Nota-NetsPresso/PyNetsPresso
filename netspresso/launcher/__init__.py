@@ -4,7 +4,7 @@ from loguru import logger
 from urllib import request
 from pathlib import Path
 
-from netspresso.client import BaseClient, validate_token
+from netspresso.clients.auth import BaseClient, validate_token
 from netspresso.launcher.schemas import (
     LauncherFunction,
     ModelFramework,

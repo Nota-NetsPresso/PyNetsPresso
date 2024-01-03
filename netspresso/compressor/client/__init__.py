@@ -1,19 +1,13 @@
 import json
 import requests
 
-from netspresso.schemas.auth import (
-    CreditResponse,
-    LoginResponse,
-    UserResponse,
-    RefreshTokenResponse,
-)
 from netspresso.compressor.client.schemas.compression import (
     CompressionResponse,
     GetAvailableLayersReponse,
     RecommendationResponse,
 )
 from netspresso.compressor.client.schemas.model import UploadModelRequest, ModelResponse, GetDownloadLinkResponse
-from netspresso.client.utils.common import get_files, get_headers
+from netspresso.clients.utils.common import get_files, get_headers
 from netspresso.compressor.client.utils.enum import (
     Task,
     Framework,
@@ -25,11 +19,11 @@ from netspresso.compressor.client.utils.enum import (
     LayerNorm,
     GroupPolicy,
 )  # noqa
-from netspresso.client.config import Config, EndPoint
+from netspresso.clients.config import Config, Module
 
 class ModelCompressorAPIClient:
     def __init__(self):
-        self.config = Config(EndPoint.COMPRESSOR)
+        self.config = Config(Module.COMPRESSOR)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.prefix = self.config.URI_PREFIX

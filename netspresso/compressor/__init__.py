@@ -34,7 +34,7 @@ from netspresso.compressor.core.model import (
     ModelFactory,
 )
 from netspresso.compressor.core.compression import CompressionInfo
-from netspresso.client import BaseClient, validate_token
+from netspresso.clients.auth import BaseClient, validate_token
 from .utils.onnx import export_onnx
 
 

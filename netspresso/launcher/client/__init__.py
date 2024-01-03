@@ -1,8 +1,9 @@
 import json
 import requests
 
-from netspresso.client.utils.common import get_files, get_headers
-from netspresso.client import Config, EndPoint, SessionClient
+from netspresso.clients.utils.common import get_files, get_headers
+from netspresso.clients.config import Config, Module
+from netspresso.clients.auth import SessionClient
 from netspresso.launcher.schemas.model import (
     Model,
     ModelBenchmarkRequest,
@@ -16,7 +17,7 @@ from netspresso.launcher.schemas import LauncherFunction, ModelFramework, Device
 
 class LauncherAPIClient:
     def __init__(self, user_sessoin: SessionClient):
-        self.config = Config(EndPoint.LAUNCHER)
+        self.config = Config(Module.LAUNCHER)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.prefix = self.config.URI_PREFIX
@@ -74,7 +75,7 @@ class LauncherAPIClient:
 
         url = f"{self.url}/convert"
         request_data = ModelConversionRequest(
-            user_uuid=self.user_session.user_id,
+            user_uuid=self.user_session.user_info.user_id,
             target_device_name=target_device,
             input_model_uuid=model_uuid,
             target_framework=target_framework,
@@ -157,7 +158,7 @@ class LauncherAPIClient:
         """
         url = f"{self.url}/benchmark"
         request_data = ModelBenchmarkRequest(
-            user_uuid=self.user_session.user_id,
+            user_uuid=self.user_session.user_info.user_id,
             input_model_uuid=model_uuid,
             target_device=target_device,
             data_type=data_type,

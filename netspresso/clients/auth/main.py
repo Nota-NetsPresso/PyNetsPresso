@@ -1,11 +1,18 @@
-import requests, json
+import json
 from functools import wraps
+
+import requests
 from loguru import logger
 
-from netspresso.schemas.auth import LoginRequest, RefreshTokenRequest, LoginResponse, RefreshTokenResponse, UserResponse
-from netspresso.client.utils.common import get_headers
-from netspresso.client.utils.token import check_jwt_exp
-from netspresso.client.config import Config, EndPoint
+from netspresso.clients.auth.schemas import (
+    LoginRequest,
+    LoginResponse,
+    Tokens,
+    UserResponse,
+)
+from netspresso.clients.config import Config, Module
+from netspresso.clients.utils import check_jwt_exp, get_headers
+
 
 def validate_token(func) -> None:
     @wraps(func)
@@ -15,6 +22,7 @@ def validate_token(func) -> None:
         return func(self, *args, **kwargs)
 
     return wrapper
+
 
 class SessionClient:
     def __init__(self, email: str, password: str, config: Config = None):
@@ -27,14 +35,13 @@ class SessionClient:
 
         self.email = email
         self.password = password
-        self.config = config if config is not None else Config(EndPoint.GENRAL)
+        self.config = config if config is not None else Config(Module.GENERAL)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.uri_prefix = self.config.URI_PREFIX
         self.base_url = f"{self.host}:{self.port}{self.uri_prefix}"
-        self.user_id = None
         self.__login()
-        self.__get_user_info()
+        self.user_info = self.__get_user_info()
 
     def __login(self) -> None:
         try:
@@ -55,16 +62,18 @@ class SessionClient:
             logger.error(f"Login failed. Error: {e}")
             raise e
 
-    def __get_user_info(self):
+    def __get_user_info(self) -> UserResponse:
         try:
             url = f"{self.base_url}/user"
-            response = requests.get(url, headers=get_headers(access_token=self.access_token))
+            response = requests.get(
+                url, headers=get_headers(access_token=self.access_token)
+            )
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
                 user_info = UserResponse(**response_body)
-                self.user_id = user_info.user_id
-                logger.info("successfully got user information")
+                logger.info("Successfully got user information")
+                return user_info
             else:
                 raise Exception(response_body["detail"])
 
@@ -72,25 +81,36 @@ class SessionClient:
             logger.error(f"Failed to get user information. Error: {e}")
             raise e
 
+    def get_credit(self) -> int:
+        user_info = self.__get_user_info()
+        
+        return user_info.total
+
     def __reissue_token(self) -> None:
         try:
             url = f"{self.base_url}/token"
-            data = RefreshTokenRequest(access_token=self.access_token, refresh_token=self.refresh_token)
-            response = requests.post(url, data=data.json(), headers=get_headers(json_type=True))
+            data = Tokens(
+                access_token=self.access_token, refresh_token=self.refresh_token
+            )
+            response = requests.post(
+                url, data=data.json(), headers=get_headers(json_type=True)
+            )
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
-                session = RefreshTokenResponse(**response_body)
-                self.access_token = session.access_token
-                self.refresh_token = session.refresh_token
+                tokens = Tokens(**response_body)
+                self.access_token = tokens.access_token
+                self.refresh_token = tokens.refresh_token
             else:
                 raise Exception(response_body["detail"])
 
         except Exception as e:
             raise e
 
+
 class BaseClient:
     user_session: SessionClient = None
+
     def __init__(self, email=None, password=None, user_session=None):
         """Initialize the Model Compressor.
 
@@ -99,7 +119,7 @@ class BaseClient:
             password (str): The password for a user account.
             user_session (SessionClient): The SessionClient object.
 
-        Available constructors: 
+        Available constructors:
             BaseClient(email='USER_EMAIL',password='PASSWORD')
             BaseClient(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
@@ -111,26 +131,6 @@ class BaseClient:
             # Case 2: Creating from email and password
             self.user_session = SessionClient(email=email, password=password)
         else:
-            raise NotImplementedError("There is no avaliable constructors for given paremeters.")
-
-
-    @validate_token
-    def get_credit(self) -> int:
-        """Get the available NetsPresso credits.
-
-        Raises:
-            e: If an error occurs while getting credit information.
-
-        Returns:
-            int: The total amount of available NetsPresso credits.
-        """
-
-        try:
-            credit = self.client.get_credit(access_token=self.access_token)
-            logger.info(f"Get Credit successfully. Credit: {credit.total}")
-
-            return credit.total
-
-        except Exception as e:
-            logger.error(f"Get Credit failed. Error: {e}")
-            raise e
+            raise NotImplementedError(
+                "There is no avaliable constructors for given paremeters."
+            )
