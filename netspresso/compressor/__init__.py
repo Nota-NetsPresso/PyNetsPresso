@@ -35,8 +35,9 @@ from netspresso.compressor.core.model import (
     ModelCollection,
     ModelFactory,
 )
-from netspresso.enums import Compression
+from netspresso.enums import ServiceCredit
 
+from ..utils.credit import check_credit_balance
 from .utils.onnx import export_onnx
 
 
@@ -440,6 +441,11 @@ class ModelCompressor(BaseClient):
         """
         try:
             logger.info("Compressing model...")
+            current_credit = self.user_session.get_credit()
+            check_credit_balance(
+                user_credit=current_credit,
+                service_credit=ServiceCredit.ADVANCED_COMPRESSION,
+            )
             data = CreateCompressionRequest(
                 model_id=compression.original_model_id,
                 model_name=model_name,
@@ -502,7 +508,7 @@ class ModelCompressor(BaseClient):
             )
             remaining_credit = self.user_session.get_credit()
             logger.info(
-                f"{Compression.ADVANCED} credits have been consumed. Remaining Credit: {remaining_credit}"
+                f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
             return compressed_model
@@ -550,6 +556,11 @@ class ModelCompressor(BaseClient):
 
         try:
             logger.info("Compressing recommendation-based model...")
+            current_credit = self.user_session.get_credit()
+            check_credit_balance(
+                user_credit=current_credit,
+                service_credit=ServiceCredit.ADVANCED_COMPRESSION,
+            )
             model = self.upload_model(
                 model_name=model_name,
                 task=task,
@@ -648,7 +659,7 @@ class ModelCompressor(BaseClient):
             )
             remaining_credit = self.user_session.get_credit()
             logger.info(
-                f"{Compression.ADVANCED} credits have been consumed. Remaining Credit: {remaining_credit}"
+                f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
             return compressed_model
@@ -688,6 +699,11 @@ class ModelCompressor(BaseClient):
 
         try:
             logger.info("Compressing automatic-based model...")
+            current_credit = self.user_session.get_credit()
+            check_credit_balance(
+                user_credit=current_credit,
+                service_credit=ServiceCredit.AUTOMATIC_COMPRESSION,
+            )
             model = self.upload_model(
                 model_name=model_name,
                 task=task,
@@ -717,7 +733,7 @@ class ModelCompressor(BaseClient):
             )
             remaining_credit = self.user_session.get_credit()
             logger.info(
-                f"{Compression.AUTOMATIC} credits have been consumed. Remaining Credit: {remaining_credit}"
+                f"{ServiceCredit.AUTOMATIC_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
             return compressed_model

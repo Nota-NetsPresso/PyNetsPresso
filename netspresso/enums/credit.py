@@ -1,14 +1,8 @@
 from enum import IntEnum
 
 
-class Compression(IntEnum):
-    ADVANCED = 50
-    AUTOMATIC = 25
-
-
-class Convert(IntEnum):
-    CONVERT = 50
-
-
-class Benchmark(IntEnum):
-    BENCHMARK = 25
+class ServiceCredit(IntEnum):
+    ADVANCED_COMPRESSION = 50
+    AUTOMATIC_COMPRESSION = 25
+    MODEL_CONVERT = 50
+    MODEL_BENCHMARK = 25

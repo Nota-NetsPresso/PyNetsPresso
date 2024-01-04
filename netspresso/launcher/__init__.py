@@ -25,12 +25,14 @@ from netspresso.clients.launcher.schemas.model import (
     Model,
     TargetDevice,
 )
-from netspresso.enums import Benchmark, Convert
+from netspresso.enums import ServiceCredit
 from netspresso.launcher.utils.devices import (
     filter_devices_with_device_name,
     filter_devices_with_device_software_version,
     filter_devices_with_hardware_type,
 )
+
+from ..utils.credit import check_credit_balance
 
 
 class Launcher(BaseClient):
@@ -105,6 +107,10 @@ class ModelConverter(Launcher):
         Returns:
             ConversionTask: model conversion task object.
         """
+        current_credit = self.user_session.get_credit()
+        check_credit_balance(
+            user_credit=current_credit, service_credit=ServiceCredit.MODEL_CONVERT
+        )
         model = self._upload_model(model_path)
 
         model_uuid = model
@@ -187,7 +193,7 @@ class ModelConverter(Launcher):
         self.download_converted_model(conversion_task, output_path)
         remaining_credit = self.user_session.get_credit()
         logger.info(
-            f"{Convert.CONVERT} credits have been consumed. Remaining Credit: {remaining_credit}"
+            f"{ServiceCredit.MODEL_CONVERT} credits have been consumed. Remaining Credit: {remaining_credit}"
         )
 
         return conversion_task
@@ -295,6 +301,10 @@ class ModelBenchmarker(Launcher):
             BenchmarkTask: model benchmark task object.
         """
 
+        current_credit = self.user_session.get_credit()
+        check_credit_balance(
+            user_credit=current_credit, service_credit=ServiceCredit.MODEL_BENCHMARK
+        )
         model = self._upload_model(model_path)
         model_uuid = model.model_uuid
 
@@ -369,7 +379,7 @@ class ModelBenchmarker(Launcher):
 
         remaining_credit = self.user_session.get_credit()
         logger.info(
-            f"{Benchmark.BENCHMARK} credits have been consumed. Remaining Credit: {remaining_credit}"
+            f"{ServiceCredit.MODEL_BENCHMARK} credits have been consumed. Remaining Credit: {remaining_credit}"
         )
 
         return model_benchmark
