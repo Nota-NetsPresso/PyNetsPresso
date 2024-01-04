@@ -1,14 +1,14 @@
-from enum import Enum
+from enum import IntEnum
 
 
-class Compression(Enum):
+class Compression(IntEnum):
     ADVANCED = 50
     AUTOMATIC = 25
 
 
-class Convert(Enum):
+class Convert(IntEnum):
     CONVERT = 50
 
 
-class Benchmark(Enum):
+class Benchmark(IntEnum):
     BENCHMARK = 25
