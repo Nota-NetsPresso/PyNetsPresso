@@ -1,28 +1,38 @@
 import time
-from typing import Union
-from loguru import logger
-from urllib import request
 from pathlib import Path
+from typing import Union
+from urllib import request
+
+from loguru import logger
 
 from netspresso.clients.auth import BaseClient, validate_token
+from netspresso.clients.launcher import ModelLauncherAPIClient
 from netspresso.clients.launcher.enums import (
+    JETSON_DEVICES,
+    ONLY_INT8_DEVICES,
+    DataType,
+    DeviceName,
+    HardwareType,
     LauncherFunction,
     ModelFramework,
-    TaskStatus,
-    DataType,
     SoftwareVersion,
-    DeviceName,
-    JETSON_DEVICES,
-    HardwareType,
-    ONLY_INT8_DEVICES,
+    TaskStatus,
 )
-from netspresso.clients.launcher.schemas.model import Model, ConversionTask, BenchmarkTask, InputShape, TargetDevice
+from netspresso.clients.launcher.schemas.model import (
+    BenchmarkTask,
+    ConversionTask,
+    InputShape,
+    Model,
+    TargetDevice,
+)
+from netspresso.enums import ServiceCredit
 from netspresso.launcher.utils.devices import (
     filter_devices_with_device_name,
     filter_devices_with_device_software_version,
     filter_devices_with_hardware_type,
 )
-from netspresso.clients.launcher import ModelLauncherAPIClient
+
+from ..utils.credit import check_credit_balance
 
 
 class Launcher(BaseClient):
@@ -56,7 +66,10 @@ class Launcher(BaseClient):
         Returns:
             Model: Uploaded launcher model object.
         """
-        return self.client.upload_model(model_file_path=model_file_path, target_function=self.__class__.target_function)
+        return self.client.upload_model(
+            model_file_path=model_file_path,
+            target_function=self.__class__.target_function,
+        )
 
 
 class ModelConverter(Launcher):
@@ -94,6 +107,10 @@ class ModelConverter(Launcher):
         Returns:
             ConversionTask: model conversion task object.
         """
+        current_credit = self.user_session.get_credit()
+        check_credit_balance(
+            user_credit=current_credit, service_credit=ServiceCredit.MODEL_CONVERT
+        )
         model = self._upload_model(model_path)
 
         model_uuid = model
@@ -110,7 +127,9 @@ class ModelConverter(Launcher):
                     "The conversion is unavailable. Please set target_device or target_device_name."
                 )
 
-            elif target_device_name in JETSON_DEVICES and target_software_version is None:
+            elif (
+                target_device_name in JETSON_DEVICES and target_software_version is None
+            ):
                 raise NotImplementedError(
                     "The conversion is unavailable. Please set JetPack version with target_software_version for Jetson Devices."
                 )
@@ -123,12 +142,18 @@ class ModelConverter(Launcher):
             # Check available int8 converting devices
             if data_type == DataType.INT8:
                 if target_device_name not in ONLY_INT8_DEVICES:
-                    raise Exception(f"int8 converting supports only {ONLY_INT8_DEVICES}.")
+                    raise Exception(
+                        f"int8 converting supports only {ONLY_INT8_DEVICES}."
+                    )
             else:  # FP16, FP32
                 if target_device_name in ONLY_INT8_DEVICES:
-                    raise Exception(f"{ONLY_INT8_DEVICES} only support int8 data types.")
+                    raise Exception(
+                        f"{ONLY_INT8_DEVICES} only support int8 data types."
+                    )
 
-            devices = filter_devices_with_device_name(name=target_device_name, devices=model.available_devices)
+            devices = filter_devices_with_device_name(
+                name=target_device_name, devices=model.available_devices
+            )
 
             if target_device_name in JETSON_DEVICES:
                 devices = filter_devices_with_device_software_version(
@@ -142,7 +167,9 @@ class ModelConverter(Launcher):
 
             target_device = devices[0]
 
-        logger.info(f"Converting Model for {target_device.device_name} ({target_framework})")
+        logger.info(
+            f"Converting Model for {target_device.device_name} ({target_framework})"
+        )
 
         conversion_task = self.client.convert_model(
             model_uuid=model_uuid,
@@ -156,16 +183,25 @@ class ModelConverter(Launcher):
         conversion_task = self.get_conversion_task(conversion_task)
 
         if wait_until_done:
-            while conversion_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
+            while conversion_task.status in [
+                TaskStatus.IN_QUEUE,
+                TaskStatus.IN_PROGRESS,
+            ]:
                 conversion_task = self.get_conversion_task(conversion_task)
                 time.sleep(1)
 
         self.download_converted_model(conversion_task, output_path)
+        remaining_credit = self.user_session.get_credit()
+        logger.info(
+            f"{ServiceCredit.MODEL_CONVERT} credits have been consumed. Remaining Credit: {remaining_credit}"
+        )
 
         return conversion_task
 
     @validate_token
-    def get_conversion_task(self, conversion_task: Union[str, ConversionTask]) -> ConversionTask:
+    def get_conversion_task(
+        self, conversion_task: Union[str, ConversionTask]
+    ) -> ConversionTask:
         """Get the conversion task information with given conversion task or conversion task uuid.
 
         Args:
@@ -186,10 +222,14 @@ class ModelConverter(Launcher):
             raise NotImplementedError(
                 "There is no available function for the given parameter. The 'conversion_task' should be a UUID string or a ModelConversion object."
             )
-        return self.client.get_conversion_task(conversion_task_uuid=conversion_task_uuid)
+        return self.client.get_conversion_task(
+            conversion_task_uuid=conversion_task_uuid
+        )
 
     @validate_token
-    def download_converted_model(self, conversion_task: Union[str, ConversionTask], local_path: str):
+    def download_converted_model(
+        self, conversion_task: Union[str, ConversionTask], local_path: str
+    ):
         """Download the converted model with given conversion task or conversion task uuid.
 
         Args:
@@ -207,17 +247,25 @@ class ModelConverter(Launcher):
         elif type(conversion_task) is ConversionTask:
             conversion_task_uuid = conversion_task.convert_task_uuid
 
-        conversion_result: ConversionTask = self.get_conversion_task(conversion_task_uuid)
+        conversion_result: ConversionTask = self.get_conversion_task(
+            conversion_task_uuid
+        )
         if conversion_result.status is TaskStatus.ERROR:
-            raise FileNotFoundError("The conversion is Failed. There is no file available for download.")
+            raise FileNotFoundError(
+                "The conversion is Failed. There is no file available for download."
+            )
         if conversion_result.status is not TaskStatus.FINISHED:
             raise FileNotFoundError(
                 "The conversion is in progress. There is no file available for download at the moment."
             )
 
-        download_url = self.client.get_converted_model(conversion_task_uuid=conversion_result.convert_task_uuid)
+        download_url = self.client.get_converted_model(
+            conversion_task_uuid=conversion_result.convert_task_uuid
+        )
         if not Path(local_path).parent.exists():
-            logger.info(f"The specified folder does not exist. Local Path: {Path(local_path).parent}")
+            logger.info(
+                f"The specified folder does not exist. Local Path: {Path(local_path).parent}"
+            )
             Path(local_path).parent.mkdir(parents=True, exist_ok=True)
         request.urlretrieve(download_url, local_path)
         logger.info(f"Model downloaded at {Path(local_path)}")
@@ -253,14 +301,22 @@ class ModelBenchmarker(Launcher):
             BenchmarkTask: model benchmark task object.
         """
 
+        current_credit = self.user_session.get_credit()
+        check_credit_balance(
+            user_credit=current_credit, service_credit=ServiceCredit.MODEL_BENCHMARK
+        )
         model = self._upload_model(model_path)
         model_uuid = model.model_uuid
 
         if target_device_name is None:
-            raise ValueError("The benchmark is unavailable. Please set target_device_name.")
+            raise ValueError(
+                "The benchmark is unavailable. Please set target_device_name."
+            )
 
         if target_device_name in JETSON_DEVICES and target_software_version is None:
-            raise ValueError("The benchmark is unavailable. Please set JetPack version with target_software_version for Jetson Devices.")
+            raise ValueError(
+                "The benchmark is unavailable. Please set JetPack version with target_software_version for Jetson Devices."
+            )
 
         # Check available int8 converting devices
         if data_type == DataType.INT8:
@@ -270,16 +326,27 @@ class ModelBenchmarker(Launcher):
             if target_device_name in ONLY_INT8_DEVICES:
                 raise ValueError(f"{ONLY_INT8_DEVICES} only support int8 data types.")
 
-        if hardware_type == HardwareType.HELIUM and target_device_name not in ONLY_INT8_DEVICES:
+        if (
+            hardware_type == HardwareType.HELIUM
+            and target_device_name not in ONLY_INT8_DEVICES
+        ):
             raise ValueError(f"{ONLY_INT8_DEVICES} only support helium hardware type.")
 
-        devices = filter_devices_with_device_name(name=target_device_name, devices=model.available_devices)
+        devices = filter_devices_with_device_name(
+            name=target_device_name, devices=model.available_devices
+        )
         if target_device_name in JETSON_DEVICES:
-            devices = filter_devices_with_device_software_version(software_version=target_software_version, devices=devices)
-        devices = filter_devices_with_hardware_type(hardware_type=hardware_type, devices=devices)
+            devices = filter_devices_with_device_software_version(
+                software_version=target_software_version, devices=devices
+            )
+        devices = filter_devices_with_hardware_type(
+            hardware_type=hardware_type, devices=devices
+        )
 
         if not devices:
-            raise NotImplementedError("The benchmark is unavailable. There is no available device with given target_device_name and target_software_version.")
+            raise NotImplementedError(
+                "The benchmark is unavailable. There is no available device with given target_device_name and target_software_version."
+            )
 
         target_device = devices[0]
         target_device_name = target_device.device_name
@@ -301,14 +368,26 @@ class ModelBenchmarker(Launcher):
         model_benchmark = self.get_benchmark_task(benchmark_task=model_benchmark)
 
         if wait_until_done:
-            while model_benchmark.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
-                model_benchmark = self.get_benchmark_task(benchmark_task=model_benchmark)
+            while model_benchmark.status in [
+                TaskStatus.IN_QUEUE,
+                TaskStatus.IN_PROGRESS,
+            ]:
+                model_benchmark = self.get_benchmark_task(
+                    benchmark_task=model_benchmark
+                )
                 time.sleep(1)
+
+        remaining_credit = self.user_session.get_credit()
+        logger.info(
+            f"{ServiceCredit.MODEL_BENCHMARK} credits have been consumed. Remaining Credit: {remaining_credit}"
+        )
 
         return model_benchmark
 
     @validate_token
-    def get_benchmark_task(self, benchmark_task: Union[str, BenchmarkTask]) -> BenchmarkTask:
+    def get_benchmark_task(
+        self, benchmark_task: Union[str, BenchmarkTask]
+    ) -> BenchmarkTask:
         """Get the benchmark task information with given benchmark task or benchmark task uuid.
 
         Args:

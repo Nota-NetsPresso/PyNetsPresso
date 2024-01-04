@@ -1,40 +1,43 @@
-from typing import Dict, List, Union
 from pathlib import Path
-
+from typing import Dict, List, Union
 from urllib import request
+
 from loguru import logger
 
+from netspresso.clients.auth import BaseClient, validate_token
 from netspresso.clients.compressor import ModelCompressorAPIClient
 from netspresso.clients.compressor.enums import (
-    Task,
-    Framework,
-    Extension,
-    OriginFrom,
     CompressionMethod,
-    RecommendationMethod,
-    Policy,
-    LayerNorm,
+    Extension,
+    Framework,
     GroupPolicy,
+    LayerNorm,
+    OriginFrom,
+    Policy,
+    RecommendationMethod,
+    Task,
 )
-from netspresso.clients.compressor.schemas.model import UploadModelRequest
 from netspresso.clients.compressor.schemas.compression import (
     AutoCompressionRequest,
+    AvailableLayer,
     CompressionRequest,
-    GetAvailableLayersRequest,
     CreateCompressionRequest,
+    GetAvailableLayersRequest,
+    Options,
     RecommendationRequest,
     UploadDatasetRequest,
-    AvailableLayer,
-    Options,
 )
+from netspresso.clients.compressor.schemas.model import UploadModelRequest
+from netspresso.compressor.core.compression import CompressionInfo
 from netspresso.compressor.core.model import (
     CompressedModel,
     Model,
     ModelCollection,
     ModelFactory,
 )
-from netspresso.compressor.core.compression import CompressionInfo
-from netspresso.clients.auth import BaseClient, validate_token
+from netspresso.enums import ServiceCredit
+
+from ..utils.credit import check_credit_balance
 from .utils.onnx import export_onnx
 
 
@@ -438,6 +441,11 @@ class ModelCompressor(BaseClient):
         """
         try:
             logger.info("Compressing model...")
+            current_credit = self.user_session.get_credit()
+            check_credit_balance(
+                user_credit=current_credit,
+                service_credit=ServiceCredit.ADVANCED_COMPRESSION,
+            )
             data = CreateCompressionRequest(
                 model_id=compression.original_model_id,
                 model_name=model_name,
@@ -498,7 +506,10 @@ class ModelCompressor(BaseClient):
             logger.info(
                 f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}"
             )
-            logger.info("50 credits have been consumed.")
+            remaining_credit = self.user_session.get_credit()
+            logger.info(
+                f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
+            )
 
             return compressed_model
 
@@ -545,6 +556,11 @@ class ModelCompressor(BaseClient):
 
         try:
             logger.info("Compressing recommendation-based model...")
+            current_credit = self.user_session.get_credit()
+            check_credit_balance(
+                user_credit=current_credit,
+                service_credit=ServiceCredit.ADVANCED_COMPRESSION,
+            )
             model = self.upload_model(
                 model_name=model_name,
                 task=task,
@@ -641,7 +657,10 @@ class ModelCompressor(BaseClient):
             logger.info(
                 f"Recommendation compression successfully. Compressed Model ID: {compressed_model.model_id}"
             )
-            logger.info("50 credits have been consumed.")
+            remaining_credit = self.user_session.get_credit()
+            logger.info(
+                f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
+            )
 
             return compressed_model
 
@@ -680,6 +699,11 @@ class ModelCompressor(BaseClient):
 
         try:
             logger.info("Compressing automatic-based model...")
+            current_credit = self.user_session.get_credit()
+            check_credit_balance(
+                user_credit=current_credit,
+                service_credit=ServiceCredit.AUTOMATIC_COMPRESSION,
+            )
             model = self.upload_model(
                 model_name=model_name,
                 task=task,
@@ -707,7 +731,10 @@ class ModelCompressor(BaseClient):
             logger.info(
                 f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}"
             )
-            logger.info("25 credits have been consumed.")
+            remaining_credit = self.user_session.get_credit()
+            logger.info(
+                f"{ServiceCredit.AUTOMATIC_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
+            )
 
             return compressed_model
 
