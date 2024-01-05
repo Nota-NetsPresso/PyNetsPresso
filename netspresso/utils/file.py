@@ -2,6 +2,12 @@ from pathlib import Path
 from typing import Union
 from urllib import request
 
+FRAMEWORK_EXTENSION_MAP = {
+    "tensorflow_keras": ".h5",
+    "pytorch": ".pt",
+    "onnx": ".onnx",
+}
+
 
 class FileManager:
     @staticmethod
@@ -23,3 +29,12 @@ class FileManager:
     @staticmethod
     def download_file(url: str, save_path: Union[str, Path]) -> None:
         request.urlretrieve(url, save_path)
+
+
+class ExtensionManager:
+    @staticmethod
+    def get_extension_by_framework(framework: str) -> str:
+        extension = FRAMEWORK_EXTENSION_MAP.get(framework)
+        if extension is None:
+            raise KeyError(f"Unsupported framework: {framework}")
+        return extension
