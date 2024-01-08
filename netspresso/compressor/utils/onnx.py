@@ -31,7 +31,7 @@ def _export_onnx(
 
 def export_onnx(file_path: str, input_shapes: List[int]):
     file_path = Path(file_path)
-    model = torch.load(file_path)
+    model = torch.load(file_path.with_suffix(".pt"))
 
     input_shape = input_shapes[0]
     sample_input = torch.randn((1, input_shape.channel, *input_shape.dimension))

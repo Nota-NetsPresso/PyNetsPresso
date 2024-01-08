@@ -1,3 +1,4 @@
+import sys
 import time
 from pathlib import Path
 from typing import Union
@@ -32,7 +33,7 @@ from netspresso.launcher.utils.devices import (
     filter_devices_with_hardware_type,
 )
 
-from ..utils.credit import check_credit_balance
+from ..utils import check_credit_balance, FileManager
 
 
 class Launcher(BaseClient):
@@ -107,6 +108,14 @@ class ModelConverter(Launcher):
         Returns:
             ConversionTask: model conversion task object.
         """
+        default_model_path = Path(output_path) / f"model.ext"
+        extension = FileManager.get_extension_by_framework(framework=target_framework)
+
+        if not FileManager.check_exists(folder_path=output_path):
+            FileManager.create_folder(folder_path=output_path)
+        else:
+            sys.exit(f"This folder already exists. Local Path: {Path(output_path)}")
+
         current_credit = self.user_session.get_credit()
         check_credit_balance(
             user_credit=current_credit, service_credit=ServiceCredit.MODEL_CONVERT
@@ -190,7 +199,8 @@ class ModelConverter(Launcher):
                 conversion_task = self.get_conversion_task(conversion_task)
                 time.sleep(1)
 
-        self.download_converted_model(conversion_task, output_path)
+        self.download_converted_model(conversion_task, default_model_path.with_suffix(extension))
+
         remaining_credit = self.user_session.get_credit()
         logger.info(
             f"{ServiceCredit.MODEL_CONVERT} credits have been consumed. Remaining Credit: {remaining_credit}"
@@ -262,11 +272,6 @@ class ModelConverter(Launcher):
         download_url = self.client.get_converted_model(
             conversion_task_uuid=conversion_result.convert_task_uuid
         )
-        if not Path(local_path).parent.exists():
-            logger.info(
-                f"The specified folder does not exist. Local Path: {Path(local_path).parent}"
-            )
-            Path(local_path).parent.mkdir(parents=True, exist_ok=True)
         request.urlretrieve(download_url, local_path)
         logger.info(f"Model downloaded at {Path(local_path)}")
 
@@ -278,6 +283,7 @@ class ModelBenchmarker(Launcher):
     def benchmark_model(
         self,
         model_path: Union[Path, str],
+        target_framework: Union[str, ModelFramework],
         data_type: DataType = DataType.FP16,
         target_device_name: DeviceName = None,
         target_software_version: SoftwareVersion = None,
@@ -301,11 +307,14 @@ class ModelBenchmarker(Launcher):
             BenchmarkTask: model benchmark task object.
         """
 
+        default_model_path = Path(model_path) / f"model.ext"
+        extension = FileManager.get_extension_by_framework(framework=target_framework)
+
         current_credit = self.user_session.get_credit()
         check_credit_balance(
             user_credit=current_credit, service_credit=ServiceCredit.MODEL_BENCHMARK
         )
-        model = self._upload_model(model_path)
+        model = self._upload_model(default_model_path.with_suffix(extension))
         model_uuid = model.model_uuid
 
         if target_device_name is None:
