@@ -33,7 +33,7 @@ from netspresso.launcher.utils.devices import (
     filter_devices_with_hardware_type,
 )
 
-from ..utils import check_credit_balance, FileManager
+from ..utils import FileManager, check_credit_balance
 
 
 class Launcher(BaseClient):
@@ -108,7 +108,9 @@ class ModelConverter(Launcher):
         Returns:
             ConversionTask: model conversion task object.
         """
-        default_model_path, extension = FileManager.prepare_model_path(folder_path=output_path, framework=target_framework)
+        default_model_path, extension = FileManager.prepare_model_path(
+            folder_path=output_path, framework=target_framework
+        )
 
         current_credit = self.user_session.get_credit()
         check_credit_balance(
@@ -193,7 +195,9 @@ class ModelConverter(Launcher):
                 conversion_task = self.get_conversion_task(conversion_task)
                 time.sleep(1)
 
-        self.download_converted_model(conversion_task, default_model_path.with_suffix(extension))
+        self.download_converted_model(
+            conversion_task, default_model_path.with_suffix(extension)
+        )
 
         remaining_credit = self.user_session.get_credit()
         logger.info(
@@ -301,7 +305,9 @@ class ModelBenchmarker(Launcher):
             BenchmarkTask: model benchmark task object.
         """
 
-        default_model_path, extension = FileManager.prepare_model_path(folder_path=model_path, framework=target_framework, is_folder_check=False)
+        default_model_path, extension = FileManager.prepare_model_path(
+            folder_path=model_path, framework=target_framework, is_folder_check=False
+        )
 
         current_credit = self.user_session.get_credit()
         check_credit_balance(

@@ -1,5 +1,5 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Dict, List, Union
 from urllib import request
 
@@ -38,8 +38,8 @@ from netspresso.compressor.core.model import (
 )
 from netspresso.enums import ServiceCredit
 
+from ..utils import FileManager, check_credit_balance
 from .utils.onnx import export_onnx
-from ..utils import check_credit_balance, FileManager
 
 
 class ModelCompressor(BaseClient):
@@ -440,7 +440,9 @@ class ModelCompressor(BaseClient):
 
             model_info = self.get_model(compression.original_model_id)
 
-            default_model_path, extension = FileManager.prepare_model_path(folder_path=output_path, framework=model_info.framework)
+            default_model_path, extension = FileManager.prepare_model_path(
+                folder_path=output_path, framework=model_info.framework
+            )
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -499,14 +501,19 @@ class ModelCompressor(BaseClient):
             self.client.compress_model(
                 data=data, access_token=self.user_session.access_token
             )
-            
-            self.download_model(model_id=compression_info.new_model_id, local_path=default_model_path.with_suffix(extension))
+
+            self.download_model(
+                model_id=compression_info.new_model_id,
+                local_path=default_model_path.with_suffix(extension),
+            )
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
 
             if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
                 export_onnx(default_model_path, compressed_model.input_shapes)
 
-            logger.info(f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}")
+            logger.info(
+                f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}"
+            )
             remaining_credit = self.user_session.get_credit()
             logger.info(
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
@@ -558,7 +565,9 @@ class ModelCompressor(BaseClient):
         try:
             logger.info("Compressing recommendation-based model...")
 
-            default_model_path, extension = FileManager.prepare_model_path(folder_path=output_path, framework=framework)
+            default_model_path, extension = FileManager.prepare_model_path(
+                folder_path=output_path, framework=framework
+            )
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -566,7 +575,10 @@ class ModelCompressor(BaseClient):
                 service_credit=ServiceCredit.ADVANCED_COMPRESSION,
             )
 
-            if framework == Framework.PYTORCH and compression_method == CompressionMethod.PR_NN:
+            if (
+                framework == Framework.PYTORCH
+                and compression_method == CompressionMethod.PR_NN
+            ):
                 raise Exception(
                     "The Nuclear Norm is only supported in the TensorFlow-Keras framework."
                 )
@@ -651,7 +663,10 @@ class ModelCompressor(BaseClient):
                 data=data, access_token=self.user_session.access_token
             )
 
-            self.download_model(model_id=compression_info.new_model_id, local_path=default_model_path.with_suffix(extension))
+            self.download_model(
+                model_id=compression_info.new_model_id,
+                local_path=default_model_path.with_suffix(extension),
+            )
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
 
             if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
@@ -703,8 +718,10 @@ class ModelCompressor(BaseClient):
         try:
             logger.info("Compressing automatic-based model...")
 
-            default_model_path, extension = FileManager.prepare_model_path(folder_path=output_path, framework=framework)
-            
+            default_model_path, extension = FileManager.prepare_model_path(
+                folder_path=output_path, framework=framework
+            )
+
             current_credit = self.user_session.get_credit()
             check_credit_balance(
                 user_credit=current_credit,
@@ -731,13 +748,20 @@ class ModelCompressor(BaseClient):
                 data=data, access_token=self.user_session.access_token
             )
 
-            self.download_model(model_id=model_info.model_id, local_path=default_model_path.with_suffix(extension))
-            compressed_model = self.model_factory.create_compressed_model(model_info=model_info)  # TODO: delete
+            self.download_model(
+                model_id=model_info.model_id,
+                local_path=default_model_path.with_suffix(extension),
+            )
+            compressed_model = self.model_factory.create_compressed_model(
+                model_info=model_info
+            )  # TODO: delete
 
             if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
                 export_onnx(default_model_path, compressed_model.input_shapes)
 
-            logger.info(f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}")
+            logger.info(
+                f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}"
+            )
             remaining_credit = self.user_session.get_credit()
             logger.info(
                 f"{ServiceCredit.AUTOMATIC_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"

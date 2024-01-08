@@ -1,5 +1,5 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Tuple, Union
 from urllib import request
 
@@ -46,7 +46,9 @@ class FileManager:
         return extension
 
     @staticmethod
-    def prepare_model_path(folder_path: str, framework: str, is_folder_check: bool = True) -> Tuple[Path, str]:
+    def prepare_model_path(
+        folder_path: str, framework: str, is_folder_check: bool = True
+    ) -> Tuple[Path, str]:
         default_model_path = Path(folder_path) / f"{Path(folder_path).name}.ext"
         extension = FileManager.get_extension_by_framework(framework=framework)
 
