@@ -10,7 +10,7 @@ TASK = Task.IMAGE_CLASSIFICATION
 FRAMEWORK = Framework.TENSORFLOW_KERAS
 INPUT_SHAPES = [{"batch": 1, "channel": 3, "dimension": [32, 32]}]
 INPUT_MODEL_PATH = "./examples/sample_models/mobilenetv1.h5"
-OUTPUT_MODEL_PATH = "./outputs/compressed/mobilenetv1_cifar100_automatic.h5"
+OUTPUT_MODEL_PATH = "./outputs/compressed/mobilenetv1_cifar100_automatic"
 COMPRESSION_RATIO = 0.5
 
 compressed_model = compressor.automatic_compression(

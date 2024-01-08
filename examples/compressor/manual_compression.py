@@ -52,7 +52,7 @@ for available_layer in compression_1.available_layers[:5]:
 
 # Compress Model
 COMPRESSED_MODEL_NAME = "test_l2norm"
-OUTPUT_PATH = "./outputs/compressed/graphmodule_manual.pt"
+OUTPUT_PATH = "./outputs/compressed/graphmodule_manual"
 compressed_model = compressor.compress_model(
     compression=compression_1,
     model_name=COMPRESSED_MODEL_NAME,

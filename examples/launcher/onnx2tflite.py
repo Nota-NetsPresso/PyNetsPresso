@@ -1,5 +1,5 @@
 from loguru import logger
-from netspresso.client import SessionClient
+from netspresso.clients.auth import SessionClient
 from netspresso.launcher import (
     ModelConverter,
     ModelBenchmarker,
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     EMAIL = "YOUR_EMAIL"
     PASSWORD = "YOUR_PASSWORD"
     MODEL_PATH = "./examples/sample_models/test.onnx"
-    CONVERTED_MODEL_PATH = "./outputs/converted/converted_model.tflite"
+    CONVERTED_MODEL_PATH = "./outputs/converted/onnx2tflite"
     session = SessionClient(email=EMAIL, password=PASSWORD)
     converter = ModelConverter(user_session=session)
 
@@ -73,6 +73,7 @@ if __name__ == "__main__":
 
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
         model_path=CONVERTED_MODEL_PATH,
+        target_framework=ModelFramework.TENSORFLOW_LITE,
         target_device_name=DeviceName.RASPBERRY_PI_4B,
     )
     ########################
@@ -81,6 +82,7 @@ if __name__ == "__main__":
     ########################
     # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
     #     model_path=CONVERTED_MODEL_PATH,
+    #     target_framework=ModelFramework.TENSORFLOW_LITE,
     #     target_device_name=DeviceName.RASPBERRY_PI_4B,
     #     wait_until_done=False,
     # )

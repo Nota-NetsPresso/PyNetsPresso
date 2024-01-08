@@ -1,5 +1,5 @@
 from loguru import logger
-from netspresso.client import SessionClient
+from netspresso.clients.auth import SessionClient
 from netspresso.launcher import (
     ModelConverter,
     ModelBenchmarker,
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     EMAIL = "YOUR_EMAIL"
     PASSWORD = "YOUR_PASSWORD"
     MODEL_PATH = "./examples/sample_models/test.onnx"
-    CONVERTED_MODEL_PATH = "./outputs/converted/converted_openvino.zip"
+    CONVERTED_MODEL_PATH = "./outputs/converted/onnx2openvino"
     session = SessionClient(email=EMAIL, password=PASSWORD)
     converter = ModelConverter(user_session=session)
 
@@ -62,6 +62,7 @@ if __name__ == "__main__":
     benchmarker = ModelBenchmarker(user_session=session)
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
         model_path=CONVERTED_MODEL_PATH,
+        target_framework=ModelFramework.OPENVINO,
         target_device_name=DeviceName.Intel_XEON_W_2233,
     )
     ########################
@@ -70,6 +71,7 @@ if __name__ == "__main__":
     ########################
     # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
     #     model_path=CONVERTED_MODEL_PATH,
+    #     target_framework=ModelFramework.OPENVINO,
     #     target_device_name=DeviceName.Intel_XEON_W_2233,
     #     wait_until_done=False,
     # )
