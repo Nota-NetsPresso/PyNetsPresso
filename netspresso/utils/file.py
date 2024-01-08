@@ -10,7 +10,7 @@ FRAMEWORK_EXTENSION_MAP = {
     "tensorflow_lite": ".tflite",
     "drpai": ".zip",
     "openvino": ".zip",
-    "tensorrt": "trt",
+    "tensorrt": ".trt",
 }
 
 
