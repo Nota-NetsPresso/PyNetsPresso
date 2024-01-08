@@ -440,7 +440,7 @@ class ModelCompressor(BaseClient):
 
             model_info = self.get_model(compression.original_model_id)
 
-            default_model_path = Path(output_path) / f"model.ext"
+            default_model_path = Path(output_path) / f"{Path(output_path).name}.ext"
             extension = FileManager.get_extension_by_framework(framework=model_info.framework)
 
             if not FileManager.check_exists(folder_path=output_path):
@@ -564,7 +564,7 @@ class ModelCompressor(BaseClient):
         try:
             logger.info("Compressing recommendation-based model...")
 
-            default_model_path = Path(output_path) / f"model.ext"
+            default_model_path = Path(output_path) / f"{Path(output_path).name}.ext"
             extension = FileManager.get_extension_by_framework(framework=framework)
 
             if not FileManager.check_exists(folder_path=output_path):
@@ -715,7 +715,7 @@ class ModelCompressor(BaseClient):
         try:
             logger.info("Compressing automatic-based model...")
 
-            default_model_path = Path(output_path) / f"model.ext"
+            default_model_path = Path(output_path) / f"{Path(output_path).name}.ext"
             extension = FileManager.get_extension_by_framework(framework=framework)
 
             if not FileManager.check_exists(folder_path=output_path):
