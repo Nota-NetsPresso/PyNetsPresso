@@ -6,6 +6,10 @@ FRAMEWORK_EXTENSION_MAP = {
     "tensorflow_keras": ".h5",
     "pytorch": ".pt",
     "onnx": ".onnx",
+    "tensorflow_lite": ".tflite",
+    "drpai": ".zip",
+    "openvino": ".zip",
+    "tensorrt": "trt",
 }
 
 
