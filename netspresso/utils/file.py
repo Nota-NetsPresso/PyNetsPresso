@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Union
+import sys
+from typing import Tuple, Union
 from urllib import request
 
 FRAMEWORK_EXTENSION_MAP = {
@@ -43,3 +44,15 @@ class FileManager:
                 f"The framework supports {available_framework}. The entered framework is {framework}."
             )
         return extension
+
+    @staticmethod
+    def prepare_model_path(folder_path: str, framework: str, is_folder_check: bool = True) -> Tuple[Path, str]:
+        default_model_path = Path(folder_path) / f"{Path(folder_path).name}.ext"
+        extension = FileManager.get_extension_by_framework(framework=framework)
+
+        if is_folder_check and not FileManager.check_exists(folder_path=folder_path):
+            FileManager.create_folder(folder_path=folder_path)
+        elif is_folder_check:
+            sys.exit(f"This folder already exists. Local Path: {Path(folder_path)}")
+
+        return default_model_path, extension

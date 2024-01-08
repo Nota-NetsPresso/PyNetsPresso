@@ -108,13 +108,7 @@ class ModelConverter(Launcher):
         Returns:
             ConversionTask: model conversion task object.
         """
-        default_model_path = Path(output_path) / f"{Path(output_path).name}.ext"
-        extension = FileManager.get_extension_by_framework(framework=target_framework)
-
-        if not FileManager.check_exists(folder_path=output_path):
-            FileManager.create_folder(folder_path=output_path)
-        else:
-            sys.exit(f"This folder already exists. Local Path: {Path(output_path)}")
+        default_model_path, extension = FileManager.prepare_model_path(folder_path=output_path, framework=target_framework)
 
         current_credit = self.user_session.get_credit()
         check_credit_balance(
@@ -307,8 +301,7 @@ class ModelBenchmarker(Launcher):
             BenchmarkTask: model benchmark task object.
         """
 
-        default_model_path = Path(model_path) / f"{Path(model_path).name}.ext"
-        extension = FileManager.get_extension_by_framework(framework=target_framework)
+        default_model_path, extension = FileManager.prepare_model_path(folder_path=model_path, framework=target_framework, is_folder_check=False)
 
         current_credit = self.user_session.get_credit()
         check_credit_balance(
