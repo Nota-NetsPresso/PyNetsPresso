@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from typing import Dict, List, Union
 from urllib import request
@@ -37,7 +38,7 @@ from netspresso.compressor.core.model import (
 )
 from netspresso.enums import ServiceCredit
 
-from ..utils.credit import check_credit_balance
+from ..utils import FileManager, check_credit_balance
 from .utils.onnx import export_onnx
 
 
@@ -254,11 +255,6 @@ class ModelCompressor(BaseClient):
             download_link = self.client.get_download_model_link(
                 model_id=model_id, access_token=self.user_session.access_token
             )
-            if not Path(local_path).parent.exists():
-                logger.info(
-                    f"The specified folder does not exist. Local Path: {Path(local_path).parent}"
-                )
-                Path(local_path).parent.mkdir(parents=True, exist_ok=True)
             request.urlretrieve(download_link.url, local_path)
             logger.info(f"Model downloaded at {Path(local_path)}")
 
@@ -441,11 +437,19 @@ class ModelCompressor(BaseClient):
         """
         try:
             logger.info("Compressing model...")
+
+            model_info = self.get_model(compression.original_model_id)
+
+            default_model_path, extension = FileManager.prepare_model_path(
+                folder_path=output_path, framework=model_info.framework
+            )
+
             current_credit = self.user_session.get_credit()
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.ADVANCED_COMPRESSION,
             )
+
             data = CreateCompressionRequest(
                 model_id=compression.original_model_id,
                 model_name=model_name,
@@ -497,12 +501,16 @@ class ModelCompressor(BaseClient):
             self.client.compress_model(
                 data=data, access_token=self.user_session.access_token
             )
+
             self.download_model(
-                model_id=compression_info.new_model_id, local_path=output_path
+                model_id=compression_info.new_model_id,
+                local_path=default_model_path.with_suffix(extension),
             )
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
+
             if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
-                export_onnx(output_path, compressed_model.input_shapes)
+                export_onnx(default_model_path, compressed_model.input_shapes)
+
             logger.info(
                 f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}"
             )
@@ -556,21 +564,19 @@ class ModelCompressor(BaseClient):
 
         try:
             logger.info("Compressing recommendation-based model...")
+
+            default_model_path, extension = FileManager.prepare_model_path(
+                folder_path=output_path, framework=framework
+            )
+
             current_credit = self.user_session.get_credit()
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.ADVANCED_COMPRESSION,
             )
-            model = self.upload_model(
-                model_name=model_name,
-                task=task,
-                framework=framework,
-                file_path=input_path,
-                input_shapes=input_shapes,
-            )
 
             if (
-                model.framework == Framework.PYTORCH
+                framework == Framework.PYTORCH
                 and compression_method == CompressionMethod.PR_NN
             ):
                 raise Exception(
@@ -603,6 +609,14 @@ class ModelCompressor(BaseClient):
                 raise Exception(
                     f"The {compression_method} compression method is only available the VBMF recommendation method."
                 )
+
+            model = self.upload_model(
+                model_name=model_name,
+                task=task,
+                framework=framework,
+                file_path=input_path,
+                input_shapes=input_shapes,
+            )
 
             data = CreateCompressionRequest(
                 model_id=model.model_id,
@@ -648,12 +662,16 @@ class ModelCompressor(BaseClient):
             self.client.compress_model(
                 data=data, access_token=self.user_session.access_token
             )
+
             self.download_model(
-                model_id=compression_info.new_model_id, local_path=output_path
+                model_id=compression_info.new_model_id,
+                local_path=default_model_path.with_suffix(extension),
             )
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
+
             if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
-                export_onnx(output_path, compressed_model.input_shapes)
+                export_onnx(default_model_path, compressed_model.input_shapes)
+
             logger.info(
                 f"Recommendation compression successfully. Compressed Model ID: {compressed_model.model_id}"
             )
@@ -699,11 +717,17 @@ class ModelCompressor(BaseClient):
 
         try:
             logger.info("Compressing automatic-based model...")
+
+            default_model_path, extension = FileManager.prepare_model_path(
+                folder_path=output_path, framework=framework
+            )
+
             current_credit = self.user_session.get_credit()
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.AUTOMATIC_COMPRESSION,
             )
+
             model = self.upload_model(
                 model_name=model_name,
                 task=task,
@@ -712,9 +736,10 @@ class ModelCompressor(BaseClient):
                 input_shapes=input_shapes,
             )
 
+            compressed_model_name = f"{model_name}_automatic_{compression_ratio}"
             data = AutoCompressionRequest(
                 model_id=model.model_id,
-                model_name=f"{model_name}_automatic_{compression_ratio}",
+                model_name=compressed_model_name,
                 recommendation_ratio=compression_ratio,
                 save_path=output_path,
             )
@@ -722,12 +747,18 @@ class ModelCompressor(BaseClient):
             model_info = self.client.auto_compression(
                 data=data, access_token=self.user_session.access_token
             )
-            self.download_model(model_id=model_info.model_id, local_path=output_path)
+
+            self.download_model(
+                model_id=model_info.model_id,
+                local_path=default_model_path.with_suffix(extension),
+            )
             compressed_model = self.model_factory.create_compressed_model(
                 model_info=model_info
-            )
+            )  # TODO: delete
+
             if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
-                export_onnx(output_path, compressed_model.input_shapes)
+                export_onnx(default_model_path, compressed_model.input_shapes)
+
             logger.info(
                 f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}"
             )
