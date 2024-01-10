@@ -12,6 +12,9 @@ from .device import (
     ModelFramework,
     SoftwareVersion,
     TaskStatus,
+    datatype_literal,
+    framework_literal,
+    devicename_literal,
 )
 
 __all__ = [
@@ -28,4 +31,7 @@ __all__ = [
     "NVIDIA_GRAPHIC_CARDS",
     "INTEL_DEVICES",
     "ONLY_INT8_DEVICES",
+    "datatype_literal",
+    "framework_literal",
+    "devicename_literal",
 ]

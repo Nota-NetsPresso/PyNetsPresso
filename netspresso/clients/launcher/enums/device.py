@@ -131,3 +131,6 @@ RENESAS_DEVICES = [DeviceName.RENESAS_RZ_V2L, DeviceName.RENESAS_RZ_V2M]
 NVIDIA_GRAPHIC_CARDS = [DeviceName.AWS_T4]
 INTEL_DEVICES = [DeviceName.Intel_XEON_W_2233]
 ONLY_INT8_DEVICES = [DeviceName.ALIF_ENSEMBLE_E7_DEVKIT_GEN2, DeviceName.RENESAS_RA8D1]
+datatype_literal = DataType.create_literal()
+framework_literal = ModelFramework.create_literal()
+devicename_literal = DeviceName.create_literal()

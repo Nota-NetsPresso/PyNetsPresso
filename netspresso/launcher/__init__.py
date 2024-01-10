@@ -88,6 +88,7 @@ class ModelConverter(Launcher):
         target_device_name: DeviceName = None,
         target_software_version: SoftwareVersion = None,
         input_shape: InputShape = None,
+        dataset_path: str = None,
     ) -> ConversionTask:
         """Convert a model into the type the specific framework.
 
@@ -183,6 +184,7 @@ class ModelConverter(Launcher):
             target_device=target_device.device_name,
             data_type=data_type,
             software_version=target_device.software_version,
+            dataset_path=dataset_path,
         )
 
         conversion_task = self.get_conversion_task(conversion_task)

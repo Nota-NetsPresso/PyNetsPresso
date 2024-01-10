@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
@@ -8,6 +9,9 @@ from netspresso.clients.launcher.enums import (
     HardwareType,
     ModelFramework,
     TaskStatus,
+    datatype_literal,
+    framework_literal,
+    devicename_literal,
 )
 
 
@@ -111,10 +115,17 @@ class ModelConversionRequest(BaseRequestModel):
         input_shape: (InputShape): input shape of the model.
     """
 
-    target_device_name: DeviceName = Field(default=None)
-    target_framework: ModelFramework = Field(default=None)
-    data_type: DataType = Field(default=DataType.FP16)
+    target_device_name: devicename_literal = Field(default=None)
+    target_framework: framework_literal = Field(default=None)
+    data_type: datatype_literal = Field(default=DataType.FP16)
     input_shape: InputShape = Field(default=None)
+
+    @validator("input_shape")
+    def validate_input_shape(cls, value):
+        if value:
+            return json.dumps(value.dict())
+        else:
+            return None
 
 
 class BaseTaskModel(BaseModel):
