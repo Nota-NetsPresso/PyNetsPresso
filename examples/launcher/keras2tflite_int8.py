@@ -8,7 +8,6 @@ from netspresso.launcher import (
     BenchmarkTask,
     ConversionTask,
     DataType,
-    HardwareType,
 )
 
 
@@ -19,7 +18,7 @@ if __name__ == "__main__":
     converter = ModelConverter(user_session=session)
 
     ###
-    # Available Target Frameworks for Conversion with ONNX Models
+    # Available Target Frameworks for Conversion with Keras Models
     #
     # ModelFramework.TENSORFLOW_LITE
     #
@@ -34,12 +33,12 @@ if __name__ == "__main__":
     # DeviceName.RENESAS_RA8D1
     #
 
-    MODEL_PATH = "./examples/sample_models/pytorch_model_automatic_0.9.onnx"
-    CONVERTED_MODEL_PATH = "./outputs/converted/onnx2tflite_int8_pytorch_model_automatic_0.9"
+    MODEL_PATH = "./examples/sample_models/mobilenetv1_cifar100_automatic.h5"
+    CONVERTED_MODEL_PATH = "./outputs/converted/keras2tflite_RENESAS_RA8D1"
     TARGET_FRAMEWORK = ModelFramework.TENSORFLOW_LITE
-    TARGET_DEVICE_NAME = DeviceName.RASPBERRY_PI_4B
+    TARGET_DEVICE_NAME = DeviceName.RENESAS_RA8D1
     DATA_TYPE = DataType.INT8
-    DATASET_PATH = "./examples/sample_datasets/20x64x64x3.npy"
+    DATASET_PATH = "./examples/sample_datasets/20x32x32x3.npy"
 
     conversion_task: ConversionTask = converter.convert_model(
         model_path=MODEL_PATH,
@@ -49,7 +48,25 @@ if __name__ == "__main__":
         output_path=CONVERTED_MODEL_PATH,
         dataset_path=DATASET_PATH,
     )
+    ########################
+    # Asynchronous Procedure
+    # If you wish to request conversion and retrieve the results later, please refer to the following code.
+    ########################
+    # conversion_task: ConversionTask = converter.convert_model(
+    #     model_path=MODEL_PATH,
+    #     target_framework=TARGET_FRAMEWORK,
+    #     target_device_name=TARGET_DEVICE_NAME,
+    #     data_type=DATA_TYPE,
+    #     output_path=CONVERTED_MODEL_PATH,
+    #     wait_until_done=False,
+    # )
 
+    # while conversion_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
+    #     conversion_task = converter.get_conversion_task(conversion_task)
+    #     logger.info(f"conversion task status : {conversion_task.status}")
+    #     time.sleep(1)
+
+    # conversion_task = converter.get_conversion_task(conversion_task)
     logger.info(conversion_task)
 
     ###
@@ -69,5 +86,21 @@ if __name__ == "__main__":
         target_device_name=TARGET_DEVICE_NAME,
         data_type=DATA_TYPE,
     )
+    ########################
+    # Asynchronous Procedure
+    # If you wish to request conversion and retrieve the results later, please refer to the following code.
+    ########################
+    # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
+    #     model_path=CONVERTED_MODEL_PATH,
+    #     target_framework=TARGET_FRAMEWORK,
+    #     target_device_name=DeviceName.RASPBERRY_PI_4B,
+    #     data_type=DATA_TYPE,
+    #     wait_until_done=False,
+    # )
+
+    # while benchmark_task.status in [TaskStatus.IN_QUEUE, TaskStatus.IN_PROGRESS]:
+    #     benchmark_task = benchmarker.get_benchmark_task(benchmark_task=benchmark_task)
+    #     logger.info(f"benchmark task status : {benchmark_task.status}")
+    #     time.sleep(1)
 
     logger.info(f"model inference latency: {benchmark_task.latency} ms")
