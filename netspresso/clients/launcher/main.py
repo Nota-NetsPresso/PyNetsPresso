@@ -65,6 +65,7 @@ class ModelLauncherAPIClient:
         target_device: DeviceName,
         data_type: DataType,
         software_version: str,
+        dataset_path: str,
     ) -> ConversionTask:
         """Convert a model into the type the specific framework.
 
@@ -96,9 +97,12 @@ class ModelLauncherAPIClient:
         if software_version is not None:
             request_data.software_version = software_version
 
+        files = get_files(dataset_path)
+
         response = requests.post(
             url,
-            json=request_data.dict(),
+            data=request_data.dict(),
+            files=files,
             headers=get_headers(self.user_session.access_token),
         )
         response_body = json.loads(response.text)

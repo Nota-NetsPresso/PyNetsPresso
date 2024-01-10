@@ -10,7 +10,7 @@ from netspresso.clients.auth import BaseClient, validate_token
 from netspresso.clients.launcher import ModelLauncherAPIClient
 from netspresso.clients.launcher.enums import (
     JETSON_DEVICES,
-    ONLY_INT8_DEVICES,
+    AVAILABLE_INT8_DEVICES,
     DataType,
     DeviceName,
     HardwareType,
@@ -88,6 +88,7 @@ class ModelConverter(Launcher):
         target_device_name: DeviceName = None,
         target_software_version: SoftwareVersion = None,
         input_shape: InputShape = None,
+        dataset_path: str = None,
     ) -> ConversionTask:
         """Convert a model into the type the specific framework.
 
@@ -146,14 +147,14 @@ class ModelConverter(Launcher):
 
             # Check available int8 converting devices
             if data_type == DataType.INT8:
-                if target_device_name not in ONLY_INT8_DEVICES:
+                if target_device_name not in AVAILABLE_INT8_DEVICES:
                     raise Exception(
-                        f"int8 converting supports only {ONLY_INT8_DEVICES}."
+                        f"int8 converting supports only {AVAILABLE_INT8_DEVICES}."
                     )
             else:  # FP16, FP32
-                if target_device_name in ONLY_INT8_DEVICES:
+                if target_device_name in AVAILABLE_INT8_DEVICES:
                     raise Exception(
-                        f"{ONLY_INT8_DEVICES} only support int8 data types."
+                        f"{AVAILABLE_INT8_DEVICES} only support int8 data types."
                     )
 
             devices = filter_devices_with_device_name(
@@ -183,6 +184,7 @@ class ModelConverter(Launcher):
             target_device=target_device.device_name,
             data_type=data_type,
             software_version=target_device.software_version,
+            dataset_path=dataset_path,
         )
 
         conversion_task = self.get_conversion_task(conversion_task)
@@ -328,17 +330,17 @@ class ModelBenchmarker(Launcher):
 
         # Check available int8 converting devices
         if data_type == DataType.INT8:
-            if target_device_name not in ONLY_INT8_DEVICES:
-                raise ValueError(f"int8 converting supports only {ONLY_INT8_DEVICES}.")
+            if target_device_name not in AVAILABLE_INT8_DEVICES:
+                raise ValueError(f"int8 converting supports only {AVAILABLE_INT8_DEVICES}.")
         else:  # FP16, FP32
-            if target_device_name in ONLY_INT8_DEVICES:
-                raise ValueError(f"{ONLY_INT8_DEVICES} only support int8 data types.")
+            if target_device_name in AVAILABLE_INT8_DEVICES:
+                raise ValueError(f"{AVAILABLE_INT8_DEVICES} only support int8 data types.")
 
         if (
             hardware_type == HardwareType.HELIUM
-            and target_device_name not in ONLY_INT8_DEVICES
+            and target_device_name not in AVAILABLE_INT8_DEVICES
         ):
-            raise ValueError(f"{ONLY_INT8_DEVICES} only support helium hardware type.")
+            raise ValueError(f"{AVAILABLE_INT8_DEVICES} only support helium hardware type.")
 
         devices = filter_devices_with_device_name(
             name=target_device_name, devices=model.available_devices

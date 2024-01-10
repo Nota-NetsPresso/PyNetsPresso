@@ -2,7 +2,7 @@ from .device import (
     INTEL_DEVICES,
     JETSON_DEVICES,
     NVIDIA_GRAPHIC_CARDS,
-    ONLY_INT8_DEVICES,
+    AVAILABLE_INT8_DEVICES,
     RASPBERRY_PI_DEVICES,
     RENESAS_DEVICES,
     DataType,
@@ -12,6 +12,9 @@ from .device import (
     ModelFramework,
     SoftwareVersion,
     TaskStatus,
+    datatype_literal,
+    framework_literal,
+    devicename_literal,
 )
 
 __all__ = [
@@ -27,5 +30,8 @@ __all__ = [
     "RENESAS_DEVICES",
     "NVIDIA_GRAPHIC_CARDS",
     "INTEL_DEVICES",
-    "ONLY_INT8_DEVICES",
+    "AVAILABLE_INT8_DEVICES",
+    "datatype_literal",
+    "framework_literal",
+    "devicename_literal",
 ]
