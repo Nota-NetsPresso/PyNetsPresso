@@ -11,6 +11,7 @@ from netspresso.clients.launcher import ModelLauncherAPIClient
 from netspresso.clients.launcher.enums import (
     JETSON_DEVICES,
     AVAILABLE_INT8_DEVICES,
+    ONLY_INT8_DEVICES,
     DataType,
     DeviceName,
     HardwareType,
@@ -152,9 +153,9 @@ class ModelConverter(Launcher):
                         f"int8 converting supports only {AVAILABLE_INT8_DEVICES}."
                     )
             else:  # FP16, FP32
-                if target_device_name in AVAILABLE_INT8_DEVICES:
+                if target_device_name in ONLY_INT8_DEVICES:
                     raise Exception(
-                        f"{AVAILABLE_INT8_DEVICES} only support int8 data types."
+                        f"{ONLY_INT8_DEVICES} only support int8 data types."
                     )
 
             devices = filter_devices_with_device_name(
@@ -333,14 +334,14 @@ class ModelBenchmarker(Launcher):
             if target_device_name not in AVAILABLE_INT8_DEVICES:
                 raise ValueError(f"int8 converting supports only {AVAILABLE_INT8_DEVICES}.")
         else:  # FP16, FP32
-            if target_device_name in AVAILABLE_INT8_DEVICES:
-                raise ValueError(f"{AVAILABLE_INT8_DEVICES} only support int8 data types.")
+            if target_device_name in ONLY_INT8_DEVICES:
+                raise ValueError(f"{ONLY_INT8_DEVICES} only support int8 data types.")
 
         if (
             hardware_type == HardwareType.HELIUM
-            and target_device_name not in AVAILABLE_INT8_DEVICES
+            and target_device_name not in ONLY_INT8_DEVICES
         ):
-            raise ValueError(f"{AVAILABLE_INT8_DEVICES} only support helium hardware type.")
+            raise ValueError(f"{ONLY_INT8_DEVICES} only support helium hardware type.")
 
         devices = filter_devices_with_device_name(
             name=target_device_name, devices=model.available_devices
