@@ -138,6 +138,10 @@ AVAILABLE_INT8_DEVICES = [
     DeviceName.RASPBERRY_PI_ZERO_W,
     DeviceName.RASPBERRY_PI_ZERO_2W,
 ]
+ONLY_INT8_DEVICES = [
+    DeviceName.ALIF_ENSEMBLE_E7_DEVKIT_GEN2,
+    DeviceName.RENESAS_RA8D1,
+]
 
 datatype_literal = DataType.create_literal()
 framework_literal = ModelFramework.create_literal()

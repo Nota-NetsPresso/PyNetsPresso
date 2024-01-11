@@ -97,7 +97,9 @@ class ModelLauncherAPIClient:
         if software_version is not None:
             request_data.software_version = software_version
 
-        files = get_files(dataset_path)
+        files = None
+        if dataset_path:
+            files = get_files(dataset_path)
 
         response = requests.post(
             url,
