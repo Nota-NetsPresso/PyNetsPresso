@@ -1,3 +1,5 @@
+import json
+
 from typing import List, Optional, Union
 from pydantic import BaseModel, Field, validator
 
@@ -108,6 +110,13 @@ class ModelConversionRequest(BaseRequestModel):
     target_framework: ModelFramework = Field(default=None)
     data_type: DataType = Field(default=DataType.FP16)
     input_shape: InputShape = Field(default=None)
+
+    @validator("input_shape")
+    def validate_input_shape(cls, value):
+        if value:
+            return json.dumps(value.dict())
+        else:
+            return None
 
 
 class BaseTaskModel(BaseModel):
