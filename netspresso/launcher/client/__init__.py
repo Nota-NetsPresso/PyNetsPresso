@@ -85,7 +85,7 @@ class LauncherAPIClient:
         if software_version is not None:
             request_data.software_version = software_version
 
-        response = requests.post(url, json=request_data.dict(), headers=get_headers(self.user_session.access_token))
+        response = requests.post(url, data=request_data.dict(), headers=get_headers(self.user_session.access_token))
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return ConversionTask(**response_body)
