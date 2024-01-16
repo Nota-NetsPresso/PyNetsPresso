@@ -36,10 +36,11 @@ from netspresso.compressor.core.model import (
     ModelCollection,
     ModelFactory,
 )
-from netspresso.enums import ServiceCredit
+from netspresso.enums import ServiceCredit, TaskType, Status
 
 from ..utils import FileManager, check_credit_balance
 from .utils.onnx import export_onnx
+from ..utils.metadata.manager import MetadataManager
 
 
 class ModelCompressor(BaseClient):
@@ -372,16 +373,16 @@ class ModelCompressor(BaseClient):
         """
         try:
             logger.info("Getting compression...")
-            compression_info = self.client.get_compression_info(
+            _compression_info = self.client.get_compression_info(
                 compression_id=compression_id,
                 access_token=self.user_session.access_token,
             )
             compression_info = CompressionInfo(
-                compressed_model_id=compression_info.new_model_id,
-                compression_id=compression_info.compression_id,
-                compression_method=compression_info.compression_method,
+                compressed_model_id=_compression_info.new_model_id,
+                compression_id=_compression_info.compression_id,
+                compression_method=_compression_info.compression_method,
             )
-            compression_info.set_available_layers(compression_info.compression_method)
+            compression_info.set_available_layers(_compression_info.available_layers)
             logger.info("Get compression successfully.")
 
             return compression_info
@@ -443,6 +444,7 @@ class ModelCompressor(BaseClient):
             default_model_path, extension = FileManager.prepare_model_path(
                 folder_path=output_path, framework=model_info.framework
             )
+            metadata = MetadataManager.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -519,11 +521,27 @@ class ModelCompressor(BaseClient):
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
+            metadata.update_model_info(task=model_info.task, framework=model_info.framework, input_shapes=model_info.input_shapes)
+            metadata.update_compression_info(
+                method=compression.compression_method,
+                options=compression.options,
+                layers=compression,
+            )
+            metadata.update_results(model=model_info, compressed_model=compressed_model)
+            metadata.update_status(status=Status.COMPLETED)
+            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+
             return compressed_model
 
         except Exception as e:
             logger.error(f"Compress model failed. Error: {e}")
+            metadata.update_status(status=Status.ERROR)
+            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
+
+        except KeyboardInterrupt:
+            metadata.update_status(status=Status.STOPPED)
+            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
 
     @validate_token
     def recommendation_compression(
@@ -568,6 +586,7 @@ class ModelCompressor(BaseClient):
             default_model_path, extension = FileManager.prepare_model_path(
                 folder_path=output_path, framework=framework
             )
+            metadata = MetadataManager.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -680,11 +699,29 @@ class ModelCompressor(BaseClient):
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
+            _compression_info = self.get_compression(compression_info.compression_id)
+            metadata.update_model_info(task=task, framework=framework, input_shapes=input_shapes)
+            metadata.update_compression_info(
+                method=_compression_info.compression_method,
+                ratio=recommendation_ratio,
+                options=_compression_info.options,
+                layers=_compression_info.available_layers,
+            )
+            metadata.update_results(model=model, compressed_model=compressed_model)
+            metadata.update_status(status=Status.COMPLETED)
+            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+
             return compressed_model
 
         except Exception as e:
             logger.error(f"Recommendation compression failed. Error: {e}")
+            metadata.update_status(status=Status.ERROR)
+            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
+
+        except KeyboardInterrupt:
+            metadata.update_status(status=Status.STOPPED)
+            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
 
     @validate_token
     def automatic_compression(
@@ -721,6 +758,7 @@ class ModelCompressor(BaseClient):
             default_model_path, extension = FileManager.prepare_model_path(
                 folder_path=output_path, framework=framework
             )
+            metadata = MetadataManager.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -747,6 +785,7 @@ class ModelCompressor(BaseClient):
             model_info = self.client.auto_compression(
                 data=data, access_token=self.user_session.access_token
             )
+            compression_info = self.get_compression(model_info.original_compression_id)
 
             self.download_model(
                 model_id=model_info.model_id,
@@ -767,8 +806,25 @@ class ModelCompressor(BaseClient):
                 f"{ServiceCredit.AUTOMATIC_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
+            metadata.update_model_info(task=task, framework=framework, input_shapes=input_shapes)
+            metadata.update_compression_info(
+                method=compression_info.compression_method,
+                ratio=compression_ratio,
+                options=compression_info.options,
+                layers=compression_info.available_layers,
+            )
+            metadata.update_results(model=model, compressed_model=compressed_model)
+            metadata.update_status(status=Status.COMPLETED)
+            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+
             return compressed_model
 
         except Exception as e:
             logger.error(f"Automatic compression failed. Error: {e}")
+            metadata.update_status(status=Status.ERROR)
+            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
+
+        except KeyboardInterrupt:
+            metadata.update_status(status=Status.STOPPED)
+            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
