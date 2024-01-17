@@ -86,7 +86,7 @@ class CompressorMetadata:
         update_model_fields(self.results.compressed_model, compressed_model)
 
     def update_available_devices(self, available_devices):
-        _available_devices = [
+        self.available_devices = [
             TargetDevice(
                 display_name=device.display_name,
                 display_brand_name=device.display_brand_name,
@@ -97,4 +97,3 @@ class CompressorMetadata:
             )
             for device in available_devices
         ]
-        self.available_devices = _available_devices

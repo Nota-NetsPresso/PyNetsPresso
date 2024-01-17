@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 from ...enums import TaskType
-from .default.compressor import CompressorMetadata
+from .default import CompressorMetadata, ConverterMetadata, BenchmarkerMetadata
 
 
 class MetadataManager:
@@ -49,6 +49,10 @@ class MetadataManager:
         """
         if task_type == TaskType.COMPRESS:
             _metadata = CompressorMetadata()
+        elif task_type == TaskType.CONVERT:
+            _metadata = ConverterMetadata()
+        elif task_type == TaskType.BENCHMARK:
+            _metadata = BenchmarkerMetadata()
         return _metadata
 
     @staticmethod
