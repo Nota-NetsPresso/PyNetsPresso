@@ -29,6 +29,8 @@ from netspresso.clients.compressor.schemas.compression import (
     UploadDatasetRequest,
 )
 from netspresso.clients.compressor.schemas.model import UploadModelRequest
+from netspresso.clients.launcher import ModelLauncherAPIClient
+from netspresso.clients.launcher.enums import LauncherFunction
 from netspresso.compressor.core.compression import CompressionInfo
 from netspresso.compressor.core.model import (
     CompressedModel,
@@ -58,6 +60,7 @@ class ModelCompressor(BaseClient):
         """
         super().__init__(email=email, password=password, user_session=user_session)
         self.client = ModelCompressorAPIClient()
+        self.launcher_client = ModelLauncherAPIClient(self.user_session)
         self.model_factory = ModelFactory()
 
     @validate_token
@@ -414,6 +417,21 @@ class ModelCompressor(BaseClient):
             logger.error(f"Upload dataset failed. Error: {e}")
             raise e
 
+    def _get_available_devices(self, compressed_model, default_model_path):
+        if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
+            export_onnx(default_model_path, compressed_model.input_shapes)
+            converter_uploaded_model = self.launcher_client.upload_model(
+                model_file_path=default_model_path.with_suffix(".onnx"),
+                target_function=LauncherFunction.CONVERT,
+            )
+        else:
+            converter_uploaded_model = self.launcher_client.upload_model(
+                model_file_path=default_model_path.with_suffix(".h5"),
+                target_function=LauncherFunction.CONVERT,
+            )
+
+        return converter_uploaded_model
+
     @validate_token
     def compress_model(
         self,
@@ -510,8 +528,7 @@ class ModelCompressor(BaseClient):
             )
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
 
-            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
-                export_onnx(default_model_path, compressed_model.input_shapes)
+            converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(
                 f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}"
@@ -525,10 +542,11 @@ class ModelCompressor(BaseClient):
             metadata.update_compression_info(
                 method=compression.compression_method,
                 options=compression.options,
-                layers=compression,
+                layers=compression.available_layers,
             )
             metadata.update_results(model=model_info, compressed_model=compressed_model)
             metadata.update_status(status=Status.COMPLETED)
+            metadata.update_available_devices(converter_uploaded_model.available_devices)
             MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
 
             return compressed_model
@@ -688,8 +706,7 @@ class ModelCompressor(BaseClient):
             )
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
 
-            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
-                export_onnx(default_model_path, compressed_model.input_shapes)
+            converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(
                 f"Recommendation compression successfully. Compressed Model ID: {compressed_model.model_id}"
@@ -709,6 +726,7 @@ class ModelCompressor(BaseClient):
             )
             metadata.update_results(model=model, compressed_model=compressed_model)
             metadata.update_status(status=Status.COMPLETED)
+            metadata.update_available_devices(converter_uploaded_model.available_devices)
             MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
 
             return compressed_model
@@ -795,8 +813,7 @@ class ModelCompressor(BaseClient):
                 model_info=model_info
             )  # TODO: delete
 
-            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
-                export_onnx(default_model_path, compressed_model.input_shapes)
+            converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(
                 f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}"
@@ -815,6 +832,7 @@ class ModelCompressor(BaseClient):
             )
             metadata.update_results(model=model, compressed_model=compressed_model)
             metadata.update_status(status=Status.COMPLETED)
+            metadata.update_available_devices(converter_uploaded_model.available_devices)
             MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
 
             return compressed_model

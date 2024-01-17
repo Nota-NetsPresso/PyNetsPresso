@@ -44,16 +44,29 @@ class Results:
 
 
 @dataclass
+class TargetDevice:
+    display_name: str = ""
+    display_brand_name: str = ""
+    device_name: str = ""
+    software_version: str = ""
+    software_version_display_name: str = ""
+    hardware_type: str = ""
+
+
+@dataclass
 class CompressorMetadata:
     status: Status = Status.IN_PROGRESS
     task_type: TaskType = TaskType.COMPRESS
     results: Results = field(default_factory=Results)
     model_info: ModelInfo = field(default_factory=ModelInfo)
     compression_info: CompressionInfo = field(default_factory=CompressionInfo)
-    available_devices: List[Dict] = field(default_factory=list)
+    available_devices: List[TargetDevice] = field(default_factory=list)
 
     def asdict(self):
         return asdict(self)
+
+    def update_status(self, status: Status):
+        self.status = status
 
     def update_model_info(self, task, framework, input_shapes):
         self.model_info.task = task
@@ -81,5 +94,16 @@ class CompressorMetadata:
         update_model_fields(self.results.original_model, model)
         update_model_fields(self.results.compressed_model, compressed_model)
 
-    def update_status(self, status: Status):
-        self.status = status
+    def update_available_devices(self, available_devices):
+        _available_devices = [
+            TargetDevice(
+                display_name=device.display_name,
+                display_brand_name=device.display_brand_name,
+                device_name=device.device_name,
+                software_version=device.software_version,
+                software_version_display_name=device.software_version_display_name,
+                hardware_type=device.hardware_type,
+            )
+            for device in available_devices
+        ]
+        self.available_devices = _available_devices
