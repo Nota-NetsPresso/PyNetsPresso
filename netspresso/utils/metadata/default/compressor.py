@@ -2,6 +2,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List
 
 from netspresso.enums.metadata import Status, TaskType
+from .common import TargetDevice
 
 
 @dataclass
@@ -41,16 +42,6 @@ class CompressionInfo:
 class Results:
     original_model: Model = field(default_factory=Model)
     compressed_model: Model = field(default_factory=Model)
-
-
-@dataclass
-class TargetDevice:
-    display_name: str = ""
-    display_brand_name: str = ""
-    device_name: str = ""
-    software_version: str = ""
-    software_version_display_name: str = ""
-    hardware_type: str = ""
 
 
 @dataclass
