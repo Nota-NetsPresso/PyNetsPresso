@@ -193,3 +193,4 @@ class ConversionTask(BaseTaskModel):
     output_model_uuid: str = Field(default=None)
     model_file_name: str = Field(default=None)
     target_device_name: DeviceName = Field(default=None)
+    target_framework: ModelFramework = Field(default=None)
