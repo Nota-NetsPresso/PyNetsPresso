@@ -31,7 +31,7 @@ class FileManager:
 
     @staticmethod
     def create_folder(
-        folder_path: str, parents: bool = True, exist_ok: bool = True
+        folder_path: str, parents: bool = True, exist_ok: bool = True, is_folder_check: bool = True,
     ) -> None:
         """Create a folder.
 
@@ -43,7 +43,10 @@ class FileManager:
         Returns:
             None
         """
-        Path(folder_path).mkdir(parents=parents, exist_ok=exist_ok)
+        if is_folder_check and not FileManager.check_exists(folder_path=folder_path):
+            Path(folder_path).mkdir(parents=parents, exist_ok=exist_ok)
+        elif is_folder_check:
+            sys.exit(f"This folder already exists. Local Path: {Path(folder_path)}")
 
     @staticmethod
     def create_file_path(
@@ -112,9 +115,6 @@ class FileManager:
         default_model_path = Path(folder_path) / f"{Path(folder_path).name}.ext"
         extension = FileManager.get_extension_by_framework(framework=framework)
 
-        if is_folder_check and not FileManager.check_exists(folder_path=folder_path):
-            FileManager.create_folder(folder_path=folder_path)
-        elif is_folder_check:
-            sys.exit(f"This folder already exists. Local Path: {Path(folder_path)}")
+        FileManager.create_folder(folder_path=folder_path, is_folder_check=is_folder_check)
 
         return default_model_path, extension
