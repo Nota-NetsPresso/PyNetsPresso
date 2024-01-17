@@ -1,5 +1,10 @@
-from netspresso.trainer import ModelTrainer, Task, Resize
-
+from netspresso.trainer import (
+    AdamW,
+    CosineAnnealingLRWithCustomWarmUp,
+    ModelTrainer,
+    Resize,
+    Task,
+)
 
 # 1. Declare Trainer
 trainer = ModelTrainer(task=Task.OBJECT_DETECTION)
@@ -21,10 +26,22 @@ print(trainer.available_models)  # ['EfficientFormer', 'YOLOX']
 trainer.set_model_config(model_name="YOLOX")
 
 # 2-3. Augmentation
-trainer.set_augmentation_config(img_size=512, transforms=[Resize(size=512)])
+img_size = 512
+trainer.set_augmentation_config(
+    img_size=img_size,
+    train_transforms=[Resize(size=[img_size, img_size])],
+    inference_transforms=[Resize(size=[img_size, img_size])],
+)
 
 # 2-4. Training
-trainer.set_training_config(epochs=40, batch_size=16, lr=6e-3, opt="adamw", warmup_epochs=10)
+optimizer = AdamW(lr=6e-3)
+scheduler = CosineAnnealingLRWithCustomWarmUp(warmup_epochs=10)
+trainer.set_training_config(
+    epochs=40,
+    batch_size=16,
+    optimizer=optimizer,
+    scheduler=scheduler,
+)
 
 # 3. Train
 trainer.train(gpus="0, 1")
