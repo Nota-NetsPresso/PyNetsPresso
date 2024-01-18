@@ -24,6 +24,7 @@ from .registries import (
     TRAINING_CONFIG_TYPE,
 )
 from .trainer_configs import TrainerConfigs
+from ..utils import FileManager
 
 
 class ModelTrainer:
@@ -188,7 +189,7 @@ class ModelTrainer:
     def set_environment_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.environment = yaml_path
 
-    def train(self, gpus: str) -> None:
+    def train(self, gpus: str) -> Dict:
         self._validate_config()
 
         configs = TrainerConfigs(
@@ -209,9 +210,12 @@ class ModelTrainer:
             logging=configs.logging,
             environment=configs.environment,
         )
-        self.logging_dir = logging_dir
-        logger.info(f"Logging dir: {self.logging_dir}")
+        training_summary_path = f"{logging_dir}/training_summary.json"
+        training_summary = FileManager.load_json(file_path=training_summary_path)
+        training_summary["logging_dir"] = logging_dir
 
         # Remove temp config folder
         logger.info(f"Remove {configs.temp_folder} folder.")
         shutil.rmtree(configs.temp_folder, ignore_errors=True)
+
+        return training_summary
