@@ -52,7 +52,7 @@ class Plotter:
             f"Difference: {difference:.4f}",
             ha="center",
             va="bottom",
-            color="red",
+            color="black",
         )
 
     @staticmethod
@@ -224,11 +224,11 @@ class Plotter:
             diff_x = np.mean(axs[idx].get_xlim())
             axs[idx].text(
                 diff_x,
-                original_values[idx] * 3.5,
+                original_values[idx] * 0.5,
                 f"{difference_values[idx]:.4f}x",
                 ha="center",
                 va="bottom",
-                color="red",
+                color="black",
             )
 
             axs[idx].set_ylabel(label)
