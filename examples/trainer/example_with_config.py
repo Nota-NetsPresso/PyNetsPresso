@@ -1,10 +1,7 @@
-from netspresso.trainer import (
-    AdamW,
-    CosineAnnealingLRWithCustomWarmUp,
-    ModelTrainer,
-    Resize,
-    Task,
-)
+from netspresso.trainer import ModelTrainer, Task
+from netspresso.trainer.optimizers import AdamW
+from netspresso.trainer.schedulers import CosineAnnealingWarmRestartsWithCustomWarmUp
+from netspresso.trainer.augmentations import Resize
 
 # 1. Declare Trainer
 trainer = ModelTrainer(task=Task.OBJECT_DETECTION)
@@ -35,7 +32,7 @@ trainer.set_augmentation_config(
 
 # 2-4. Training
 optimizer = AdamW(lr=6e-3)
-scheduler = CosineAnnealingLRWithCustomWarmUp(warmup_epochs=10)
+scheduler = CosineAnnealingWarmRestartsWithCustomWarmUp(warmup_epochs=10)
 trainer.set_training_config(
     epochs=40,
     batch_size=16,

@@ -1,5 +1,4 @@
-from .optimizer import SGD, Adadelta, Adagrad, Adam, Adamax, AdamW, RMSprop
-from .scheduler import (
+from .schedulers import (
     CosineAnnealingLRWithCustomWarmUp,
     CosineAnnealingWarmRestartsWithCustomWarmUp,
     PolynomialLRWithWarmUp,
@@ -7,13 +6,6 @@ from .scheduler import (
 )
 
 __all__ = [
-    "Adadelta",
-    "Adagrad",
-    "Adam",
-    "Adamax",
-    "AdamW",
-    "RMSprop",
-    "SGD",
     "StepLR",
     "PolynomialLRWithWarmUp",
     "CosineAnnealingLRWithCustomWarmUp",
