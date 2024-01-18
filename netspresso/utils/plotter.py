@@ -76,13 +76,15 @@ class Plotter:
     def _plot_comparison(
         original_value, value_per_model, target_value, title, xlabel, ylabel
     ):
-        ratios = list(original_value.keys())
+        ratios = list(value_per_model.keys())
+        values = list(value_per_model.values())
         plt.figure(figsize=(15, 6))
-        plt.plot(ratios, value_per_model, marker="o", label="Compressed Model")
+        plt.plot(ratios, values, marker="o", label="Compressed Model")
         plt.axhline(
             original_value, color="slategray", linestyle="--", label="Original Model"
         )
-        plt.axhline(target_value, color="red", linestyle="--", label="Target Value")
+        if target_value:
+            plt.axhline(target_value, color="red", linestyle="--", label="Target Value")
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
