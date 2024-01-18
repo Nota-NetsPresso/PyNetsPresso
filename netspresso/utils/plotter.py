@@ -48,7 +48,7 @@ class Plotter:
         diff_x = np.mean(ax.get_xlim())
         ax.text(
             diff_x,
-            compressed_value - 0.05,
+            original_value * 0.5,
             f"Difference: {difference:.4f}",
             ha="center",
             va="bottom",
@@ -224,7 +224,7 @@ class Plotter:
             diff_x = np.mean(axs[idx].get_xlim())
             axs[idx].text(
                 diff_x,
-                compressed_values[idx] * 3.5,
+                original_values[idx] * 3.5,
                 f"{difference_values[idx]:.4f}x",
                 ha="center",
                 va="bottom",
