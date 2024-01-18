@@ -12,6 +12,7 @@ from netspresso_trainer.cfg import (
 )
 from netspresso_trainer.cfg.augmentation import *
 from netspresso_trainer.cfg.data import ImageLabelPathConfig, PathConfig
+from netspresso_trainer.cfg.model import CheckpointConfig
 
 from .enums import Task
 from .registries import (
@@ -87,7 +88,15 @@ class ModelTrainer:
     def set_dataset_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.data = yaml_path
 
-    def set_model_config(self, model_name):
+    def set_model_config(
+        self,
+        model_name: str,
+        use_pretrained: bool = True,
+        load_head: bool = False,
+        path: Optional[Union[Path, str]] = None,
+        fx_model_path: Optional[Union[Path, str]] = None,
+        optimizer_path: Optional[Union[Path, str]] = None,
+    ):
         model = self._get_available_models().get(model_name)
 
         if model is None:
@@ -95,7 +104,15 @@ class ModelTrainer:
                 f"The '{model_name}' model is not supported for the '{self.task}' task. The available models are {self.available_models}."
             )
 
-        self.model = model()
+        self.model = model(
+            checkpoint=CheckpointConfig(
+                use_pretrained=use_pretrained,
+                load_head=load_head,
+                path=path,
+                fx_model_path=fx_model_path,
+                optimizer_path=optimizer_path,
+            )
+        )
 
     def set_model_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.model = yaml_path
@@ -171,7 +188,7 @@ class ModelTrainer:
     def set_environment_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.environment = yaml_path
 
-    def train(self, gpus: str):
+    def train(self, gpus: str) -> None:
         self._validate_config()
 
         configs = TrainerConfigs(
@@ -183,7 +200,7 @@ class ModelTrainer:
             self.environment,
         )
 
-        train_with_yaml(
+        logging_dir = train_with_yaml(
             gpus=gpus,
             data=configs.data,
             augmentation=configs.augmentation,
@@ -192,6 +209,8 @@ class ModelTrainer:
             logging=configs.logging,
             environment=configs.environment,
         )
+        self.logging_dir = logging_dir
+        logger.info(f"Logging dir: {self.logging_dir}")
 
         # Remove temp config folder
         logger.info(f"Remove {configs.temp_folder} folder.")
