@@ -6,7 +6,7 @@ from urllib import request
 from loguru import logger
 
 from netspresso.clients.auth import BaseClient, validate_token
-from netspresso.clients.compressor import ModelCompressorAPIClient
+from netspresso.clients.compressor import CompressorAPIClient
 from netspresso.clients.compressor.enums import (
     CompressionMethod,
     Extension,
@@ -42,7 +42,7 @@ from ..utils import FileManager, check_credit_balance
 from .utils.onnx import export_onnx
 
 
-class ModelCompressor(BaseClient):
+class Compressor(BaseClient):
     def __init__(self, email=None, password=None, user_session=None):
         """Initialize the Model Compressor.
 
@@ -52,11 +52,11 @@ class ModelCompressor(BaseClient):
             user_session (SessionClient): The SessionClient object.
 
         Available constructors:
-            ModelCompressor(email='USER_EMAIL',password='PASSWORD')
-            ModelCompressor(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
+            Compressor(email='USER_EMAIL',password='PASSWORD')
+            Compressor(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
         super().__init__(email=email, password=password, user_session=user_session)
-        self.client = ModelCompressorAPIClient()
+        self.client = CompressorAPIClient()
         self.model_factory = ModelFactory()
 
     @validate_token
