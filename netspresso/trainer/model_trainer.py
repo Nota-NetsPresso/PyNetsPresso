@@ -27,7 +27,7 @@ from .trainer_configs import TrainerConfigs
 from ..utils import FileManager
 
 
-class ModelTrainer:
+class Trainer:
     def __init__(self, task) -> None:
         self.task = self._validate_task(task)
         self.available_models = list(self._get_available_models().keys())

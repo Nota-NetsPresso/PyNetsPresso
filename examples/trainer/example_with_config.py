@@ -1,10 +1,10 @@
-from netspresso.trainer import ModelTrainer, Task
+from netspresso.trainer import Trainer, Task
 from netspresso.trainer.optimizers import AdamW
 from netspresso.trainer.schedulers import CosineAnnealingWarmRestartsWithCustomWarmUp
 from netspresso.trainer.augmentations import Resize
 
 # 1. Declare Trainer
-trainer = ModelTrainer(task=Task.OBJECT_DETECTION)
+trainer = Trainer(task=Task.OBJECT_DETECTION)
 
 # 2. Set Config
 # 2-1. Data
