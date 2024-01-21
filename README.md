@@ -168,9 +168,9 @@ pip install -e .
 
 ```python
 from loguru import logger
-from netspresso.trainer import ModelTrainer, Task
+from netspresso.trainer import Trainer, Task
 
-trainer = ModelTrainer(task=Task.OBJECT_DETECTION)
+trainer = Trainer(task=Task.OBJECT_DETECTION)
 logger.info(trainer.available_models)  # ['EfficientFormer', 'YOLOX']
 
 trainer.set_dataset_config(
@@ -189,9 +189,9 @@ trainer.train(gpus="0, 1")
 ```
 
 ```python
-from netspresso.trainer import ModelTrainer, Task
+from netspresso.trainer import Trainer, Task
 
-trainer = ModelTrainer(task=Task.IMAGE_CLASSIFICATION)
+trainer = Trainer(task=Task.IMAGE_CLASSIFICATION)
 
 trainer.set_dataset_config_with_yaml(yaml_path="config/data/beans.yaml")
 trainer.set_model_config_with_yaml(yaml_path="config/model/resnet50-classification.yaml")
@@ -224,9 +224,9 @@ Automatically compress the model by setting the compression ratio for the model.
 Enter the ID of the uploaded model, the name and storage path of the compressed model, and the compression ratio.
 
 ```python
-from netspresso.compressor import ModelCompressor
+from netspresso.compressor import Compressor
 
-compressor = ModelCompressor(user_session=session)
+compressor = Compressor(user_session=session)
 compressed_model = compressor.automatic_compression(
     model_name="YOUR_MODEL_NAME",
     task=Task.IMAGE_CLASSIFICATION,
@@ -243,9 +243,9 @@ Convert an ONNX model into a TensorRT model, and benchmark the TensorRT model on
 
 ```python
 from loguru import logger
-from netspresso.launcher import ModelConverter, ModelBenchmarker, ModelFramework, DeviceName, SoftwareVersion
+from netspresso.launcher import Converter, Benchmarker, ModelFramework, DeviceName, SoftwareVersion
 
-converter = ModelConverter(user_session=session)
+converter = Converter(user_session=session)
 conversion_task = converter.convert_model(
     model_path="YOUR_MODEL_PATH",  # ex) "./examples/sample_models/test.onnx"
     target_framework=ModelFramework.TENSORRT,
@@ -255,7 +255,7 @@ conversion_task = converter.convert_model(
 )
 logger.info(conversion_task)
 
-benchmarker = ModelBenchmarker(user_session=session)
+benchmarker = Benchmarker(user_session=session)
 benchmark_task = benchmarker.benchmark_model(
     model_path="CONVERTED_MODEL_PATH",  # ex) "./outputs/converted/converted_model.trt"
     target_device_name=DeviceName.JETSON_AGX_ORIN,

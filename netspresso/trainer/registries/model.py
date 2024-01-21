@@ -1,12 +1,10 @@
 from netspresso_trainer.cfg.model import *
 
-
 CLASSIFICATION_MODELS = {
     "EfficientFormer": ClassificationEfficientFormerModelConfig,
     "MobileNetV3": ClassificationMobileNetV3ModelConfig,
     "MobileViT": ClassificationMobileViTModelConfig,
     "ResNet": ClassificationResNetModelConfig,
-    "SegFormer": ClassificationSegFormerModelConfig,
     "ViT": ClassificationViTModelConfig,
     "MixNetS": ClassificationMixNetSmallModelConfig,
     "MixNetM": ClassificationMixNetMediumModelConfig,
@@ -16,6 +14,11 @@ CLASSIFICATION_MODELS = {
 DETECTION_MODELS = {
     "EfficientFormer": DetectionEfficientFormerModelConfig,
     "YOLOX": DetectionYoloXModelConfig,
+    "ResNet": DetectionResNetModelConfig,
+    "MobileNetV3": DetectionMobileNetV3ModelConfig,
+    "MixNetL": DetectionMixNetLargeModelConfig,
+    "MixNetM": DetectionMixNetMediumModelConfig,
+    "MixNetS": DetectionMixNetSmallModelConfig,
 }
 
 SEGMENTATION_MODELS = {

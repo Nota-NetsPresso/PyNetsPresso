@@ -1,9 +1,9 @@
-from netspresso.compressor import ModelCompressor, Task, Framework
+from netspresso.compressor import Compressor, Task, Framework
 
 
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"
-compressor = ModelCompressor(email=EMAIL, password=PASSWORD)
+compressor = Compressor(email=EMAIL, password=PASSWORD)
 
 UPLOAD_MODEL_NAME = "test_h5"
 TASK = Task.IMAGE_CLASSIFICATION

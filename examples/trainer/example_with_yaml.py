@@ -1,8 +1,8 @@
-from netspresso.trainer import ModelTrainer, Task
+from netspresso.trainer import Trainer, Task
 
 
 # 1. Declare Trainer
-trainer = ModelTrainer(task=Task.IMAGE_CLASSIFICATION)
+trainer = Trainer(task=Task.IMAGE_CLASSIFICATION)
 
 # 2. Set Config
 trainer.set_dataset_config_with_yaml(yaml_path="config/data/beans.yaml")

@@ -6,7 +6,7 @@ from urllib import request
 from loguru import logger
 
 from netspresso.clients.auth import BaseClient, validate_token
-from netspresso.clients.compressor import ModelCompressorAPIClient
+from netspresso.clients.compressor import CompressorAPIClient
 from netspresso.clients.compressor.enums import (
     CompressionMethod,
     Extension,
@@ -29,7 +29,7 @@ from netspresso.clients.compressor.schemas.compression import (
     UploadDatasetRequest,
 )
 from netspresso.clients.compressor.schemas.model import UploadModelRequest
-from netspresso.clients.launcher import ModelLauncherAPIClient
+from netspresso.clients.launcher import LauncherAPIClient
 from netspresso.clients.launcher.enums import LauncherFunction
 from netspresso.compressor.core.compression import CompressionInfo
 from netspresso.compressor.core.model import (
@@ -45,7 +45,7 @@ from .utils.onnx import export_onnx
 from ..utils.metadata.manager import MetadataManager
 
 
-class ModelCompressor(BaseClient):
+class Compressor(BaseClient):
     def __init__(self, email=None, password=None, user_session=None):
         """Initialize the Model Compressor.
 
@@ -55,12 +55,12 @@ class ModelCompressor(BaseClient):
             user_session (SessionClient): The SessionClient object.
 
         Available constructors:
-            ModelCompressor(email='USER_EMAIL',password='PASSWORD')
-            ModelCompressor(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
+            Compressor(email='USER_EMAIL',password='PASSWORD')
+            Compressor(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
         super().__init__(email=email, password=password, user_session=user_session)
-        self.client = ModelCompressorAPIClient()
-        self.launcher_client = ModelLauncherAPIClient(self.user_session)
+        self.client = CompressorAPIClient()
+        self.launcher_client = LauncherAPIClient(self.user_session)
         self.model_factory = ModelFactory()
 
     @validate_token

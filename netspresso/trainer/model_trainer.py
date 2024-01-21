@@ -1,31 +1,33 @@
-from pathlib import Path
-from typing import List, Union, Dict, Optional
 import shutil
+from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 from loguru import logger
 from netspresso_trainer import train_with_yaml
 from netspresso_trainer.cfg import (
     AugmentationConfig,
-    ScheduleConfig,
-    LoggingConfig,
     EnvironmentConfig,
+    LoggingConfig,
+    ScheduleConfig,
 )
-from netspresso_trainer.cfg.data import PathConfig, ImageLabelPathConfig
 from netspresso_trainer.cfg.augmentation import *
+from netspresso_trainer.cfg.data import ImageLabelPathConfig, PathConfig
+from netspresso_trainer.cfg.model import CheckpointConfig
 
-from .trainer_configs import TrainerConfigs
+from .enums import Task
 from .registries import (
-    DATA_CONFIG_TYPE,
-    TRAINING_CONFIG_TYPE,
     AUGMENTATION_CONFIG_TYPE,
     CLASSIFICATION_MODELS,
+    DATA_CONFIG_TYPE,
     DETECTION_MODELS,
     SEGMENTATION_MODELS,
+    TRAINING_CONFIG_TYPE,
 )
-from .enums import Task
+from .trainer_configs import TrainerConfigs
+from ..utils import FileManager
 
 
-class ModelTrainer:
+class Trainer:
     def __init__(self, task) -> None:
         self.task = self._validate_task(task)
         self.available_models = list(self._get_available_models().keys())
@@ -39,7 +41,9 @@ class ModelTrainer:
     def _validate_task(self, task):
         available_tasks = [task.value for task in Task]
         if task not in available_tasks:
-            raise ValueError(f"The task supports {available_tasks}. The entered task is {task}.")
+            raise ValueError(
+                f"The task supports {available_tasks}. The entered task is {task}."
+            )
         return task
 
     def _validate_config(self):
@@ -85,7 +89,15 @@ class ModelTrainer:
     def set_dataset_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.data = yaml_path
 
-    def set_model_config(self, model_name):
+    def set_model_config(
+        self,
+        model_name: str,
+        use_pretrained: bool = True,
+        load_head: bool = False,
+        path: Optional[Union[Path, str]] = None,
+        fx_model_path: Optional[Union[Path, str]] = None,
+        optimizer_path: Optional[Union[Path, str]] = None,
+    ):
         model = self._get_available_models().get(model_name)
 
         if model is None:
@@ -93,51 +105,52 @@ class ModelTrainer:
                 f"The '{model_name}' model is not supported for the '{self.task}' task. The available models are {self.available_models}."
             )
 
-        self.model = model()
+        self.model = model(
+            checkpoint=CheckpointConfig(
+                use_pretrained=use_pretrained,
+                load_head=load_head,
+                path=path,
+                fx_model_path=fx_model_path,
+                optimizer_path=optimizer_path,
+            )
+        )
 
     def set_model_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.model = yaml_path
 
     def set_training_config(
         self,
-        seed: int = 1,
-        opt: str = "adamw",
-        lr: float = 6e-5,
-        momentum: float = 0.937,
-        weight_decay: float = 0.0005,
-        sched: str = "cosine",
-        min_lr: float = 1e-6,
-        warmup_bias_lr: float = 1e-5,
-        warmup_epochs: int = 5,
-        iters_per_phase: int = 30,
-        sched_power: float = 1.0,
+        optimizer,
+        scheduler,
         epochs: int = 3,
         batch_size: int = 8,
     ):
         self.training = ScheduleConfig(
-            seed,
-            opt,
-            lr,
-            momentum,
-            weight_decay,
-            sched,
-            min_lr,
-            warmup_bias_lr,
-            warmup_epochs,
-            iters_per_phase,
-            sched_power,
-            epochs,
-            batch_size,
+            epochs=epochs,
+            batch_size=batch_size,
+            optimizer=optimizer.asdict(),
+            scheduler=scheduler.asdict(),
         )
 
     def set_training_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.training = yaml_path
 
-    def set_augmentation_config(self, img_size, transforms, mix_transforms=None):
+    def set_augmentation_config(
+        self,
+        img_size: int,
+        train_transforms: Optional[List] = None,
+        train_mix_transforms: Optional[List] = None,
+        inference_transforms: Optional[List] = None,
+    ):
         self.augmentation = AugmentationConfig(
             img_size=img_size,
-            transforms=transforms,
-            mix_transforms=mix_transforms,
+            train=Train(
+                transforms=train_transforms,
+                mix_transforms=train_mix_transforms,
+            ),
+            inference=Inference(
+                transforms=inference_transforms,
+            ),
         )
 
     def set_augmentation_config_with_yaml(self, yaml_path: Union[Path, str]):
@@ -170,20 +183,25 @@ class ModelTrainer:
     def set_logging_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.logging = yaml_path
 
-    def set_environment_config(self, num_workers=4):
-        self.environment = EnvironmentConfig(num_workers=num_workers)
+    def set_environment_config(self, seed: int = 1, num_workers: int = 4):
+        self.environment = EnvironmentConfig(seed=seed, num_workers=num_workers)
 
     def set_environment_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.environment = yaml_path
 
-    def train(self, gpus: str):
+    def train(self, gpus: str) -> Dict:
         self._validate_config()
 
         configs = TrainerConfigs(
-            self.data, self.augmentation, self.model, self.training, self.logging, self.environment
+            self.data,
+            self.augmentation,
+            self.model,
+            self.training,
+            self.logging,
+            self.environment,
         )
 
-        train_with_yaml(
+        logging_dir = train_with_yaml(
             gpus=gpus,
             data=configs.data,
             augmentation=configs.augmentation,
@@ -192,7 +210,12 @@ class ModelTrainer:
             logging=configs.logging,
             environment=configs.environment,
         )
+        training_summary_path = f"{logging_dir}/training_summary.json"
+        training_summary = FileManager.load_json(file_path=training_summary_path)
+        training_summary["logging_dir"] = logging_dir
 
         # Remove temp config folder
         logger.info(f"Remove {configs.temp_folder} folder.")
         shutil.rmtree(configs.temp_folder, ignore_errors=True)
+
+        return training_summary

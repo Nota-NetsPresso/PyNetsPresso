@@ -1,5 +1,3 @@
-from .main import ModelCompressorAPIClient
+from .main import CompressorAPIClient
 
-__all__ = [
-    "ModelCompressorAPIClient",
-]
+__all__ = ["CompressorAPIClient"]

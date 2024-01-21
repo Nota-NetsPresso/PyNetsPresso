@@ -21,7 +21,7 @@ from netspresso.clients.launcher.schemas.model import (
 from netspresso.clients.utils.common import get_files, get_headers
 
 
-class ModelLauncherAPIClient:
+class LauncherAPIClient:
     def __init__(self, user_sessoin: SessionClient):
         self.config = Config(Module.LAUNCHER)
         self.host = self.config.HOST

@@ -1,11 +1,11 @@
 from loguru import logger
 
-from netspresso.compressor import ModelCompressor
+from netspresso.compressor import Compressor
 
 
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"
-compressor = ModelCompressor(email=EMAIL, password=PASSWORD)
+compressor = Compressor(email=EMAIL, password=PASSWORD)
 
 uploaded_models = compressor.get_uploaded_models()
 logger.info(uploaded_models)

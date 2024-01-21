@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 from typing import Tuple, Union
@@ -118,3 +119,9 @@ class FileManager:
         FileManager.create_folder(folder_path=folder_path, is_folder_check=is_folder_check)
 
         return default_model_path, extension
+
+    @staticmethod
+    def load_json(file_path: str):
+        with open(file_path, "r") as json_data:
+            data = json.load(json_data)
+        return data

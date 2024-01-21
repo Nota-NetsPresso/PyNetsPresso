@@ -7,7 +7,7 @@ from urllib import request
 from loguru import logger
 
 from netspresso.clients.auth import BaseClient, validate_token
-from netspresso.clients.launcher import ModelLauncherAPIClient
+from netspresso.clients.launcher import LauncherAPIClient
 from netspresso.clients.launcher.enums import (
     JETSON_DEVICES,
     AVAILABLE_INT8_DEVICES,
@@ -54,7 +54,7 @@ class Launcher(BaseClient):
             Launcher(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
         super().__init__(email=email, password=password, user_session=user_session)
-        self.client = ModelLauncherAPIClient(user_sessoin=self.user_session)
+        self.client = LauncherAPIClient(user_sessoin=self.user_session)
 
     @validate_token
     def _upload_model(self, model_file_path: Union[Path, str]) -> Model:
@@ -75,7 +75,7 @@ class Launcher(BaseClient):
         )
 
 
-class ModelConverter(Launcher):
+class Converter(Launcher):
     target_function: LauncherFunction = LauncherFunction.CONVERT
 
     @validate_token
@@ -324,7 +324,7 @@ class ModelConverter(Launcher):
             raise e
 
 
-class ModelBenchmarker(Launcher):
+class Benchmarker(Launcher):
     target_function: LauncherFunction = LauncherFunction.BENCHMARK
 
     @validate_token

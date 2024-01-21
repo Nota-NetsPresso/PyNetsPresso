@@ -16,7 +16,7 @@ from netspresso.clients.config import Config, Module
 from netspresso.clients.utils.common import get_files, get_headers
 
 
-class ModelCompressorAPIClient:
+class CompressorAPIClient:
     def __init__(self):
         self.config = Config(Module.COMPRESSOR)
         self.host = self.config.HOST
