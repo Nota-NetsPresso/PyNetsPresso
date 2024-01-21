@@ -439,7 +439,7 @@ class Compressor(BaseClient):
         model_name: str,
         output_path: str,
         dataset_path: str = None,
-    ) -> CompressedModel:
+    ) -> Dict:
         """Compress a model using the provided compression information.
 
         Args:
@@ -452,7 +452,7 @@ class Compressor(BaseClient):
             e: If an error occurs while compressing the model.
 
         Returns:
-            CompressedModel: The compressed model.
+            Dict: Source model and compressed model information.
         """
         try:
             logger.info("Compressing model...")
@@ -549,7 +549,7 @@ class Compressor(BaseClient):
             metadata.update_available_devices(converter_uploaded_model.available_devices)
             MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
 
-            return compressed_model
+            return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Compress model failed. Error: {e}")
@@ -575,7 +575,7 @@ class Compressor(BaseClient):
         input_shapes: List[Dict[str, int]],
         options: Options = Options(),
         dataset_path: str = None,
-    ) -> CompressedModel:
+    ) -> Dict:
         """Compress a recommendation-based model using the given compression and recommendation methods.
 
         Args:
@@ -595,7 +595,7 @@ class Compressor(BaseClient):
             e: If an error occurs while performing recommendation compression.
 
         Returns:
-            CompressedModel: The compressed model.
+            Dict: Source model and compressed model information.
         """
 
         try:
@@ -729,7 +729,7 @@ class Compressor(BaseClient):
             metadata.update_available_devices(converter_uploaded_model.available_devices)
             MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
 
-            return compressed_model
+            return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Recommendation compression failed. Error: {e}")
@@ -751,7 +751,7 @@ class Compressor(BaseClient):
         input_path: str,
         output_path: str,
         compression_ratio: float = 0.5,
-    ) -> CompressedModel:
+    ) -> Dict:
         """Compress a model automatically based on the given compression ratio.
 
         Args:
@@ -767,7 +767,7 @@ class Compressor(BaseClient):
             e: If an error occurs while performing automatic compression.
 
         Returns:
-            CompressedModel: The compressed model.
+            Dict: Source model and compressed model information.
         """
 
         try:
@@ -835,7 +835,7 @@ class Compressor(BaseClient):
             metadata.update_available_devices(converter_uploaded_model.available_devices)
             MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
 
-            return compressed_model
+            return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Automatic compression failed. Error: {e}")

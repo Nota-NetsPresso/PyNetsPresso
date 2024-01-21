@@ -1,7 +1,7 @@
 import sys
 import time
 from pathlib import Path
-from typing import Union
+from typing import Dict, Union
 from urllib import request
 
 from loguru import logger
@@ -91,7 +91,7 @@ class Converter(Launcher):
         target_software_version: SoftwareVersion = None,
         input_shape: InputShape = None,
         dataset_path: str = None,
-    ) -> ConversionTask:
+    ) -> Dict:
         """Convert a model into the type the specific framework.
 
         Args:
@@ -109,7 +109,7 @@ class Converter(Launcher):
             e: If an error occurs while converting the model.
 
         Returns:
-            ConversionTask: model conversion task object.
+            Dict: model conversion task dict.
         """
         try:
             default_model_path, extension = FileManager.prepare_model_path(
@@ -234,7 +234,7 @@ class Converter(Launcher):
                 f"{ServiceCredit.MODEL_CONVERT} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
-            return conversion_task
+            return metadata.asdict()
         
         except Exception as e:
             logger.error(f"Convert failed. Error: {e}")
@@ -338,7 +338,7 @@ class Benchmarker(Launcher):
         target_software_version: SoftwareVersion = None,
         hardware_type: HardwareType = None,
         wait_until_done: bool = True,
-    ) -> BenchmarkTask:
+    ) -> Dict:
         """Benchmark given model on the specified device.
 
         Args:
@@ -353,7 +353,7 @@ class Benchmarker(Launcher):
             e: If an error occurs while benchmarking of the model.
 
         Returns:
-            BenchmarkTask: model benchmark task object.
+            Dict: model benchmark task dict.
         """
         try:
             default_model_path, extension = FileManager.prepare_model_path(
@@ -476,7 +476,7 @@ class Benchmarker(Launcher):
             metadata.update_status(status=Status.STOPPED)
             MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
 
-        return model_benchmark
+        return metadata.asdict()
 
     @validate_token
     def get_benchmark_task(
