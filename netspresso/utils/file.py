@@ -15,7 +15,7 @@ FRAMEWORK_EXTENSION_MAP = {
 }
 
 
-class FileManager:
+class FileHandler:
     """Utility class for file-related operations."""
 
     @staticmethod
@@ -44,7 +44,7 @@ class FileManager:
         Returns:
             None
         """
-        if is_folder_check and not FileManager.check_exists(folder_path=folder_path):
+        if is_folder_check and not FileHandler.check_exists(folder_path=folder_path):
             Path(folder_path).mkdir(parents=parents, exist_ok=exist_ok)
         elif is_folder_check:
             sys.exit(f"This folder already exists. Local Path: {Path(folder_path)}")
@@ -114,9 +114,9 @@ class FileManager:
             Tuple[Path, str]: A tuple containing the default model path (Path) and the file extension (str).
         """
         default_model_path = Path(folder_path) / f"{Path(folder_path).name}.ext"
-        extension = FileManager.get_extension_by_framework(framework=framework)
+        extension = FileHandler.get_extension_by_framework(framework=framework)
 
-        FileManager.create_folder(folder_path=folder_path, is_folder_check=is_folder_check)
+        FileHandler.create_folder(folder_path=folder_path, is_folder_check=is_folder_check)
 
         return default_model_path, extension
 

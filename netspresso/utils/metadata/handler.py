@@ -6,7 +6,7 @@ from ...enums import TaskType
 from .default import CompressorMetadata, ConverterMetadata, BenchmarkerMetadata
 
 
-class MetadataManager:
+class MetadataHandler:
     @staticmethod
     def save_json(data: dict, folder_path: str, file_name: str = "metadata") -> None:
         """Save dictionary data to a JSON file.
@@ -56,7 +56,7 @@ class MetadataManager:
         return _metadata
 
     @staticmethod
-    def init_metadata(folder_path: str, task_type: TaskType) -> Any:
+    def init_metadata(folder_path: str, task_type: TaskType, file_name: str = "metadata") -> Any:
         """Initialize metadata by saving default metadata to a JSON file.
 
         Args:
@@ -66,7 +66,7 @@ class MetadataManager:
         Returns:
             Any: Default metadata object.
         """
-        default_metadata = MetadataManager.get_default_metadata(task_type)
-        MetadataManager.save_json(default_metadata.asdict(), folder_path)
+        default_metadata = MetadataHandler.get_default_metadata(task_type)
+        MetadataHandler.save_json(default_metadata.asdict(), folder_path, file_name=file_name)
 
         return default_metadata

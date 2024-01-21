@@ -24,7 +24,7 @@ from .registries import (
     TRAINING_CONFIG_TYPE,
 )
 from .trainer_configs import TrainerConfigs
-from ..utils import FileManager
+from ..utils import FileHandler
 
 
 class Trainer:
@@ -211,7 +211,7 @@ class Trainer:
             environment=configs.environment,
         )
         training_summary_path = f"{logging_dir}/training_summary.json"
-        training_summary = FileManager.load_json(file_path=training_summary_path)
+        training_summary = FileHandler.load_json(file_path=training_summary_path)
         training_summary["logging_dir"] = logging_dir
 
         # Remove temp config folder

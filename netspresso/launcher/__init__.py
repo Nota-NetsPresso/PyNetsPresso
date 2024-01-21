@@ -34,8 +34,8 @@ from netspresso.launcher.utils.devices import (
     filter_devices_with_hardware_type,
 )
 
-from ..utils import FileManager, check_credit_balance
-from ..utils.metadata.manager import MetadataManager
+from ..utils import FileHandler, check_credit_balance
+from ..utils.metadata import MetadataHandler
 
 
 class Launcher(BaseClient):
@@ -112,10 +112,10 @@ class Converter(Launcher):
             Dict: model conversion task dict.
         """
         try:
-            default_model_path, extension = FileManager.prepare_model_path(
+            default_model_path, extension = FileHandler.prepare_model_path(
                 folder_path=output_path, framework=target_framework
             )
-            metadata = MetadataManager.init_metadata(folder_path=output_path, task_type=TaskType.CONVERT)
+            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.CONVERT)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -227,7 +227,7 @@ class Converter(Launcher):
             )
             metadata.update_status(status=Status.COMPLETED)
             metadata.update_available_devices(converter_uploaded_model.available_devices)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
             remaining_credit = self.user_session.get_credit()
             logger.info(
@@ -239,12 +239,12 @@ class Converter(Launcher):
         except Exception as e:
             logger.error(f"Convert failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
     @validate_token
     def get_conversion_task(
@@ -356,11 +356,11 @@ class Benchmarker(Launcher):
             Dict: model benchmark task dict.
         """
         try:
-            default_model_path, extension = FileManager.prepare_model_path(
+            default_model_path, extension = FileHandler.prepare_model_path(
                 folder_path=model_path, framework=target_framework, is_folder_check=False
             )
-            FileManager.create_folder(folder_path=output_path)
-            metadata = MetadataManager.init_metadata(folder_path=output_path, task_type=TaskType.BENCHMARK)
+            FileHandler.create_folder(folder_path=output_path)
+            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.BENCHMARK)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -459,7 +459,7 @@ class Benchmarker(Launcher):
                 file_size=model_benchmark.file_size,
             )
             metadata.update_status(status=Status.COMPLETED)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
             remaining_credit = self.user_session.get_credit()
             logger.info(
@@ -467,14 +467,14 @@ class Benchmarker(Launcher):
             )
 
         except Exception as e:
-            logger.error(f"Convert failed. Error: {e}")
+            logger.error(f"Benchmark failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
         return metadata.asdict()
 

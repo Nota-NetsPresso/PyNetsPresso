@@ -40,9 +40,9 @@ from netspresso.compressor.core.model import (
 )
 from netspresso.enums import ServiceCredit, TaskType, Status
 
-from ..utils import FileManager, check_credit_balance
+from ..utils import FileHandler, check_credit_balance
 from .utils.onnx import export_onnx
-from ..utils.metadata.manager import MetadataManager
+from ..utils.metadata import MetadataHandler
 
 
 class Compressor(BaseClient):
@@ -459,10 +459,10 @@ class Compressor(BaseClient):
 
             model_info = self.get_model(compression.original_model_id)
 
-            default_model_path, extension = FileManager.prepare_model_path(
+            default_model_path, extension = FileHandler.prepare_model_path(
                 folder_path=output_path, framework=model_info.framework
             )
-            metadata = MetadataManager.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
+            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -547,19 +547,19 @@ class Compressor(BaseClient):
             metadata.update_results(model=model_info, compressed_model=compressed_model)
             metadata.update_status(status=Status.COMPLETED)
             metadata.update_available_devices(converter_uploaded_model.available_devices)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
             return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Compress model failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
     @validate_token
     def recommendation_compression(
@@ -601,10 +601,10 @@ class Compressor(BaseClient):
         try:
             logger.info("Compressing recommendation-based model...")
 
-            default_model_path, extension = FileManager.prepare_model_path(
+            default_model_path, extension = FileHandler.prepare_model_path(
                 folder_path=output_path, framework=framework
             )
-            metadata = MetadataManager.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
+            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -727,19 +727,19 @@ class Compressor(BaseClient):
             metadata.update_results(model=model, compressed_model=compressed_model)
             metadata.update_status(status=Status.COMPLETED)
             metadata.update_available_devices(converter_uploaded_model.available_devices)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
             return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Recommendation compression failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
     @validate_token
     def automatic_compression(
@@ -773,10 +773,10 @@ class Compressor(BaseClient):
         try:
             logger.info("Compressing automatic-based model...")
 
-            default_model_path, extension = FileManager.prepare_model_path(
+            default_model_path, extension = FileHandler.prepare_model_path(
                 folder_path=output_path, framework=framework
             )
-            metadata = MetadataManager.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
+            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -833,16 +833,16 @@ class Compressor(BaseClient):
             metadata.update_results(model=model, compressed_model=compressed_model)
             metadata.update_status(status=Status.COMPLETED)
             metadata.update_available_devices(converter_uploaded_model.available_devices)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
             return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Automatic compression failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
-            MetadataManager.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
