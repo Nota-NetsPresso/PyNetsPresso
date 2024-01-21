@@ -331,7 +331,6 @@ class Benchmarker(Launcher):
     def benchmark_model(
         self,
         model_path: Union[Path, str],
-        output_path: Union[Path, str],
         target_framework: Union[str, ModelFramework],
         data_type: DataType = DataType.FP16,
         target_device_name: DeviceName = None,
@@ -359,8 +358,14 @@ class Benchmarker(Launcher):
             default_model_path, extension = FileHandler.prepare_model_path(
                 folder_path=model_path, framework=target_framework, is_folder_check=False
             )
-            FileHandler.create_folder(folder_path=output_path)
-            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.BENCHMARK)
+
+            metadata = MetadataHandler.get_default_metadata(TaskType.BENCHMARK)
+            if FileHandler.check_exists(Path(model_path) / f"benchmark.json"):
+                metadatas = MetadataHandler.load_json(Path(model_path) / f"benchmark.json")
+                metadatas.append(metadata.asdict())
+            else:
+                metadatas = [metadata.asdict()]
+            MetadataHandler.save_json(metadatas, model_path, file_name="benchmark")
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -459,7 +464,8 @@ class Benchmarker(Launcher):
                 file_size=model_benchmark.file_size,
             )
             metadata.update_status(status=Status.COMPLETED)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            metadatas[-1] = metadata.asdict()
+            MetadataHandler.save_json(data=metadatas, folder_path=model_path, file_name="benchmark")
 
             remaining_credit = self.user_session.get_credit()
             logger.info(
@@ -469,12 +475,14 @@ class Benchmarker(Launcher):
         except Exception as e:
             logger.error(f"Benchmark failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            metadatas[-1] = metadata.asdict()
+            MetadataHandler.save_json(data=metadatas, folder_path=model_path, file_name="benchmark")
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            metadatas[-1] = metadata.asdict()
+            MetadataHandler.save_json(data=metadatas, folder_path=model_path, file_name="benchmark")
 
         return metadata.asdict()
 
