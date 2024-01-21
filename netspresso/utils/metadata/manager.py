@@ -8,7 +8,7 @@ from .default import CompressorMetadata, ConverterMetadata, BenchmarkerMetadata
 
 class MetadataManager:
     @staticmethod
-    def save_json(data: dict, folder_path: str) -> None:
+    def save_json(data: dict, folder_path: str, file_name: str = "metadata") -> None:
         """Save dictionary data to a JSON file.
 
         Args:
@@ -18,7 +18,7 @@ class MetadataManager:
         Returns:
             None
         """
-        file_path = Path(folder_path) / "metadata.json"
+        file_path = Path(folder_path) / f"{file_name}.json"
 
         with open(file_path, "w") as json_file:
             json.dump(data, json_file, indent=4)
