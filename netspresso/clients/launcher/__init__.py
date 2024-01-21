@@ -1,5 +1,3 @@
-from .main import ModelLauncherAPIClient
+from .main import LauncherAPIClient
 
-__all__ = [
-    "ModelLauncherAPIClient",
-]
+__all__ = ["LauncherAPIClient"]

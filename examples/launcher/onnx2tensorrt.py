@@ -1,8 +1,8 @@
 from loguru import logger
 from netspresso.clients.auth import SessionClient
 from netspresso.launcher import (
-    ModelConverter,
-    ModelBenchmarker,
+    Converter,
+    Benchmarker,
     ModelFramework,
     DeviceName,
     SoftwareVersion,
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     MODEL_PATH = "./examples/sample_models/test.onnx"
     CONVERTED_MODEL_PATH = "./outputs/converted/onnx2tensorrt"
     session = SessionClient(email=EMAIL, password=PASSWORD)
-    converter = ModelConverter(user_session=session)
+    converter = Converter(user_session=session)
 
     ###
     # Available Target Frameworks for Conversion with ONNX Models
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     # DeviceName and Software Version have to be matched with the target_device of the conversion.
     # TensorRT Model has strong dependency with the device type and its jetpack version.
 
-    benchmarker = ModelBenchmarker(user_session=session)
+    benchmarker = Benchmarker(user_session=session)
     benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
         model_path=CONVERTED_MODEL_PATH,
         target_framework=ModelFramework.TENSORRT,

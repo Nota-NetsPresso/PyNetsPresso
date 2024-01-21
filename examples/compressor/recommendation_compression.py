@@ -1,5 +1,5 @@
 from netspresso.compressor import (
-    ModelCompressor,
+    Compressor,
     Task,
     Framework,
     CompressionMethod,
@@ -9,7 +9,7 @@ from netspresso.compressor import (
 
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"
-compressor = ModelCompressor(email=EMAIL, password=PASSWORD)
+compressor = Compressor(email=EMAIL, password=PASSWORD)
 
 # Upload Model
 MODEL_NAME = "test_pt"
