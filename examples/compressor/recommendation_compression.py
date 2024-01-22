@@ -1,7 +1,5 @@
 from netspresso.compressor import (
     Compressor,
-    Task,
-    Framework,
     CompressionMethod,
     RecommendationMethod,
 )
@@ -13,8 +11,6 @@ compressor = Compressor(email=EMAIL, password=PASSWORD)
 
 # Upload Model
 MODEL_NAME = "test_pt"
-TASK = Task.IMAGE_CLASSIFICATION
-FRAMEWORK = Framework.PYTORCH
 INPUT_MODEL_PATH = "./examples/sample_models/graphmodule.pt"
 OUTPUT_MODEL_PATH = "./outputs/compressed/graphmodule_recommend"
 INPUT_SHAPES = [{"batch": 1, "channel": 3, "dimension": [224, 224]}]
@@ -24,8 +20,6 @@ RECOMMENDATION_RATIO = 0.5
 
 compressed_model = compressor.recommendation_compression(
     model_name=MODEL_NAME,
-    task=TASK,
-    framework=FRAMEWORK,
     compression_method=COMPRESSION_METHOD,
     recommendation_method=RECOMMENDATION_METHOD,
     recommendation_ratio=RECOMMENDATION_RATIO,
