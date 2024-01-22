@@ -61,20 +61,17 @@ class UploadModelRequest(BaseModel):
                 "Invalid framework. Supported frameworks are TensorFlow/Keras, PyTorch, and ONNX."
             )
 
-        if framework == Framework.TENSORFLOW_KERAS and not file_extension in [
-            Extension.H5,
-            Extension.ZIP,
-        ]:
+        if file_extension in [Extension.H5, Extension.ZIP] and not framework == Framework.TENSORFLOW_KERAS:
             raise Exception(
-                "Invalid file extension or framework. TensorFlow/Keras models should have .h5 or .zip extension."
+                "Invalid model framework. Models with .h5 or .zip extensions must use TensorFlow/Keras framework."
             )
-        elif framework == Framework.PYTORCH and not file_extension == Extension.PT:
+        elif file_extension == Extension.PT and not framework == Framework.PYTORCH:
             raise Exception(
-                "Invalid file extension or framework. PyTorch models should have .pt extension."
+                "Invalid model framework. Models with .pt extensions must use PyTorch framework."
             )
-        elif framework == Framework.ONNX and not file_extension == Extension.ONNX:
+        elif file_extension == Extension.ONNX and not framework == Framework.ONNX:
             raise Exception(
-                "Invalid file extension or framework. ONNX models should have .onnx extension."
+                "Invalid model framework. Models with .onnx extensions must use ONNX framework."
             )
 
         if framework == Framework.PYTORCH and input_layers is None:
