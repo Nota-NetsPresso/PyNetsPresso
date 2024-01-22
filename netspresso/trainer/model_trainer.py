@@ -92,6 +92,7 @@ class Trainer:
     def set_model_config(
         self,
         model_name: str,
+        img_size: int,
         use_pretrained: bool = True,
         load_head: bool = False,
         path: Optional[Union[Path, str]] = None,
@@ -99,6 +100,7 @@ class Trainer:
         optimizer_path: Optional[Union[Path, str]] = None,
     ):
         model = self._get_available_models().get(model_name)
+        self.img_size = img_size
 
         if model is None:
             raise ValueError(
@@ -137,13 +139,11 @@ class Trainer:
 
     def set_augmentation_config(
         self,
-        img_size: int,
         train_transforms: Optional[List] = None,
         train_mix_transforms: Optional[List] = None,
         inference_transforms: Optional[List] = None,
-    ):
+    ):        
         self.augmentation = AugmentationConfig(
-            img_size=img_size,
             train=Train(
                 transforms=train_transforms,
                 mix_transforms=train_mix_transforms,
@@ -189,8 +189,31 @@ class Trainer:
     def set_environment_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.environment = yaml_path
 
+    def _change_transforms(self, transforms):
+        field_name_to_check = "size"
+
+        if transforms is None:
+            return transforms
+
+        for transform in transforms:
+            field_type = transform.__annotations__.get(field_name_to_check)
+
+            if field_type == List:
+                transform.size = [self.img_size, self.img_size]
+            elif field_type == int:
+                transform.size = self.img_size
+
+        return transforms
+
+    def _apply_img_size(self):
+        self.augmentation.img_size = self.img_size
+        self.augmentation.train.transforms = self._change_transforms(self.augmentation.train.transforms)
+        self.augmentation.train.mix_transforms = self._change_transforms(self.augmentation.train.mix_transforms)
+        self.augmentation.inference.transforms = self._change_transforms(self.augmentation.inference.transforms)
+
     def train(self, gpus: str) -> Dict:
         self._validate_config()
+        self._apply_img_size()
 
         configs = TrainerConfigs(
             self.data,

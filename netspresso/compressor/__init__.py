@@ -67,10 +67,10 @@ class Compressor(BaseClient):
     def upload_model(
         self,
         model_name: str,
-        task: Task,
-        framework: Framework,
         file_path: str,
         input_shapes: List[Dict[str, int]] = [],
+        task: Task = Task.OTHER,
+        framework: Framework = Framework.PYTORCH,
     ) -> Model:
         """Upload a model for compression.
 
@@ -570,9 +570,9 @@ class Compressor(BaseClient):
         recommendation_ratio: float,
         input_path: str,
         output_path: str,
-        task: Task,
-        framework: Framework,
         input_shapes: List[Dict[str, int]],
+        task: Task = Task.OTHER,
+        framework: Framework = Framework.PYTORCH,
         options: Options = Options(),
         dataset_path: str = None,
     ) -> Dict:
@@ -745,11 +745,11 @@ class Compressor(BaseClient):
     def automatic_compression(
         self,
         model_name: str,
-        task: Task,
-        framework: Framework,
         input_shapes: List[Dict[str, int]],
         input_path: str,
         output_path: str,
+        task: Task = Task.OTHER,
+        framework: Framework = Framework.PYTORCH,
         compression_ratio: float = 0.5,
     ) -> Dict:
         """Compress a model automatically based on the given compression ratio.

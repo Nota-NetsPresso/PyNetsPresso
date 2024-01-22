@@ -20,14 +20,12 @@ trainer.set_dataset_config(
 
 # 2-2. Model
 print(trainer.available_models)  # ['EfficientFormer', 'YOLOX']
-trainer.set_model_config(model_name="YOLOX")
+trainer.set_model_config(model_name="YOLOX", img_size=512)
 
 # 2-3. Augmentation
-img_size = 512
 trainer.set_augmentation_config(
-    img_size=img_size,
-    train_transforms=[Resize(size=[img_size, img_size])],
-    inference_transforms=[Resize(size=[img_size, img_size])],
+    train_transforms=[Resize()],
+    inference_transforms=[Resize()],
 )
 
 # 2-4. Training

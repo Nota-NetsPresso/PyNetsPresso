@@ -2,8 +2,6 @@ from loguru import logger
 
 from netspresso.compressor import (
     Compressor,
-    Task,
-    Framework,
     CompressionMethod,
     Policy,
     LayerNorm,
@@ -18,14 +16,10 @@ compressor = Compressor(email=EMAIL, password=PASSWORD)
 
 # Upload Model
 UPLOAD_MODEL_NAME = "test_pt"
-TASK = Task.IMAGE_CLASSIFICATION
-FRAMEWORK = Framework.PYTORCH
 UPLOAD_MODEL_PATH = "./examples/sample_models/graphmodule.pt"
 INPUT_SHAPES = [{"batch": 1, "channel": 3, "dimension": [224, 224]}]
 model = compressor.upload_model(
     model_name=UPLOAD_MODEL_NAME,
-    task=TASK,
-    framework=FRAMEWORK,
     file_path=UPLOAD_MODEL_PATH,
     input_shapes=INPUT_SHAPES,
 )
