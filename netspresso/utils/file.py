@@ -100,9 +100,7 @@ class FileHandler:
         return extension
 
     @staticmethod
-    def prepare_model_path(
-        folder_path: str, framework: str, is_folder_check: bool = True
-    ) -> Tuple[Path, str]:
+    def get_path_and_extension(folder_path: str, framework: str) -> Tuple[Path, str]:
         """Prepare the model path by creating folders and generating a default model path.
 
         Args:
@@ -115,8 +113,6 @@ class FileHandler:
         """
         default_model_path = Path(folder_path) / f"{Path(folder_path).name}.ext"
         extension = FileHandler.get_extension_by_framework(framework=framework)
-
-        FileHandler.create_folder(folder_path=folder_path, is_folder_check=is_folder_check)
 
         return default_model_path, extension
 

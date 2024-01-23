@@ -112,9 +112,10 @@ class Converter(Launcher):
             Dict: model conversion task dict.
         """
         try:
-            default_model_path, extension = FileHandler.prepare_model_path(
+            default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_path, framework=target_framework
             )
+            FileHandler.create_folder(folder_path=output_path)
             metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.CONVERT)
 
             current_credit = self.user_session.get_credit()
@@ -355,8 +356,8 @@ class Benchmarker(Launcher):
             Dict: model benchmark task dict.
         """
         try:
-            default_model_path, extension = FileHandler.prepare_model_path(
-                folder_path=model_path, framework=target_framework, is_folder_check=False
+            default_model_path, extension = FileHandler.get_path_and_extension(
+                folder_path=model_path, framework=target_framework
             )
 
             metadata = MetadataHandler.get_default_metadata(TaskType.BENCHMARK)
