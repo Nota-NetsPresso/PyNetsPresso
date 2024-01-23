@@ -39,4 +39,4 @@ trainer.set_training_config(
 )
 
 # 3. Train
-trainer.train(gpus="0, 1")
+trainer.train(gpus="0, 1", project_id="project_name_1")
