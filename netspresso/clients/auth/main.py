@@ -18,7 +18,7 @@ def validate_token(func) -> None:
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         if not check_jwt_exp(self.user_session.access_token):
-            self.user_session.__reissue_token()
+            self.user_session.reissue_token()
         return func(self, *args, **kwargs)
 
     return wrapper
@@ -86,9 +86,9 @@ class SessionClient:
         
         return user_info.total
 
-    def __reissue_token(self) -> None:
+    def reissue_token(self) -> None:
         try:
-            url = f"{self.base_url}/token"
+            url = f"{self.base_url}/auth/token"
             data = Tokens(
                 access_token=self.access_token, refresh_token=self.refresh_token
             )
@@ -98,7 +98,7 @@ class SessionClient:
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
-                tokens = Tokens(**response_body)
+                tokens = Tokens(**response_body["tokens"])
                 self.access_token = tokens.access_token
                 self.refresh_token = tokens.refresh_token
             else:
