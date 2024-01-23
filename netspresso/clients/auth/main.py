@@ -33,20 +33,18 @@ class SessionClient:
             password (str): The password for a user account.
         """
 
-        self.email = email
-        self.password = password
         self.config = config if config is not None else Config(Module.GENERAL)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.uri_prefix = self.config.URI_PREFIX
         self.base_url = f"{self.host}:{self.port}{self.uri_prefix}"
-        self.__login()
+        self.__login(email, password)
         self.user_info = self.__get_user_info()
 
-    def __login(self) -> None:
+    def __login(self, email, password) -> None:
         try:
             url = f"{self.base_url}/auth/local/login"
-            data = LoginRequest(username=self.email, password=self.password)
+            data = LoginRequest(username=email, password=password)
             response = requests.post(url, json=data.dict(), headers=get_headers())
             response_body = json.loads(response.text)
 
