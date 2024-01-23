@@ -18,7 +18,7 @@ def validate_token(func) -> None:
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         if not check_jwt_exp(self.user_session.access_token):
-            self.user_session.__reissue_token()
+            self.user_session.reissue_token()
         return func(self, *args, **kwargs)
 
     return wrapper
@@ -33,20 +33,18 @@ class SessionClient:
             password (str): The password for a user account.
         """
 
-        self.email = email
-        self.password = password
         self.config = config if config is not None else Config(Module.GENERAL)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.uri_prefix = self.config.URI_PREFIX
         self.base_url = f"{self.host}:{self.port}{self.uri_prefix}"
-        self.__login()
+        self.__login(email, password)
         self.user_info = self.__get_user_info()
 
-    def __login(self) -> None:
+    def __login(self, email, password) -> None:
         try:
             url = f"{self.base_url}/auth/local/login"
-            data = LoginRequest(username=self.email, password=self.password)
+            data = LoginRequest(username=email, password=password)
             response = requests.post(url, json=data.dict(), headers=get_headers())
             response_body = json.loads(response.text)
 
@@ -86,9 +84,9 @@ class SessionClient:
         
         return user_info.total
 
-    def __reissue_token(self) -> None:
+    def reissue_token(self) -> None:
         try:
-            url = f"{self.base_url}/token"
+            url = f"{self.base_url}/auth/token"
             data = Tokens(
                 access_token=self.access_token, refresh_token=self.refresh_token
             )
@@ -98,7 +96,7 @@ class SessionClient:
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
-                tokens = Tokens(**response_body)
+                tokens = Tokens(**response_body["tokens"])
                 self.access_token = tokens.access_token
                 self.refresh_token = tokens.refresh_token
             else:
