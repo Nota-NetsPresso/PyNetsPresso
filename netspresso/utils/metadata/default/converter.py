@@ -36,6 +36,7 @@ class ConvertInfo:
 class ConverterMetadata:
     status: Status = Status.IN_PROGRESS
     task_type: TaskType = TaskType.CONVERT
+    converted_model_path: str = ""
     model_info: ModelInfo = field(default_factory=ModelInfo)
     convert_info: ConvertInfo = field(default_factory=ConvertInfo)
     available_devices: List[Dict] = field(default_factory=list)
@@ -77,6 +78,9 @@ class ConverterMetadata:
         self.convert_info.convert_task_uuid = convert_task_uuid
         self.convert_info.input_model_uuid = input_model_uuid
         self.convert_info.output_model_uuid = output_model_uuid
+
+    def update_converted_model_path(self, converted_model_path):
+        self.converted_model_path = converted_model_path
 
     def update_available_devices(self, available_devices: List[Dict]) -> None:
         self.available_devices = [

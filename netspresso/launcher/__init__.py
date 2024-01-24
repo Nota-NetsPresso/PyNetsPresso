@@ -211,6 +211,7 @@ class Converter(Launcher):
                 target_function=LauncherFunction.BENCHMARK,
             )
 
+            metadata.update_converted_model_path(converted_model_path=default_model_path.with_suffix(extension).as_posix())
             metadata.update_model_info(
                 data_type=model.data_type,
                 framework=model.framework,

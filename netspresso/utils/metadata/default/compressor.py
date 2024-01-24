@@ -49,6 +49,8 @@ class Results:
 class CompressorMetadata:
     status: Status = Status.IN_PROGRESS
     task_type: TaskType = TaskType.COMPRESS
+    compressed_model_path: str = ""
+    compressed_onnx_model_path: str = ""
     results: Results = field(default_factory=Results)
     model_info: ModelInfo = field(default_factory=ModelInfo)
     compression_info: CompressionInfo = field(default_factory=CompressionInfo)
@@ -71,6 +73,12 @@ class CompressorMetadata:
         self.compression_info.ratio = ratio
         self.compression_info.options = options
         self.compression_info.layers = layers
+
+    def update_compressed_model_path(self, compressed_model_path):
+        self.compressed_model_path = compressed_model_path
+
+    def update_compressed_onnx_model_path(self, compressed_onnx_model_path):
+        self.compressed_onnx_model_path = compressed_onnx_model_path
 
     def update_results(self, model, compressed_model):
         def update_model_fields(target, source):
