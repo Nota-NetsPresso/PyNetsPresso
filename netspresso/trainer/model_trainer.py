@@ -227,7 +227,7 @@ class Trainer:
         try:
             self.logging.project_id = project_id
             destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
-            os.makedirs(destination_folder, exist_ok=True)
+            FileHandler.create_folder(folder_path=destination_folder)
             metadata = MetadataHandler.init_metadata(folder_path=destination_folder, task_type=TaskType.TRAIN)
 
             self._validate_config()
