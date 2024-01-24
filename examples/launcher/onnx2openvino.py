@@ -5,8 +5,6 @@ from netspresso.launcher import (
     Benchmarker,
     ModelFramework,
     DeviceName,
-    BenchmarkTask,
-    ConversionTask,
 )
 
 
@@ -33,7 +31,7 @@ if __name__ == "__main__":
     # DeviceName.Intel_XEON_W_2233
     #
 
-    conversion_task: ConversionTask = converter.convert_model(
+    conversion_task = converter.convert_model(
         model_path=MODEL_PATH,
         target_framework=ModelFramework.OPENVINO,
         target_device_name=DeviceName.Intel_XEON_W_2233,
@@ -43,7 +41,7 @@ if __name__ == "__main__":
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
-    # conversion_task: ConversionTask = converter.convert_model(
+    # conversion_task = converter.convert_model(
     #     model_path=MODEL_PATH,
     #     target_framework=ModelFramework.OPENVINO,
     #     target_device_name=DeviceName.Intel_XEON_W_2233,
@@ -60,7 +58,7 @@ if __name__ == "__main__":
     logger.info(conversion_task)
 
     benchmarker = Benchmarker(user_session=session)
-    benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
+    benchmark_task = benchmarker.benchmark_model(
         model_path=CONVERTED_MODEL_PATH,
         target_framework=ModelFramework.OPENVINO,
         target_device_name=DeviceName.Intel_XEON_W_2233,
@@ -69,7 +67,7 @@ if __name__ == "__main__":
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
-    # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
+    # benchmark_task = benchmarker.benchmark_model(
     #     model_path=CONVERTED_MODEL_PATH,
     #     target_framework=ModelFramework.OPENVINO,
     #     target_device_name=DeviceName.Intel_XEON_W_2233,

@@ -5,8 +5,6 @@ from netspresso.launcher import (
     Benchmarker,
     ModelFramework,
     DeviceName,
-    BenchmarkTask,
-    ConversionTask,
     DataType,
     HardwareType,
 )
@@ -41,7 +39,7 @@ if __name__ == "__main__":
     DATA_TYPE = DataType.INT8
     DATASET_PATH = "./examples/sample_datasets/20x64x64x3.npy"
 
-    conversion_task: ConversionTask = converter.convert_model(
+    conversion_task = converter.convert_model(
         model_path=MODEL_PATH,
         target_framework=TARGET_FRAMEWORK,
         target_device_name=TARGET_DEVICE_NAME,
@@ -63,7 +61,7 @@ if __name__ == "__main__":
     #
 
     benchmarker = Benchmarker(user_session=session)
-    benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
+    benchmark_task = benchmarker.benchmark_model(
         model_path=CONVERTED_MODEL_PATH,
         target_framework=TARGET_FRAMEWORK,
         target_device_name=TARGET_DEVICE_NAME,
