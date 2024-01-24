@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from netspresso.enums.metadata import Status, TaskType
 from .common import TargetDevice
@@ -19,7 +19,7 @@ class Model:
     number_of_parameters: int = 0
     trainable_parameters: int = 0
     non_trainable_parameters: int = 0
-    number_of_layers: int = 0
+    number_of_layers: Optional[int] = None
     model_id: str = ""
 
 
@@ -79,7 +79,7 @@ class CompressorMetadata:
             )
             target.trainable_parameters = source.trainable_parameters
             target.non_trainable_parameters = source.non_trainable_parameters
-            target.number_of_layers = source.number_of_layers
+            target.number_of_layers = source.number_of_layers if source.number_of_layers != 0 else None
             target.model_id = source.model_id
 
         update_model_fields(self.results.original_model, model)
