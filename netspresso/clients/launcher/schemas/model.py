@@ -167,16 +167,24 @@ class BenchmarkTask(BaseTaskModel):
         benchmark_result (Optional[dict]): original benchmark result in dictionary.
     """
 
-    benchmark_task_uuid: str = Field(default=None)
     target_device: DeviceName = Field(default=None)
-    file_name: str = Field(default=None)
+    filename: str = Field(default=None)
     data_type: Optional[DataType] = Field(default=DataType.FP16)
     memory_footprint_gpu: Optional[float] = Field(default=None)
     memory_footprint_cpu: Optional[float] = Field(default=None)
     latency: Optional[float] = Field(default=None)
     ram_size: Optional[float] = Field(default=None)
     processor: Optional[str] = Field(default=None)
+    power_consumption: Optional[int] = Field(default=0)
+    file_size: Optional[int] = Field(default=0)
     benchmark_result: Optional[dict] = Field(default=None)
+    software_version: Optional[str] = Field(default=None)
+    hardware_type: Optional[HardwareType] = Field(default=None)
+    input_model_uuid: str = Field(default=None)
+    benchmark_task_uuid: str = Field(default=None)
+    devicefarm_benchmark_task_uuid: str = Field(default=None)
+    devicefarm_model_uuid: str = Field(default=None)
+    benchmark_environment: Optional[dict] = Field(default=None)
 
 
 class ConversionTask(BaseTaskModel):
@@ -193,3 +201,4 @@ class ConversionTask(BaseTaskModel):
     output_model_uuid: str = Field(default=None)
     model_file_name: str = Field(default=None)
     target_device_name: DeviceName = Field(default=None)
+    target_framework: ModelFramework = Field(default=None)

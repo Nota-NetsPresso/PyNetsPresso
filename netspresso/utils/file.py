@@ -15,7 +15,7 @@ FRAMEWORK_EXTENSION_MAP = {
 }
 
 
-class FileManager:
+class FileHandler:
     """Utility class for file-related operations."""
 
     @staticmethod
@@ -32,7 +32,7 @@ class FileManager:
 
     @staticmethod
     def create_folder(
-        folder_path: str, parents: bool = True, exist_ok: bool = True
+        folder_path: str, parents: bool = True, exist_ok: bool = True, is_folder_check: bool = True,
     ) -> None:
         """Create a folder.
 
@@ -44,7 +44,10 @@ class FileManager:
         Returns:
             None
         """
-        Path(folder_path).mkdir(parents=parents, exist_ok=exist_ok)
+        if is_folder_check and not FileHandler.check_exists(folder_path=folder_path):
+            Path(folder_path).mkdir(parents=parents, exist_ok=exist_ok)
+        elif is_folder_check:
+            sys.exit(f"This folder already exists. Local Path: {Path(folder_path)}")
 
     @staticmethod
     def create_file_path(
@@ -97,9 +100,7 @@ class FileManager:
         return extension
 
     @staticmethod
-    def prepare_model_path(
-        folder_path: str, framework: str, is_folder_check: bool = True
-    ) -> Tuple[Path, str]:
+    def get_path_and_extension(folder_path: str, framework: str) -> Tuple[Path, str]:
         """Prepare the model path by creating folders and generating a default model path.
 
         Args:
@@ -111,12 +112,7 @@ class FileManager:
             Tuple[Path, str]: A tuple containing the default model path (Path) and the file extension (str).
         """
         default_model_path = Path(folder_path) / f"{Path(folder_path).name}.ext"
-        extension = FileManager.get_extension_by_framework(framework=framework)
-
-        if is_folder_check and not FileManager.check_exists(folder_path=folder_path):
-            FileManager.create_folder(folder_path=folder_path)
-        elif is_folder_check:
-            sys.exit(f"This folder already exists. Local Path: {Path(folder_path)}")
+        extension = FileHandler.get_extension_by_framework(framework=framework)
 
         return default_model_path, extension
 

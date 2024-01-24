@@ -29,6 +29,8 @@ from netspresso.clients.compressor.schemas.compression import (
     UploadDatasetRequest,
 )
 from netspresso.clients.compressor.schemas.model import UploadModelRequest
+from netspresso.clients.launcher import LauncherAPIClient
+from netspresso.clients.launcher.enums import LauncherFunction
 from netspresso.compressor.core.compression import CompressionInfo
 from netspresso.compressor.core.model import (
     CompressedModel,
@@ -36,10 +38,11 @@ from netspresso.compressor.core.model import (
     ModelCollection,
     ModelFactory,
 )
-from netspresso.enums import ServiceCredit
+from netspresso.enums import ServiceCredit, TaskType, Status
 
-from ..utils import FileManager, check_credit_balance
+from ..utils import FileHandler, check_credit_balance
 from .utils.onnx import export_onnx
+from ..utils.metadata import MetadataHandler
 
 
 class Compressor(BaseClient):
@@ -57,6 +60,7 @@ class Compressor(BaseClient):
         """
         super().__init__(email=email, password=password, user_session=user_session)
         self.client = CompressorAPIClient()
+        self.launcher_client = LauncherAPIClient(self.user_session)
         self.model_factory = ModelFactory()
 
     @validate_token
@@ -372,16 +376,16 @@ class Compressor(BaseClient):
         """
         try:
             logger.info("Getting compression...")
-            compression_info = self.client.get_compression_info(
+            _compression_info = self.client.get_compression_info(
                 compression_id=compression_id,
                 access_token=self.user_session.access_token,
             )
             compression_info = CompressionInfo(
-                compressed_model_id=compression_info.new_model_id,
-                compression_id=compression_info.compression_id,
-                compression_method=compression_info.compression_method,
+                compressed_model_id=_compression_info.new_model_id,
+                compression_id=_compression_info.compression_id,
+                compression_method=_compression_info.compression_method,
             )
-            compression_info.set_available_layers(compression_info.compression_method)
+            compression_info.set_available_layers(_compression_info.available_layers)
             logger.info("Get compression successfully.")
 
             return compression_info
@@ -413,6 +417,21 @@ class Compressor(BaseClient):
             logger.error(f"Upload dataset failed. Error: {e}")
             raise e
 
+    def _get_available_devices(self, compressed_model, default_model_path):
+        if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
+            export_onnx(default_model_path, compressed_model.input_shapes)
+            converter_uploaded_model = self.launcher_client.upload_model(
+                model_file_path=default_model_path.with_suffix(".onnx"),
+                target_function=LauncherFunction.CONVERT,
+            )
+        else:
+            converter_uploaded_model = self.launcher_client.upload_model(
+                model_file_path=default_model_path.with_suffix(".h5"),
+                target_function=LauncherFunction.CONVERT,
+            )
+
+        return converter_uploaded_model
+
     @validate_token
     def compress_model(
         self,
@@ -420,7 +439,7 @@ class Compressor(BaseClient):
         model_name: str,
         output_path: str,
         dataset_path: str = None,
-    ) -> CompressedModel:
+    ) -> Dict:
         """Compress a model using the provided compression information.
 
         Args:
@@ -433,16 +452,18 @@ class Compressor(BaseClient):
             e: If an error occurs while compressing the model.
 
         Returns:
-            CompressedModel: The compressed model.
+            Dict: Source model and compressed model information.
         """
         try:
             logger.info("Compressing model...")
 
             model_info = self.get_model(compression.original_model_id)
 
-            default_model_path, extension = FileManager.prepare_model_path(
+            default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_path, framework=model_info.framework
             )
+            FileHandler.create_folder(folder_path=output_path)
+            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -508,8 +529,7 @@ class Compressor(BaseClient):
             )
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
 
-            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
-                export_onnx(default_model_path, compressed_model.input_shapes)
+            converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(
                 f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}"
@@ -519,11 +539,28 @@ class Compressor(BaseClient):
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
-            return compressed_model
+            metadata.update_model_info(task=model_info.task, framework=model_info.framework, input_shapes=model_info.input_shapes)
+            metadata.update_compression_info(
+                method=compression.compression_method,
+                options=compression.options,
+                layers=compression.available_layers,
+            )
+            metadata.update_results(model=model_info, compressed_model=compressed_model)
+            metadata.update_status(status=Status.COMPLETED)
+            metadata.update_available_devices(converter_uploaded_model.available_devices)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+
+            return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Compress model failed. Error: {e}")
+            metadata.update_status(status=Status.ERROR)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
+
+        except KeyboardInterrupt:
+            metadata.update_status(status=Status.STOPPED)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
     @validate_token
     def recommendation_compression(
@@ -539,7 +576,7 @@ class Compressor(BaseClient):
         framework: Framework = Framework.PYTORCH,
         options: Options = Options(),
         dataset_path: str = None,
-    ) -> CompressedModel:
+    ) -> Dict:
         """Compress a recommendation-based model using the given compression and recommendation methods.
 
         Args:
@@ -559,15 +596,17 @@ class Compressor(BaseClient):
             e: If an error occurs while performing recommendation compression.
 
         Returns:
-            CompressedModel: The compressed model.
+            Dict: Source model and compressed model information.
         """
 
         try:
             logger.info("Compressing recommendation-based model...")
 
-            default_model_path, extension = FileManager.prepare_model_path(
+            default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_path, framework=framework
             )
+            FileHandler.create_folder(folder_path=output_path)
+            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -669,8 +708,7 @@ class Compressor(BaseClient):
             )
             compressed_model = self.get_model(model_id=compression_info.new_model_id)
 
-            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
-                export_onnx(default_model_path, compressed_model.input_shapes)
+            converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(
                 f"Recommendation compression successfully. Compressed Model ID: {compressed_model.model_id}"
@@ -680,11 +718,30 @@ class Compressor(BaseClient):
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
-            return compressed_model
+            _compression_info = self.get_compression(compression_info.compression_id)
+            metadata.update_model_info(task=task, framework=framework, input_shapes=input_shapes)
+            metadata.update_compression_info(
+                method=_compression_info.compression_method,
+                ratio=recommendation_ratio,
+                options=_compression_info.options,
+                layers=_compression_info.available_layers,
+            )
+            metadata.update_results(model=model, compressed_model=compressed_model)
+            metadata.update_status(status=Status.COMPLETED)
+            metadata.update_available_devices(converter_uploaded_model.available_devices)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+
+            return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Recommendation compression failed. Error: {e}")
+            metadata.update_status(status=Status.ERROR)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
+
+        except KeyboardInterrupt:
+            metadata.update_status(status=Status.STOPPED)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
 
     @validate_token
     def automatic_compression(
@@ -696,7 +753,7 @@ class Compressor(BaseClient):
         task: Task = Task.OTHER,
         framework: Framework = Framework.PYTORCH,
         compression_ratio: float = 0.5,
-    ) -> CompressedModel:
+    ) -> Dict:
         """Compress a model automatically based on the given compression ratio.
 
         Args:
@@ -712,15 +769,17 @@ class Compressor(BaseClient):
             e: If an error occurs while performing automatic compression.
 
         Returns:
-            CompressedModel: The compressed model.
+            Dict: Source model and compressed model information.
         """
 
         try:
             logger.info("Compressing automatic-based model...")
 
-            default_model_path, extension = FileManager.prepare_model_path(
+            default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_path, framework=framework
             )
+            FileHandler.create_folder(folder_path=output_path)
+            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -747,6 +806,7 @@ class Compressor(BaseClient):
             model_info = self.client.auto_compression(
                 data=data, access_token=self.user_session.access_token
             )
+            compression_info = self.get_compression(model_info.original_compression_id)
 
             self.download_model(
                 model_id=model_info.model_id,
@@ -756,8 +816,7 @@ class Compressor(BaseClient):
                 model_info=model_info
             )  # TODO: delete
 
-            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
-                export_onnx(default_model_path, compressed_model.input_shapes)
+            converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(
                 f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}"
@@ -767,8 +826,26 @@ class Compressor(BaseClient):
                 f"{ServiceCredit.AUTOMATIC_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
-            return compressed_model
+            metadata.update_model_info(task=task, framework=framework, input_shapes=input_shapes)
+            metadata.update_compression_info(
+                method=compression_info.compression_method,
+                ratio=compression_ratio,
+                options=compression_info.options,
+                layers=compression_info.available_layers,
+            )
+            metadata.update_results(model=model, compressed_model=compressed_model)
+            metadata.update_status(status=Status.COMPLETED)
+            metadata.update_available_devices(converter_uploaded_model.available_devices)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+
+            return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Automatic compression failed. Error: {e}")
+            metadata.update_status(status=Status.ERROR)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
             raise e
+
+        except KeyboardInterrupt:
+            metadata.update_status(status=Status.STOPPED)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)

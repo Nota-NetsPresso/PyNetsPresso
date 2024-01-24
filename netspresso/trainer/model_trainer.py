@@ -1,3 +1,4 @@
+import os
 import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Union
@@ -13,6 +14,7 @@ from netspresso_trainer.cfg import (
 from netspresso_trainer.cfg.augmentation import *
 from netspresso_trainer.cfg.data import ImageLabelPathConfig, PathConfig
 from netspresso_trainer.cfg.model import CheckpointConfig
+from netspresso.enums import TaskType, Status
 
 from .enums import Task
 from .registries import (
@@ -24,7 +26,9 @@ from .registries import (
     TRAINING_CONFIG_TYPE,
 )
 from .trainer_configs import TrainerConfigs
-from ..utils import FileManager
+from ..utils import FileHandler
+from ..utils.metadata import MetadataHandler
+from ..utils.metadata.default.trainer import InputShape
 
 
 class Trainer:
@@ -211,34 +215,74 @@ class Trainer:
         self.augmentation.train.mix_transforms = self._change_transforms(self.augmentation.train.mix_transforms)
         self.augmentation.inference.transforms = self._change_transforms(self.augmentation.inference.transforms)
 
-    def train(self, gpus: str) -> Dict:
-        self._validate_config()
-        self._apply_img_size()
+    def move_and_cleanup_folders(self, source_folder: str, destination_folder: str):
+        for filename in os.listdir(source_folder):
+            source_path = os.path.join(source_folder, filename)
+            destination_path = os.path.join(destination_folder, filename)
+            shutil.move(source_path, destination_path)
 
-        configs = TrainerConfigs(
-            self.data,
-            self.augmentation,
-            self.model,
-            self.training,
-            self.logging,
-            self.environment,
-        )
+        os.rmdir(source_folder)
 
-        logging_dir = train_with_yaml(
-            gpus=gpus,
-            data=configs.data,
-            augmentation=configs.augmentation,
-            model=configs.model,
-            training=configs.training,
-            logging=configs.logging,
-            environment=configs.environment,
-        )
-        training_summary_path = f"{logging_dir}/training_summary.json"
-        training_summary = FileManager.load_json(file_path=training_summary_path)
-        training_summary["logging_dir"] = logging_dir
+    def train(self, gpus: str, project_name: str) -> Dict:
+        try:
+            self.logging.project_id = project_name
+            destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
+            FileHandler.create_folder(folder_path=destination_folder)
+            metadata = MetadataHandler.init_metadata(folder_path=destination_folder, task_type=TaskType.TRAIN)
 
-        # Remove temp config folder
-        logger.info(f"Remove {configs.temp_folder} folder.")
-        shutil.rmtree(configs.temp_folder, ignore_errors=True)
+            self._validate_config()
+            self._apply_img_size()
 
-        return training_summary
+            configs = TrainerConfigs(
+                self.data,
+                self.augmentation,
+                self.model,
+                self.training,
+                self.logging,
+                self.environment,
+            )
+
+            logging_dir = train_with_yaml(
+                gpus=gpus,
+                data=configs.data,
+                augmentation=configs.augmentation,
+                model=configs.model,
+                training=configs.training,
+                logging=configs.logging,
+                environment=configs.environment,
+            )
+            training_summary_path = f"{logging_dir}/training_summary.json"
+            training_summary = FileHandler.load_json(file_path=training_summary_path)
+
+            metadata.update_model_info(
+                task=self.task,
+                model=self.model.name,
+                dataset=self.data.name,
+                input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size])],
+            )
+            metadata.update_training_info(epoch=self.training.epochs, batch_size=self.training.batch_size)
+            metadata.update_training_result(training_summary=training_summary)
+            metadata.update_logging_dir(logging_dir=destination_folder)
+            metadata.update_status(status=Status.COMPLETED)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=logging_dir)
+
+            # Remove temp config folder
+            logger.info(f"Remove {configs.temp_folder} folder.")
+            shutil.rmtree(configs.temp_folder, ignore_errors=True)
+
+            destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
+            self.move_and_cleanup_folders(source_folder=logging_dir, destination_folder=destination_folder)
+
+            logger.info(f"Files in {logging_dir} were moved to {destination_folder}.")
+
+            return metadata.asdict()
+
+        except Exception as e:
+            logger.error(f"Training failed. Error: {e}")
+            metadata.update_status(status=Status.ERROR)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=logging_dir)
+            raise e
+
+        except KeyboardInterrupt:
+            metadata.update_status(status=Status.STOPPED)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=logging_dir)
