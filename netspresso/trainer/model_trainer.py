@@ -273,6 +273,8 @@ class Trainer:
             destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
             self.move_and_cleanup_folders(source_folder=logging_dir, destination_folder=destination_folder)
 
+            logger.info(f"Files in {logging_dir} were moved to {destination_folder}.")
+
             return metadata.asdict()
 
         except Exception as e:
