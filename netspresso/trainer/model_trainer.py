@@ -223,9 +223,9 @@ class Trainer:
 
         os.rmdir(source_folder)
 
-    def train(self, gpus: str, project_id: str) -> Dict:
+    def train(self, gpus: str, project_name: str) -> Dict:
         try:
-            self.logging.project_id = project_id
+            self.logging.project_id = project_name
             destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
             FileHandler.create_folder(folder_path=destination_folder)
             metadata = MetadataHandler.init_metadata(folder_path=destination_folder, task_type=TaskType.TRAIN)
