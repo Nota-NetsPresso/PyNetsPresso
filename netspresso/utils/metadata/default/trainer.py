@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass, field
+import json
 from typing import Dict, List
 
 from netspresso.enums.metadata import Status, TaskType
@@ -34,8 +35,9 @@ class TrainerMetadata:
     traning_result: Dict = field(default_factory=dict)
     logging_dir: str = ""
     
-    def asdict(self):
-        return asdict(self)
+    def asdict(self) -> Dict:
+        _dict = json.loads(json.dumps(asdict(self)))
+        return _dict
 
     def update_status(self, status: Status):
         self.status = status

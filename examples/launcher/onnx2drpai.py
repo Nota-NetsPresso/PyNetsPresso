@@ -6,8 +6,6 @@ from netspresso.launcher import (
     Benchmarker,
     ModelFramework,
     DeviceName,
-    BenchmarkTask,
-    ConversionTask,
 )
 
 
@@ -35,7 +33,7 @@ if __name__ == "__main__":
     # DeviceName.RENESAS_RZ_V2L
     #
 
-    conversion_task: ConversionTask = converter.convert_model(
+    conversion_task = converter.convert_model(
         model_path=MODEL_PATH,
         target_framework=ModelFramework.DRPAI,
         target_device_name=DeviceName.RENESAS_RZ_V2L,
@@ -45,7 +43,7 @@ if __name__ == "__main__":
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
-    # conversion_task: ConversionTask = converter.convert_model(
+    # conversion_task = converter.convert_model(
     #     model_path=MODEL_PATH,
     #     target_framework=ModelFramework.DRPAI,
     #     target_device_name=DeviceName.RENESAS_RZ_V2L,
@@ -62,7 +60,7 @@ if __name__ == "__main__":
     logger.info(conversion_task)
 
     benchmarker = Benchmarker(user_session=session)
-    benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
+    benchmark_task = benchmarker.benchmark_model(
         model_path=CONVERTED_MODEL_PATH,
         target_framework=ModelFramework.DRPAI,
         target_device_name=DeviceName.RENESAS_RZ_V2L,
@@ -71,7 +69,7 @@ if __name__ == "__main__":
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
-    # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
+    # benchmark_task = benchmarker.benchmark_model(
     #     model_path=CONVERTED_MODEL_PATH,
     #     target_framework=ModelFramework.DRPAI,
     #     target_device_name=DeviceName.RENESAS_RZ_V2L,

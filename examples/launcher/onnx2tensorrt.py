@@ -6,8 +6,6 @@ from netspresso.launcher import (
     ModelFramework,
     DeviceName,
     SoftwareVersion,
-    BenchmarkTask,
-    ConversionTask,
 )
 
 
@@ -47,7 +45,7 @@ if __name__ == "__main__":
     # DeviceName.JETSON_AGX_ORIN : SoftwareVersion.JETPACK_5_0_1
     #
 
-    conversion_task: ConversionTask = converter.convert_model(
+    conversion_task = converter.convert_model(
         model_path=MODEL_PATH,
         target_framework=ModelFramework.TENSORRT,
         target_device_name=DeviceName.JETSON_AGX_ORIN,
@@ -58,7 +56,7 @@ if __name__ == "__main__":
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
-    # conversion_task: ConversionTask = converter.convert_model(
+    # conversion_task = converter.convert_model(
     #     model_path=MODEL_PATH,
     #     target_framework=ModelFramework.TENSORRT,
     #     target_device_name=DeviceName.JETSON_AGX_ORIN,
@@ -84,7 +82,7 @@ if __name__ == "__main__":
     # TensorRT Model has strong dependency with the device type and its jetpack version.
 
     benchmarker = Benchmarker(user_session=session)
-    benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
+    benchmark_task = benchmarker.benchmark_model(
         model_path=CONVERTED_MODEL_PATH,
         target_framework=ModelFramework.TENSORRT,
         target_device_name=DeviceName.JETSON_AGX_ORIN,
@@ -94,7 +92,7 @@ if __name__ == "__main__":
     # Asynchronous Procedure
     # If you wish to request conversion and retrieve the results later, please refer to the following code.
     ########################
-    # benchmark_task: BenchmarkTask = benchmarker.benchmark_model(
+    # benchmark_task = benchmarker.benchmark_model(
     #     model_path=CONVERTED_MODEL_PATH,
     #     target_framework=ModelFramework.TENSORRT,
     #     target_device_name=DeviceName.JETSON_AGX_ORIN,
