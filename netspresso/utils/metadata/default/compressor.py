@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass, field
+import json
 from typing import Any, Dict, List, Optional
 
 from netspresso.enums.metadata import Status, TaskType
@@ -53,8 +54,9 @@ class CompressorMetadata:
     compression_info: CompressionInfo = field(default_factory=CompressionInfo)
     available_devices: List[TargetDevice] = field(default_factory=list)
 
-    def asdict(self):
-        return asdict(self)
+    def asdict(self) -> Dict:
+        _dict = json.loads(json.dumps(asdict(self)))
+        return _dict
 
     def update_status(self, status: Status):
         self.status = status

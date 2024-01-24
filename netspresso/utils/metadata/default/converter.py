@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass, field
+import json
 from typing import Any, Dict, List
 
 from netspresso.enums.metadata import Status, TaskType
@@ -40,7 +41,8 @@ class ConverterMetadata:
     available_devices: List[Dict] = field(default_factory=list)
 
     def asdict(self) -> Dict:
-        return asdict(self)
+        _dict = json.loads(json.dumps(asdict(self)))
+        return _dict
 
     def update_status(self, status: Status) -> None:
         self.status = status
