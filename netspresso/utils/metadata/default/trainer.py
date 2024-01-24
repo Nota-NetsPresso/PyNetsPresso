@@ -32,8 +32,11 @@ class TrainerMetadata:
     task_type: TaskType = TaskType.TRAIN
     model_info: ModelInfo = field(default_factory=ModelInfo)
     training_info: TrainingInfo = field(default_factory=TrainingInfo)
-    traning_result: Dict = field(default_factory=dict)
     logging_dir: str = ""
+    best_fx_model_path: str = ""
+    best_onnx_model_path: str = ""
+    hparams: str = ""
+    traning_result: Dict = field(default_factory=dict)
     
     def asdict(self) -> Dict:
         _dict = json.loads(json.dumps(asdict(self)))
@@ -57,3 +60,12 @@ class TrainerMetadata:
 
     def update_logging_dir(self, logging_dir):
         self.logging_dir = logging_dir
+
+    def update_best_fx_model_path(self, best_fx_model_path):
+        self.best_fx_model_path = best_fx_model_path
+
+    def update_best_onnx_model_path(self, best_onnx_model_path):
+        self.best_onnx_model_path = best_onnx_model_path
+
+    def update_hparams(self, hparams):
+        self.hparams = hparams

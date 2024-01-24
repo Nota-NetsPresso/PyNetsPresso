@@ -1,6 +1,7 @@
 import os
 import shutil
 from pathlib import Path
+from glob import glob
 from typing import Dict, List, Optional, Union
 
 from loguru import logger
@@ -224,65 +225,66 @@ class Trainer:
         os.rmdir(source_folder)
 
     def train(self, gpus: str, project_name: str) -> Dict:
-        try:
-            self.logging.project_id = project_name
-            destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
-            FileHandler.create_folder(folder_path=destination_folder)
-            metadata = MetadataHandler.init_metadata(folder_path=destination_folder, task_type=TaskType.TRAIN)
+        self.logging.project_id = project_name
+        destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
+        FileHandler.create_folder(folder_path=destination_folder)
+        metadata = MetadataHandler.init_metadata(folder_path=destination_folder, task_type=TaskType.TRAIN)
 
-            self._validate_config()
-            self._apply_img_size()
+        self._validate_config()
+        self._apply_img_size()
 
-            configs = TrainerConfigs(
-                self.data,
-                self.augmentation,
-                self.model,
-                self.training,
-                self.logging,
-                self.environment,
-            )
+        configs = TrainerConfigs(
+            self.data,
+            self.augmentation,
+            self.model,
+            self.training,
+            self.logging,
+            self.environment,
+        )
 
-            logging_dir = train_with_yaml(
-                gpus=gpus,
-                data=configs.data,
-                augmentation=configs.augmentation,
-                model=configs.model,
-                training=configs.training,
-                logging=configs.logging,
-                environment=configs.environment,
-            )
-            training_summary_path = f"{logging_dir}/training_summary.json"
-            training_summary = FileHandler.load_json(file_path=training_summary_path)
+        logging_dir = train_with_yaml(
+            gpus=gpus,
+            data=configs.data,
+            augmentation=configs.augmentation,
+            model=configs.model,
+            training=configs.training,
+            logging=configs.logging,
+            environment=configs.environment,
+        )
+        training_summary_path = f"{logging_dir}/training_summary.json"
+        training_summary = FileHandler.load_json(file_path=training_summary_path)
+        is_success = training_summary["success"]
+        if is_success:
+            status = Status.COMPLETED
+        else:
+            status = Status.STOPPED
 
-            metadata.update_model_info(
-                task=self.task,
-                model=self.model.name,
-                dataset=self.data.name,
-                input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size])],
-            )
-            metadata.update_training_info(epoch=self.training.epochs, batch_size=self.training.batch_size)
-            metadata.update_training_result(training_summary=training_summary)
-            metadata.update_logging_dir(logging_dir=destination_folder)
-            metadata.update_status(status=Status.COMPLETED)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=logging_dir)
+        shutil.rmtree(configs.temp_folder, ignore_errors=True)
+        logger.info(f"Removed {configs.temp_folder} folder.")
 
-            # Remove temp config folder
-            logger.info(f"Remove {configs.temp_folder} folder.")
-            shutil.rmtree(configs.temp_folder, ignore_errors=True)
+        destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
+        self.move_and_cleanup_folders(source_folder=logging_dir, destination_folder=destination_folder)
+        logger.info(f"Files in {logging_dir} were moved to {destination_folder}.")
 
-            destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
-            self.move_and_cleanup_folders(source_folder=logging_dir, destination_folder=destination_folder)
+        best_fx_paths = glob(f"{destination_folder}/*best_fx.pt")
+        best_onnx_paths = glob(f"{destination_folder}/*best.onnx")
+        hparams_path = f"{destination_folder}/hparams.yaml"
 
-            logger.info(f"Files in {logging_dir} were moved to {destination_folder}.")
+        if best_fx_paths:
+            metadata.update_best_fx_model_path(best_fx_model_path=best_fx_paths[0])
+        if best_onnx_paths:
+            metadata.update_best_onnx_model_path(best_onnx_model_path=best_onnx_paths[0])
+        metadata.update_model_info(
+            task=self.task,
+            model=self.model.name,
+            dataset=self.data.name,
+            input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size])],
+        )
+        metadata.update_training_info(epoch=self.training.epochs, batch_size=self.training.batch_size)
+        metadata.update_training_result(training_summary=training_summary)
+        metadata.update_logging_dir(logging_dir=destination_folder)
+        metadata.update_hparams(hparams=hparams_path)
+        metadata.update_status(status=status)
+        MetadataHandler.save_json(data=metadata.asdict(), folder_path=destination_folder)
 
-            return metadata.asdict()
-
-        except Exception as e:
-            logger.error(f"Training failed. Error: {e}")
-            metadata.update_status(status=Status.ERROR)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=logging_dir)
-            raise e
-
-        except KeyboardInterrupt:
-            metadata.update_status(status=Status.STOPPED)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=logging_dir)
+        return metadata.asdict()
