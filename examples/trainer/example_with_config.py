@@ -19,8 +19,8 @@ trainer.set_dataset_config(
 )
 
 # 2-2. Model
-print(trainer.available_models)  # ['EfficientFormer', 'YOLOX']
-trainer.set_model_config(model_name="YOLOX", img_size=512)
+print(trainer.available_models)  # ['EfficientFormer', 'YOLOX-S']
+trainer.set_model_config(model_name="YOLOX-S", img_size=512)
 
 # 2-3. Augmentation
 trainer.set_augmentation_config(
