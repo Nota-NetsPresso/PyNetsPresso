@@ -539,6 +539,9 @@ class Compressor(BaseClient):
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
+            metadata.update_compressed_model_path(compressed_model_path=default_model_path.with_suffix(extension).as_posix())
+            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
+                metadata.update_compressed_onnx_model_path(compressed_onnx_model_path=default_model_path.with_suffix(".onnx").as_posix())
             metadata.update_model_info(task=model_info.task, framework=model_info.framework, input_shapes=model_info.input_shapes)
             metadata.update_compression_info(
                 method=compression.compression_method,
@@ -719,6 +722,9 @@ class Compressor(BaseClient):
             )
 
             _compression_info = self.get_compression(compression_info.compression_id)
+            metadata.update_compressed_model_path(compressed_model_path=default_model_path.with_suffix(extension).as_posix())
+            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
+                metadata.update_compressed_onnx_model_path(compressed_onnx_model_path=default_model_path.with_suffix(".onnx").as_posix())
             metadata.update_model_info(task=task, framework=framework, input_shapes=input_shapes)
             metadata.update_compression_info(
                 method=_compression_info.compression_method,
@@ -826,6 +832,9 @@ class Compressor(BaseClient):
                 f"{ServiceCredit.AUTOMATIC_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
+            metadata.update_compressed_model_path(compressed_model_path=default_model_path.with_suffix(extension).as_posix())
+            if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
+                metadata.update_compressed_onnx_model_path(compressed_onnx_model_path=default_model_path.with_suffix(".onnx").as_posix())
             metadata.update_model_info(task=task, framework=framework, input_shapes=input_shapes)
             metadata.update_compression_info(
                 method=compression_info.compression_method,
