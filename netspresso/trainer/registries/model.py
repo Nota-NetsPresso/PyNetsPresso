@@ -13,7 +13,7 @@ CLASSIFICATION_MODELS = {
 
 DETECTION_MODELS = {
     "EfficientFormer": DetectionEfficientFormerModelConfig,
-    "YOLOX": DetectionYoloXModelConfig,
+    "YOLOX-S": DetectionYoloXModelConfig,
     "ResNet": DetectionResNetModelConfig,
     "MobileNetV3": DetectionMobileNetV3ModelConfig,
     "MixNetL": DetectionMixNetLargeModelConfig,
