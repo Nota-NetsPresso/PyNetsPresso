@@ -148,7 +148,7 @@ class Trainer:
         )
 
     def set_fx_model(self, fx_model_path: Union[Path, str]):
-        assert self.model, "This function can only be used for retraining. Please use 'set_model_config'."
+        assert self.model, "This function is intended for retraining. Please use 'set_model_config' for model setup."
 
         self.model.checkpoint.path = None
         self.model.checkpoint.fx_model_path = fx_model_path
@@ -256,13 +256,13 @@ class Trainer:
         os.rmdir(source_folder)
 
     def train(self, gpus: str, project_name: str) -> Dict:
+        self._validate_config()
+        self._apply_img_size()
         self.logging.project_id = project_name
+
         destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
         FileHandler.create_folder(folder_path=destination_folder)
         metadata = MetadataHandler.init_metadata(folder_path=destination_folder, task_type=TaskType.TRAIN)
-
-        self._validate_config()
-        self._apply_img_size()
 
         configs = TrainerConfigs(
             self.data,
