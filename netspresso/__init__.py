@@ -1,12 +1,8 @@
 from pathlib import Path
 
-from netspresso.trainer import Trainer
-from netspresso.compressor import Compressor
-from netspresso.converter import Converter
-from netspresso.benchmarker import Benchmarker
+from .netspresso import NetsPresso
 
-
-__all__ = ["Trainer", "Compressor", "Converter", "Benchmarker"]
+__all__ = ["NetsPresso"]
 
 
 version = (Path(__file__).parent / "VERSION").read_text().strip()
