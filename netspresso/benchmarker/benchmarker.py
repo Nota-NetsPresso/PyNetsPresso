@@ -1,8 +1,6 @@
-import sys
 import time
 from pathlib import Path
 from typing import Dict, Union
-from urllib import request
 
 from loguru import logger
 
@@ -17,13 +15,7 @@ from netspresso.enums import (
     SoftwareVersion,
     TaskStatus,
 )
-from netspresso.clients.launcher.schemas.model import (
-    BenchmarkTask,
-    ConversionTask,
-    InputShape,
-    Model,
-    TargetDevice,
-)
+from netspresso.clients.launcher.schemas.model import BenchmarkTask
 from netspresso.enums import ServiceCredit, TaskType, Status
 from netspresso.clients.launcher.schemas import TargetDeviceFilter
 
@@ -48,42 +40,23 @@ class Benchmarker(BaseClient):
         self.client = LauncherAPIClient(user_sessoin=self.user_session)
 
     @validate_token
-    def _upload_model(self, model_file_path: Union[Path, str]) -> Model:
-        """Upload a model for launcher.
-
-        Args:
-            model_file_path (str): The file path of the model.
-
-        Raises:
-            e: If an error occurs while uploading the model.
-
-        Returns:
-            Model: Uploaded launcher model object.
-        """
-        return self.client.upload_model(
-            model_file_path=model_file_path,
-            target_function=Module.BENCHMARK,
-        )
-
-    @validate_token
     def benchmark_model(
         self,
-        model_path: Union[Path, str],
-        target_framework: Union[str, Framework],
-        data_type: DataType = DataType.FP16,
+        input_model_path: Union[Path, str],
+        target_data_type: DataType = DataType.FP16,
         target_device_name: DeviceName = None,
         target_software_version: SoftwareVersion = None,
-        hardware_type: HardwareType = None,
+        target_hardware_type: HardwareType = None,
         wait_until_done: bool = True,
     ) -> Dict:
         """Benchmark given model on the specified device.
 
         Args:
-            model_path (str): The file path where the model is located.
-            data_type (DataType): data type of the model.
+            input_model_path (str): The file path where the model is located.
+            target_data_type (DataType): data type of the model.
             target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
             target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
-            hardware_type (HardwareType): hardware_type. Acceleration options for the processor to the model inference.
+            target_hardware_type (HardwareType): hardware_type. Acceleration options for the processor to the model inference.
             wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
 
         Raises:
@@ -93,23 +66,21 @@ class Benchmarker(BaseClient):
             Dict: model benchmark task dict.
         """
         try:
-            default_model_path, extension = FileHandler.get_path_and_extension(
-                folder_path=model_path, framework=target_framework
-            )
+            folder_path = Path(input_model_path).parent
 
             metadata = MetadataHandler.get_default_metadata(TaskType.BENCHMARK)
-            if FileHandler.check_exists(Path(model_path) / f"benchmark.json"):
-                metadatas = MetadataHandler.load_json(Path(model_path) / f"benchmark.json")
+            if FileHandler.check_exists(folder_path / f"benchmark.json"):
+                metadatas = MetadataHandler.load_json(folder_path / f"benchmark.json")
                 metadatas.append(metadata.asdict())
             else:
                 metadatas = [metadata.asdict()]
-            MetadataHandler.save_json(metadatas, model_path, file_name="benchmark")
+            MetadataHandler.save_json(metadatas, folder_path, file_name="benchmark")
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
                 user_credit=current_credit, service_credit=ServiceCredit.MODEL_BENCHMARK
             )
-            model = self._upload_model(default_model_path.with_suffix(extension))
+            model = self.client.upload_model(model_file_path=input_model_path, target_function=Module.BENCHMARK)
             model_uuid = model.model_uuid
 
             if target_device_name is None:
@@ -123,7 +94,7 @@ class Benchmarker(BaseClient):
                 )
 
             # Check available int8 converting devices
-            if data_type == DataType.INT8:
+            if target_data_type == DataType.INT8:
                 if target_device_name not in DeviceName.AVAILABLE_INT8_DEVICES:
                     raise ValueError(f"int8 converting supports only {DeviceName.AVAILABLE_INT8_DEVICES}.")
             else:  # FP16, FP32
@@ -131,7 +102,7 @@ class Benchmarker(BaseClient):
                     raise ValueError(f"{DeviceName.ONLY_INT8_DEVICES} only support int8 data types.")
 
             if (
-                hardware_type == HardwareType.HELIUM
+                target_hardware_type == HardwareType.HELIUM
                 and target_device_name not in DeviceName.ONLY_INT8_DEVICES
             ):
                 raise ValueError(f"{DeviceName.ONLY_INT8_DEVICES} only support helium hardware type.")
@@ -144,7 +115,7 @@ class Benchmarker(BaseClient):
                     software_version=target_software_version, devices=devices
                 )
             devices = TargetDeviceFilter.filter_devices_with_hardware_type(
-                hardware_type=hardware_type, devices=devices
+                hardware_type=target_hardware_type, devices=devices
             )
 
             if not devices:
@@ -165,7 +136,7 @@ class Benchmarker(BaseClient):
             model_benchmark: BenchmarkTask = self.client.benchmark_model(
                 model_uuid=model_uuid,
                 target_device=target_device_name,
-                data_type=data_type,
+                data_type=target_data_type,
                 software_version=target_software_version,
                 hardware_type=target_hardware_type,
             )
@@ -203,7 +174,7 @@ class Benchmarker(BaseClient):
             )
             metadata.update_status(status=Status.COMPLETED)
             metadatas[-1] = metadata.asdict()
-            MetadataHandler.save_json(data=metadatas, folder_path=model_path, file_name="benchmark")
+            MetadataHandler.save_json(data=metadatas, folder_path=folder_path, file_name="benchmark")
 
             remaining_credit = self.user_session.get_credit()
             logger.info(
@@ -214,13 +185,13 @@ class Benchmarker(BaseClient):
             logger.error(f"Benchmark failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
             metadatas[-1] = metadata.asdict()
-            MetadataHandler.save_json(data=metadatas, folder_path=model_path, file_name="benchmark")
+            MetadataHandler.save_json(data=metadatas, folder_path=folder_path, file_name="benchmark")
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
             metadatas[-1] = metadata.asdict()
-            MetadataHandler.save_json(data=metadatas, folder_path=model_path, file_name="benchmark")
+            MetadataHandler.save_json(data=metadatas, folder_path=folder_path, file_name="benchmark")
 
         return metadata.asdict()
 

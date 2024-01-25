@@ -67,7 +67,7 @@ class Compressor(BaseClient):
     def upload_model(
         self,
         model_name: str,
-        file_path: str,
+        input_model_path: str,
         input_shapes: List[Dict[str, int]] = [],
         task: Task = Task.OTHER,
         framework: Framework = Framework.PYTORCH,
@@ -78,7 +78,7 @@ class Compressor(BaseClient):
             model_name (str): The name of the model.
             task (Task): The task of the model.
             framework (Framework): The framework of the model.
-            file_path (str): The file path where the model is located.
+            input_model_path (str): The file path where the model is located.
             input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
 
         Raises:
@@ -94,7 +94,7 @@ class Compressor(BaseClient):
                 model_name=model_name,
                 task=task,
                 framework=framework,
-                file_path=file_path,
+                file_path=input_model_path,
                 input_layers=input_shapes,
             )
             model_info = self.client.upload_model(
@@ -437,7 +437,7 @@ class Compressor(BaseClient):
         self,
         compression: CompressionInfo,
         model_name: str,
-        output_path: str,
+        output_dir: str,
         dataset_path: str = None,
     ) -> Dict:
         """Compress a model using the provided compression information.
@@ -445,7 +445,7 @@ class Compressor(BaseClient):
         Args:
             compression (CompressionInfo): The information about the compression.
             model_name (str): The name of the compressed model.
-            output_path (str): The local path to save the compressed model.
+            output_dir (str): The local path to save the compressed model.
             dataset_path (str, optional): The path of the dataset used for nuclear norm compression method. Default is None.
 
         Raises:
@@ -460,10 +460,10 @@ class Compressor(BaseClient):
             model_info = self.get_model(compression.original_model_id)
 
             default_model_path, extension = FileHandler.get_path_and_extension(
-                folder_path=output_path, framework=model_info.framework
+                folder_path=output_dir, framework=model_info.framework
             )
-            FileHandler.create_folder(folder_path=output_path)
-            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
+            FileHandler.create_folder(folder_path=output_dir)
+            metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -551,19 +551,19 @@ class Compressor(BaseClient):
             metadata.update_results(model=model_info, compressed_model=compressed_model)
             metadata.update_status(status=Status.COMPLETED)
             metadata.update_available_devices(converter_uploaded_model.available_devices)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
             return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Compress model failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
     @validate_token
     def recommendation_compression(
@@ -572,8 +572,8 @@ class Compressor(BaseClient):
         compression_method: CompressionMethod,
         recommendation_method: RecommendationMethod,
         recommendation_ratio: float,
-        input_path: str,
-        output_path: str,
+        input_model_path: str,
+        output_dir: str,
         input_shapes: List[Dict[str, int]],
         task: Task = Task.OTHER,
         framework: Framework = Framework.PYTORCH,
@@ -587,8 +587,8 @@ class Compressor(BaseClient):
             compression_method (CompressionMethod): The selected compression method.
             recommendation_method (RecommendationMethod): The selected recommendation method.
             recommendation_ratio (float): The compression ratio recommended by the recommendation method.
-            input_path (str): The file path where the model is located.
-            output_path (str): The local path to save the compressed model.
+            input_model_path (str): The file path where the model is located.
+            output_dir (str): The local path to save the compressed model.
             task (Task): The task of the model.
             framework (Framework): The framework of the model.
             input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
@@ -606,10 +606,10 @@ class Compressor(BaseClient):
             logger.info("Compressing recommendation-based model...")
 
             default_model_path, extension = FileHandler.get_path_and_extension(
-                folder_path=output_path, framework=framework
+                folder_path=output_dir, framework=framework
             )
-            FileHandler.create_folder(folder_path=output_path)
-            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
+            FileHandler.create_folder(folder_path=output_dir)
+            metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -656,7 +656,7 @@ class Compressor(BaseClient):
                 model_name=model_name,
                 task=task,
                 framework=framework,
-                file_path=input_path,
+                file_path=input_model_path,
                 input_shapes=input_shapes,
             )
 
@@ -735,27 +735,27 @@ class Compressor(BaseClient):
             metadata.update_results(model=model, compressed_model=compressed_model)
             metadata.update_status(status=Status.COMPLETED)
             metadata.update_available_devices(converter_uploaded_model.available_devices)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
             return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Recommendation compression failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
     @validate_token
     def automatic_compression(
         self,
         model_name: str,
         input_shapes: List[Dict[str, int]],
-        input_path: str,
-        output_path: str,
+        input_model_path: str,
+        output_dir: str,
         task: Task = Task.OTHER,
         framework: Framework = Framework.PYTORCH,
         compression_ratio: float = 0.5,
@@ -767,8 +767,8 @@ class Compressor(BaseClient):
             task (Task): The task of the model.
             framework (Framework): The framework of the model.
             input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
-            input_path (str): The file path where the model is located.
-            output_path (str): The local path to save the compressed model.
+            input_model_path (str): The file path where the model is located.
+            output_dir (str): The local path to save the compressed model.
             compression_ratio (float): The compression ratio for automatic compression. Defaults to 0.5.
 
         Raises:
@@ -782,10 +782,10 @@ class Compressor(BaseClient):
             logger.info("Compressing automatic-based model...")
 
             default_model_path, extension = FileHandler.get_path_and_extension(
-                folder_path=output_path, framework=framework
+                folder_path=output_dir, framework=framework
             )
-            FileHandler.create_folder(folder_path=output_path)
-            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.COMPRESS)
+            FileHandler.create_folder(folder_path=output_dir)
+            metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
@@ -797,7 +797,7 @@ class Compressor(BaseClient):
                 model_name=model_name,
                 task=task,
                 framework=framework,
-                file_path=input_path,
+                file_path=input_model_path,
                 input_shapes=input_shapes,
             )
 
@@ -806,7 +806,7 @@ class Compressor(BaseClient):
                 model_id=model.model_id,
                 model_name=compressed_model_name,
                 recommendation_ratio=compression_ratio,
-                save_path=output_path,
+                save_path=output_dir,
             )
             logger.info("Compressing model...")
             model_info = self.client.auto_compression(
@@ -845,16 +845,16 @@ class Compressor(BaseClient):
             metadata.update_results(model=model, compressed_model=compressed_model)
             metadata.update_status(status=Status.COMPLETED)
             metadata.update_available_devices(converter_uploaded_model.available_devices)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
             return metadata.asdict()
 
         except Exception as e:
             logger.error(f"Automatic compression failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
