@@ -5,44 +5,31 @@ from urllib import request
 
 from loguru import logger
 
-from netspresso.clients.auth import BaseClient, validate_token
-from netspresso.clients.launcher import LauncherAPIClient
+from netspresso.clients.auth import validate_token
+from netspresso.clients.launcher import launcher_client
+from netspresso.clients.launcher.schemas import TargetDeviceFilter
+from netspresso.clients.launcher.schemas.model import ConversionTask, InputShape, Model
 from netspresso.enums import (
     DataType,
     DeviceName,
     Framework,
     Module,
+    ServiceCredit,
     SoftwareVersion,
+    Status,
     TaskStatus,
+    TaskType,
 )
-from netspresso.clients.launcher.schemas.model import (
-    ConversionTask,
-    InputShape,
-    Model,
-    TargetDevice,
-)
-from netspresso.enums import ServiceCredit, TaskType, Status
-from netspresso.clients.launcher.schemas import TargetDeviceFilter
 
 from ..utils import FileHandler, check_credit_balance
 from ..utils.metadata import MetadataHandler
 
 
-class Converter(BaseClient):
-    def __init__(self, email=None, password=None, user_session=None):
-        """Initialize the Model Compressor.
+class Converter:
+    def __init__(self, auth):
+        """Initialize the Model Converter."""
 
-        Args:
-            email (str): The email address for a user account.
-            password (str): The password for a user account.
-            user_session (SessionClient): The SessionClient object.
-
-        Available constructors:
-            Converter(email='USER_EMAIL',password='PASSWORD')
-            Converter(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
-        """
-        super().__init__(email=email, password=password, user_session=user_session)
-        self.client = LauncherAPIClient(user_sessoin=self.user_session)
+        self.auth = auth
 
     @validate_token
     def convert_model(
@@ -82,11 +69,11 @@ class Converter(BaseClient):
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.CONVERT)
 
-            current_credit = self.user_session.get_credit()
-            check_credit_balance(
-                user_credit=current_credit, service_credit=ServiceCredit.MODEL_CONVERT
+            current_credit = self.auth.get_credit()
+            check_credit_balance(user_credit=current_credit, service_credit=ServiceCredit.MODEL_CONVERT)
+            model = launcher_client.upload_model(
+                model_file_path=input_model_path, target_function=Module.CONVERT, access_token=self.auth.access_token
             )
-            model = self.client.upload_model(model_file_path=input_model_path, target_function=Module.CONVERT)
 
             model_uuid = model
             if type(model) is Model:
@@ -97,13 +84,9 @@ class Converter(BaseClient):
                     target_framework = model.framework
 
             if target_device_name is None:
-                raise NotImplementedError(
-                    "The conversion is unavailable. Please set target_device_name."
-                )
+                raise NotImplementedError("The conversion is unavailable. Please set target_device_name.")
 
-            elif (
-                target_device_name in DeviceName.JETSON_DEVICES and target_software_version is None
-            ):
+            elif target_device_name in DeviceName.JETSON_DEVICES and target_software_version is None:
                 raise NotImplementedError(
                     "The conversion is unavailable. Please set JetPack version with target_software_version for Jetson Devices."
                 )
@@ -116,14 +99,10 @@ class Converter(BaseClient):
             # Check available int8 converting devices
             if target_data_type == DataType.INT8:
                 if target_device_name not in DeviceName.AVAILABLE_INT8_DEVICES:
-                    raise Exception(
-                        f"int8 converting supports only {DeviceName.AVAILABLE_INT8_DEVICES}."
-                    )
+                    raise Exception(f"int8 converting supports only {DeviceName.AVAILABLE_INT8_DEVICES}.")
             else:  # FP16, FP32
                 if target_device_name in DeviceName.ONLY_INT8_DEVICES:
-                    raise Exception(
-                        f"{DeviceName.ONLY_INT8_DEVICES} only support int8 data types."
-                    )
+                    raise Exception(f"{DeviceName.ONLY_INT8_DEVICES} only support int8 data types.")
 
             devices = TargetDeviceFilter.filter_devices_with_device_name(
                 name=target_device_name, devices=model.available_devices
@@ -141,11 +120,9 @@ class Converter(BaseClient):
 
             target_device = devices[0]
 
-            logger.info(
-                f"Converting Model for {target_device.device_name} ({target_framework})"
-            )
+            logger.info(f"Converting Model for {target_device.device_name} ({target_framework})")
 
-            conversion_task = self.client.convert_model(
+            conversion_task = launcher_client.convert_model(
                 model_uuid=model_uuid,
                 input_shape=input_shape,
                 target_framework=target_framework,
@@ -153,6 +130,7 @@ class Converter(BaseClient):
                 data_type=target_data_type,
                 software_version=target_device.software_version,
                 dataset_path=dataset_path,
+                access_token=self.auth.access_token,
             )
 
             conversion_task = self.get_conversion_task(conversion_task)
@@ -165,16 +143,17 @@ class Converter(BaseClient):
                     conversion_task = self.get_conversion_task(conversion_task)
                     time.sleep(1)
 
-            self.download_converted_model(
-                conversion_task, default_model_path.with_suffix(extension)
-            )
+            self.download_converted_model(conversion_task, default_model_path.with_suffix(extension))
 
-            converter_uploaded_model = self.client.upload_model(
+            converter_uploaded_model = launcher_client.upload_model(
                 model_file_path=default_model_path.with_suffix(extension),
                 target_function=Module.BENCHMARK,
+                access_token=self.auth.access_token,
             )
 
-            metadata.update_converted_model_path(converted_model_path=default_model_path.with_suffix(extension).as_posix())
+            metadata.update_converted_model_path(
+                converted_model_path=default_model_path.with_suffix(extension).as_posix()
+            )
             metadata.update_model_info(
                 data_type=model.data_type,
                 framework=model.framework,
@@ -194,13 +173,13 @@ class Converter(BaseClient):
             metadata.update_available_devices(converter_uploaded_model.available_devices)
             MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
-            remaining_credit = self.user_session.get_credit()
+            remaining_credit = self.auth.get_credit()
             logger.info(
                 f"{ServiceCredit.MODEL_CONVERT} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
 
             return metadata.asdict()
-        
+
         except Exception as e:
             logger.error(f"Convert failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
@@ -212,9 +191,7 @@ class Converter(BaseClient):
             MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
     @validate_token
-    def get_conversion_task(
-        self, conversion_task: Union[str, ConversionTask]
-    ) -> ConversionTask:
+    def get_conversion_task(self, conversion_task: Union[str, ConversionTask]) -> ConversionTask:
         """Get the conversion task information with given conversion task or conversion task uuid.
 
         Args:
@@ -236,8 +213,8 @@ class Converter(BaseClient):
                 raise NotImplementedError(
                     "There is no available function for the given parameter. The 'conversion_task' should be a UUID string or a ModelConversion object."
                 )
-            return self.client.get_conversion_task(
-                conversion_task_uuid=conversion_task_uuid
+            return launcher_client.get_conversion_task(
+                conversion_task_uuid=conversion_task_uuid, access_token=self.auth.access_token
             )
 
         except Exception as e:
@@ -245,9 +222,7 @@ class Converter(BaseClient):
             raise e
 
     @validate_token
-    def download_converted_model(
-        self, conversion_task: Union[str, ConversionTask], local_path: str
-    ):
+    def download_converted_model(self, conversion_task: Union[str, ConversionTask], local_path: str):
         """Download the converted model with given conversion task or conversion task uuid.
 
         Args:
@@ -266,20 +241,16 @@ class Converter(BaseClient):
             elif type(conversion_task) is ConversionTask:
                 conversion_task_uuid = conversion_task.convert_task_uuid
 
-            conversion_result: ConversionTask = self.get_conversion_task(
-                conversion_task_uuid
-            )
+            conversion_result: ConversionTask = self.get_conversion_task(conversion_task_uuid)
             if conversion_result.status is TaskStatus.ERROR:
-                raise FileNotFoundError(
-                    "The conversion is Failed. There is no file available for download."
-                )
+                raise FileNotFoundError("The conversion is Failed. There is no file available for download.")
             if conversion_result.status is not TaskStatus.FINISHED:
                 raise FileNotFoundError(
                     "The conversion is in progress. There is no file available for download at the moment."
                 )
 
-            download_url = self.client.get_converted_model(
-                conversion_task_uuid=conversion_result.convert_task_uuid
+            download_url = launcher_client.get_converted_model(
+                conversion_task_uuid=conversion_result.convert_task_uuid, access_token=self.auth.access_token
             )
             request.urlretrieve(download_url, local_path)
             logger.info(f"Model downloaded at {Path(local_path)}")
