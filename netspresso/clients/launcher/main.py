@@ -4,11 +4,10 @@ import requests
 
 from netspresso.clients.auth import SessionClient
 from netspresso.clients.config import Config, Module
-from netspresso.clients.launcher.enums import (
+from netspresso.enums import (
     DataType,
     DeviceName,
-    LauncherFunction,
-    ModelFramework,
+    Framework,
 )
 from netspresso.clients.launcher.schemas.model import (
     BenchmarkTask,
@@ -31,13 +30,13 @@ class LauncherAPIClient:
         self.url = f"{self.host}:{self.port}{self.prefix}"
 
     def upload_model(
-        self, model_file_path: str, target_function: LauncherFunction
+        self, model_file_path: str, target_function: str
     ) -> Model:
         """Upload a model for launcher.
 
         Args:
             model_file_path (str): The file path of the model.
-            target_function (LauncherFunction): speicfy the function of the launcher. Upload for converter or benchmarker
+            target_function (str): speicfy the function of the launcher. Upload for converter or benchmarker
 
         Raises:
             e: If an error occurs while uploading the model.
@@ -61,7 +60,7 @@ class LauncherAPIClient:
         self,
         model_uuid: str,
         input_shape: InputShape,
-        target_framework: ModelFramework,
+        target_framework: Framework,
         target_device: DeviceName,
         data_type: DataType,
         software_version: str,
@@ -72,7 +71,7 @@ class LauncherAPIClient:
         Args:
             model_uuid (str): The uuid of the launcher model.
             input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
-            target_framework (ModelFramework): the target framework name.
+            target_framework (Framework): the target framework name.
             target_device (DeviceName): target device.
             data_type (DataType): data type of the model.
             software_version (str): target device's software version.

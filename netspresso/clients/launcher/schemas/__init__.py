@@ -8,6 +8,7 @@ from .model import (
     ModelBenchmarkRequest,
     ModelConversionRequest,
     TargetDevice,
+    TargetDeviceFilter,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "BaseTaskModel",
     "BenchmarkTask",
     "ConversionTask",
+    "TargetDeviceFilter",
 ]

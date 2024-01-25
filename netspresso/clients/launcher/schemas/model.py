@@ -3,15 +3,18 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
-from netspresso.clients.launcher.enums import (
+from netspresso.enums import (
     DataType,
     DeviceName,
     HardwareType,
-    ModelFramework,
     TaskStatus,
+)
+from netspresso.enums.model import (
     datatype_literal,
-    framework_literal,
-    devicename_literal,
+    launcher_framework_literal,
+)
+from netspresso.enums.device import (
+    device_name_literal,
 )
 
 
@@ -52,11 +55,25 @@ class TargetDevice(BaseModel):
     hardware_type: Optional[HardwareType] = Field(default=None)
 
 
+class TargetDeviceFilter:
+    @staticmethod
+    def filter_devices_with_device_name(name: DeviceName, devices: List[TargetDevice]) -> List[TargetDevice]:
+        return [device for device in devices if device.device_name == name]
+
+    @staticmethod
+    def filter_devices_with_device_software_version(software_version: str, devices: List[TargetDevice]) -> List[TargetDevice]:
+        return [device for device in devices if device.software_version == software_version]
+
+    @staticmethod
+    def filter_devices_with_hardware_type(hardware_type: str, devices: List[TargetDevice]) -> List[TargetDevice]:
+        return [device for device in devices if device.hardware_type == hardware_type]
+
+
 class Model(BaseModel):
     """Represents the launcher model object.
 
     Attributes:
-        framework (ModelFramework): the framework of the model.
+        framework (Framework): the framework of the model.
         filename (str): the file name of the model.
         input_shape (InputShape): the input shape of the model.
         data_type (DataType): the data_type of the model.
@@ -65,7 +82,7 @@ class Model(BaseModel):
         file_size (float): the size of the model.
     """
 
-    framework: ModelFramework = Field(default=None)
+    framework: str = Field(default=None)
     filename: str = Field(default=None)
     input_shape: InputShape = Field(default=None)
     data_type: DataType = Field(default=None)
@@ -93,13 +110,13 @@ class ModelBenchmarkRequest(BaseRequestModel):
 
     Attributes:
         target_device (DeviceName): the device name.
-        target_framework (Optional[ModelFramework]): the target framework of the model.
+        target_framework (Optional[Framework]): the target framework of the model.
         data_type: (Optional[DataType]): data type of the model.
         input_shape: (Optional[InputShape]): input shape of the model.
     """
 
     target_device: DeviceName = Field(default=None)
-    target_framework: Optional[ModelFramework] = Field(default=None)
+    target_framework: Optional[str] = Field(default=None)
     data_type: Optional[DataType] = Field(default=None)
     input_shape: Optional[InputShape] = Field(default=None)
     hardware_type: Optional[HardwareType] = Field(default=None)
@@ -110,13 +127,13 @@ class ModelConversionRequest(BaseRequestModel):
 
     Attributes:
         target_device (DeviceName): the device name.
-        target_framework (ModelFramework): the target framework of the model.
+        target_framework (Framework): the target framework of the model.
         data_type: (DataType): data type of the model.
         input_shape: (InputShape): input shape of the model.
     """
 
-    target_device_name: devicename_literal = Field(default=None)
-    target_framework: framework_literal = Field(default=None)
+    target_device_name: device_name_literal = Field(default=None)
+    target_framework: launcher_framework_literal = Field(default=None)
     data_type: datatype_literal = Field(default=DataType.FP16)
     input_shape: InputShape = Field(default=None)
 
@@ -138,7 +155,7 @@ class BaseTaskModel(BaseModel):
         input_shape: (InputShape): input shape of the model.
         data_type: (DataType): data type of the model.
         software_version (str): target device's software version.
-        framework (ModelFramework): the target framework of the model.
+        framework (Framework): the target framework of the model.
     """
 
     user_uuid: str = Field(default=None)
@@ -148,7 +165,7 @@ class BaseTaskModel(BaseModel):
     data_type: DataType = Field(default=DataType.FP16)
     input_shape: InputShape = Field(default=None)
     software_version: str = Field(default=None)
-    framework: ModelFramework = Field(default=None)
+    framework: str = Field(default=None)
 
 
 class BenchmarkTask(BaseTaskModel):
@@ -201,4 +218,4 @@ class ConversionTask(BaseTaskModel):
     output_model_uuid: str = Field(default=None)
     model_file_name: str = Field(default=None)
     target_device_name: DeviceName = Field(default=None)
-    target_framework: ModelFramework = Field(default=None)
+    target_framework: str = Field(default=None)

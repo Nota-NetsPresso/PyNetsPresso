@@ -7,7 +7,7 @@ from loguru import logger
 
 from netspresso.clients.auth import BaseClient, validate_token
 from netspresso.clients.compressor import CompressorAPIClient
-from netspresso.clients.compressor.enums import (
+from netspresso.enums import (
     CompressionMethod,
     Extension,
     Framework,
@@ -17,6 +17,7 @@ from netspresso.clients.compressor.enums import (
     Policy,
     RecommendationMethod,
     Task,
+    Module,
 )
 from netspresso.clients.compressor.schemas.compression import (
     AutoCompressionRequest,
@@ -30,7 +31,6 @@ from netspresso.clients.compressor.schemas.compression import (
 )
 from netspresso.clients.compressor.schemas.model import UploadModelRequest
 from netspresso.clients.launcher import LauncherAPIClient
-from netspresso.clients.launcher.enums import LauncherFunction
 from netspresso.compressor.core.compression import CompressionInfo
 from netspresso.compressor.core.model import (
     CompressedModel,
@@ -422,12 +422,12 @@ class Compressor(BaseClient):
             export_onnx(default_model_path, compressed_model.input_shapes)
             converter_uploaded_model = self.launcher_client.upload_model(
                 model_file_path=default_model_path.with_suffix(".onnx"),
-                target_function=LauncherFunction.CONVERT,
+                target_function=Module.CONVERT,
             )
         else:
             converter_uploaded_model = self.launcher_client.upload_model(
                 model_file_path=default_model_path.with_suffix(".h5"),
-                target_function=LauncherFunction.CONVERT,
+                target_function=Module.CONVERT,
             )
 
         return converter_uploaded_model

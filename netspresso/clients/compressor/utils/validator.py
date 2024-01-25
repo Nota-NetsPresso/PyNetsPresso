@@ -1,4 +1,4 @@
-from ..enums import CompressionMethod
+from netspresso.enums import CompressionMethod
 
 
 class CompressionParamsValidator:
