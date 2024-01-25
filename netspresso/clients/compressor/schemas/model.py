@@ -4,10 +4,12 @@ from typing import Any, List
 
 from pydantic import BaseModel, Field, HttpUrl, root_validator, validator
 
-from netspresso.clients.compressor.enums import (
+from netspresso.enums import (
     Extension,
     Framework,
-    framework_literal,
+)
+from netspresso.enums.model import (
+    compressor_framework_literal,
     originfrom_literal,
     task_literal,
 )
@@ -23,7 +25,7 @@ class UploadModelRequest(BaseModel):
     model_name: str = Field(..., description="Model Name")
     description: str = Field("", description="Description")
     task: task_literal = Field(..., description="Task")
-    framework: framework_literal = Field(..., description="Framework")
+    framework: compressor_framework_literal = Field(..., description="Framework")
     input_layers: List[InputLayer] = Field(None, description="Input Layers")
     file_path: str = Field(..., description="Model Path")
     # metric_unit: str = Field("", description="Metric Unit")
@@ -122,7 +124,7 @@ class ModelResponse(BaseModel):
     original_model_id: str = Field(..., description="Original Model ID")
     original_compression_id: str = Field("", description="Compression ID")
     task: task_literal = Field(..., description="Task")
-    framework: framework_literal = Field(..., description="Framework")
+    framework: compressor_framework_literal = Field(..., description="Framework")
     origin_from: originfrom_literal = Field(
         ..., description="Origin From(Model Source)"
     )

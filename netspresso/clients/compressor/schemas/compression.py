@@ -2,10 +2,12 @@ from typing import Any, List
 
 from pydantic import BaseModel, Field, root_validator, validator
 
-from netspresso.clients.compressor.enums import (
+from netspresso.enums import (
     GroupPolicy,
     LayerNorm,
     Policy,
+)
+from netspresso.enums.compression import (
     compression_literal,
     grouppolicy_literal,
     layernorm_literal,

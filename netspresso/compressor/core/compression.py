@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, List
 
-from netspresso.clients.compressor.enums import Policy, LayerNorm, GroupPolicy
+from netspresso.enums import Policy, LayerNorm, GroupPolicy
 
 
 @dataclass
