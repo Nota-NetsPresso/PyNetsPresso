@@ -4,40 +4,31 @@ from typing import Dict, Union
 
 from loguru import logger
 
-from netspresso.clients.auth import BaseClient, validate_token
-from netspresso.clients.launcher import LauncherAPIClient
+from netspresso.clients.auth import validate_token
+from netspresso.clients.launcher import launcher_client
+from netspresso.clients.launcher.schemas import TargetDeviceFilter
+from netspresso.clients.launcher.schemas.model import BenchmarkTask
 from netspresso.enums import (
     DataType,
     DeviceName,
     HardwareType,
     Module,
-    Framework,
+    ServiceCredit,
     SoftwareVersion,
+    Status,
     TaskStatus,
+    TaskType,
 )
-from netspresso.clients.launcher.schemas.model import BenchmarkTask
-from netspresso.enums import ServiceCredit, TaskType, Status
-from netspresso.clients.launcher.schemas import TargetDeviceFilter
 
 from ..utils import FileHandler, check_credit_balance
 from ..utils.metadata import MetadataHandler
 
 
-class Benchmarker(BaseClient):
-    def __init__(self, email=None, password=None, user_session=None):
-        """Initialize the Model Compressor.
+class Benchmarker:
+    def __init__(self, auth):
+        """Initialize the Model Benchmarker."""
 
-        Args:
-            email (str): The email address for a user account.
-            password (str): The password for a user account.
-            user_session (SessionClient): The SessionClient object.
-
-        Available constructors:
-            Benchmarker(email='USER_EMAIL',password='PASSWORD')
-            Benchmarker(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
-        """
-        super().__init__(email=email, password=password, user_session=user_session)
-        self.client = LauncherAPIClient(user_sessoin=self.user_session)
+        self.auth = auth
 
     @validate_token
     def benchmark_model(
@@ -76,17 +67,15 @@ class Benchmarker(BaseClient):
                 metadatas = [metadata.asdict()]
             MetadataHandler.save_json(metadatas, folder_path, file_name="benchmark")
 
-            current_credit = self.user_session.get_credit()
-            check_credit_balance(
-                user_credit=current_credit, service_credit=ServiceCredit.MODEL_BENCHMARK
+            current_credit = self.auth.get_credit()
+            check_credit_balance(user_credit=current_credit, service_credit=ServiceCredit.MODEL_BENCHMARK)
+            model = launcher_client.upload_model(
+                model_file_path=input_model_path, target_function=Module.BENCHMARK, access_token=self.auth.access_token
             )
-            model = self.client.upload_model(model_file_path=input_model_path, target_function=Module.BENCHMARK)
             model_uuid = model.model_uuid
 
             if target_device_name is None:
-                raise ValueError(
-                    "The benchmark is unavailable. Please set target_device_name."
-                )
+                raise ValueError("The benchmark is unavailable. Please set target_device_name.")
 
             if target_device_name in DeviceName.JETSON_DEVICES and target_software_version is None:
                 raise ValueError(
@@ -101,10 +90,7 @@ class Benchmarker(BaseClient):
                 if target_device_name in DeviceName.ONLY_INT8_DEVICES:
                     raise ValueError(f"{DeviceName.ONLY_INT8_DEVICES} only support int8 data types.")
 
-            if (
-                target_hardware_type == HardwareType.HELIUM
-                and target_device_name not in DeviceName.ONLY_INT8_DEVICES
-            ):
+            if target_hardware_type == HardwareType.HELIUM and target_device_name not in DeviceName.ONLY_INT8_DEVICES:
                 raise ValueError(f"{DeviceName.ONLY_INT8_DEVICES} only support helium hardware type.")
 
             devices = TargetDeviceFilter.filter_devices_with_device_name(
@@ -133,12 +119,13 @@ class Benchmarker(BaseClient):
                     "There is no avaliable function for given paremeter. Please specify the target device."
                 )
 
-            model_benchmark: BenchmarkTask = self.client.benchmark_model(
+            model_benchmark: BenchmarkTask = launcher_client.benchmark_model(
                 model_uuid=model_uuid,
                 target_device=target_device_name,
                 data_type=target_data_type,
                 software_version=target_software_version,
                 hardware_type=target_hardware_type,
+                access_token=self.auth.access_token,
             )
             model_benchmark = self.get_benchmark_task(benchmark_task=model_benchmark)
 
@@ -147,9 +134,7 @@ class Benchmarker(BaseClient):
                     TaskStatus.IN_QUEUE,
                     TaskStatus.IN_PROGRESS,
                 ]:
-                    model_benchmark = self.get_benchmark_task(
-                        benchmark_task=model_benchmark
-                    )
+                    model_benchmark = self.get_benchmark_task(benchmark_task=model_benchmark)
                     time.sleep(1)
 
             metadata.update_benchmark_info(
@@ -176,7 +161,7 @@ class Benchmarker(BaseClient):
             metadatas[-1] = metadata.asdict()
             MetadataHandler.save_json(data=metadatas, folder_path=folder_path, file_name="benchmark")
 
-            remaining_credit = self.user_session.get_credit()
+            remaining_credit = self.auth.get_credit()
             logger.info(
                 f"{ServiceCredit.MODEL_BENCHMARK} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -196,9 +181,7 @@ class Benchmarker(BaseClient):
         return metadata.asdict()
 
     @validate_token
-    def get_benchmark_task(
-        self, benchmark_task: Union[str, BenchmarkTask]
-    ) -> BenchmarkTask:
+    def get_benchmark_task(self, benchmark_task: Union[str, BenchmarkTask]) -> BenchmarkTask:
         """Get the benchmark task information with given benchmark task or benchmark task uuid.
 
         Args:
@@ -221,7 +204,7 @@ class Benchmarker(BaseClient):
                     "There is no available function for the given parameter. The 'benchmark_task' should be a UUID string or a ModelBenchmark object."
                 )
 
-            return self.client.get_benchmark(benchmark_task_uuid=task_uuid)
+            return launcher_client.get_benchmark(benchmark_task_uuid=task_uuid, access_token=self.auth.access_token)
 
         except Exception as e:
             logger.error(f"Get benchmark failed. Error: {e}")
