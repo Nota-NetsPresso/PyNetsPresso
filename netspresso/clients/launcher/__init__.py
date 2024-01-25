@@ -1,3 +1,3 @@
-from .main import LauncherAPIClient
+from .main import launcher_client
 
-__all__ = ["LauncherAPIClient"]
+__all__ = ["launcher_client"]
