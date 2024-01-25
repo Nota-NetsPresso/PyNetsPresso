@@ -50,8 +50,7 @@ class Converter(BaseClient):
         input_model_path: Union[Path, str],
         output_dir: Union[Path, str],
         target_framework: Union[str, Framework],
-        data_type: DataType = DataType.FP16,
-        target_device: TargetDevice = None,
+        target_data_type: DataType = DataType.FP16,
         target_device_name: DeviceName = None,
         target_software_version: SoftwareVersion = None,
         input_shape: InputShape = None,
@@ -64,12 +63,11 @@ class Converter(BaseClient):
             input_model_path (str): The file path where the model is located.
             output_dir (str): The local folder path to save the converted model.
             target_framework (Framework | str): the target framework name.
-            data_type (DataType): data type of the model.
-            target_device (TargetDevice): target device. If it's not set, target_device_name and target_software_version have to be set.
-            wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
+            target_data_type (DataType): data type of the model.
             target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
             target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
             input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
+            wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
 
         Raises:
             e: If an error occurs while converting the model.
@@ -98,51 +96,50 @@ class Converter(BaseClient):
                 if target_framework is None and model.framework is not None:
                     target_framework = model.framework
 
-            if target_device is None:
-                if target_device_name is None:
-                    raise NotImplementedError(
-                        "The conversion is unavailable. Please set target_device or target_device_name."
-                    )
-
-                elif (
-                    target_device_name in DeviceName.JETSON_DEVICES and target_software_version is None
-                ):
-                    raise NotImplementedError(
-                        "The conversion is unavailable. Please set JetPack version with target_software_version for Jetson Devices."
-                    )
-
-                if type(model) is not Model:
-                    raise NotImplementedError(
-                        "The conversion is unavailable. Please set target_device while using model's uuid string for the conversion."
-                    )
-
-                # Check available int8 converting devices
-                if data_type == DataType.INT8:
-                    if target_device_name not in DeviceName.AVAILABLE_INT8_DEVICES:
-                        raise Exception(
-                            f"int8 converting supports only {DeviceName.AVAILABLE_INT8_DEVICES}."
-                        )
-                else:  # FP16, FP32
-                    if target_device_name in DeviceName.ONLY_INT8_DEVICES:
-                        raise Exception(
-                            f"{DeviceName.ONLY_INT8_DEVICES} only support int8 data types."
-                        )
-
-                devices = TargetDeviceFilter.filter_devices_with_device_name(
-                    name=target_device_name, devices=model.available_devices
+            if target_device_name is None:
+                raise NotImplementedError(
+                    "The conversion is unavailable. Please set target_device_name."
                 )
 
-                if target_device_name in DeviceName.JETSON_DEVICES:
-                    devices = TargetDeviceFilter.filter_devices_with_device_software_version(
-                        software_version=target_software_version, devices=devices
+            elif (
+                target_device_name in DeviceName.JETSON_DEVICES and target_software_version is None
+            ):
+                raise NotImplementedError(
+                    "The conversion is unavailable. Please set JetPack version with target_software_version for Jetson Devices."
+                )
+
+            if type(model) is not Model:
+                raise NotImplementedError(
+                    "The conversion is unavailable. Please set target_device while using model's uuid string for the conversion."
+                )
+
+            # Check available int8 converting devices
+            if target_data_type == DataType.INT8:
+                if target_device_name not in DeviceName.AVAILABLE_INT8_DEVICES:
+                    raise Exception(
+                        f"int8 converting supports only {DeviceName.AVAILABLE_INT8_DEVICES}."
+                    )
+            else:  # FP16, FP32
+                if target_device_name in DeviceName.ONLY_INT8_DEVICES:
+                    raise Exception(
+                        f"{DeviceName.ONLY_INT8_DEVICES} only support int8 data types."
                     )
 
-                if len(devices) < 1:
-                    raise NotImplementedError(
-                        "The conversion is unavailable. There is no available device with given target_device_name and target_software_version."
-                    )
+            devices = TargetDeviceFilter.filter_devices_with_device_name(
+                name=target_device_name, devices=model.available_devices
+            )
 
-                target_device = devices[0]
+            if target_device_name in DeviceName.JETSON_DEVICES:
+                devices = TargetDeviceFilter.filter_devices_with_device_software_version(
+                    software_version=target_software_version, devices=devices
+                )
+
+            if len(devices) < 1:
+                raise NotImplementedError(
+                    "The conversion is unavailable. There is no available device with given target_device_name and target_software_version."
+                )
+
+            target_device = devices[0]
 
             logger.info(
                 f"Converting Model for {target_device.device_name} ({target_framework})"
@@ -153,7 +150,7 @@ class Converter(BaseClient):
                 input_shape=input_shape,
                 target_framework=target_framework,
                 target_device=target_device.device_name,
-                data_type=data_type,
+                data_type=target_data_type,
                 software_version=target_device.software_version,
                 dataset_path=dataset_path,
             )
