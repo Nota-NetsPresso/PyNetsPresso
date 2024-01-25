@@ -5,12 +5,14 @@ from glob import glob
 from typing import Dict, List, Optional, Union
 
 from loguru import logger
+from omegaconf import OmegaConf
 from netspresso_trainer import train_with_yaml
 from netspresso_trainer.cfg import (
     AugmentationConfig,
     EnvironmentConfig,
     LoggingConfig,
     ScheduleConfig,
+    ModelConfig,
 )
 from netspresso_trainer.cfg.augmentation import *
 from netspresso_trainer.cfg.data import ImageLabelPathConfig, PathConfig
@@ -33,7 +35,15 @@ from ..utils.metadata.default.trainer import InputShape
 
 
 class Trainer:
-    def __init__(self, task) -> None:
+    def __init__(self, task: Optional[Task] = None, yaml_path: Optional[Union[Path, str]] = None) -> None:
+        assert (task is not None) != (yaml_path is not None), "Either 'task' or 'yaml_path' must be provided, but not both."
+
+        if task is not None:
+            self._initialize_from_task(task)
+        elif yaml_path is not None:
+            self._initialize_from_yaml(yaml_path)
+
+    def _initialize_from_task(self, task: Task) -> None:
         self.task = self._validate_task(task)
         self.available_models = list(self._get_available_models().keys())
         self.data = None
@@ -42,6 +52,21 @@ class Trainer:
         self.augmentation = AUGMENTATION_CONFIG_TYPE[self.task]()
         self.logging = LoggingConfig()
         self.environment = EnvironmentConfig()
+
+    def _initialize_from_yaml(self, yaml_path: Union[Path, str]) -> None:
+        hparams = OmegaConf.load(yaml_path)
+        hparams["model"].pop("single_task_model")
+
+        self.img_size = hparams["augmentation"]["img_size"]
+        self.task = hparams["data"]["task"]
+        self.available_models = list(self._get_available_models().keys())
+
+        self.data = DATA_CONFIG_TYPE[self.task](**hparams["data"])
+        self.model = ModelConfig(**hparams["model"])
+        self.training = ScheduleConfig(**hparams["training"])
+        self.augmentation = AugmentationConfig(**hparams["augmentation"])
+        self.logging = LoggingConfig(**hparams["logging"])
+        self.environment = EnvironmentConfig(**hparams["environment"])
 
     def _validate_task(self, task):
         available_tasks = [task.value for task in Task]
@@ -121,6 +146,12 @@ class Trainer:
                 optimizer_path=optimizer_path,
             )
         )
+
+    def set_fx_model(self, fx_model_path: Union[Path, str]):
+        assert self.model, "This function is intended for retraining. Please use 'set_model_config' for model setup."
+
+        self.model.checkpoint.path = None
+        self.model.checkpoint.fx_model_path = fx_model_path
 
     def set_model_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.model = yaml_path
@@ -225,13 +256,13 @@ class Trainer:
         os.rmdir(source_folder)
 
     def train(self, gpus: str, project_name: str) -> Dict:
+        self._validate_config()
+        self._apply_img_size()
         self.logging.project_id = project_name
+
         destination_folder = f"{self.logging.output_dir}/{self.logging.project_id}"
         FileHandler.create_folder(folder_path=destination_folder)
         metadata = MetadataHandler.init_metadata(folder_path=destination_folder, task_type=TaskType.TRAIN)
-
-        self._validate_config()
-        self._apply_img_size()
 
         configs = TrainerConfigs(
             self.data,
