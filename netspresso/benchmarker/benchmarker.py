@@ -15,10 +15,7 @@ from netspresso.enums import (
     SoftwareVersion,
     TaskStatus,
 )
-from netspresso.clients.launcher.schemas.model import (
-    BenchmarkTask,
-    Model,
-)
+from netspresso.clients.launcher.schemas.model import BenchmarkTask
 from netspresso.enums import ServiceCredit, TaskType, Status
 from netspresso.clients.launcher.schemas import TargetDeviceFilter
 
@@ -45,8 +42,7 @@ class Benchmarker(BaseClient):
     @validate_token
     def benchmark_model(
         self,
-        model_path: Union[Path, str],
-        target_framework: Union[str, Framework],
+        input_model_path: Union[Path, str],
         data_type: DataType = DataType.FP16,
         target_device_name: DeviceName = None,
         target_software_version: SoftwareVersion = None,
@@ -56,7 +52,7 @@ class Benchmarker(BaseClient):
         """Benchmark given model on the specified device.
 
         Args:
-            model_path (str): The file path where the model is located.
+            input_model_path (str): The file path where the model is located.
             data_type (DataType): data type of the model.
             target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
             target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
@@ -70,23 +66,21 @@ class Benchmarker(BaseClient):
             Dict: model benchmark task dict.
         """
         try:
-            default_model_path, extension = FileHandler.get_path_and_extension(
-                folder_path=model_path, framework=target_framework
-            )
+            folder_path = Path(input_model_path).parent
 
             metadata = MetadataHandler.get_default_metadata(TaskType.BENCHMARK)
-            if FileHandler.check_exists(Path(model_path) / f"benchmark.json"):
-                metadatas = MetadataHandler.load_json(Path(model_path) / f"benchmark.json")
+            if FileHandler.check_exists(folder_path / f"benchmark.json"):
+                metadatas = MetadataHandler.load_json(folder_path / f"benchmark.json")
                 metadatas.append(metadata.asdict())
             else:
                 metadatas = [metadata.asdict()]
-            MetadataHandler.save_json(metadatas, model_path, file_name="benchmark")
+            MetadataHandler.save_json(metadatas, folder_path, file_name="benchmark")
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
                 user_credit=current_credit, service_credit=ServiceCredit.MODEL_BENCHMARK
             )
-            model = self.client.upload_model(model_file_path=default_model_path.with_suffix(extension), target_function=Module.BENCHMARK)
+            model = self.client.upload_model(model_file_path=input_model_path, target_function=Module.BENCHMARK)
             model_uuid = model.model_uuid
 
             if target_device_name is None:
@@ -180,7 +174,7 @@ class Benchmarker(BaseClient):
             )
             metadata.update_status(status=Status.COMPLETED)
             metadatas[-1] = metadata.asdict()
-            MetadataHandler.save_json(data=metadatas, folder_path=model_path, file_name="benchmark")
+            MetadataHandler.save_json(data=metadatas, folder_path=folder_path, file_name="benchmark")
 
             remaining_credit = self.user_session.get_credit()
             logger.info(
@@ -191,13 +185,13 @@ class Benchmarker(BaseClient):
             logger.error(f"Benchmark failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
             metadatas[-1] = metadata.asdict()
-            MetadataHandler.save_json(data=metadatas, folder_path=model_path, file_name="benchmark")
+            MetadataHandler.save_json(data=metadatas, folder_path=folder_path, file_name="benchmark")
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
             metadatas[-1] = metadata.asdict()
-            MetadataHandler.save_json(data=metadatas, folder_path=model_path, file_name="benchmark")
+            MetadataHandler.save_json(data=metadatas, folder_path=folder_path, file_name="benchmark")
 
         return metadata.asdict()
 

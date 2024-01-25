@@ -47,22 +47,22 @@ class Converter(BaseClient):
     @validate_token
     def convert_model(
         self,
-        model_path: Union[Path, str],
-        output_path: Union[Path, str],
+        input_model_path: Union[Path, str],
+        output_dir: Union[Path, str],
         target_framework: Union[str, Framework],
         data_type: DataType = DataType.FP16,
         target_device: TargetDevice = None,
-        wait_until_done: bool = True,
         target_device_name: DeviceName = None,
         target_software_version: SoftwareVersion = None,
         input_shape: InputShape = None,
         dataset_path: str = None,
+        wait_until_done: bool = True,
     ) -> Dict:
         """Convert a model into the type the specific framework.
 
         Args:
-            model_path (str): The file path where the model is located.
-            output_path (str): The local path to save the converted model.
+            input_model_path (str): The file path where the model is located.
+            output_dir (str): The local folder path to save the converted model.
             target_framework (Framework | str): the target framework name.
             data_type (DataType): data type of the model.
             target_device (TargetDevice): target device. If it's not set, target_device_name and target_software_version have to be set.
@@ -79,16 +79,16 @@ class Converter(BaseClient):
         """
         try:
             default_model_path, extension = FileHandler.get_path_and_extension(
-                folder_path=output_path, framework=target_framework
+                folder_path=output_dir, framework=target_framework
             )
-            FileHandler.create_folder(folder_path=output_path)
-            metadata = MetadataHandler.init_metadata(folder_path=output_path, task_type=TaskType.CONVERT)
+            FileHandler.create_folder(folder_path=output_dir)
+            metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.CONVERT)
 
             current_credit = self.user_session.get_credit()
             check_credit_balance(
                 user_credit=current_credit, service_credit=ServiceCredit.MODEL_CONVERT
             )
-            model = self.client.upload_model(model_file_path=model_path, target_function=Module.CONVERT)
+            model = self.client.upload_model(model_file_path=input_model_path, target_function=Module.CONVERT)
 
             model_uuid = model
             if type(model) is Model:
@@ -195,7 +195,7 @@ class Converter(BaseClient):
             )
             metadata.update_status(status=Status.COMPLETED)
             metadata.update_available_devices(converter_uploaded_model.available_devices)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
             remaining_credit = self.user_session.get_credit()
             logger.info(
@@ -207,12 +207,12 @@ class Converter(BaseClient):
         except Exception as e:
             logger.error(f"Convert failed. Error: {e}")
             metadata.update_status(status=Status.ERROR)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
             raise e
 
         except KeyboardInterrupt:
             metadata.update_status(status=Status.STOPPED)
-            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_path)
+            MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
     @validate_token
     def get_conversion_task(
