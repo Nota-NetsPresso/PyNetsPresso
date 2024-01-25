@@ -12,12 +12,10 @@ from netspresso.enums import (
     DeviceName,
     Framework,
     Module,
-    HardwareType,
     SoftwareVersion,
     TaskStatus,
 )
 from netspresso.clients.launcher.schemas.model import (
-    BenchmarkTask,
     ConversionTask,
     InputShape,
     Model,
@@ -45,24 +43,6 @@ class Converter(BaseClient):
         """
         super().__init__(email=email, password=password, user_session=user_session)
         self.client = LauncherAPIClient(user_sessoin=self.user_session)
-
-    @validate_token
-    def _upload_model(self, model_file_path: Union[Path, str]) -> Model:
-        """Upload a model for launcher.
-
-        Args:
-            model_file_path (str): The file path of the model.
-
-        Raises:
-            e: If an error occurs while uploading the model.
-
-        Returns:
-            Model: Uploaded launcher model object.
-        """
-        return self.client.upload_model(
-            model_file_path=model_file_path,
-            target_function=Module.CONVERT,
-        )
 
     @validate_token
     def convert_model(
@@ -108,7 +88,7 @@ class Converter(BaseClient):
             check_credit_balance(
                 user_credit=current_credit, service_credit=ServiceCredit.MODEL_CONVERT
             )
-            model = self._upload_model(model_path)
+            model = self.client.upload_model(model_file_path=model_path, target_function=Module.CONVERT)
 
             model_uuid = model
             if type(model) is Model:
