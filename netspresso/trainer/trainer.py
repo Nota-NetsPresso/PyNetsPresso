@@ -147,6 +147,12 @@ class Trainer:
             )
         )
 
+    def set_fx_model(self, fx_model_path: Union[Path, str]):
+        assert self.model, "This function can only be used for retraining. Please use 'set_model_config'."
+
+        self.model.checkpoint.path = None
+        self.model.checkpoint.fx_model_path = fx_model_path
+
     def set_model_config_with_yaml(self, yaml_path: Union[Path, str]):
         self.model = yaml_path
 
