@@ -172,3 +172,6 @@ class CompressorAPIClient:
             return response_body
         else:
             raise Exception(response_body["detail"])
+
+
+compressor_client = CompressorAPIClient()

@@ -1,7 +1,3 @@
-from .main import BaseClient, SessionClient, validate_token
+from .main import auth_client, validate_token
 
-__all__ = [
-    "BaseClient",
-    "SessionClient",
-    "validate_token",
-]
+__all__ = ["auth_client", "validate_token"]
