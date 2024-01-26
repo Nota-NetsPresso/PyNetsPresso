@@ -17,7 +17,7 @@ from netspresso.clients.utils import check_jwt_exp, get_headers
 def validate_token(func) -> None:
     @wraps(func)
     def wrapper(self, *args, **kwargs):
-        if not check_jwt_exp(self.auth.access_token):
+        if not check_jwt_exp(self.tokens.access_token):
             self.reissue_token()
         return func(self, *args, **kwargs)
 
@@ -39,7 +39,7 @@ class AuthClient:
         self.uri_prefix = self.config.URI_PREFIX
         self.base_url = f"{self.host}:{self.port}{self.uri_prefix}"
 
-    def login(self, email, password) -> None:
+    def login(self, email, password) -> Tokens:
         try:
             url = f"{self.base_url}/auth/local/login"
             data = LoginRequest(username=email, password=password)
@@ -48,9 +48,8 @@ class AuthClient:
 
             if response.status_code == 200 or response.status_code == 201:
                 session = LoginResponse(**response_body)
-                self.access_token = session.tokens.access_token
-                self.refresh_token = session.tokens.refresh_token
                 logger.info("Login successfully")
+                return session.tokens
             else:
                 raise Exception(response_body["detail"])
 
@@ -58,11 +57,11 @@ class AuthClient:
             logger.error(f"Login failed. Error: {e}")
             raise e
 
-    def get_user_info(self) -> UserResponse:
+    def get_user_info(self, access_token) -> UserResponse:
         try:
             url = f"{self.base_url}/user"
             response = requests.get(
-                url, headers=get_headers(access_token=self.access_token)
+                url, headers=get_headers(access_token=access_token)
             )
             response_body = json.loads(response.text)
 
@@ -77,16 +76,16 @@ class AuthClient:
             logger.error(f"Failed to get user information. Error: {e}")
             raise e
 
-    def get_credit(self) -> int:
-        user_info = self.get_user_info()
+    def get_credit(self, access_token) -> int:
+        user_info = self.get_user_info(access_token)
         
         return user_info.total
 
-    def reissue_token(self) -> None:
+    def reissue_token(self, access_token, refresh_token) -> Tokens:
         try:
             url = f"{self.base_url}/auth/token"
             data = Tokens(
-                access_token=self.access_token, refresh_token=self.refresh_token
+                access_token=access_token, refresh_token=refresh_token
             )
             response = requests.post(
                 url, data=data.json(), headers=get_headers(json_type=True)
@@ -95,10 +94,12 @@ class AuthClient:
 
             if response.status_code == 200 or response.status_code == 201:
                 tokens = Tokens(**response_body["tokens"])
-                self.access_token = tokens.access_token
-                self.refresh_token = tokens.refresh_token
+                return tokens
             else:
                 raise Exception(response_body["detail"])
 
         except Exception as e:
             raise e
+
+
+auth_client = AuthClient()
