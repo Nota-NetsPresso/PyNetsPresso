@@ -4,7 +4,7 @@ from urllib import request
 
 from loguru import logger
 
-from netspresso.clients.auth import validate_token, auth_client
+from netspresso.clients.auth import auth_client, TokenHandler
 from netspresso.clients.compressor import compressor_client
 from netspresso.clients.compressor.schemas.compression import (
     AutoCompressionRequest,
@@ -42,13 +42,12 @@ from .utils.onnx import export_onnx
 
 
 class Compressor:
-    def __init__(self, tokens):
+    def __init__(self, token_handler: TokenHandler):
         """Initialize the Model Compressor."""
 
-        self.tokens = tokens
+        self.token_handler = token_handler
         self.model_factory = ModelFactory()
 
-    @validate_token
     def upload_model(
         self,
         model_name: str,
@@ -73,6 +72,8 @@ class Compressor:
             Model: Uploaded model object.
         """
 
+        self.token_handler.validate_token()
+
         try:
             logger.info("Uploading Model...")
             data = UploadModelRequest(
@@ -82,7 +83,7 @@ class Compressor:
                 file_path=input_model_path,
                 input_layers=input_shapes,
             )
-            model_info = compressor_client.upload_model(data=data, access_token=self.tokens.access_token)
+            model_info = compressor_client.upload_model(data=data, access_token=self.token_handler.tokens.access_token)
             model = self.model_factory.create_model(model_info=model_info)
 
             logger.info(f"Upload model successfully. Model ID: {model.model_id}")
@@ -93,7 +94,6 @@ class Compressor:
             logger.error(f"Upload model failed. Error: {e}")
             raise e
 
-    @validate_token
     def get_models(self) -> List[ModelCollection]:
         """Get the list of uploaded & compressed models.
 
@@ -104,16 +104,18 @@ class Compressor:
             List[ModelCollection]: The list of uploaded & compressed models.
         """
 
+        self.token_handler.validate_token()
+
         try:
             logger.info("Getting model list...")
             models = []
-            parent_models = compressor_client.get_parent_models(is_simple=True, access_token=self.tokens.access_token)
+            parent_models = compressor_client.get_parent_models(is_simple=True, access_token=self.token_handler.tokens.access_token)
 
             for parent_model_info in parent_models:
                 if parent_model_info.origin_from == "custom":
                     children_models = compressor_client.get_children_models(
                         model_id=parent_model_info.model_id,
-                        access_token=self.tokens.access_token,
+                        access_token=self.token_handler.tokens.access_token,
                     )
                     model_collection = self.model_factory.create_model_collection(
                         model_info=parent_model_info, children_models=children_models
@@ -127,7 +129,6 @@ class Compressor:
             logger.error(f"Get model list failed. Error: {e}")
             raise e
 
-    @validate_token
     def get_uploaded_models(self) -> List[Model]:
         """Get the list of uploaded models.
 
@@ -138,9 +139,11 @@ class Compressor:
             List[Model]: The list of uploaded models.
         """
 
+        self.token_handler.validate_token()
+
         try:
             logger.info("Getting uploaded model list...")
-            parent_models = compressor_client.get_parent_models(is_simple=True, access_token=self.tokens.access_token)
+            parent_models = compressor_client.get_parent_models(is_simple=True, access_token=self.token_handler.tokens.access_token)
             uploaded_models = [
                 self.model_factory.create_model(model_info=parent_model_info)
                 for parent_model_info in parent_models
@@ -154,7 +157,6 @@ class Compressor:
             logger.error(f"Get uploaded model list failed. Error: {e}")
             raise e
 
-    @validate_token
     def get_compressed_models(self, model_id: str) -> List[CompressedModel]:
         """Get the list of compressed models for a given model ID.
 
@@ -168,10 +170,12 @@ class Compressor:
             List[CompressedModel]: The list of compressed models for a given model ID.
         """
 
+        self.token_handler.validate_token()
+
         try:
             logger.info("Getting compressed model list...")
             children_models = compressor_client.get_children_models(
-                model_id=model_id, access_token=self.tokens.access_token
+                model_id=model_id, access_token=self.token_handler.tokens.access_token
             )
             compressed_models = [
                 self.model_factory.create_compressed_model(model_info=children_model_info)
@@ -185,7 +189,6 @@ class Compressor:
             logger.error(f"Get compressed model list failed. Error: {e}")
             raise e
 
-    @validate_token
     def get_model(self, model_id: str) -> Union[Model, CompressedModel]:
         """Get the model for a given model ID.
 
@@ -200,9 +203,11 @@ class Compressor:
             `CompressedModel` will be returned. Otherwise, `Model` will be returned.
         """
 
+        self.token_handler.validate_token()
+
         try:
             logger.info("Getting model...")
-            model_info = compressor_client.get_model_info(model_id=model_id, access_token=self.tokens.access_token)
+            model_info = compressor_client.get_model_info(model_id=model_id, access_token=self.token_handler.tokens.access_token)
             if model_info.status.is_compressed:
                 model = self.model_factory.create_compressed_model(model_info=model_info)
             else:
@@ -215,7 +220,6 @@ class Compressor:
             logger.error(f"Get model failed. Error: {e}")
             raise e
 
-    @validate_token
     def download_model(self, model_id: str, local_path: str) -> None:
         """Download the model for a given model ID to the local path.
 
@@ -227,10 +231,12 @@ class Compressor:
             e: If an error occurs while downloading the model.
         """
 
+        self.token_handler.validate_token()
+
         try:
             logger.info("Downloading model...")
             download_link = compressor_client.get_download_model_link(
-                model_id=model_id, access_token=self.tokens.access_token
+                model_id=model_id, access_token=self.token_handler.tokens.access_token
             )
             request.urlretrieve(download_link.url, local_path)
             logger.info(f"Model downloaded at {Path(local_path)}")
@@ -239,7 +245,6 @@ class Compressor:
             logger.error(f"Download model failed. Error: {e}")
             raise e
 
-    @validate_token
     def delete_model(self, model_id: str, recursive: bool = False) -> None:
         """Delete the model for a given model ID.
 
@@ -251,10 +256,12 @@ class Compressor:
             e: If an error occurs while deleting the model.
         """
 
+        self.token_handler.validate_token()
+
         try:
             logger.info("Deleting model...")
             children_models = compressor_client.get_children_models(
-                model_id=model_id, access_token=self.tokens.access_token
+                model_id=model_id, access_token=self.token_handler.tokens.access_token
             )
             if len(children_models) != 0:
                 if not recursive:
@@ -263,18 +270,17 @@ class Compressor:
                     )
                 else:
                     logger.info("The compressed model for that model will also be deleted.")
-                    compressor_client.delete_model(model_id=model_id, access_token=self.tokens.access_token)
+                    compressor_client.delete_model(model_id=model_id, access_token=self.token_handler.tokens.access_token)
                     logger.info("Delete model successfully.")
             else:
                 logger.info("The model will be deleted.")
-                compressor_client.delete_model(model_id=model_id, access_token=self.tokens.access_token)
+                compressor_client.delete_model(model_id=model_id, access_token=self.token_handler.tokens.access_token)
                 logger.info("Delete model successfully.")
 
         except Exception as e:
             logger.error(f"Delete model failed. Error: {e}")
             raise e
 
-    @validate_token
     def select_compression_method(
         self,
         model_id: str,
@@ -294,6 +300,9 @@ class Compressor:
         Returns:
             CompressionInfo: The compression information for the selected compression method.
         """
+
+        self.token_handler.validate_token()
+
         try:
             model = self.get_model(model_id)
 
@@ -306,7 +315,7 @@ class Compressor:
                 compression_method=compression_method,
                 options=options,
             )
-            response = compressor_client.get_available_layers(data=data, access_token=self.tokens.access_token)
+            response = compressor_client.get_available_layers(data=data, access_token=self.token_handler.tokens.access_token)
             compression_info = CompressionInfo(
                 original_model_id=model.model_id,
                 compression_method=compression_method,
@@ -321,7 +330,6 @@ class Compressor:
             logger.error(f"Select compression method failed. Error: {e}")
             raise e
 
-    @validate_token
     def get_compression(self, compression_id: str) -> CompressionInfo:
         """Get information about a compression.
 
@@ -334,11 +342,14 @@ class Compressor:
         Returns:
             CompressionInfo: The information about the compression.
         """
+
+        self.token_handler.validate_token()
+
         try:
             logger.info("Getting compression...")
             _compression_info = compressor_client.get_compression_info(
                 compression_id=compression_id,
-                access_token=self.tokens.access_token,
+                access_token=self.token_handler.tokens.access_token,
             )
             compression_info = CompressionInfo(
                 compressed_model_id=_compression_info.new_model_id,
@@ -354,7 +365,6 @@ class Compressor:
             logger.error(f"Get compression failed. Error: {e}")
             raise e
 
-    @validate_token
     def __upload_dataset(self, model_id: str, dataset_path: str) -> None:
         """Upload a dataset for nuclear norm compression method.
 
@@ -365,10 +375,13 @@ class Compressor:
         Raises:
             e: If an error occurs while uploading the dataset.
         """
+
+        self.token_handler.validate_token()
+
         try:
             logger.info(f"Uploading dataset...")
             data = UploadDatasetRequest(model_id=model_id, file_path=dataset_path)
-            compressor_client.upload_dataset(data=data, access_token=self.tokens.access_token)
+            compressor_client.upload_dataset(data=data, access_token=self.token_handler.tokens.access_token)
             logger.info(f"Upload dataset successfully.")
 
         except Exception as e:
@@ -381,18 +394,17 @@ class Compressor:
             converter_uploaded_model = launcher_client.upload_model(
                 model_file_path=default_model_path.with_suffix(".onnx"),
                 target_function=Module.CONVERT,
-                access_token=self.tokens.access_token,
+                access_token=self.token_handler.tokens.access_token,
             )
         else:
             converter_uploaded_model = launcher_client.upload_model(
                 model_file_path=default_model_path.with_suffix(".h5"),
                 target_function=Module.CONVERT,
-                access_token=self.tokens.access_token,
+                access_token=self.token_handler.tokens.access_token,
             )
 
         return converter_uploaded_model
 
-    @validate_token
     def compress_model(
         self,
         compression: CompressionInfo,
@@ -414,6 +426,9 @@ class Compressor:
         Returns:
             Dict: Source model and compressed model information.
         """
+
+        self.token_handler.validate_token()
+
         try:
             logger.info("Compressing model...")
 
@@ -425,7 +440,7 @@ class Compressor:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
-            current_credit = auth_client.get_credit(self.tokens.access_token)
+            current_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.ADVANCED_COMPRESSION,
@@ -437,7 +452,7 @@ class Compressor:
                 compression_method=compression.compression_method,
                 options=compression.options,
             )
-            compression_info = compressor_client.create_compression(data=data, access_token=self.tokens.access_token)
+            compression_info = compressor_client.create_compression(data=data, access_token=self.token_handler.tokens.access_token)
 
             if dataset_path and compression.compression_method == CompressionMethod.PR_NN:
                 self.__upload_dataset(model_id=compression.original_model_id, dataset_path=dataset_path)
@@ -469,7 +484,7 @@ class Compressor:
                 compressed_model_id=compression_info.new_model_id,
                 options=compression.options,
             )
-            compressor_client.compress_model(data=data, access_token=self.tokens.access_token)
+            compressor_client.compress_model(data=data, access_token=self.token_handler.tokens.access_token)
 
             self.download_model(
                 model_id=compression_info.new_model_id,
@@ -480,7 +495,7 @@ class Compressor:
             converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}")
-            remaining_credit = auth_client.get_credit(self.tokens.access_token)
+            remaining_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             logger.info(
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -519,7 +534,6 @@ class Compressor:
             metadata.update_status(status=Status.STOPPED)
             MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
-    @validate_token
     def recommendation_compression(
         self,
         model_name: str,
@@ -556,6 +570,8 @@ class Compressor:
             Dict: Source model and compressed model information.
         """
 
+        self.token_handler.validate_token()
+
         try:
             logger.info("Compressing recommendation-based model...")
 
@@ -565,7 +581,7 @@ class Compressor:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
-            current_credit = auth_client.get_credit(self.tokens.access_token)
+            current_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.ADVANCED_COMPRESSION,
@@ -614,7 +630,7 @@ class Compressor:
                 compression_method=compression_method,
                 options=options.dict(),
             )
-            compression_info = compressor_client.create_compression(data=data, access_token=self.tokens.access_token)
+            compression_info = compressor_client.create_compression(data=data, access_token=self.token_handler.tokens.access_token)
 
             if dataset_path and compression_method == CompressionMethod.PR_NN:
                 self.__upload_dataset(model_id=model.model_id, dataset_path=dataset_path)
@@ -627,7 +643,7 @@ class Compressor:
                 options=options.dict(),
             )
             logger.info("Compressing model...")
-            recommendation_result = compressor_client.get_recommendation(data=data, access_token=self.tokens.access_token)
+            recommendation_result = compressor_client.get_recommendation(data=data, access_token=self.token_handler.tokens.access_token)
 
             for recommended_layer in recommendation_result.recommended_layers:
                 for available_layer in compression_info.available_layers:
@@ -643,7 +659,7 @@ class Compressor:
                 compressed_model_id=compression_info.new_model_id,
                 options=options.dict(),
             )
-            compressor_client.compress_model(data=data, access_token=self.tokens.access_token)
+            compressor_client.compress_model(data=data, access_token=self.token_handler.tokens.access_token)
 
             self.download_model(
                 model_id=compression_info.new_model_id,
@@ -654,7 +670,7 @@ class Compressor:
             converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(f"Recommendation compression successfully. Compressed Model ID: {compressed_model.model_id}")
-            remaining_credit = auth_client.get_credit(self.tokens.access_token)
+            remaining_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             logger.info(
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -691,7 +707,6 @@ class Compressor:
             metadata.update_status(status=Status.STOPPED)
             MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
-    @validate_token
     def automatic_compression(
         self,
         model_name: str,
@@ -720,6 +735,8 @@ class Compressor:
             Dict: Source model and compressed model information.
         """
 
+        self.token_handler.validate_token()
+
         try:
             logger.info("Compressing automatic-based model...")
 
@@ -729,7 +746,7 @@ class Compressor:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
-            current_credit = auth_client.get_credit(self.tokens.access_token)
+            current_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.AUTOMATIC_COMPRESSION,
@@ -751,7 +768,7 @@ class Compressor:
                 save_path=output_dir,
             )
             logger.info("Compressing model...")
-            model_info = compressor_client.auto_compression(data=data, access_token=self.tokens.access_token)
+            model_info = compressor_client.auto_compression(data=data, access_token=self.token_handler.tokens.access_token)
             compression_info = self.get_compression(model_info.original_compression_id)
 
             self.download_model(
@@ -763,7 +780,7 @@ class Compressor:
             converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}")
-            remaining_credit = auth_client.get_credit(self.tokens.access_token)
+            remaining_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             logger.info(
                 f"{ServiceCredit.AUTOMATIC_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )

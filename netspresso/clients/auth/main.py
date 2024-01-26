@@ -1,8 +1,10 @@
 import json
-from functools import wraps
+from datetime import datetime
 
 import requests
 from loguru import logger
+import jwt
+import pytz
 
 from netspresso.clients.auth.schemas import (
     LoginRequest,
@@ -11,17 +13,7 @@ from netspresso.clients.auth.schemas import (
     UserResponse,
 )
 from netspresso.clients.config import Config, Module
-from netspresso.clients.utils import check_jwt_exp, get_headers
-
-
-def validate_token(func) -> None:
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        if not check_jwt_exp(self.tokens.access_token):
-            self.reissue_token()
-        return func(self, *args, **kwargs)
-
-    return wrapper
+from netspresso.clients.utils import get_headers
 
 
 class AuthClient:
@@ -94,12 +86,26 @@ class AuthClient:
 
             if response.status_code == 200 or response.status_code == 201:
                 tokens = Tokens(**response_body["tokens"])
+                logger.info("Successfully reissued token")
                 return tokens
             else:
                 raise Exception(response_body["detail"])
 
         except Exception as e:
             raise e
+
+
+class TokenHandler:
+    def __init__(self, tokens) -> None:
+        self.tokens = tokens
+
+    def check_jwt_exp(self):
+        payload = jwt.decode(self.tokens.access_token, options={"verify_signature": False})
+        return datetime.now(pytz.utc).timestamp() <= payload["exp"]
+
+    def validate_token(self):
+        if not self.check_jwt_exp():
+            self.tokens = auth_client.reissue_token(self.tokens.access_token, self.tokens.refresh_token)
 
 
 auth_client = AuthClient()

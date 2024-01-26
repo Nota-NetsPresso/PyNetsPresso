@@ -5,7 +5,7 @@ from urllib import request
 
 from loguru import logger
 
-from netspresso.clients.auth import validate_token, auth_client
+from netspresso.clients.auth import auth_client, TokenHandler
 from netspresso.clients.launcher import launcher_client
 from netspresso.clients.launcher.schemas import TargetDeviceFilter
 from netspresso.clients.launcher.schemas.model import ConversionTask, InputShape, Model
@@ -26,13 +26,12 @@ from ..utils.metadata import MetadataHandler
 
 
 class Converter:
-    def __init__(self, tokens, user_info):
+    def __init__(self, token_handler: TokenHandler, user_info):
         """Initialize the Model Converter."""
 
-        self.tokens = tokens
+        self.token_handler = token_handler
         self.user_info = user_info
 
-    @validate_token
     def convert_model(
         self,
         input_model_path: Union[Path, str],
@@ -63,6 +62,9 @@ class Converter:
         Returns:
             Dict: model conversion task dict.
         """
+
+        self.token_handler.validate_token()
+
         try:
             default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_dir, framework=target_framework
@@ -70,10 +72,10 @@ class Converter:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.CONVERT)
 
-            current_credit = auth_client.get_credit(self.tokens.access_token)
+            current_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             check_credit_balance(user_credit=current_credit, service_credit=ServiceCredit.MODEL_CONVERT)
             model = launcher_client.upload_model(
-                model_file_path=input_model_path, target_function=Module.CONVERT, access_token=self.tokens.access_token
+                model_file_path=input_model_path, target_function=Module.CONVERT, access_token=self.token_handler.tokens.access_token
             )
 
             model_uuid = model
@@ -132,7 +134,7 @@ class Converter:
                 data_type=target_data_type,
                 software_version=target_device.software_version,
                 dataset_path=dataset_path,
-                access_token=self.tokens.access_token,
+                access_token=self.token_handler.tokens.access_token,
             )
 
             conversion_task = self.get_conversion_task(conversion_task)
@@ -150,7 +152,7 @@ class Converter:
             converter_uploaded_model = launcher_client.upload_model(
                 model_file_path=default_model_path.with_suffix(extension),
                 target_function=Module.BENCHMARK,
-                access_token=self.tokens.access_token,
+                access_token=self.token_handler.tokens.access_token,
             )
 
             metadata.update_converted_model_path(
@@ -175,7 +177,7 @@ class Converter:
             metadata.update_available_devices(converter_uploaded_model.available_devices)
             MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
-            remaining_credit = auth_client.get_credit(self.tokens.access_token)
+            remaining_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             logger.info(
                 f"{ServiceCredit.MODEL_CONVERT} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -192,7 +194,6 @@ class Converter:
             metadata.update_status(status=Status.STOPPED)
             MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
-    @validate_token
     def get_conversion_task(self, conversion_task: Union[str, ConversionTask]) -> ConversionTask:
         """Get the conversion task information with given conversion task or conversion task uuid.
 
@@ -205,6 +206,9 @@ class Converter:
         Returns:
             ConversionTask: model conversion task object.
         """
+
+        self.token_handler.validate_token()
+
         try:
             conversion_task_uuid = None
             if type(conversion_task) is str:
@@ -216,14 +220,13 @@ class Converter:
                     "There is no available function for the given parameter. The 'conversion_task' should be a UUID string or a ModelConversion object."
                 )
             return launcher_client.get_conversion_task(
-                conversion_task_uuid=conversion_task_uuid, access_token=self.tokens.access_token
+                conversion_task_uuid=conversion_task_uuid, access_token=self.token_handler.tokens.access_token
             )
 
         except Exception as e:
             logger.error(f"Get conversion task failed. Error: {e}")
             raise e
 
-    @validate_token
     def download_converted_model(self, conversion_task: Union[str, ConversionTask], local_path: str):
         """Download the converted model with given conversion task or conversion task uuid.
 
@@ -236,6 +239,9 @@ class Converter:
         Returns:
             ConversionTask: model conversion task object.
         """
+
+        self.token_handler.validate_token()
+
         try:
             conversion_task_uuid = None
             if type(conversion_task) is str:
@@ -252,7 +258,7 @@ class Converter:
                 )
 
             download_url = launcher_client.get_converted_model(
-                conversion_task_uuid=conversion_result.convert_task_uuid, access_token=self.tokens.access_token
+                conversion_task_uuid=conversion_result.convert_task_uuid, access_token=self.token_handler.tokens.access_token
             )
             request.urlretrieve(download_url, local_path)
             logger.info(f"Model downloaded at {Path(local_path)}")
