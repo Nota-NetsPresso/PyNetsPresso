@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
-from ...enums import TaskType
+from netspresso.enums import TaskType
 from .default import TrainerMetadata, CompressorMetadata, ConverterMetadata, BenchmarkerMetadata
 
 

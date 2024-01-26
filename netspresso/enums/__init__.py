@@ -1,9 +1,10 @@
 from .credit import ServiceCredit
 from .metadata import TaskType, Status
 from .compression import CompressionMethod, RecommendationMethod, Policy, GroupPolicy, LayerNorm
-from .model import Task, Framework, Framework, Extension, OriginFrom, DataType
+from .model import Framework, Framework, Extension, OriginFrom, DataType
 from .device import DeviceName, SoftwareVersion, HardwareType, TaskStatus
 from .module import Module
+from .task import Task
 from netspresso.clients.compressor.schemas.compression import Options
 
 

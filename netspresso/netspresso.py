@@ -5,7 +5,7 @@ from netspresso.trainer import Trainer
 from netspresso.compressor import Compressor
 from netspresso.converter import Converter
 from netspresso.benchmarker import Benchmarker
-from .enums import Task
+from netspresso.enums import Task
 
 from netspresso.clients.auth import auth_client, TokenHandler
 

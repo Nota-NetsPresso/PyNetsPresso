@@ -11,7 +11,6 @@ from netspresso.enums import (
 from netspresso.enums.model import (
     compressor_framework_literal,
     originfrom_literal,
-    task_literal,
 )
 
 
@@ -24,7 +23,7 @@ class InputLayer(BaseModel):
 class UploadModelRequest(BaseModel):
     model_name: str = Field(..., description="Model Name")
     description: str = Field("", description="Description")
-    task: task_literal = Field(..., description="Task")
+    task: str = Field("other", description="Task")
     framework: compressor_framework_literal = Field(..., description="Framework")
     input_layers: List[InputLayer] = Field(None, description="Input Layers")
     file_path: str = Field(..., description="Model Path")
@@ -123,7 +122,7 @@ class ModelResponse(BaseModel):
     description: str = Field("", description="Description")
     original_model_id: str = Field(..., description="Original Model ID")
     original_compression_id: str = Field("", description="Compression ID")
-    task: task_literal = Field(..., description="Task")
+    task: str = Field(..., description="Task")
     framework: compressor_framework_literal = Field(..., description="Framework")
     origin_from: originfrom_literal = Field(
         ..., description="Origin From(Model Source)"

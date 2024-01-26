@@ -32,7 +32,6 @@ from netspresso.enums import (
     RecommendationMethod,
     ServiceCredit,
     Status,
-    Task,
     TaskType,
 )
 
@@ -53,7 +52,6 @@ class Compressor:
         model_name: str,
         input_model_path: str,
         input_shapes: List[Dict[str, int]] = [],
-        task: Task = Task.OTHER,
         framework: Framework = Framework.PYTORCH,
     ) -> Model:
         """Upload a model for compression.
@@ -62,7 +60,6 @@ class Compressor:
             model_name (str): The name of the model.
             input_model_path (str): The file path where the model is located.
             input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
-            task (Task): The task of the model.
             framework (Framework): The framework of the model.
 
         Raises:
@@ -78,7 +75,6 @@ class Compressor:
             logger.info("Uploading Model...")
             data = UploadModelRequest(
                 model_name=model_name,
-                task=task,
                 framework=framework,
                 file_path=input_model_path,
                 input_layers=input_shapes,
@@ -448,7 +444,6 @@ class Compressor:
         input_model_path: str,
         output_dir: str,
         input_shapes: List[Dict[str, int]],
-        task: Task = Task.OTHER,
         framework: Framework = Framework.PYTORCH,
         options: Options = Options(),
         dataset_path: str = None,
@@ -462,7 +457,6 @@ class Compressor:
             recommendation_ratio (float): The compression ratio recommended by the recommendation method.
             input_model_path (str): The file path where the model is located.
             output_dir (str): The local path to save the compressed model.
-            task (Task): The task of the model.
             framework (Framework): The framework of the model.
             input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
             options(Options, optional): The options for pruning method.
@@ -523,7 +517,6 @@ class Compressor:
 
             model = self.upload_model(
                 model_name=model_name,
-                task=task,
                 framework=framework,
                 input_model_path=input_model_path,
                 input_shapes=input_shapes,
@@ -588,7 +581,7 @@ class Compressor:
                 metadata.update_compressed_onnx_model_path(
                     compressed_onnx_model_path=default_model_path.with_suffix(".onnx").as_posix()
                 )
-            metadata.update_model_info(task=task, framework=framework, input_shapes=input_shapes)
+            metadata.update_model_info(task=model.task, framework=framework, input_shapes=input_shapes)
             metadata.update_compression_info(
                 method=_compression_info.compression_method,
                 ratio=recommendation_ratio,
@@ -618,7 +611,6 @@ class Compressor:
         input_shapes: List[Dict[str, int]],
         input_model_path: str,
         output_dir: str,
-        task: Task = Task.OTHER,
         framework: Framework = Framework.PYTORCH,
         compression_ratio: float = 0.5,
     ) -> Dict:
@@ -626,7 +618,6 @@ class Compressor:
 
         Args:
             model_name (str): The name of the model.
-            task (Task): The task of the model.
             framework (Framework): The framework of the model.
             input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
             input_model_path (str): The file path where the model is located.
@@ -659,7 +650,6 @@ class Compressor:
 
             model = self.upload_model(
                 model_name=model_name,
-                task=task,
                 framework=framework,
                 input_model_path=input_model_path,
                 input_shapes=input_shapes,
@@ -697,7 +687,7 @@ class Compressor:
                 metadata.update_compressed_onnx_model_path(
                     compressed_onnx_model_path=default_model_path.with_suffix(".onnx").as_posix()
                 )
-            metadata.update_model_info(task=task, framework=framework, input_shapes=input_shapes)
+            metadata.update_model_info(task=model.task, framework=framework, input_shapes=input_shapes)
             metadata.update_compression_info(
                 method=compression_info.compression_method,
                 ratio=compression_ratio,

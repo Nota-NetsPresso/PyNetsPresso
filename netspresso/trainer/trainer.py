@@ -17,9 +17,9 @@ from netspresso_trainer.cfg import (
 from netspresso_trainer.cfg.augmentation import *
 from netspresso_trainer.cfg.data import ImageLabelPathConfig, PathConfig
 from netspresso_trainer.cfg.model import CheckpointConfig
-from netspresso.enums import TaskType, Status
+from netspresso.enums import TaskType, Status, Task
 
-from .enums import Task
+
 from .registries import (
     AUGMENTATION_CONFIG_TYPE,
     CLASSIFICATION_MODELS,
