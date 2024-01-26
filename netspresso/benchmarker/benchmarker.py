@@ -4,7 +4,7 @@ from typing import Dict, Union
 
 from loguru import logger
 
-from netspresso.clients.auth import validate_token, auth_client
+from netspresso.clients.auth import auth_client, TokenHandler
 from netspresso.clients.launcher import launcher_client
 from netspresso.clients.launcher.schemas import TargetDeviceFilter
 from netspresso.clients.launcher.schemas.model import BenchmarkTask
@@ -25,13 +25,12 @@ from ..utils.metadata import MetadataHandler
 
 
 class Benchmarker:
-    def __init__(self, tokens, user_info):
+    def __init__(self, token_handler: TokenHandler, user_info):
         """Initialize the Model Benchmarker."""
 
-        self.tokens = tokens
+        self.token_handler = token_handler
         self.user_info = user_info
 
-    @validate_token
     def benchmark_model(
         self,
         input_model_path: Union[Path, str],
@@ -57,6 +56,9 @@ class Benchmarker:
         Returns:
             Dict: model benchmark task dict.
         """
+
+        self.token_handler.validate_token()
+
         try:
             folder_path = Path(input_model_path).parent
 
@@ -68,10 +70,10 @@ class Benchmarker:
                 metadatas = [metadata.asdict()]
             MetadataHandler.save_json(metadatas, folder_path, file_name="benchmark")
 
-            current_credit = auth_client.get_credit(self.tokens.access_token)
+            current_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             check_credit_balance(user_credit=current_credit, service_credit=ServiceCredit.MODEL_BENCHMARK)
             model = launcher_client.upload_model(
-                model_file_path=input_model_path, target_function=Module.BENCHMARK, access_token=self.tokens.access_token
+                model_file_path=input_model_path, target_function=Module.BENCHMARK, access_token=self.token_handler.tokens.access_token
             )
             model_uuid = model.model_uuid
 
@@ -127,7 +129,7 @@ class Benchmarker:
                 data_type=target_data_type,
                 software_version=target_software_version,
                 hardware_type=target_hardware_type,
-                access_token=self.tokens.access_token,
+                access_token=self.token_handler.tokens.access_token,
             )
             model_benchmark = self.get_benchmark_task(benchmark_task=model_benchmark)
 
@@ -163,7 +165,7 @@ class Benchmarker:
             metadatas[-1] = metadata.asdict()
             MetadataHandler.save_json(data=metadatas, folder_path=folder_path, file_name="benchmark")
 
-            remaining_credit = auth_client.get_credit(self.tokens.access_token)
+            remaining_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             logger.info(
                 f"{ServiceCredit.MODEL_BENCHMARK} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -182,7 +184,6 @@ class Benchmarker:
 
         return metadata.asdict()
 
-    @validate_token
     def get_benchmark_task(self, benchmark_task: Union[str, BenchmarkTask]) -> BenchmarkTask:
         """Get the benchmark task information with given benchmark task or benchmark task uuid.
 
@@ -195,6 +196,9 @@ class Benchmarker:
         Returns:
             BenchmarkTask: model benchmark task object.
         """
+
+        self.token_handler.validate_token()
+
         try:
             task_uuid = None
             if type(benchmark_task) is str:
@@ -206,7 +210,7 @@ class Benchmarker:
                     "There is no available function for the given parameter. The 'benchmark_task' should be a UUID string or a ModelBenchmark object."
                 )
 
-            return launcher_client.get_benchmark(benchmark_task_uuid=task_uuid, access_token=self.tokens.access_token)
+            return launcher_client.get_benchmark(benchmark_task_uuid=task_uuid, access_token=self.token_handler.tokens.access_token)
 
         except Exception as e:
             logger.error(f"Get benchmark failed. Error: {e}")
