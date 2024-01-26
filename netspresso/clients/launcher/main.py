@@ -41,6 +41,7 @@ class LauncherAPIClient:
 
     def convert_model(
         self,
+        user_uuid: str,
         model_uuid: str,
         input_shape: InputShape,
         target_framework: Framework,
@@ -69,7 +70,7 @@ class LauncherAPIClient:
 
         url = f"{self.url}/convert"
         request_data = ModelConversionRequest(
-            user_uuid=self.user_session.user_info.user_id,
+            user_uuid=user_uuid,
             target_device_name=target_device,
             input_model_uuid=model_uuid,
             target_framework=target_framework,
@@ -143,6 +144,7 @@ class LauncherAPIClient:
 
     def benchmark_model(
         self,
+        user_uuid: str,
         model_uuid: str,
         target_device: DeviceName,
         data_type: DataType,
@@ -166,7 +168,7 @@ class LauncherAPIClient:
         """
         url = f"{self.url}/benchmark"
         request_data = ModelBenchmarkRequest(
-            user_uuid=self.user_session.user_info.user_id,
+            user_uuid=user_uuid,
             input_model_uuid=model_uuid,
             target_device=target_device,
             data_type=data_type,

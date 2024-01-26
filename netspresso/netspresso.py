@@ -7,25 +7,30 @@ from netspresso.converter import Converter
 from netspresso.benchmarker import Benchmarker
 from .enums import Task
 
-from netspresso.clients.auth import AuthClient
+from netspresso.clients.auth import auth_client
 
 
 class NetsPresso:
     def __init__(self, email: str, password: str) -> None:
-        self.auth = AuthClient()
-        self.login(email, password)
+        self.tokens = self.login(email, password)
+        self.user_info = self.get_user()
 
     def login(self, email: str, password: str) -> None:
-        self.auth.login(email, password)
+        tokens = auth_client.login(email, password)
+        return tokens
+
+    def get_user(self):
+        user_info = auth_client.get_user_info(self.tokens.access_token)
+        return user_info
 
     def trainer(self, task: Optional[Task] = None, yaml_path: Optional[Union[Path, str]] = None):
         return Trainer(task=task, yaml_path=yaml_path)
 
     def compressor(self):
-        return Compressor(self.auth)
+        return Compressor(tokens=self.tokens)
 
     def converter(self):
-        return Converter(self.auth)
+        return Converter(tokens=self.tokens, user_info=self.user_info)
 
     def benchmarker(self):
-        return Benchmarker(self.auth)
+        return Benchmarker(tokens=self.tokens, user_info=self.user_info)

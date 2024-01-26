@@ -4,7 +4,7 @@ from urllib import request
 
 from loguru import logger
 
-from netspresso.clients.auth import validate_token
+from netspresso.clients.auth import validate_token, auth_client
 from netspresso.clients.compressor import compressor_client
 from netspresso.clients.compressor.schemas.compression import (
     AutoCompressionRequest,
@@ -42,10 +42,10 @@ from .utils.onnx import export_onnx
 
 
 class Compressor:
-    def __init__(self, auth):
+    def __init__(self, tokens):
         """Initialize the Model Compressor."""
 
-        self.auth = auth
+        self.tokens = tokens
         self.model_factory = ModelFactory()
 
     @validate_token
@@ -82,7 +82,7 @@ class Compressor:
                 file_path=input_model_path,
                 input_layers=input_shapes,
             )
-            model_info = compressor_client.upload_model(data=data, access_token=self.auth.access_token)
+            model_info = compressor_client.upload_model(data=data, access_token=self.tokens.access_token)
             model = self.model_factory.create_model(model_info=model_info)
 
             logger.info(f"Upload model successfully. Model ID: {model.model_id}")
@@ -107,13 +107,13 @@ class Compressor:
         try:
             logger.info("Getting model list...")
             models = []
-            parent_models = compressor_client.get_parent_models(is_simple=True, access_token=self.auth.access_token)
+            parent_models = compressor_client.get_parent_models(is_simple=True, access_token=self.tokens.access_token)
 
             for parent_model_info in parent_models:
                 if parent_model_info.origin_from == "custom":
                     children_models = compressor_client.get_children_models(
                         model_id=parent_model_info.model_id,
-                        access_token=self.auth.access_token,
+                        access_token=self.tokens.access_token,
                     )
                     model_collection = self.model_factory.create_model_collection(
                         model_info=parent_model_info, children_models=children_models
@@ -140,7 +140,7 @@ class Compressor:
 
         try:
             logger.info("Getting uploaded model list...")
-            parent_models = compressor_client.get_parent_models(is_simple=True, access_token=self.auth.access_token)
+            parent_models = compressor_client.get_parent_models(is_simple=True, access_token=self.tokens.access_token)
             uploaded_models = [
                 self.model_factory.create_model(model_info=parent_model_info)
                 for parent_model_info in parent_models
@@ -171,7 +171,7 @@ class Compressor:
         try:
             logger.info("Getting compressed model list...")
             children_models = compressor_client.get_children_models(
-                model_id=model_id, access_token=self.auth.access_token
+                model_id=model_id, access_token=self.tokens.access_token
             )
             compressed_models = [
                 self.model_factory.create_compressed_model(model_info=children_model_info)
@@ -202,7 +202,7 @@ class Compressor:
 
         try:
             logger.info("Getting model...")
-            model_info = compressor_client.get_model_info(model_id=model_id, access_token=self.auth.access_token)
+            model_info = compressor_client.get_model_info(model_id=model_id, access_token=self.tokens.access_token)
             if model_info.status.is_compressed:
                 model = self.model_factory.create_compressed_model(model_info=model_info)
             else:
@@ -230,7 +230,7 @@ class Compressor:
         try:
             logger.info("Downloading model...")
             download_link = compressor_client.get_download_model_link(
-                model_id=model_id, access_token=self.auth.access_token
+                model_id=model_id, access_token=self.tokens.access_token
             )
             request.urlretrieve(download_link.url, local_path)
             logger.info(f"Model downloaded at {Path(local_path)}")
@@ -254,7 +254,7 @@ class Compressor:
         try:
             logger.info("Deleting model...")
             children_models = compressor_client.get_children_models(
-                model_id=model_id, access_token=self.auth.access_token
+                model_id=model_id, access_token=self.tokens.access_token
             )
             if len(children_models) != 0:
                 if not recursive:
@@ -263,11 +263,11 @@ class Compressor:
                     )
                 else:
                     logger.info("The compressed model for that model will also be deleted.")
-                    compressor_client.delete_model(model_id=model_id, access_token=self.auth.access_token)
+                    compressor_client.delete_model(model_id=model_id, access_token=self.tokens.access_token)
                     logger.info("Delete model successfully.")
             else:
                 logger.info("The model will be deleted.")
-                compressor_client.delete_model(model_id=model_id, access_token=self.auth.access_token)
+                compressor_client.delete_model(model_id=model_id, access_token=self.tokens.access_token)
                 logger.info("Delete model successfully.")
 
         except Exception as e:
@@ -306,7 +306,7 @@ class Compressor:
                 compression_method=compression_method,
                 options=options,
             )
-            response = compressor_client.get_available_layers(data=data, access_token=self.auth.access_token)
+            response = compressor_client.get_available_layers(data=data, access_token=self.tokens.access_token)
             compression_info = CompressionInfo(
                 original_model_id=model.model_id,
                 compression_method=compression_method,
@@ -338,7 +338,7 @@ class Compressor:
             logger.info("Getting compression...")
             _compression_info = compressor_client.get_compression_info(
                 compression_id=compression_id,
-                access_token=self.auth.access_token,
+                access_token=self.tokens.access_token,
             )
             compression_info = CompressionInfo(
                 compressed_model_id=_compression_info.new_model_id,
@@ -368,7 +368,7 @@ class Compressor:
         try:
             logger.info(f"Uploading dataset...")
             data = UploadDatasetRequest(model_id=model_id, file_path=dataset_path)
-            compressor_client.upload_dataset(data=data, access_token=self.auth.access_token)
+            compressor_client.upload_dataset(data=data, access_token=self.tokens.access_token)
             logger.info(f"Upload dataset successfully.")
 
         except Exception as e:
@@ -381,13 +381,13 @@ class Compressor:
             converter_uploaded_model = launcher_client.upload_model(
                 model_file_path=default_model_path.with_suffix(".onnx"),
                 target_function=Module.CONVERT,
-                access_token=self.auth.access_token,
+                access_token=self.tokens.access_token,
             )
         else:
             converter_uploaded_model = launcher_client.upload_model(
                 model_file_path=default_model_path.with_suffix(".h5"),
                 target_function=Module.CONVERT,
-                access_token=self.auth.access_token,
+                access_token=self.tokens.access_token,
             )
 
         return converter_uploaded_model
@@ -425,7 +425,7 @@ class Compressor:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
-            current_credit = self.auth.get_credit()
+            current_credit = auth_client.get_credit(self.tokens.access_token)
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.ADVANCED_COMPRESSION,
@@ -437,7 +437,7 @@ class Compressor:
                 compression_method=compression.compression_method,
                 options=compression.options,
             )
-            compression_info = compressor_client.create_compression(data=data, access_token=self.auth.access_token)
+            compression_info = compressor_client.create_compression(data=data, access_token=self.tokens.access_token)
 
             if dataset_path and compression.compression_method == CompressionMethod.PR_NN:
                 self.__upload_dataset(model_id=compression.original_model_id, dataset_path=dataset_path)
@@ -469,7 +469,7 @@ class Compressor:
                 compressed_model_id=compression_info.new_model_id,
                 options=compression.options,
             )
-            compressor_client.compress_model(data=data, access_token=self.auth.access_token)
+            compressor_client.compress_model(data=data, access_token=self.tokens.access_token)
 
             self.download_model(
                 model_id=compression_info.new_model_id,
@@ -480,7 +480,7 @@ class Compressor:
             converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}")
-            remaining_credit = self.auth.get_credit()
+            remaining_credit = auth_client.get_credit(self.tokens.access_token)
             logger.info(
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -565,7 +565,7 @@ class Compressor:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
-            current_credit = self.auth.get_credit()
+            current_credit = auth_client.get_credit(self.tokens.access_token)
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.ADVANCED_COMPRESSION,
@@ -614,7 +614,7 @@ class Compressor:
                 compression_method=compression_method,
                 options=options.dict(),
             )
-            compression_info = compressor_client.create_compression(data=data, access_token=self.auth.access_token)
+            compression_info = compressor_client.create_compression(data=data, access_token=self.tokens.access_token)
 
             if dataset_path and compression_method == CompressionMethod.PR_NN:
                 self.__upload_dataset(model_id=model.model_id, dataset_path=dataset_path)
@@ -627,7 +627,7 @@ class Compressor:
                 options=options.dict(),
             )
             logger.info("Compressing model...")
-            recommendation_result = compressor_client.get_recommendation(data=data, access_token=self.auth.access_token)
+            recommendation_result = compressor_client.get_recommendation(data=data, access_token=self.tokens.access_token)
 
             for recommended_layer in recommendation_result.recommended_layers:
                 for available_layer in compression_info.available_layers:
@@ -643,7 +643,7 @@ class Compressor:
                 compressed_model_id=compression_info.new_model_id,
                 options=options.dict(),
             )
-            compressor_client.compress_model(data=data, access_token=self.auth.access_token)
+            compressor_client.compress_model(data=data, access_token=self.tokens.access_token)
 
             self.download_model(
                 model_id=compression_info.new_model_id,
@@ -654,7 +654,7 @@ class Compressor:
             converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(f"Recommendation compression successfully. Compressed Model ID: {compressed_model.model_id}")
-            remaining_credit = self.auth.get_credit()
+            remaining_credit = auth_client.get_credit(self.tokens.access_token)
             logger.info(
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -729,7 +729,7 @@ class Compressor:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
-            current_credit = self.auth.get_credit()
+            current_credit = auth_client.get_credit(self.tokens.access_token)
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.AUTOMATIC_COMPRESSION,
@@ -751,7 +751,7 @@ class Compressor:
                 save_path=output_dir,
             )
             logger.info("Compressing model...")
-            model_info = compressor_client.auto_compression(data=data, access_token=self.auth.access_token)
+            model_info = compressor_client.auto_compression(data=data, access_token=self.tokens.access_token)
             compression_info = self.get_compression(model_info.original_compression_id)
 
             self.download_model(
@@ -763,7 +763,7 @@ class Compressor:
             converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}")
-            remaining_credit = self.auth.get_credit()
+            remaining_credit = auth_client.get_credit(self.tokens.access_token)
             logger.info(
                 f"{ServiceCredit.AUTOMATIC_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
