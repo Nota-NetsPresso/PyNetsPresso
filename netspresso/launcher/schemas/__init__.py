@@ -66,6 +66,8 @@ class DeviceName(StrEnumBase):
     JETSON_AGX_ORIN = "Jetson-AGX-Orin"
     AWS_T4 = "AWS-T4"
     Intel_XEON_W_2233 = "Intel-Xeon"
+    Renesas_RA8D1 = "Renesas-RA8D1"
+    Ensemble_E7_DevKit_Gen2 = "Ensemble-E7-DevKit-Gen2"
 
     @classmethod
     def create_literal(cls):
@@ -83,6 +85,8 @@ class DeviceName(StrEnumBase):
             "Jetson-AGX-Orin",
             "AWS-T4",
             "Intel-Xeon",
+            "Renesas-RA8D1",
+            "Ensemble-E7-DevKit-Gen2",
         ]
     
 JETSON_DEVICES = [DeviceName.JETSON_NANO, DeviceName.JETSON_TX2, DeviceName.JETSON_XAVIER, DeviceName.JETSON_NX, DeviceName.JETSON_AGX_ORIN]
