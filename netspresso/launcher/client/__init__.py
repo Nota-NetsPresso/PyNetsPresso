@@ -32,7 +32,7 @@ class LauncherAPIClient:
         url = f"{self.url}/{target_function.value.lower()}/upload_model"
         files = get_files(model_file_path)
         # files = {"file": open(model_file_path, "rb")}
-        response = requests.post(url, files=files, headers=get_headers(self.user_session.access_token))
+        response = requests.post(url, files=files, headers=get_headers(self.user_session.access_token), verify=self.user_session.verify_ssl)
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return Model(**response_body)
@@ -71,7 +71,13 @@ class LauncherAPIClient:
         if software_version is not None:
             request_data.software_version = software_version
 
-        response = requests.post(url, json=request_data.dict(), headers=get_headers(self.user_session.access_token))
+        response = requests.post(
+            url,
+            data=request_data.dict(),
+            headers=get_headers(self.user_session.access_token),
+            verify=self.user_session.verify_ssl,
+        )
+
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return ConversionTask(**response_body)
@@ -92,7 +98,7 @@ class LauncherAPIClient:
         """
 
         url = f"{self.url}/convert/{conversion_task_uuid}"
-        response = requests.get(url, headers=get_headers(self.user_session.access_token))
+        response = requests.get(url, headers=get_headers(self.user_session.access_token), verify=self.user_session.verify_ssl)
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return ConversionTask(**response_body)
@@ -112,7 +118,12 @@ class LauncherAPIClient:
             ConversionTask: model conversion task object.
         """
         url = f"{self.url}/convert/{conversion_task_uuid}/download"
-        response = requests.get(url, headers=get_headers(self.user_session.access_token))
+        response = requests.get(
+            url,
+            headers=get_headers(self.user_session.access_token),
+            verify=self.user_session.verify_ssl
+        )
+
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return response_body
@@ -140,7 +151,13 @@ class LauncherAPIClient:
                                              target_device=target_device,
                                              data_type=data_type,
                                              software_version = software_version)
-        response = requests.post(url, json=request_data.dict(), headers=get_headers(self.user_session.access_token))
+        response = requests.post(
+            url,
+            json=request_data.dict(),
+            headers=get_headers(self.user_session.access_token),
+            verify=self.user_session.verify_ssl
+        )
+
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return BenchmarkTask(**response_body)
@@ -160,7 +177,12 @@ class LauncherAPIClient:
             BenchmarkTask: model benchmark task object.
         """
         url = f"{self.url}/benchmark/{benchmark_task_uuid}"
-        response = requests.get(url, headers=get_headers(self.user_session.access_token))
+        response = requests.get(
+            url,
+            headers=get_headers(self.user_session.access_token),
+            verify=self.user_session.verify_ssl
+        )
+
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return BenchmarkTask(**response_body)

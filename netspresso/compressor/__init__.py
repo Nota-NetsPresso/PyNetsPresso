@@ -32,7 +32,7 @@ from netspresso.client import BaseClient, validate_token
 
 
 class ModelCompressor(BaseClient):
-    def __init__(self, email=None, password=None, user_session=None):
+    def __init__(self, email=None, password=None, user_session=None, verify_ssl=True):
         """Initialize the Model Compressor.
 
         Args:
@@ -44,8 +44,8 @@ class ModelCompressor(BaseClient):
             ModelCompressor(email='USER_EMAIL',password='PASSWORD')
             ModelCompressor(user_session=SessionClient(email='USER_EMAIL',password='PASSWORD')
         """
-        super().__init__(email=email, password=password, user_session=user_session)
-        self.client = ModelCompressorAPIClient()
+        super().__init__(email=email, password=password, user_session=user_session, verify_ssl=verify_ssl)
+        self.client = ModelCompressorAPIClient(verify_ssl=self.user_session.verify_ssl)
         self.model_factory = ModelFactory()
 
     @validate_token
