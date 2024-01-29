@@ -309,7 +309,6 @@ class Compressor:
     def compress_model(
         self,
         compression: CompressionInfo,
-        model_name: str,
         output_dir: str,
         dataset_path: str = None,
     ) -> Dict:
@@ -317,7 +316,6 @@ class Compressor:
 
         Args:
             compression (CompressionInfo): The information about the compression.
-            model_name (str): The name of the compressed model.
             output_dir (str): The local path to save the compressed model.
             dataset_path (str, optional): The path of the dataset used for nuclear norm compression method. Default is None.
 
@@ -346,6 +344,8 @@ class Compressor:
                 user_credit=current_credit,
                 service_credit=ServiceCredit.ADVANCED_COMPRESSION,
             )
+
+            model_name = Path(output_dir).name
 
             data = CreateCompressionRequest(
                 model_id=compression.original_model_id,
@@ -437,7 +437,6 @@ class Compressor:
 
     def recommendation_compression(
         self,
-        model_name: str,
         compression_method: CompressionMethod,
         recommendation_method: RecommendationMethod,
         recommendation_ratio: float,
@@ -451,7 +450,6 @@ class Compressor:
         """Compress a recommendation-based model using the given compression and recommendation methods.
 
         Args:
-            model_name (str): The name of the model.
             compression_method (CompressionMethod): The selected compression method.
             recommendation_method (RecommendationMethod): The selected recommendation method.
             recommendation_ratio (float): The compression ratio recommended by the recommendation method.
@@ -515,6 +513,8 @@ class Compressor:
                     f"The {compression_method} compression method is only available the VBMF recommendation method."
                 )
 
+            model_name = Path(output_dir).name
+            
             model = self.upload_model(
                 model_name=model_name,
                 framework=framework,
@@ -607,7 +607,6 @@ class Compressor:
 
     def automatic_compression(
         self,
-        model_name: str,
         input_shapes: List[Dict[str, int]],
         input_model_path: str,
         output_dir: str,
@@ -617,7 +616,6 @@ class Compressor:
         """Compress a model automatically based on the given compression ratio.
 
         Args:
-            model_name (str): The name of the model.
             framework (Framework): The framework of the model.
             input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
             input_model_path (str): The file path where the model is located.
@@ -648,6 +646,8 @@ class Compressor:
                 service_credit=ServiceCredit.AUTOMATIC_COMPRESSION,
             )
 
+            model_name = Path(output_dir).name
+            
             model = self.upload_model(
                 model_name=model_name,
                 framework=framework,
