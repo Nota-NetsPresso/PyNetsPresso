@@ -57,6 +57,8 @@ class Benchmarker:
             Dict: model benchmark task dict.
         """
 
+        FileHandler.check_input_model_path(input_model_path)
+
         self.token_handler.validate_token()
 
         try:

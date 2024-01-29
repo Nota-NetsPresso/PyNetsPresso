@@ -63,6 +63,9 @@ class Converter:
             Dict: model conversion task dict.
         """
 
+        FileHandler.check_input_model_path(input_model_path)
+        FileHandler.check_output_dir(output_dir)
+        
         self.token_handler.validate_token()
 
         try:

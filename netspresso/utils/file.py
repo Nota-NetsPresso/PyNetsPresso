@@ -31,6 +31,14 @@ class FileHandler:
         return Path(folder_path).exists()
 
     @staticmethod
+    def check_input_model_path(input_model_path: str):
+        assert Path(input_model_path).is_file() and not Path(input_model_path).is_dir(), "The input_model_path should be a file and cannot be a directory. Ex) ./model/sample_model.pt"
+
+    @staticmethod
+    def check_output_dir(output_dir: str):
+        assert not Path(output_dir).is_file() and Path(output_dir).is_dir(), "The output_dir should be a directory and cannot be a file. Ex) ./outputs/compressed_model"
+
+    @staticmethod
     def create_folder(
         folder_path: str, parents: bool = True, exist_ok: bool = True, is_folder_check: bool = True,
     ) -> None:

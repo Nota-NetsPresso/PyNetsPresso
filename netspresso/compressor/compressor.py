@@ -69,6 +69,8 @@ class Compressor:
             Model: Uploaded model object.
         """
 
+        FileHandler.check_input_model_path(input_model_path)
+
         self.token_handler.validate_token()
 
         try:
@@ -326,6 +328,8 @@ class Compressor:
             Dict: Source model and compressed model information.
         """
 
+        FileHandler.check_output_dir(output_dir)
+
         self.token_handler.validate_token()
 
         try:
@@ -467,6 +471,9 @@ class Compressor:
             Dict: Source model and compressed model information.
         """
 
+        FileHandler.check_input_model_path(input_model_path)
+        FileHandler.check_output_dir(output_dir)
+        
         self.token_handler.validate_token()
 
         try:
@@ -629,6 +636,9 @@ class Compressor:
             Dict: Source model and compressed model information.
         """
 
+        FileHandler.check_input_model_path(input_model_path)
+        FileHandler.check_output_dir(output_dir)
+        
         self.token_handler.validate_token()
 
         try:
