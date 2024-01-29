@@ -118,14 +118,16 @@ class Plotter:
 
     @staticmethod
     def compare_metric(original_summary, compressed_summary):
-        metrics_list = original_summary["metrics_list"]
-        original_best_epoch = str(original_summary["best_epoch"])
-        compressed_best_epoch = str(compressed_summary["best_epoch"])
+        original_training_result = original_summary["traning_result"]
+        compressed_training_result = compressed_summary["traning_result"]
+        metrics_list = original_training_result["metrics_list"]
+        original_best_epoch = str(original_training_result["best_epoch"])
+        compressed_best_epoch = str(compressed_training_result["best_epoch"])
         original_best_metrics = list(
-            original_summary["valid_metrics"][original_best_epoch].values()
+            original_training_result["valid_metrics"][original_best_epoch].values()
         )
         compressed_best_metrics = list(
-            compressed_summary["valid_metrics"][compressed_best_epoch].values()
+            compressed_training_result["valid_metrics"][compressed_best_epoch].values()
         )
 
         fig, axs = plt.subplots(ncols=len(metrics_list), figsize=(15, 6))
@@ -161,16 +163,17 @@ class Plotter:
         plt.show()
 
     @staticmethod
-    def compare_profile_result(original_profile, compressed_profile):
-        labels = list(original_profile.keys())
-        original_values = list(original_profile.values())
-        compressed_values = list(compressed_profile.values())
-
+    def compare_profile_result(profile_result):
+        y_labels = ["FLOPs(M)", "Num of Params(M)", "Model Size(MB)"]
+        keys = ["flops", "number_of_parameters", "size"]
+        original_values = [profile_result["results"]["original_model"][_key] for _key in keys]
+        compressed_values = [profile_result["results"]["compressed_model"][_key] for _key in keys]
+        
         difference_values = np.array(original_values) / np.array(compressed_values)
 
-        fig, axs = plt.subplots(ncols=len(labels), figsize=(15, 6))
+        fig, axs = plt.subplots(ncols=len(y_labels), figsize=(15, 6))
 
-        for idx, label in enumerate(labels):
+        for idx, label in enumerate(y_labels):
             bars_original = axs[idx].bar(
                 ["Original Model"],
                 [original_values[idx]],
