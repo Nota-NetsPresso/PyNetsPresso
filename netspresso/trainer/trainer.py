@@ -1,4 +1,3 @@
-import os
 import shutil
 from pathlib import Path
 from glob import glob
@@ -248,12 +247,14 @@ class Trainer:
         self.augmentation.inference.transforms = self._change_transforms(self.augmentation.inference.transforms)
 
     def move_and_cleanup_folders(self, source_folder: str, destination_folder: str):
-        for filename in os.listdir(source_folder):
-            source_path = os.path.join(source_folder, filename)
-            destination_path = os.path.join(destination_folder, filename)
-            shutil.move(source_path, destination_path)
+        source_folder = Path(source_folder)
+        destination_folder = Path(destination_folder)
 
-        os.rmdir(source_folder)
+        for file_path in source_folder.iterdir():
+            destination_path = destination_folder / file_path.name
+            shutil.move(file_path, destination_path)
+
+        source_folder.rmdir()
 
     def train(self, gpus: str, project_name: str) -> Dict:
         self._validate_config()
