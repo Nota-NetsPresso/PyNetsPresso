@@ -1,4 +1,3 @@
-from os.path import basename
 from pathlib import Path
 
 from netspresso.clients.utils.system import ENV_STR
@@ -19,6 +18,6 @@ def get_files(file_path):
     return [
         (
             "file",
-            (basename(file_path), open(file_path, "rb"), "application/octet-stream"),
+            (Path(file_path).name, open(file_path, "rb"), "application/octet-stream"),
         )
     ]

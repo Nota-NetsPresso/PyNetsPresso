@@ -1,5 +1,5 @@
 import json
-from os.path import basename
+from pathlib import Path
 from typing import Any, List
 
 from pydantic import BaseModel, Field, HttpUrl, root_validator, validator
@@ -50,8 +50,8 @@ class UploadModelRequest(BaseModel):
     def validate_request_params(cls, values):
         framework = values.get("framework")
         input_layers = values.get("input_layers")
-        file_path = values.get("file_path")
-        file_extension = basename(file_path).split(".")[1]
+        file_path = Path(values.get("file_path"))
+        file_extension = file_path.suffix[1:]
 
         if framework not in [
             Framework.TENSORFLOW_KERAS,
