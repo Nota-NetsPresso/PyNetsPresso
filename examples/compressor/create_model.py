@@ -1,27 +1,29 @@
-from loguru import logger
-
-from netspresso.compressor import Compressor, Task, Framework
+from netspresso import NetsPresso
+from netspresso.enums import Framework
 
 
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"
-compressor = Compressor(email=EMAIL, password=PASSWORD)
 
-UPLOAD_MODEL_NAME = "test_h5"
-TASK = Task.IMAGE_CLASSIFICATION
+netspresso = NetsPresso(email=EMAIL, password=PASSWORD)
+
+# 1. Declare compressor
+compressor = netspresso.compressor()
+
+# 2. Set variables for upload
+UPLOAD_MODEL_NAME = "sample_h5"
 FRAMEWORK = Framework.TENSORFLOW_KERAS
-UPLOAD_MODEL_PATH = "./examples/sample_models/mobilenetv1.h5"
+INPUT_MODEL_PATH = "./examples/sample_models/mobilenetv1.h5"
 INPUT_SHAPES = [{"batch": 1, "channel": 3, "dimension": [32, 32]}]
 
-# Upload Model
+# 3. Upload model
 model = compressor.upload_model(
     model_name=UPLOAD_MODEL_NAME,
-    task=TASK,
-    framework=FRAMEWORK,
-    file_path=UPLOAD_MODEL_PATH,
+    input_model_path=INPUT_MODEL_PATH,
     input_shapes=INPUT_SHAPES,
+    framework=FRAMEWORK,
 )
 
-# Get Model
+# 4. Get Model
 model = compressor.get_model(model_id=model.model_id)
-logger.info(f"model id: {model.model_id}")
+print(model)
