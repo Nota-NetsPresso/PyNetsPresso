@@ -1,30 +1,26 @@
-from loguru import logger
-
-from netspresso.compressor import (
-    Compressor,
-    CompressionMethod,
-    Policy,
-    LayerNorm,
-    GroupPolicy,
-    Options,
-)
+from netspresso import NetsPresso
+from netspresso.enums import CompressionMethod, Policy, LayerNorm, GroupPolicy, Options
 
 
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"
-compressor = Compressor(email=EMAIL, password=PASSWORD)
 
-# Upload Model
-UPLOAD_MODEL_NAME = "test_pt"
-UPLOAD_MODEL_PATH = "./examples/sample_models/graphmodule.pt"
+netspresso = NetsPresso(email=EMAIL, password=PASSWORD)
+
+# 1. Declare compressor
+compressor = netspresso.compressor()
+
+# 2. Upload model
+MODEL_NAME = "sample_graphmodule_pt"
+INPUT_MODEL_PATH = "./examples/sample_models/graphmodule.pt"
 INPUT_SHAPES = [{"batch": 1, "channel": 3, "dimension": [224, 224]}]
 model = compressor.upload_model(
-    model_name=UPLOAD_MODEL_NAME,
-    file_path=UPLOAD_MODEL_PATH,
+    model_name=MODEL_NAME,
+    input_model_path=INPUT_MODEL_PATH,
     input_shapes=INPUT_SHAPES,
 )
 
-# Select Compression Method
+# 3. Select compression method
 COMPRESSION_METHOD = CompressionMethod.PR_L2
 OPTIONS = Options(
     policy=Policy.AVERAGE,
@@ -32,23 +28,21 @@ OPTIONS = Options(
     group_policy=GroupPolicy.AVERAGE,
     reshape_channel_axis=-1,
 )
-compression_1 = compressor.select_compression_method(
+compression_info = compressor.select_compression_method(
     model_id=model.model_id,
     compression_method=COMPRESSION_METHOD,
     options=OPTIONS,
 )
-logger.info(f"compression method: {compression_1.compression_method}")
-logger.info(f"available layers: {compression_1.available_layers}")
+print(f"compression method: {compression_info.compression_method}")
+print(f"available layers: {compression_info.available_layers}")
 
-# Set Compression Params
-for available_layer in compression_1.available_layers[:5]:
+# 4. Set params for compression(ratio or rank)
+for available_layer in compression_info.available_layers[:5]:
     available_layer.values = [0.2]
 
-# Compress Model
-COMPRESSED_MODEL_NAME = "test_l2norm"
-OUTPUT_PATH = "./outputs/compressed/graphmodule_manual"
+# 5. Compress model
+OUTPUT_DIR = "./outputs/compressed/graphmodule_manual"
 compressed_model = compressor.compress_model(
-    compression=compression_1,
-    model_name=COMPRESSED_MODEL_NAME,
-    output_path=OUTPUT_PATH,
+    compression=compression_info,
+    output_dir=OUTPUT_DIR,
 )

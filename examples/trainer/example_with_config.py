@@ -1,12 +1,19 @@
-from netspresso.trainer import Trainer, Task
+from netspresso import NetsPresso
+from netspresso.enums import Task
 from netspresso.trainer.optimizers import AdamW
 from netspresso.trainer.schedulers import CosineAnnealingWarmRestartsWithCustomWarmUp
 from netspresso.trainer.augmentations import Resize
 
-# 1. Declare Trainer
-trainer = Trainer(task=Task.OBJECT_DETECTION)
 
-# 2. Set Config
+EMAIL = "YOUR_EMAIL"
+PASSWORD = "YOUR_PASSWORD"
+
+netspresso = NetsPresso(email=EMAIL, password=PASSWORD)
+
+# 1. Declare trainer
+trainer = netspresso.trainer(task=Task.OBJECT_DETECTION)
+
+# 2. Set config for training
 # 2-1. Data
 trainer.set_dataset_config(
     name="traffic_sign_config_example",
@@ -39,4 +46,5 @@ trainer.set_training_config(
 )
 
 # 3. Train
-trainer.train(gpus="0, 1", project_name="project_name_1")
+PROJECT_NAME = "project_sample"
+trainer.train(gpus="0, 1", project_name=PROJECT_NAME)
