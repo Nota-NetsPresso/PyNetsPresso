@@ -25,11 +25,11 @@ from netspresso.compressor.client.utils.enum import (
     LayerNorm,
     GroupPolicy,
 )  # noqa
-from netspresso.client.config import Config, EndPoint
+from netspresso.client.config import Config, Module
 
 class ModelCompressorAPIClient:
     def __init__(self):
-        self.config = Config(EndPoint.COMPRESSOR)
+        self.config = Config(Module.COMPRESSOR)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.prefix = self.config.URI_PREFIX

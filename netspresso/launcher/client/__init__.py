@@ -2,14 +2,14 @@ import json
 import requests
 
 from netspresso.client.utils.common import get_files, get_headers
-from netspresso.client import Config, EndPoint, SessionClient
+from netspresso.client import Config, Module, SessionClient
 from netspresso.launcher.schemas.model import Model, ModelBenchmarkRequest, BenchmarkTask, ModelConversionRequest, ConversionTask, InputShape
 from netspresso.launcher.schemas import LauncherFunction, ModelFramework, DeviceName, DataType
 
 
 class LauncherAPIClient:
     def __init__(self, user_sessoin: SessionClient):
-        self.config = Config(EndPoint.LAUNCHER)
+        self.config = Config(Module.LAUNCHER)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.prefix = self.config.URI_PREFIX

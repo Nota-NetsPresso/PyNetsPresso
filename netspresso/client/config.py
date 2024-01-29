@@ -1,63 +1,38 @@
-import os, configparser
-from pathlib import Path
+import configparser
+import os
 from enum import Enum
-from typing import Literal
+from pathlib import Path
+
 from loguru import logger
 
 BASE_DIR = Path(__file__).resolve().parent
-config = configparser.ConfigParser()
-DEPLOYMENT_MODE = os.getenv("DEPLOYMENT_MODE", "prod")
+config_parser = configparser.ConfigParser()
+DEPLOYMENT_MODE = os.getenv("DEPLOYMENT_MODE", "PROD")
 logger.info(f"Read {DEPLOYMENT_MODE} config")
-config.read(f"{BASE_DIR}/configs/config.ini")
+config_parser.read(f"{BASE_DIR}/configs/config-{DEPLOYMENT_MODE.lower()}.ini")
+
 
 class EnvironmentType(str, Enum):
     PROD = "prod"
-    LOCAL = "dev"
+    LOCAL = "local"
 
-    @classmethod
-    def create_literal(cls):
-        return Literal[
-            "prod",
-            "local"
-        ]
 
-class EndPoint(str, Enum):
-    GENRAL = "general"
-    COMPRESSOR = "compressor"
-    LAUNCHER = "launcher"
-    @classmethod
-    def create_literal(cls):
-        return Literal[
-            "general",
-            "compressor",
-            "laucher"
-        ]
-    
+class Module(str, Enum):
+    GENERAL = "GENERAL"
+    COMPRESSOR = "COMPRESSOR"
+    LAUNCHER = "LAUNCHER"
+
+
 class EndPointProperty(str, Enum):
     HOST = "HOST"
     PORT = "PORT"
     URI_PREFIX = "URI_PREFIX"
 
-    @classmethod
-    def create_literal(cls):
-        return Literal[
-            "HOST",
-            "PORT",
-            "URI_PREFIX"
-        ]
-    
 
 class Config:
-    ENVIRONMENT_TYPE: EnvironmentType = EnvironmentType.PROD
-    CONFIG_SESSION: str = f"{EndPoint.GENRAL}.{ENVIRONMENT_TYPE}"
-    HOST: str = config[CONFIG_SESSION][EndPointProperty.HOST]
-    PORT: int = int(config[CONFIG_SESSION][EndPointProperty.PORT])
-    URI_PREFIX: str = config[CONFIG_SESSION][EndPointProperty.URI_PREFIX]
-
-    def __init__(self, endpoint: EndPoint = EndPoint.GENRAL):
+    def __init__(self, module: Module = Module.GENERAL):
         self.ENVIRONMENT_TYPE = EnvironmentType(DEPLOYMENT_MODE.lower())
-        self.CONFIG_SESSION = f"{endpoint}.{self.ENVIRONMENT_TYPE}"
-        self.HOST = config[self.CONFIG_SESSION][EndPointProperty.HOST]
-        self.PORT = int(config[self.CONFIG_SESSION][EndPointProperty.PORT])
-        self.URI_PREFIX = config[self.CONFIG_SESSION][EndPointProperty.URI_PREFIX]
-
+        self.MODULE = module
+        self.HOST = config_parser[self.MODULE][EndPointProperty.HOST]
+        self.PORT = int(config_parser[self.MODULE][EndPointProperty.PORT])
+        self.URI_PREFIX = config_parser[self.MODULE][EndPointProperty.URI_PREFIX]

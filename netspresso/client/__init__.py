@@ -5,7 +5,7 @@ from loguru import logger
 from netspresso.schemas.auth import LoginRequest, RefreshTokenRequest, LoginResponse, RefreshTokenResponse, UserResponse
 from netspresso.client.utils.common import get_headers
 from netspresso.client.utils.token import check_jwt_exp
-from netspresso.client.config import Config, EndPoint
+from netspresso.client.config import Config, Module
 
 def validate_token(func) -> None:
     @wraps(func)
@@ -27,7 +27,7 @@ class SessionClient:
 
         self.email = email
         self.password = password
-        self.config = config if config is not None else Config(EndPoint.GENRAL)
+        self.config = config if config is not None else Config(Module.GENERAL)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.uri_prefix = self.config.URI_PREFIX
