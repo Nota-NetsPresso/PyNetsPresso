@@ -118,14 +118,16 @@ class Plotter:
 
     @staticmethod
     def compare_metric(original_summary, compressed_summary):
-        metrics_list = original_summary["metrics_list"]
-        original_best_epoch = str(original_summary["best_epoch"])
-        compressed_best_epoch = str(compressed_summary["best_epoch"])
+        original_training_result = original_summary["traning_result"]
+        compressed_training_result = compressed_summary["traning_result"]
+        metrics_list = original_training_result["metrics_list"]
+        original_best_epoch = str(original_training_result["best_epoch"])
+        compressed_best_epoch = str(compressed_training_result["best_epoch"])
         original_best_metrics = list(
-            original_summary["valid_metrics"][original_best_epoch].values()
+            original_training_result["valid_metrics"][original_best_epoch].values()
         )
         compressed_best_metrics = list(
-            compressed_summary["valid_metrics"][compressed_best_epoch].values()
+            compressed_training_result["valid_metrics"][compressed_best_epoch].values()
         )
 
         fig, axs = plt.subplots(ncols=len(metrics_list), figsize=(15, 6))
