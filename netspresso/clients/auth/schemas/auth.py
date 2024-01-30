@@ -31,7 +31,7 @@ class UserDetailResponse(BaseModel):
     company: str = Field(..., description="Company")
 
 
-class UserResponse(BaseModel):
+class UserInfo(BaseModel):
     user_id: str = Field(..., description="User ID")
     email: EmailStr = Field(..., description="Email")
     username: str = Field(..., description="User Name")

@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from typing import Tuple, Union
 from urllib import request
+import shutil
 
 FRAMEWORK_EXTENSION_MAP = {
     "tensorflow_keras": ".h5",
@@ -122,6 +123,44 @@ class FileHandler:
 
     @staticmethod
     def load_json(file_path: str):
+        """Load JSON data from a file.
+
+        Args:
+            file_path (str): Path to the JSON file.
+
+        Returns:
+            dict: Loaded JSON data.
+        """
+
         with open(file_path, "r") as json_data:
             data = json.load(json_data)
         return data
+
+    @staticmethod
+    def move_and_cleanup_folders(source_folder: str, destination_folder: str):
+        """Move files from the source folder to the destination folder and remove the source folder.
+
+        Args:
+            source_folder (str): The path to the source folder.
+            destination_folder (str): The path to the destination folder.
+        """
+
+        source_folder = Path(source_folder)
+        destination_folder = Path(destination_folder)
+
+        for file_path in source_folder.iterdir():
+            destination_path = destination_folder / file_path.name
+            shutil.move(file_path, destination_path)
+
+        source_folder.rmdir()
+
+    @staticmethod
+    def remove_folder(folder_path: str) -> None:
+        """Remove a folder and its contents.
+
+        Args:
+            folder_path (str): Path to the folder.
+        """
+        
+        folder_path = Path(folder_path)
+        shutil.rmtree(folder_path, ignore_errors=True)

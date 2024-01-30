@@ -1,11 +1,12 @@
 import time
 from pathlib import Path
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 from urllib import request
 
 from loguru import logger
 
 from netspresso.clients.auth import auth_client, TokenHandler
+from netspresso.clients.auth.schemas.auth import UserInfo
 from netspresso.clients.launcher import launcher_client
 from netspresso.clients.launcher.schemas import TargetDeviceFilter
 from netspresso.clients.launcher.schemas.model import ConversionTask, InputShape, Model
@@ -26,41 +27,72 @@ from ..utils.metadata import MetadataHandler
 
 
 class Converter:
-    def __init__(self, token_handler: TokenHandler, user_info):
-        """Initialize the Model Converter."""
+    def __init__(self, token_handler: TokenHandler, user_info: UserInfo):
+        """Initialize the Converter."""
 
         self.token_handler = token_handler
         self.user_info = user_info
 
+    def _download_converted_model(self, conversion_task: ConversionTask, local_path: str) -> None:
+        """Download the converted model with given conversion task or conversion task uuid.
+
+        Args:
+            conversion_task (ConversionTask): Launcher Model Object or the uuid of the conversion task.
+
+        Raises:
+            e: If an error occurs while getting the conversion task information.
+        """
+
+        try:
+            if conversion_task.status is TaskStatus.ERROR:
+                raise FileNotFoundError("The conversion is Failed. There is no file available for download.")
+            if conversion_task.status is not TaskStatus.FINISHED:
+                raise FileNotFoundError(
+                    "The conversion is in progress. There is no file available for download at the moment."
+                )
+
+            download_url = launcher_client.get_converted_model(
+                conversion_task_uuid=conversion_task.convert_task_uuid, access_token=self.token_handler.tokens.access_token
+            )
+            request.urlretrieve(download_url, local_path)
+            logger.info(f"Model downloaded at {Path(local_path)}")
+
+        except Exception as e:
+            logger.error(f"Download converted model failed. Error: {e}")
+            raise e
+
     def convert_model(
         self,
-        input_model_path: Union[Path, str],
-        output_dir: Union[Path, str],
+        input_model_path: str,
+        output_dir: str,
         target_framework: Union[str, Framework],
-        target_data_type: DataType = DataType.FP16,
-        target_device_name: DeviceName = None,
-        target_software_version: SoftwareVersion = None,
-        input_shape: InputShape = None,
-        dataset_path: str = None,
+        target_device_name: Union[str, DeviceName],
+        target_data_type: Union[str, DataType] = DataType.FP16,
+        target_software_version: Optional[Union[str, SoftwareVersion]] = None,
+        input_shape: Optional[InputShape] = None,
+        dataset_path: Optional[str] = None,
         wait_until_done: bool = True,
     ) -> Dict:
-        """Convert a model into the type the specific framework.
+        """Convert a model to the specified framework.
 
         Args:
             input_model_path (str): The file path where the model is located.
             output_dir (str): The local folder path to save the converted model.
-            target_framework (Framework | str): the target framework name.
-            target_data_type (DataType): data type of the model.
-            target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
-            target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
-            input_shape (InputShape) : target input shape to convert. (ex: dynamic batch to static batch)
-            wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
+            target_framework (Union[str, Framework]): The target framework name.
+            target_device_name (Union[str, DeviceName]): Target device name. Required if target_device is not specified.
+            target_data_type (Union[str, DataType]): Data type of the model. Default is DataType.FP16.
+            target_software_version (Optional[Union[str, SoftwareVersion]]): Target software version.
+                Required if target_device_name is one of the Jetson devices.
+            input_shape (Optional[InputShape]): Target input shape for conversion (e.g., dynamic batch to static batch).
+            dataset_path (Optional[str]): Path to the dataset. Useful for certain conversions.
+            wait_until_done (bool): If True, wait for the conversion result before returning the function.
+                                If False, request the conversion and return the function immediately.
 
         Raises:
-            e: If an error occurs while converting the model.
+            e: If an error occurs during the model conversion.
 
         Returns:
-            Dict: model conversion task dict.
+            Dict: Model conversion task dictionary.
         """
 
         FileHandler.check_input_model_path(input_model_path)
@@ -87,9 +119,6 @@ class Converter:
                     input_shape = model.input_shape
                 if target_framework is None and model.framework is not None:
                     target_framework = model.framework
-
-            if target_device_name is None:
-                raise NotImplementedError("The conversion is unavailable. Please set target_device_name.")
 
             elif target_device_name in DeviceName.JETSON_DEVICES and target_software_version is None:
                 raise NotImplementedError(
@@ -149,7 +178,7 @@ class Converter:
                     conversion_task = self.get_conversion_task(conversion_task)
                     time.sleep(1)
 
-            self.download_converted_model(conversion_task, default_model_path.with_suffix(extension))
+            self._download_converted_model(conversion_task, default_model_path.with_suffix(extension))
 
             converter_uploaded_model = launcher_client.upload_model(
                 model_file_path=default_model_path.with_suffix(extension),
@@ -200,13 +229,13 @@ class Converter:
         """Get the conversion task information with given conversion task or conversion task uuid.
 
         Args:
-            conversion_task (ConversionTask | str): Launcher Model Object or the uuid of the conversion task.
+            conversion_task (Union[str, ConversionTask]): Launcher Model Object or the uuid of the conversion task.
 
         Raises:
-            e: If an error occurs while getting the conversion task information.
+            e: If an error occurs during the model conversion.
 
         Returns:
-            ConversionTask: model conversion task object.
+            ConversionTask: Model conversion task dictionary.
         """
 
         self.token_handler.validate_token()
@@ -227,44 +256,4 @@ class Converter:
 
         except Exception as e:
             logger.error(f"Get conversion task failed. Error: {e}")
-            raise e
-
-    def download_converted_model(self, conversion_task: Union[str, ConversionTask], local_path: str):
-        """Download the converted model with given conversion task or conversion task uuid.
-
-        Args:
-            conversion_task (ConversionTask | str): Launcher Model Object or the uuid of the conversion task.
-
-        Raises:
-            e: If an error occurs while getting the conversion task information.
-
-        Returns:
-            ConversionTask: model conversion task object.
-        """
-
-        self.token_handler.validate_token()
-
-        try:
-            conversion_task_uuid = None
-            if type(conversion_task) is str:
-                conversion_task_uuid = conversion_task
-            elif type(conversion_task) is ConversionTask:
-                conversion_task_uuid = conversion_task.convert_task_uuid
-
-            conversion_result: ConversionTask = self.get_conversion_task(conversion_task_uuid)
-            if conversion_result.status is TaskStatus.ERROR:
-                raise FileNotFoundError("The conversion is Failed. There is no file available for download.")
-            if conversion_result.status is not TaskStatus.FINISHED:
-                raise FileNotFoundError(
-                    "The conversion is in progress. There is no file available for download at the moment."
-                )
-
-            download_url = launcher_client.get_converted_model(
-                conversion_task_uuid=conversion_result.convert_task_uuid, access_token=self.token_handler.tokens.access_token
-            )
-            request.urlretrieve(download_url, local_path)
-            logger.info(f"Model downloaded at {Path(local_path)}")
-
-        except Exception as e:
-            logger.error(f"Download converted model failed. Error: {e}")
             raise e

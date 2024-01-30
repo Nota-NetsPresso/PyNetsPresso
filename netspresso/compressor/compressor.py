@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 from urllib import request
 
 from loguru import logger
@@ -41,8 +41,8 @@ from .utils.onnx import export_onnx
 
 
 class Compressor:
-    def __init__(self, token_handler: TokenHandler):
-        """Initialize the Model Compressor."""
+    def __init__(self, token_handler: TokenHandler) -> None:
+        """Initialize the Compressor."""
 
         self.token_handler = token_handler
         self.model_factory = ModelFactory()
@@ -291,7 +291,17 @@ class Compressor:
             logger.error(f"Upload dataset failed. Error: {e}")
             raise e
 
-    def _get_available_devices(self, compressed_model, default_model_path):
+    def _get_available_devices(self, compressed_model, default_model_path: str):
+        """Get the available devices for the compressed model.
+
+        Args:
+            compressed_model: The compressed model.
+            default_model_path (str): Path to the default model file.
+
+        Returns:
+            str: The uploaded model after conversion.
+        """
+
         if compressed_model.framework in [Framework.PYTORCH, Framework.ONNX]:
             export_onnx(default_model_path, compressed_model.input_shapes)
             converter_uploaded_model = launcher_client.upload_model(
@@ -312,7 +322,7 @@ class Compressor:
         self,
         compression: CompressionInfo,
         output_dir: str,
-        dataset_path: str = None,
+        dataset_path: Optional[str] = None,
     ) -> Dict:
         """Compress a model using the provided compression information.
 
@@ -447,7 +457,7 @@ class Compressor:
         input_shapes: List[Dict[str, int]],
         framework: Framework = Framework.PYTORCH,
         options: Options = Options(),
-        dataset_path: str = None,
+        dataset_path: Optional[str] = None,
     ) -> Dict:
         """Compress a recommendation-based model using the given compression and recommendation methods.
 
@@ -457,8 +467,8 @@ class Compressor:
             recommendation_ratio (float): The compression ratio recommended by the recommendation method.
             input_model_path (str): The file path where the model is located.
             output_dir (str): The local path to save the compressed model.
-            framework (Framework): The framework of the model.
             input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
+            framework (Framework): The framework of the model.
             options(Options, optional): The options for pruning method.
             dataset_path (str, optional): The path of the dataset used for nuclear norm compression method. Default is None.
 
@@ -611,19 +621,19 @@ class Compressor:
 
     def automatic_compression(
         self,
-        input_shapes: List[Dict[str, int]],
         input_model_path: str,
         output_dir: str,
+        input_shapes: List[Dict[str, int]],
         framework: Framework = Framework.PYTORCH,
         compression_ratio: float = 0.5,
     ) -> Dict:
         """Compress a model automatically based on the given compression ratio.
 
         Args:
-            framework (Framework): The framework of the model.
-            input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
             input_model_path (str): The file path where the model is located.
             output_dir (str): The local path to save the compressed model.
+            input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
+            framework (Framework): The framework of the model.
             compression_ratio (float): The compression ratio for automatic compression. Defaults to 0.5.
 
         Raises:
