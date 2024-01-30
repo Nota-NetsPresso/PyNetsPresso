@@ -8,3 +8,6 @@ pytz==2023.3
 typing_extensions==4.5.0
 netspresso_trainer==0.1.2
 PyGithub>=2.1.1
+matplotlib>=3.7.4
+tensorflow-gpu==2.8
+protobuf<=3.20.2
