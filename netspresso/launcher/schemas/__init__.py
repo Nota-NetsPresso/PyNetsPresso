@@ -75,6 +75,8 @@ class DeviceName(StrEnumBase):
     Intel_XEON_W_2233 = "Intel-Xeon"
     ALIF_ENSEMBLE_E7_DEVKIT_GEN2 = "Ensemble-E7-DevKit-Gen2"
     RENESAS_RA8D1 = "Renesas-RA8D1"
+    Renesas_RA8D1 = "Renesas-RA8D1"
+    Ensemble_E7_DevKit_Gen2 = "Ensemble-E7-DevKit-Gen2"
 
     @classmethod
     def create_literal(cls):
@@ -94,6 +96,8 @@ class DeviceName(StrEnumBase):
             "Intel-Xeon",
             "Ensemble-E7-DevKit-Gen2",
             "Renesas-RA8D1",
+            "Renesas-RA8D1",
+            "Ensemble-E7-DevKit-Gen2"
         ]
 
 

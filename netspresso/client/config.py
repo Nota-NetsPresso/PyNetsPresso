@@ -22,7 +22,7 @@ class EnvironmentType(str, Enum):
         ]
 
 class EndPoint(str, Enum):
-    GENRAL = "general"
+    GENERAL = "general"
     COMPRESSOR = "compressor"
     LAUNCHER = "launcher"
     @classmethod
@@ -49,12 +49,12 @@ class EndPointProperty(str, Enum):
 
 class Config:
     ENVIRONMENT_TYPE: EnvironmentType = EnvironmentType.PROD
-    CONFIG_SESSION: str = f"{EndPoint.GENRAL}.{ENVIRONMENT_TYPE}"
+    CONFIG_SESSION: str = f"{EndPoint.GENERAL}.{ENVIRONMENT_TYPE}"
     HOST: str = config[CONFIG_SESSION][EndPointProperty.HOST]
     PORT: int = int(config[CONFIG_SESSION][EndPointProperty.PORT])
     URI_PREFIX: str = config[CONFIG_SESSION][EndPointProperty.URI_PREFIX]
 
-    def __init__(self, endpoint: EndPoint = EndPoint.GENRAL):
+    def __init__(self, endpoint: EndPoint = EndPoint.GENERAL):
         self.ENVIRONMENT_TYPE = EnvironmentType(DEPLOYMENT_MODE.lower())
         self.CONFIG_SESSION = f"{endpoint}.{self.ENVIRONMENT_TYPE}"
         self.HOST = config[self.CONFIG_SESSION][EndPointProperty.HOST]

@@ -11,13 +11,13 @@ def validate_token(func) -> None:
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         if not check_jwt_exp(self.user_session.access_token):
-            self.user_session.__reissue_token()
+            self.user_session._reissue_token()
         return func(self, *args, **kwargs)
 
     return wrapper
 
 class SessionClient:
-    def __init__(self, email: str, password: str, config: Config = None):
+    def __init__(self, email: str, password: str, config: Config = EndPoint.GENERAL, verify_ssl: bool = True):
         """Initialize the UserSession.
 
         Args:
@@ -27,12 +27,13 @@ class SessionClient:
 
         self.email = email
         self.password = password
-        self.config = config if config is not None else Config(EndPoint.GENRAL)
+        self.config = Config(config)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.uri_prefix = self.config.URI_PREFIX
         self.base_url = f"{self.host}:{self.port}{self.uri_prefix}"
         self.user_id = None
+        self.verify_ssl = verify_ssl
         self.__login()
         self.__get_user_info()
 
@@ -40,7 +41,7 @@ class SessionClient:
         try:
             url = f"{self.base_url}/auth/local/login"
             data = LoginRequest(username=self.email, password=self.password)
-            response = requests.post(url, json=data.dict(), headers=get_headers())
+            response = requests.post(url, json=data.dict(), headers=get_headers(), verify=self.verify_ssl)
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
@@ -58,7 +59,7 @@ class SessionClient:
     def __get_user_info(self):
         try:
             url = f"{self.base_url}/user"
-            response = requests.get(url, headers=get_headers(access_token=self.access_token))
+            response = requests.get(url, headers=get_headers(access_token=self.access_token), verify=self.verify_ssl)
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
@@ -72,15 +73,15 @@ class SessionClient:
             logger.error(f"Failed to get user information. Error: {e}")
             raise e
 
-    def __reissue_token(self) -> None:
+    def _reissue_token(self) -> None:
         try:
-            url = f"{self.base_url}/token"
+            url = f"{self.base_url}/auth/token"
             data = RefreshTokenRequest(access_token=self.access_token, refresh_token=self.refresh_token)
-            response = requests.post(url, data=data.json(), headers=get_headers(json_type=True))
+            response = requests.post(url, data=data.json(), headers=get_headers(json_type=True), verify=self.verify_ssl)
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
-                session = RefreshTokenResponse(**response_body)
+                session = RefreshTokenResponse(**response_body["tokens"])
                 self.access_token = session.access_token
                 self.refresh_token = session.refresh_token
             else:
@@ -91,7 +92,7 @@ class SessionClient:
 
 class BaseClient:
     user_session: SessionClient = None
-    def __init__(self, email=None, password=None, user_session=None):
+    def __init__(self, email=None, password=None, user_session=None, verify_ssl=True):
         """Initialize the Model Compressor.
 
         Args:
@@ -109,7 +110,7 @@ class BaseClient:
             self.user_session = user_session
         elif email and password:
             # Case 2: Creating from email and password
-            self.user_session = SessionClient(email=email, password=password)
+            self.user_session = SessionClient(email=email, password=password, verify_ssl=verify_ssl)
         else:
             raise NotImplementedError("There is no avaliable constructors for given paremeters.")
 

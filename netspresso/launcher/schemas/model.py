@@ -37,7 +37,7 @@ class TargetDevice(BaseModel):
 
     display_name: str = Field(default=None)
     display_brand_name: str = Field(default=None)
-    device_name: DeviceName = Field(default=None)
+    device_name: Union[DeviceName, str] = Field(default=None, union_mode='left_to_right')
     software_version: Optional[str] = Field(default=None)
     software_version_display_name: Optional[str] = Field(default=None)
     hardware_type: Optional[HardwareType] = Field(default=None)
