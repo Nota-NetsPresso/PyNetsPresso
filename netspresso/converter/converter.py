@@ -81,10 +81,10 @@ class Converter:
             target_framework (Union[str, Framework]): The target framework name.
             target_device_name (Union[str, DeviceName]): Target device name. Required if target_device is not specified.
             target_data_type (Union[str, DataType]): Data type of the model. Default is DataType.FP16.
-            target_software_version (Optional[Union[str, SoftwareVersion]]): Target software version.
+            target_software_version (Union[str, SoftwareVersion], optional): Target software version.
                 Required if target_device_name is one of the Jetson devices.
-            input_shape (Optional[InputShape]): Target input shape for conversion (e.g., dynamic batch to static batch).
-            dataset_path (Optional[str]): Path to the dataset. Useful for certain conversions.
+            input_shape (InputShape, optional): Target input shape for conversion (e.g., dynamic batch to static batch).
+            dataset_path (str, optional): Path to the dataset. Useful for certain conversions.
             wait_until_done (bool): If True, wait for the conversion result before returning the function.
                                 If False, request the conversion and return the function immediately.
 

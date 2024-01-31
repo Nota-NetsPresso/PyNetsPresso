@@ -43,8 +43,8 @@ class TargetDevice(BaseModel):
         display_name (str): devices's display name.
         display_brand_name (str): the manufacturer name of the device.
         device_name (str): internal devcie name (using as an internal identifier)
-        software_version (Optional[str]): software version of the device (ex: jetpack 5.0.1)
-        software_version_display_name (Optional[str]): display name of the devcie's software version
+        software_version (str, optional): software version of the device (ex: jetpack 5.0.1)
+        software_version_display_name (str, optional): display name of the devcie's software version
     """
 
     display_name: str = Field(default=None)
@@ -97,7 +97,7 @@ class BaseRequestModel(BaseModel):
     Attributes:
         user_uuid (str): the unique user identifier.
         input_model_uuid (str): the uuid of launcher model object.
-        software_version (Optional[str]): target device's software version.
+        software_version (str, optional): target device's software version.
     """
 
     user_uuid: str = Field(default=None)
@@ -110,9 +110,9 @@ class ModelBenchmarkRequest(BaseRequestModel):
 
     Attributes:
         target_device (DeviceName): the device name.
-        target_framework (Optional[Framework]): the target framework of the model.
-        data_type: (Optional[DataType]): data type of the model.
-        input_shape: (Optional[InputShape]): input shape of the model.
+        target_framework (Framework, optional): the target framework of the model.
+        data_type: (DataType, optional): data type of the model.
+        input_shape: (InputShape, optional): input shape of the model.
     """
 
     target_device: DeviceName = Field(default=None)

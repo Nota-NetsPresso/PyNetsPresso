@@ -33,7 +33,17 @@ class FileHandler:
 
     @staticmethod
     def check_input_model_path(input_model_path: str):
-        assert Path(input_model_path).is_file(), "The input_model_path should be a file and cannot be a directory. Ex) ./model/sample_model.pt"
+        """Check if the input model path is a file.
+
+        Args:
+            input_model_path (str): The path to the input model file.
+
+        Raises:
+            FileNotFoundError: If the input model path is not a file.
+        """
+
+        if not Path(input_model_path).is_file():
+            raise FileNotFoundError("The input_model_path should be a file and cannot be a directory. Ex) ./model/sample_model.pt")
 
     @staticmethod
     def create_folder(
@@ -45,9 +55,10 @@ class FileHandler:
             folder_path (str): The path to the folder to be created.
             parents (bool, optional): If True, also create parent directories if they don't exist.
             exist_ok (bool, optional): If False, raise an error if the folder already exists.
+            is_folder_check (bool, optional): If True, check if the folder already exists.
         
-        Returns:
-            None
+        Raises:
+            SystemExit: If the folder already exists and `exist_ok` is False.
         """
         if is_folder_check and not FileHandler.check_exists(folder_path=folder_path):
             Path(folder_path).mkdir(parents=parents, exist_ok=exist_ok)
@@ -77,9 +88,6 @@ class FileHandler:
         Args:
             url (str): The URL of the file to be downloaded.
             save_path (Union[str, Path]): The path where the downloaded file will be saved.
-        
-        Returns:
-            None
         """
         request.urlretrieve(url, save_path)
 

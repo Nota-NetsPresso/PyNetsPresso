@@ -153,7 +153,7 @@ class Trainer:
             train_label (str, optional): The directory for training labels. Should be relative path to root directory. Defaults to "labels/train".
             valid_image (str, optional): The directory for validation images. Should be relative path to root directory. Defaults to "images/val".
             valid_label (str, optional): The directory for validation labels. Should be relative path to root directory. Defaults to "labels/val".
-            id_mapping (Optional[Union[List[str], Dict[str, str]]], optional): ID mapping for the dataset. Defaults to None.
+            id_mapping (Union[List[str], Dict[str, str]], optional): ID mapping for the dataset. Defaults to None.
         """
 
         common_config = {
@@ -184,9 +184,9 @@ class Trainer:
             img_size (int): Image size for the model.
             use_pretrained (bool, optional): Whether to use a pre-trained model. Defaults to True.
             load_head (bool, optional): Whether to load the model head. Defaults to False.
-            path (Optional[str], optional): Path to the model. Defaults to None.
-            fx_model_path (Optional[str], optional): Path to the FX model. Defaults to None.
-            optimizer_path (Optional[str], optional): Path to the optimizer. Defaults to None.
+            path (str, optional): Path to the model. Defaults to None.
+            fx_model_path (str, optional): Path to the FX model. Defaults to None.
+            optimizer_path (str, optional): Path to the optimizer. Defaults to None.
 
         Raises:
             ValueError: If the specified model is not supported for the current task.
@@ -258,9 +258,9 @@ class Trainer:
         """Set the augmentation configuration for training.
 
         Args:
-            train_transforms (Optional[List], optional): List of transforms for training. Defaults to None.
-            train_mix_transforms (Optional[List], optional): List of mix transforms for training. Defaults to None.
-            inference_transforms (Optional[List], optional): List of transforms for inference. Defaults to None.
+            train_transforms (List, optional): List of transforms for training. Defaults to None.
+            train_mix_transforms (List, optional): List of mix transforms for training. Defaults to None.
+            inference_transforms (List, optional): List of transforms for inference. Defaults to None.
         """
 
         self.augmentation = AugmentationConfig(
@@ -288,7 +288,7 @@ class Trainer:
         """Set the logging configuration.
 
         Args:
-            project_id (Optional[str], optional): Project name to save the experiment. If None, it is set as {task}_{model} (e.g. segmentation_segformer).
+            project_id (str, optional): Project name to save the experiment. If None, it is set as {task}_{model} (e.g. segmentation_segformer).
             output_dir (str, optional): Root directory for saving the experiment. Defaults to "./outputs".
             tensorboard (bool, optional): Whether to use the tensorboard. Defaults to True.
             csv (bool, optional): Whether to save the result in csv format. Defaults to False.
@@ -296,7 +296,7 @@ class Trainer:
             stdout (bool, optional): Whether to log the standard output. Defaults to True.
             save_optimizer_state (bool, optional): Whether to save optimizer state with model checkpoint to resume training. Defaults to True.
             validation_epoch (int, optional): Validation frequency in total training process. Defaults to 10.
-            save_checkpoint_epoch (Optional[int], optional): Checkpoint saving frequency in total training process. Defaults to None.
+            save_checkpoint_epoch (int, optional): Checkpoint saving frequency in total training process. Defaults to None.
         """
 
         self.logging = LoggingConfig(

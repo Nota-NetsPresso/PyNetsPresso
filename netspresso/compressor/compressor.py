@@ -467,8 +467,8 @@ class Compressor:
             recommendation_ratio (float): The compression ratio recommended by the recommendation method.
             input_model_path (str): The file path where the model is located.
             output_dir (str): The local path to save the compressed model.
-            input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
-            framework (Framework): The framework of the model.
+            input_shapes (List[Dict[str, int]]): Input shapes of the model.
+            framework (Framework, optional): The framework of the model.
             options(Options, optional): The options for pruning method.
             dataset_path (str, optional): The path of the dataset used for nuclear norm compression method. Default is None.
 
@@ -632,9 +632,9 @@ class Compressor:
         Args:
             input_model_path (str): The file path where the model is located.
             output_dir (str): The local path to save the compressed model.
-            input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
-            framework (Framework): The framework of the model.
-            compression_ratio (float): The compression ratio for automatic compression. Defaults to 0.5.
+            input_shapes (List[Dict[str, int]]): Input shapes of the model.
+            framework (Framework, optional): The framework of the model.
+            compression_ratio (float, optional): The compression ratio for automatic compression. Defaults to 0.5.
 
         Raises:
             e: If an error occurs while performing automatic compression.

@@ -36,8 +36,8 @@ class Benchmarker:
         input_model_path: str,
         target_device_name: DeviceName,
         target_data_type: DataType = DataType.FP16,
-        target_software_version: Optional[SoftwareVersion] = None,
-        target_hardware_type: Optional[HardwareType] = None,
+        target_software_version: Optional[Union[str, SoftwareVersion]] = None,
+        target_hardware_type: Optional[Union[str, HardwareType]] = None,
         wait_until_done: bool = True,
     ) -> Dict:
         """Benchmark the specified model on the specified device.
@@ -46,8 +46,8 @@ class Benchmarker:
             input_model_path (str): The file path where the model is located.
             target_device_name (DeviceName): Target device name.
             target_data_type (DataType): Data type of the model.
-            target_software_version (Optional[SoftwareVersion]): Target software version. Required if target_device_name is one of the Jetson devices.
-            target_hardware_type (Optional[HardwareType]): Hardware type. Acceleration options for processing the model inference.
+            target_software_version (Union[str, SoftwareVersion], optional): Target software version. Required if target_device_name is one of the Jetson devices.
+            target_hardware_type (Union[str, HardwareType], optional): Hardware type. Acceleration options for processing the model inference.
             wait_until_done (bool): If True, wait for the conversion result before returning the function.
                                 If False, request the conversion and return the function immediately.
 
