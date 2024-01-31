@@ -75,13 +75,13 @@ class SessionClient:
 
     def _reissue_token(self) -> None:
         try:
-            url = f"{self.base_url}/token"
+            url = f"{self.base_url}/auth/token"
             data = RefreshTokenRequest(access_token=self.access_token, refresh_token=self.refresh_token)
             response = requests.post(url, data=data.json(), headers=get_headers(json_type=True), verify=self.verify_ssl)
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
-                session = RefreshTokenResponse(**response_body)
+                session = RefreshTokenResponse(**response_body["tokens"])
                 self.access_token = session.access_token
                 self.refresh_token = session.refresh_token
             else:
