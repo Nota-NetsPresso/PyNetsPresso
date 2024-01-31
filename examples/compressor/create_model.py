@@ -1,7 +1,6 @@
 from netspresso import NetsPresso
 from netspresso.enums import Framework
 
-
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"
 

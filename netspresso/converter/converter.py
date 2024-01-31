@@ -5,7 +5,7 @@ from urllib import request
 
 from loguru import logger
 
-from netspresso.clients.auth import auth_client, TokenHandler
+from netspresso.clients.auth import TokenHandler, auth_client
 from netspresso.clients.auth.schemas.auth import UserInfo
 from netspresso.clients.launcher import launcher_client
 from netspresso.clients.launcher.schemas import TargetDeviceFilter
@@ -52,7 +52,8 @@ class Converter:
                 )
 
             download_url = launcher_client.get_converted_model(
-                conversion_task_uuid=conversion_task.convert_task_uuid, access_token=self.token_handler.tokens.access_token
+                conversion_task_uuid=conversion_task.convert_task_uuid,
+                access_token=self.token_handler.tokens.access_token,
             )
             request.urlretrieve(download_url, local_path)
             logger.info(f"Model downloaded at {Path(local_path)}")
@@ -96,7 +97,7 @@ class Converter:
         """
 
         FileHandler.check_input_model_path(input_model_path)
-        
+
         self.token_handler.validate_token()
 
         try:
@@ -109,7 +110,9 @@ class Converter:
             current_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             check_credit_balance(user_credit=current_credit, service_credit=ServiceCredit.MODEL_CONVERT)
             model = launcher_client.upload_model(
-                model_file_path=input_model_path, target_function=Module.CONVERT, access_token=self.token_handler.tokens.access_token
+                model_file_path=input_model_path,
+                target_function=Module.CONVERT,
+                access_token=self.token_handler.tokens.access_token,
             )
 
             model_uuid = model
@@ -242,7 +245,7 @@ class Converter:
 
         try:
             conversion_task_uuid = None
-            if type(conversion_task) is str:
+            if isinstance(conversion_task, str):
                 conversion_task_uuid = conversion_task
             elif type(conversion_task) is ConversionTask:
                 conversion_task_uuid = conversion_task.convert_task_uuid

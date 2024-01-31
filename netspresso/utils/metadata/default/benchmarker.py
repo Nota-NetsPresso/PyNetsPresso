@@ -1,8 +1,9 @@
-from dataclasses import asdict, dataclass, field
 import json
+from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List
 
 from netspresso.enums.metadata import Status, TaskType
+
 from .common import TargetDevice
 
 
@@ -43,7 +44,6 @@ class BenchmarkerMetadata:
     task_type: TaskType = TaskType.BENCHMARK
     benchmark_info: BenchmarkInfo = field(default_factory=BenchmarkInfo)
     result: Result = field(default_factory=Result)
-    
 
     def asdict(self) -> Dict:
         _dict = json.loads(json.dumps(asdict(self)))
@@ -64,7 +64,7 @@ class BenchmarkerMetadata:
         benchmark_task_uuid: str,
         devicefarm_benchmark_task_uuid: str,
         devicefarm_model_uuid: str,
-    ) -> None:       
+    ) -> None:
         self.benchmark_info.target_device = target_device
         self.benchmark_info.filename = file_name
         self.benchmark_info.data_type = data_type

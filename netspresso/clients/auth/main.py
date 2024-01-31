@@ -1,17 +1,12 @@
 import json
 from datetime import datetime
 
-import requests
-from loguru import logger
 import jwt
 import pytz
+import requests
+from loguru import logger
 
-from netspresso.clients.auth.schemas import (
-    LoginRequest,
-    LoginResponse,
-    Tokens,
-    UserInfo,
-)
+from netspresso.clients.auth.schemas import LoginRequest, LoginResponse, Tokens, UserInfo
 from netspresso.clients.config import Config, Module
 from netspresso.clients.utils import get_headers
 
@@ -52,9 +47,7 @@ class AuthClient:
     def get_user_info(self, access_token) -> UserInfo:
         try:
             url = f"{self.base_url}/user"
-            response = requests.get(
-                url, headers=get_headers(access_token=access_token)
-            )
+            response = requests.get(url, headers=get_headers(access_token=access_token))
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
@@ -70,18 +63,14 @@ class AuthClient:
 
     def get_credit(self, access_token) -> int:
         user_info = self.get_user_info(access_token)
-        
+
         return user_info.total
 
     def reissue_token(self, access_token, refresh_token) -> Tokens:
         try:
             url = f"{self.base_url}/auth/token"
-            data = Tokens(
-                access_token=access_token, refresh_token=refresh_token
-            )
-            response = requests.post(
-                url, data=data.json(), headers=get_headers(json_type=True)
-            )
+            data = Tokens(access_token=access_token, refresh_token=refresh_token)
+            response = requests.post(url, data=data.json(), headers=get_headers(json_type=True))
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:

@@ -1,8 +1,9 @@
-from dataclasses import asdict, dataclass, field
 import json
+from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List
 
 from netspresso.enums.metadata import Status, TaskType
+
 from .common import TargetDevice
 
 
@@ -55,7 +56,7 @@ class ConverterMetadata:
             InputShape(
                 batch=input_shape.batch,
                 channel=input_shape.channel,
-                dimension=[int(x.strip()) for x in input_shape.input_size.split(',')],
+                dimension=[int(x.strip()) for x in input_shape.input_size.split(",")],
             )
         ]
 

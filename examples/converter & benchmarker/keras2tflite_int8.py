@@ -1,6 +1,5 @@
 from netspresso import NetsPresso
-from netspresso.enums import Framework, DeviceName, DataType
-
+from netspresso.enums import DataType, DeviceName, Framework
 
 # Available target frameworks for conversion with keras models
 #

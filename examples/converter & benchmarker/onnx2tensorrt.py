@@ -1,6 +1,5 @@
 from netspresso import NetsPresso
-from netspresso.enums import Framework, DeviceName, SoftwareVersion
-
+from netspresso.enums import DeviceName, Framework, SoftwareVersion
 
 ###
 # Available target frameworks for conversion with onnx models
@@ -68,7 +67,9 @@ print(conversion_task)
 benchmarker = netspresso.benchmarker()
 
 # 5. Set variables for benchmark
-CONVERTED_MODEL_PATH = "./outputs/converted/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1.trt"
+CONVERTED_MODEL_PATH = (
+    "./outputs/converted/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1.trt"
+)
 
 # 6. Run benchmark
 benchmark_task = benchmarker.benchmark_model(

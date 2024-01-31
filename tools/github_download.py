@@ -38,9 +38,7 @@ def get_args():
         "--out",
         default="./",
         required=False,
-        help="Path to folder you want to download "
-        "to. Default is current folder + "
-        "'downloads'",
+        help="Path to folder you want to download " "to. Default is current folder + " "'downloads'",
     )
     parser.add_argument(
         "-f",

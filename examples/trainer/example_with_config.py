@@ -1,9 +1,8 @@
 from netspresso import NetsPresso
 from netspresso.enums import Task
+from netspresso.trainer.augmentations import Resize
 from netspresso.trainer.optimizers import AdamW
 from netspresso.trainer.schedulers import CosineAnnealingWarmRestartsWithCustomWarmUp
-from netspresso.trainer.augmentations import Resize
-
 
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"

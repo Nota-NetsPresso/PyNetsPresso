@@ -1,12 +1,12 @@
-from .credit import ServiceCredit
-from .metadata import TaskType, Status
-from .compression import CompressionMethod, RecommendationMethod, Policy, GroupPolicy, LayerNorm
-from .model import Framework, Framework, Extension, OriginFrom, DataType
-from .device import DeviceName, SoftwareVersion, HardwareType, TaskStatus
-from .module import Module
-from .task import Task
 from netspresso.clients.compressor.schemas.compression import Options
 
+from .compression import CompressionMethod, GroupPolicy, LayerNorm, Policy, RecommendationMethod
+from .credit import ServiceCredit
+from .device import DeviceName, HardwareType, SoftwareVersion, TaskStatus
+from .metadata import Status, TaskType
+from .model import DataType, Extension, Framework, OriginFrom
+from .module import Module
+from .task import Task
 
 __all__ = [
     "ServiceCredit",

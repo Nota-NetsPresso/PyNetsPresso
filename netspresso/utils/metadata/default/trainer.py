@@ -1,5 +1,5 @@
-from dataclasses import asdict, dataclass, field
 import json
+from dataclasses import asdict, dataclass, field
 from typing import Dict, List
 
 from netspresso.enums.metadata import Status, TaskType
@@ -37,7 +37,7 @@ class TrainerMetadata:
     best_onnx_model_path: str = ""
     hparams: str = ""
     traning_result: Dict = field(default_factory=dict)
-    
+
     def asdict(self) -> Dict:
         _dict = json.loads(json.dumps(asdict(self)))
         return _dict

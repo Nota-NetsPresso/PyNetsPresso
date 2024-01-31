@@ -73,16 +73,12 @@ class Plotter:
         ax.grid(axis="y")
 
     @staticmethod
-    def _plot_comparison(
-        original_value, value_per_model, target_value, title, xlabel, ylabel
-    ):
+    def _plot_comparison(original_value, value_per_model, target_value, title, xlabel, ylabel):
         ratios = list(value_per_model.keys())
         values = list(value_per_model.values())
         plt.figure(figsize=(15, 6))
         plt.plot(ratios, values, marker="o", label="Compressed Model")
-        plt.axhline(
-            original_value, color="slategray", linestyle="--", label="Original Model"
-        )
+        plt.axhline(original_value, color="slategray", linestyle="--", label="Original Model")
         if target_value:
             plt.axhline(target_value, color="red", linestyle="--", label="Target Value")
         plt.title(title)
@@ -123,12 +119,8 @@ class Plotter:
         metrics_list = original_training_result["metrics_list"]
         original_best_epoch = str(original_training_result["best_epoch"])
         compressed_best_epoch = str(compressed_training_result["best_epoch"])
-        original_best_metrics = list(
-            original_training_result["valid_metrics"][original_best_epoch].values()
-        )
-        compressed_best_metrics = list(
-            compressed_training_result["valid_metrics"][compressed_best_epoch].values()
-        )
+        original_best_metrics = list(original_training_result["valid_metrics"][original_best_epoch].values())
+        compressed_best_metrics = list(compressed_training_result["valid_metrics"][compressed_best_epoch].values())
 
         fig, axs = plt.subplots(ncols=len(metrics_list), figsize=(15, 6))
 
@@ -141,14 +133,10 @@ class Plotter:
             )
 
             for bar in bars_original:
-                Plotter._add_value_annotations(
-                    axs[idx], bar, original_best_metrics[idx]
-                )
+                Plotter._add_value_annotations(axs[idx], bar, original_best_metrics[idx])
 
             for bar in bars_compressed:
-                Plotter._add_value_annotations(
-                    axs[idx], bar, compressed_best_metrics[idx]
-                )
+                Plotter._add_value_annotations(axs[idx], bar, compressed_best_metrics[idx])
 
             Plotter._add_difference_annotations(
                 axs[idx],
@@ -168,7 +156,7 @@ class Plotter:
         keys = ["flops", "number_of_parameters", "size"]
         original_values = [profile_result["results"]["original_model"][_key] for _key in keys]
         compressed_values = [profile_result["results"]["compressed_model"][_key] for _key in keys]
-        
+
         difference_values = np.array(original_values) / np.array(compressed_values)
 
         fig, axs = plt.subplots(ncols=len(y_labels), figsize=(15, 6))

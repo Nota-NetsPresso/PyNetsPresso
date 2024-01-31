@@ -1,21 +1,19 @@
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from loguru import logger
-from omegaconf import OmegaConf
 from netspresso_trainer import train_with_yaml
-from netspresso_trainer.cfg import (
-    AugmentationConfig,
-    EnvironmentConfig,
-    LoggingConfig,
-    ScheduleConfig,
-    ModelConfig,
-)
-from netspresso_trainer.cfg.augmentation import *
+from netspresso_trainer.cfg import AugmentationConfig, EnvironmentConfig, LoggingConfig, ModelConfig, ScheduleConfig
+from netspresso_trainer.cfg.augmentation import Inference, Train, Transform
 from netspresso_trainer.cfg.data import ImageLabelPathConfig, PathConfig
 from netspresso_trainer.cfg.model import CheckpointConfig
-from netspresso.enums import TaskType, Status, Task
+from omegaconf import OmegaConf
 
+from netspresso.enums import Status, Task, TaskType
 
+from ..utils import FileHandler
+from ..utils.metadata import MetadataHandler
+from ..utils.metadata.default.trainer import InputShape
 from .registries import (
     AUGMENTATION_CONFIG_TYPE,
     CLASSIFICATION_MODELS,
@@ -25,9 +23,6 @@ from .registries import (
     TRAINING_CONFIG_TYPE,
 )
 from .trainer_configs import TrainerConfigs
-from ..utils import FileHandler
-from ..utils.metadata import MetadataHandler
-from ..utils.metadata.default.trainer import InputShape
 
 
 class Trainer:
@@ -101,7 +96,7 @@ class Trainer:
         if task not in available_tasks:
             raise ValueError(f"The task supports {available_tasks}. The entered task is {task}.")
         return task
-    
+
     def _validate_config(self):
         """Validate the configuration setup.
 
@@ -215,7 +210,7 @@ class Trainer:
 
         Args:
             fx_model_path (str): The path to the FX model.
-        
+
         Raises:
             ValueError: If the model is not set. Please use 'set_model_config' for model setup.
         """
@@ -254,7 +249,7 @@ class Trainer:
         train_transforms: Optional[List] = None,
         train_mix_transforms: Optional[List] = None,
         inference_transforms: Optional[List] = None,
-    ):        
+    ):
         """Set the augmentation configuration for training.
 
         Args:
@@ -398,10 +393,7 @@ class Trainer:
         training_summary_path = logging_dir / "training_summary.json"
         training_summary = FileHandler.load_json(file_path=training_summary_path)
         is_success = training_summary["success"]
-        if is_success:
-            status = Status.COMPLETED
-        else:
-            status = Status.STOPPED
+        status = Status.COMPLETED if is_success else Status.STOPPED
 
         FileHandler.remove_folder(configs.temp_folder)
         logger.info(f"Removed {configs.temp_folder} folder.")

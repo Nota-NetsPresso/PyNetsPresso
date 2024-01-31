@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import Union, List
+from typing import List, Union
 
 import torch
 import torch.nn as nn
-from torch import Tensor
 from loguru import logger
+from torch import Tensor
 
 
 def _export_onnx(

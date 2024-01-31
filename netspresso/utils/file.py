@@ -1,9 +1,9 @@
 import json
+import shutil
 import sys
 from pathlib import Path
 from typing import Tuple, Union
 from urllib import request
-import shutil
 
 FRAMEWORK_EXTENSION_MAP = {
     "tensorflow_keras": ".h5",
@@ -43,11 +43,16 @@ class FileHandler:
         """
 
         if not Path(input_model_path).is_file():
-            raise FileNotFoundError("The input_model_path should be a file and cannot be a directory. Ex) ./model/sample_model.pt")
+            raise FileNotFoundError(
+                "The input_model_path should be a file and cannot be a directory. Ex) ./model/sample_model.pt"
+            )
 
     @staticmethod
     def create_folder(
-        folder_path: str, parents: bool = True, exist_ok: bool = True, is_folder_check: bool = True,
+        folder_path: str,
+        parents: bool = True,
+        exist_ok: bool = True,
+        is_folder_check: bool = True,
     ) -> None:
         """Create a folder.
 
@@ -56,7 +61,7 @@ class FileHandler:
             parents (bool, optional): If True, also create parent directories if they don't exist.
             exist_ok (bool, optional): If False, raise an error if the folder already exists.
             is_folder_check (bool, optional): If True, check if the folder already exists.
-        
+
         Raises:
             SystemExit: If the folder already exists and `exist_ok` is False.
         """
@@ -66,9 +71,7 @@ class FileHandler:
             sys.exit(f"This folder already exists. Local Path: {Path(folder_path)}")
 
     @staticmethod
-    def create_file_path(
-        folder_path: str, name: str, extension: str
-    ) -> Union[str, Path]:
+    def create_file_path(folder_path: str, name: str, extension: str) -> Union[str, Path]:
         """Create a file path.
 
         Args:
@@ -106,10 +109,8 @@ class FileHandler:
         """
         extension = FRAMEWORK_EXTENSION_MAP.get(framework)
         if extension is None:
-            available_frameworks = [key for key in FRAMEWORK_EXTENSION_MAP.keys()]
-            raise KeyError(
-                f"The framework supports {available_frameworks}. The entered framework is {framework}."
-            )
+            available_frameworks = list(FRAMEWORK_EXTENSION_MAP.keys())
+            raise KeyError(f"The framework supports {available_frameworks}. The entered framework is {framework}.")
         return extension
 
     @staticmethod
@@ -169,6 +170,6 @@ class FileHandler:
         Args:
             folder_path (str): Path to the folder.
         """
-        
+
         folder_path = Path(folder_path)
         shutil.rmtree(folder_path, ignore_errors=True)

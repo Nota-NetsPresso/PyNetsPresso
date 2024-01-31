@@ -38,7 +38,7 @@ class DeviceName(str, Enum):
             "Ensemble-E7-DevKit-Gen2",
             "Renesas-RA8D1",
         ]
-    
+
     JETSON_DEVICES = [
         JETSON_NANO,
         JETSON_TX2,
