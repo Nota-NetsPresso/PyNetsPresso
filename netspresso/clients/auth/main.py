@@ -10,7 +10,7 @@ from netspresso.clients.auth.schemas import (
     LoginRequest,
     LoginResponse,
     Tokens,
-    UserResponse,
+    UserInfo,
 )
 from netspresso.clients.config import Config, Module
 from netspresso.clients.utils import get_headers
@@ -49,7 +49,7 @@ class AuthClient:
             logger.error(f"Login failed. Error: {e}")
             raise e
 
-    def get_user_info(self, access_token) -> UserResponse:
+    def get_user_info(self, access_token) -> UserInfo:
         try:
             url = f"{self.base_url}/user"
             response = requests.get(
@@ -58,7 +58,7 @@ class AuthClient:
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
-                user_info = UserResponse(**response_body)
+                user_info = UserInfo(**response_body)
                 logger.info("Successfully got user information")
                 return user_info
             else:

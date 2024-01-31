@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from typing import Tuple, Union
 from urllib import request
+import shutil
 
 FRAMEWORK_EXTENSION_MAP = {
     "tensorflow_keras": ".h5",
@@ -32,7 +33,17 @@ class FileHandler:
 
     @staticmethod
     def check_input_model_path(input_model_path: str):
-        assert Path(input_model_path).is_file(), "The input_model_path should be a file and cannot be a directory. Ex) ./model/sample_model.pt"
+        """Check if the input model path is a file.
+
+        Args:
+            input_model_path (str): The path to the input model file.
+
+        Raises:
+            FileNotFoundError: If the input model path is not a file.
+        """
+
+        if not Path(input_model_path).is_file():
+            raise FileNotFoundError("The input_model_path should be a file and cannot be a directory. Ex) ./model/sample_model.pt")
 
     @staticmethod
     def create_folder(
@@ -44,9 +55,10 @@ class FileHandler:
             folder_path (str): The path to the folder to be created.
             parents (bool, optional): If True, also create parent directories if they don't exist.
             exist_ok (bool, optional): If False, raise an error if the folder already exists.
+            is_folder_check (bool, optional): If True, check if the folder already exists.
         
-        Returns:
-            None
+        Raises:
+            SystemExit: If the folder already exists and `exist_ok` is False.
         """
         if is_folder_check and not FileHandler.check_exists(folder_path=folder_path):
             Path(folder_path).mkdir(parents=parents, exist_ok=exist_ok)
@@ -76,9 +88,6 @@ class FileHandler:
         Args:
             url (str): The URL of the file to be downloaded.
             save_path (Union[str, Path]): The path where the downloaded file will be saved.
-        
-        Returns:
-            None
         """
         request.urlretrieve(url, save_path)
 
@@ -122,6 +131,44 @@ class FileHandler:
 
     @staticmethod
     def load_json(file_path: str):
+        """Load JSON data from a file.
+
+        Args:
+            file_path (str): Path to the JSON file.
+
+        Returns:
+            dict: Loaded JSON data.
+        """
+
         with open(file_path, "r") as json_data:
             data = json.load(json_data)
         return data
+
+    @staticmethod
+    def move_and_cleanup_folders(source_folder: str, destination_folder: str):
+        """Move files from the source folder to the destination folder and remove the source folder.
+
+        Args:
+            source_folder (str): The path to the source folder.
+            destination_folder (str): The path to the destination folder.
+        """
+
+        source_folder = Path(source_folder)
+        destination_folder = Path(destination_folder)
+
+        for file_path in source_folder.iterdir():
+            destination_path = destination_folder / file_path.name
+            shutil.move(file_path, destination_path)
+
+        source_folder.rmdir()
+
+    @staticmethod
+    def remove_folder(folder_path: str) -> None:
+        """Remove a folder and its contents.
+
+        Args:
+            folder_path (str): Path to the folder.
+        """
+        
+        folder_path = Path(folder_path)
+        shutil.rmtree(folder_path, ignore_errors=True)

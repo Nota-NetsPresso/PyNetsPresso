@@ -1,13 +1,13 @@
 import time
 from pathlib import Path
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
 from loguru import logger
 
 from netspresso.clients.auth import auth_client, TokenHandler
+from netspresso.clients.auth.schemas.auth import UserInfo
 from netspresso.clients.launcher import launcher_client
-from netspresso.clients.launcher.schemas import TargetDeviceFilter
-from netspresso.clients.launcher.schemas.model import BenchmarkTask
+from netspresso.clients.launcher.schemas import TargetDeviceFilter, BenchmarkTask
 from netspresso.enums import (
     DataType,
     DeviceName,
@@ -25,36 +25,37 @@ from ..utils.metadata import MetadataHandler
 
 
 class Benchmarker:
-    def __init__(self, token_handler: TokenHandler, user_info):
-        """Initialize the Model Benchmarker."""
+    def __init__(self, token_handler: TokenHandler, user_info: UserInfo) -> None:
+        """Initialize the Benchmarker."""
 
         self.token_handler = token_handler
         self.user_info = user_info
 
     def benchmark_model(
         self,
-        input_model_path: Union[Path, str],
+        input_model_path: str,
+        target_device_name: DeviceName,
         target_data_type: DataType = DataType.FP16,
-        target_device_name: DeviceName = None,
-        target_software_version: SoftwareVersion = None,
-        target_hardware_type: HardwareType = None,
+        target_software_version: Optional[Union[str, SoftwareVersion]] = None,
+        target_hardware_type: Optional[Union[str, HardwareType]] = None,
         wait_until_done: bool = True,
     ) -> Dict:
-        """Benchmark given model on the specified device.
+        """Benchmark the specified model on the specified device.
 
         Args:
             input_model_path (str): The file path where the model is located.
-            target_data_type (DataType): data type of the model.
-            target_device_name (DeviceName): target device name. Necessary field if target_device is not given.
-            target_software_version (SoftwareVersion): target_software_version. Necessary field if target_device_name is one of jetson devices.
-            target_hardware_type (HardwareType): hardware_type. Acceleration options for the processor to the model inference.
-            wait_until_done (bool): if true, wait for the conversion result before returning the function. If false, request the conversion and return the function immediately.
+            target_device_name (DeviceName): Target device name.
+            target_data_type (DataType): Data type of the model.
+            target_software_version (Union[str, SoftwareVersion], optional): Target software version. Required if target_device_name is one of the Jetson devices.
+            target_hardware_type (Union[str, HardwareType], optional): Hardware type. Acceleration options for processing the model inference.
+            wait_until_done (bool): If True, wait for the conversion result before returning the function.
+                                If False, request the conversion and return the function immediately.
 
         Raises:
-            e: If an error occurs while benchmarking of the model.
+            e: If an error occurs during the benchmarking of the model.
 
         Returns:
-            Dict: model benchmark task dict.
+            Dict: Model benchmark task dictionary.
         """
 
         FileHandler.check_input_model_path(input_model_path)
@@ -78,9 +79,6 @@ class Benchmarker:
                 model_file_path=input_model_path, target_function=Module.BENCHMARK, access_token=self.token_handler.tokens.access_token
             )
             model_uuid = model.model_uuid
-
-            if target_device_name is None:
-                raise ValueError("The benchmark is unavailable. Please set target_device_name.")
 
             if target_device_name in DeviceName.JETSON_DEVICES and target_software_version is None:
                 raise ValueError(
@@ -187,16 +185,16 @@ class Benchmarker:
         return metadata.asdict()
 
     def get_benchmark_task(self, benchmark_task: Union[str, BenchmarkTask]) -> BenchmarkTask:
-        """Get the benchmark task information with given benchmark task or benchmark task uuid.
+        """Get information about the specified benchmark task using either the benchmark task object or its UUID.
 
         Args:
-            benchmark_task (BenchmarkTask | str): Launcher Benchmark Object or the uuid of the benchmark task.
+            benchmark_task (Union[BenchmarkTask, str]): Benchmark task object or the UUID of the benchmark task.
 
         Raises:
-            e: If an error occurs while getting the benchmark task information.
+            e: If an error occurs while retrieving information about the benchmark task.
 
         Returns:
-            BenchmarkTask: model benchmark task object.
+            BenchmarkTask: Model benchmark task object.
         """
 
         self.token_handler.validate_token()
