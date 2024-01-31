@@ -1,8 +1,7 @@
+from .augmentation import AUGMENTATION_CONFIG_TYPE
 from .data import DATA_CONFIG_TYPE
 from .model import CLASSIFICATION_MODELS, DETECTION_MODELS, SEGMENTATION_MODELS
 from .training import TRAINING_CONFIG_TYPE
-from .augmentation import AUGMENTATION_CONFIG_TYPE
-
 
 __all__ = [
     "DATA_CONFIG_TYPE",

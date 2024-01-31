@@ -11,7 +11,7 @@ class Framework(str, Enum):
     OPENVINO = "openvino"
     TENSORFLOW_LITE = "tensorflow_lite"
     DRPAI = "drpai"
-    
+
     @classmethod
     def create_compressor_literal(cls):
         return Literal["tensorflow_keras", "pytorch", "onnx"]

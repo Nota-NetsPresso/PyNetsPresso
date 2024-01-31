@@ -4,14 +4,7 @@ from typing import Any, List
 
 from pydantic import BaseModel, Field, HttpUrl, root_validator, validator
 
-from netspresso.enums import (
-    Extension,
-    Framework,
-)
-from netspresso.enums.model import (
-    compressor_framework_literal,
-    originfrom_literal,
-)
+from netspresso.enums.model import Extension, Framework, compressor_framework_literal, originfrom_literal
 
 
 class InputLayer(BaseModel):
@@ -58,27 +51,19 @@ class UploadModelRequest(BaseModel):
             Framework.PYTORCH,
             Framework.ONNX,
         ]:
-            raise Exception(
-                "Invalid framework. Supported frameworks are TensorFlow/Keras, PyTorch, and ONNX."
-            )
+            raise Exception("Invalid framework. Supported frameworks are TensorFlow/Keras, PyTorch, and ONNX.")
 
         if file_extension in [Extension.H5, Extension.ZIP] and not framework == Framework.TENSORFLOW_KERAS:
             raise Exception(
                 "Invalid model framework. Models with .h5 or .zip extensions must use TensorFlow/Keras framework."
             )
         elif file_extension == Extension.PT and not framework == Framework.PYTORCH:
-            raise Exception(
-                "Invalid model framework. Models with .pt extensions must use PyTorch framework."
-            )
+            raise Exception("Invalid model framework. Models with .pt extensions must use PyTorch framework.")
         elif file_extension == Extension.ONNX and not framework == Framework.ONNX:
-            raise Exception(
-                "Invalid model framework. Models with .onnx extensions must use ONNX framework."
-            )
+            raise Exception("Invalid model framework. Models with .onnx extensions must use ONNX framework.")
 
         if framework == Framework.PYTORCH and input_layers is None:
-            raise Exception(
-                "Invalid input shape. Input shape is required for PyTorch models."
-            )
+            raise Exception("Invalid input shape. Input shape is required for PyTorch models.")
 
         return values
 
@@ -124,9 +109,7 @@ class ModelResponse(BaseModel):
     original_compression_id: str = Field("", description="Compression ID")
     task: str = Field(..., description="Task")
     framework: compressor_framework_literal = Field(..., description="Framework")
-    origin_from: originfrom_literal = Field(
-        ..., description="Origin From(Model Source)"
-    )
+    origin_from: originfrom_literal = Field(..., description="Origin From(Model Source)")
     target_device: str = Field("", description="Target Device")
     metric: Metric = Field(..., description="Metric")
     spec: Spec = Field(..., description="Spec")

@@ -4,21 +4,15 @@ from typing import Dict, Optional, Union
 
 from loguru import logger
 
-from netspresso.clients.auth import auth_client, TokenHandler
+from netspresso.clients.auth import TokenHandler, auth_client
 from netspresso.clients.auth.schemas.auth import UserInfo
 from netspresso.clients.launcher import launcher_client
-from netspresso.clients.launcher.schemas import TargetDeviceFilter, BenchmarkTask
-from netspresso.enums import (
-    DataType,
-    DeviceName,
-    HardwareType,
-    Module,
-    ServiceCredit,
-    SoftwareVersion,
-    Status,
-    TaskStatus,
-    TaskType,
-)
+from netspresso.clients.launcher.schemas import BenchmarkTask, TargetDeviceFilter
+from netspresso.enums.credit import ServiceCredit
+from netspresso.enums.device import DeviceName, HardwareType, SoftwareVersion, TaskStatus
+from netspresso.enums.metadata import Status, TaskType
+from netspresso.enums.model import DataType
+from netspresso.enums.module import Module
 
 from ..utils import FileHandler, check_credit_balance
 from ..utils.metadata import MetadataHandler
@@ -66,8 +60,8 @@ class Benchmarker:
             folder_path = Path(input_model_path).parent
 
             metadata = MetadataHandler.get_default_metadata(TaskType.BENCHMARK)
-            if FileHandler.check_exists(folder_path / f"benchmark.json"):
-                metadatas = MetadataHandler.load_json(folder_path / f"benchmark.json")
+            if FileHandler.check_exists(folder_path / "benchmark.json"):
+                metadatas = MetadataHandler.load_json(folder_path / "benchmark.json")
                 metadatas.append(metadata.asdict())
             else:
                 metadatas = [metadata.asdict()]
@@ -76,7 +70,9 @@ class Benchmarker:
             current_credit = auth_client.get_credit(self.token_handler.tokens.access_token)
             check_credit_balance(user_credit=current_credit, service_credit=ServiceCredit.MODEL_BENCHMARK)
             model = launcher_client.upload_model(
-                model_file_path=input_model_path, target_function=Module.BENCHMARK, access_token=self.token_handler.tokens.access_token
+                model_file_path=input_model_path,
+                target_function=Module.BENCHMARK,
+                access_token=self.token_handler.tokens.access_token,
             )
             model_uuid = model.model_uuid
 
@@ -201,7 +197,7 @@ class Benchmarker:
 
         try:
             task_uuid = None
-            if type(benchmark_task) is str:
+            if isinstance(benchmark_task, str):
                 task_uuid = benchmark_task
             elif type(benchmark_task) is BenchmarkTask:
                 task_uuid = benchmark_task.benchmark_task_uuid
@@ -210,7 +206,9 @@ class Benchmarker:
                     "There is no available function for the given parameter. The 'benchmark_task' should be a UUID string or a ModelBenchmark object."
                 )
 
-            return launcher_client.get_benchmark(benchmark_task_uuid=task_uuid, access_token=self.token_handler.tokens.access_token)
+            return launcher_client.get_benchmark(
+                benchmark_task_uuid=task_uuid, access_token=self.token_handler.tokens.access_token
+            )
 
         except Exception as e:
             logger.error(f"Get benchmark failed. Error: {e}")

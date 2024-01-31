@@ -1,4 +1,28 @@
-from netspresso_trainer.cfg.model import *
+from netspresso_trainer.cfg.model import (
+    ClassificationEfficientFormerModelConfig,
+    ClassificationMixNetLargeModelConfig,
+    ClassificationMixNetMediumModelConfig,
+    ClassificationMixNetSmallModelConfig,
+    ClassificationMobileNetV3ModelConfig,
+    ClassificationMobileViTModelConfig,
+    ClassificationResNetModelConfig,
+    ClassificationViTModelConfig,
+    DetectionEfficientFormerModelConfig,
+    DetectionMixNetLargeModelConfig,
+    DetectionMixNetMediumModelConfig,
+    DetectionMixNetSmallModelConfig,
+    DetectionMobileNetV3ModelConfig,
+    DetectionResNetModelConfig,
+    DetectionYoloXModelConfig,
+    PIDNetModelConfig,
+    SegmentationEfficientFormerModelConfig,
+    SegmentationMixNetLargeModelConfig,
+    SegmentationMixNetMediumModelConfig,
+    SegmentationMixNetSmallModelConfig,
+    SegmentationMobileNetV3ModelConfig,
+    SegmentationResNetModelConfig,
+    SegmentationSegFormerModelConfig,
+)
 
 CLASSIFICATION_MODELS = {
     "EfficientFormer": ClassificationEfficientFormerModelConfig,

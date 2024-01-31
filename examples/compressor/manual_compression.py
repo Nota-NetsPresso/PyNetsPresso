@@ -1,6 +1,5 @@
 from netspresso import NetsPresso
-from netspresso.enums import CompressionMethod, Policy, LayerNorm, GroupPolicy, Options
-
+from netspresso.enums import CompressionMethod, GroupPolicy, LayerNorm, Options, Policy
 
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"

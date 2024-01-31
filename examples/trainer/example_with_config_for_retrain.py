@@ -1,7 +1,6 @@
 from netspresso import NetsPresso
 from netspresso.trainer.optimizers import AdamW
 
-
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"
 

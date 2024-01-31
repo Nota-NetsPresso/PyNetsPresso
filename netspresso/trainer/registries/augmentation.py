@@ -4,7 +4,6 @@ from netspresso_trainer.cfg import (
     SegmentationAugmentationConfig,
 )
 
-
 AUGMENTATION_CONFIG_TYPE = {
     "classification": ClassificationAugmentationConfig,
     "detection": DetectionAugmentationConfig,

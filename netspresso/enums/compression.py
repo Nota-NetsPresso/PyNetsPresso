@@ -55,9 +55,7 @@ class LayerNorm(str, Enum):
 
     @classmethod
     def create_literal(cls):
-        return Literal[
-            "none", "standard_score", "tss_norm", "linear_scaling", "softmax_norm"
-        ]
+        return Literal["none", "standard_score", "tss_norm", "linear_scaling", "softmax_norm"]
 
 
 compression_literal = CompressionMethod.create_literal()

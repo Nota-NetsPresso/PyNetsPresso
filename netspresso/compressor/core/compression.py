@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, List
 
-from netspresso.enums import Policy, LayerNorm, GroupPolicy
+from netspresso.enums import GroupPolicy, LayerNorm, Policy
 
 
 @dataclass
@@ -26,10 +26,10 @@ class Options:
     """Represents an options for compression.
 
     Attributes:
-        reshape_channel_axis (int): 
-        policy (str): 
-        layer_norm (str): 
-        group_policy (str): 
+        reshape_channel_axis (int):
+        policy (str):
+        layer_norm (str):
+        group_policy (str):
     """
 
     reshape_channel_axis: int = -1
@@ -52,7 +52,7 @@ class CompressionInfo:
                 - name (str): The name of the layer.
                 - values (List[Any]): The compression parameters for the layer.
                 - channels (List[int]): The channel information for the layer.
-        
+
         options(Options, optional): The options for pruning method.
 
         original_model_id (str): The ID of the original model.

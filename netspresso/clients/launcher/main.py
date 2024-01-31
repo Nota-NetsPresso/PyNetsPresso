@@ -3,11 +3,6 @@ import json
 import requests
 
 from netspresso.clients.config import Config, Module
-from netspresso.enums import (
-    DataType,
-    DeviceName,
-    Framework,
-)
 from netspresso.clients.launcher.schemas.model import (
     BenchmarkTask,
     ConversionTask,
@@ -17,6 +12,8 @@ from netspresso.clients.launcher.schemas.model import (
     ModelConversionRequest,
 )
 from netspresso.clients.utils.common import get_files, get_headers
+from netspresso.enums.device import DeviceName
+from netspresso.enums.model import DataType, Framework
 
 
 class LauncherAPIClient:
@@ -30,9 +27,7 @@ class LauncherAPIClient:
     def upload_model(self, model_file_path: str, target_function: str, access_token) -> Model:
         url = f"{self.url}/{target_function.value.lower()}/upload_model"
         files = get_files(model_file_path)
-        response = requests.post(
-            url, files=files, headers=get_headers(access_token)
-        )
+        response = requests.post(url, files=files, headers=get_headers(access_token))
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return Model(**response_body)
@@ -111,9 +106,7 @@ class LauncherAPIClient:
         """
 
         url = f"{self.url}/convert/{conversion_task_uuid}"
-        response = requests.get(
-            url, headers=get_headers(access_token)
-        )
+        response = requests.get(url, headers=get_headers(access_token))
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return ConversionTask(**response_body)
@@ -133,9 +126,7 @@ class LauncherAPIClient:
             ConversionTask: model conversion task object.
         """
         url = f"{self.url}/convert/{conversion_task_uuid}/download"
-        response = requests.get(
-            url, headers=get_headers(access_token)
-        )
+        response = requests.get(url, headers=get_headers(access_token))
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return response_body
@@ -199,9 +190,7 @@ class LauncherAPIClient:
             BenchmarkTask: model benchmark task object.
         """
         url = f"{self.url}/benchmark/{benchmark_task_uuid}"
-        response = requests.get(
-            url, headers=get_headers(access_token)
-        )
+        response = requests.get(url, headers=get_headers(access_token))
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return BenchmarkTask(**response_body)

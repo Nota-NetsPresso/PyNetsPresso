@@ -1,8 +1,9 @@
-from dataclasses import asdict, dataclass, field
 import json
+from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional
 
 from netspresso.enums.metadata import Status, TaskType
+
 from .common import TargetDevice
 
 
@@ -84,9 +85,7 @@ class CompressorMetadata:
         def update_model_fields(target, source):
             target.size = source.model_size
             target.flops = source.flops
-            target.number_of_parameters = (
-                source.trainable_parameters + source.non_trainable_parameters
-            )
+            target.number_of_parameters = source.trainable_parameters + source.non_trainable_parameters
             target.trainable_parameters = source.trainable_parameters
             target.non_trainable_parameters = source.non_trainable_parameters
             target.number_of_layers = source.number_of_layers if source.number_of_layers != 0 else None

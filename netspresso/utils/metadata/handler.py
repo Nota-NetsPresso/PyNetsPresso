@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Any, Dict
 
 from netspresso.enums import TaskType
-from .default import TrainerMetadata, CompressorMetadata, ConverterMetadata, BenchmarkerMetadata
+
+from .default import BenchmarkerMetadata, CompressorMetadata, ConverterMetadata, TrainerMetadata
 
 
 class MetadataHandler:

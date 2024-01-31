@@ -4,7 +4,7 @@ from urllib import request
 
 from loguru import logger
 
-from netspresso.clients.auth import auth_client, TokenHandler
+from netspresso.clients.auth import TokenHandler, auth_client
 from netspresso.clients.compressor import compressor_client
 from netspresso.clients.compressor.schemas.compression import (
     AutoCompressionRequest,
@@ -19,21 +19,8 @@ from netspresso.clients.compressor.schemas.compression import (
 from netspresso.clients.compressor.schemas.model import UploadModelRequest
 from netspresso.clients.launcher import launcher_client
 from netspresso.compressor.core.compression import CompressionInfo
-from netspresso.compressor.core.model import (
-    CompressedModel,
-    Model,
-    ModelCollection,
-    ModelFactory,
-)
-from netspresso.enums import (
-    CompressionMethod,
-    Framework,
-    Module,
-    RecommendationMethod,
-    ServiceCredit,
-    Status,
-    TaskType,
-)
+from netspresso.compressor.core.model import CompressedModel, Model, ModelCollection, ModelFactory
+from netspresso.enums import CompressionMethod, Framework, Module, RecommendationMethod, ServiceCredit, Status, TaskType
 
 from ..utils import FileHandler, check_credit_balance
 from ..utils.metadata import MetadataHandler
@@ -51,7 +38,7 @@ class Compressor:
         self,
         model_name: str,
         input_model_path: str,
-        input_shapes: List[Dict[str, int]] = [],
+        input_shapes: List[Dict[str, int]] = None,
         framework: Framework = Framework.PYTORCH,
     ) -> Model:
         """Upload a model for compression.
@@ -69,6 +56,8 @@ class Compressor:
             Model: Uploaded model object.
         """
 
+        if input_shapes is None:
+            input_shapes = []
         FileHandler.check_input_model_path(input_model_path)
 
         self.token_handler.validate_token()
@@ -110,7 +99,9 @@ class Compressor:
 
         try:
             logger.info("Getting model...")
-            model_info = compressor_client.get_model_info(model_id=model_id, access_token=self.token_handler.tokens.access_token)
+            model_info = compressor_client.get_model_info(
+                model_id=model_id, access_token=self.token_handler.tokens.access_token
+            )
             if model_info.status.is_compressed:
                 model = self.model_factory.create_compressed_model(model_info=model_info)
             else:
@@ -173,7 +164,9 @@ class Compressor:
                     )
                 else:
                     logger.info("The compressed model for that model will also be deleted.")
-                    compressor_client.delete_model(model_id=model_id, access_token=self.token_handler.tokens.access_token)
+                    compressor_client.delete_model(
+                        model_id=model_id, access_token=self.token_handler.tokens.access_token
+                    )
                     logger.info("Delete model successfully.")
             else:
                 logger.info("The model will be deleted.")
@@ -218,7 +211,9 @@ class Compressor:
                 compression_method=compression_method,
                 options=options,
             )
-            response = compressor_client.get_available_layers(data=data, access_token=self.token_handler.tokens.access_token)
+            response = compressor_client.get_available_layers(
+                data=data, access_token=self.token_handler.tokens.access_token
+            )
             compression_info = CompressionInfo(
                 original_model_id=model.model_id,
                 compression_method=compression_method,
@@ -282,10 +277,10 @@ class Compressor:
         self.token_handler.validate_token()
 
         try:
-            logger.info(f"Uploading dataset...")
+            logger.info("Uploading dataset...")
             data = UploadDatasetRequest(model_id=model_id, file_path=dataset_path)
             compressor_client.upload_dataset(data=data, access_token=self.token_handler.tokens.access_token)
-            logger.info(f"Upload dataset successfully.")
+            logger.info("Upload dataset successfully.")
 
         except Exception as e:
             logger.error(f"Upload dataset failed. Error: {e}")
@@ -365,7 +360,9 @@ class Compressor:
                 compression_method=compression.compression_method,
                 options=compression.options,
             )
-            compression_info = compressor_client.create_compression(data=data, access_token=self.token_handler.tokens.access_token)
+            compression_info = compressor_client.create_compression(
+                data=data, access_token=self.token_handler.tokens.access_token
+            )
 
             if dataset_path and compression.compression_method == CompressionMethod.PR_NN:
                 self.__upload_dataset(model_id=compression.original_model_id, dataset_path=dataset_path)
@@ -377,7 +374,7 @@ class Compressor:
             all_layers_false = all(available_layer.values == [""] for available_layer in compression.available_layers)
             if all_layers_false:
                 raise Exception(
-                    f"The available_layer.values all empty. please put in the available_layer.values to compress."
+                    "The available_layer.values all empty. please put in the available_layer.values to compress."
                 )
 
             available_layers = [
@@ -480,7 +477,7 @@ class Compressor:
         """
 
         FileHandler.check_input_model_path(input_model_path)
-        
+
         self.token_handler.validate_token()
 
         try:
@@ -528,7 +525,7 @@ class Compressor:
                 )
 
             model_name = Path(output_dir).name
-            
+
             model = self.upload_model(
                 model_name=model_name,
                 framework=framework,
@@ -542,7 +539,9 @@ class Compressor:
                 compression_method=compression_method,
                 options=options.dict(),
             )
-            compression_info = compressor_client.create_compression(data=data, access_token=self.token_handler.tokens.access_token)
+            compression_info = compressor_client.create_compression(
+                data=data, access_token=self.token_handler.tokens.access_token
+            )
 
             if dataset_path and compression_method == CompressionMethod.PR_NN:
                 self.__upload_dataset(model_id=model.model_id, dataset_path=dataset_path)
@@ -555,7 +554,9 @@ class Compressor:
                 options=options.dict(),
             )
             logger.info("Compressing model...")
-            recommendation_result = compressor_client.get_recommendation(data=data, access_token=self.token_handler.tokens.access_token)
+            recommendation_result = compressor_client.get_recommendation(
+                data=data, access_token=self.token_handler.tokens.access_token
+            )
 
             for recommended_layer in recommendation_result.recommended_layers:
                 for available_layer in compression_info.available_layers:
@@ -644,7 +645,7 @@ class Compressor:
         """
 
         FileHandler.check_input_model_path(input_model_path)
-        
+
         self.token_handler.validate_token()
 
         try:
@@ -663,7 +664,7 @@ class Compressor:
             )
 
             model_name = Path(output_dir).name
-            
+
             model = self.upload_model(
                 model_name=model_name,
                 framework=framework,
@@ -679,7 +680,9 @@ class Compressor:
                 save_path=output_dir,
             )
             logger.info("Compressing model...")
-            model_info = compressor_client.auto_compression(data=data, access_token=self.token_handler.tokens.access_token)
+            model_info = compressor_client.auto_compression(
+                data=data, access_token=self.token_handler.tokens.access_token
+            )
             compression_info = self.get_compression(model_info.original_compression_id)
 
             self.download_model(

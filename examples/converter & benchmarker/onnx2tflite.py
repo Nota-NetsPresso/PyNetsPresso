@@ -1,6 +1,5 @@
 from netspresso import NetsPresso
-from netspresso.enums import Framework, DeviceName
-
+from netspresso.enums import DeviceName, Framework
 
 ###
 # Available target frameworks for conversion with onnx models

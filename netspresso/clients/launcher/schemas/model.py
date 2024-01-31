@@ -1,21 +1,10 @@
 import json
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, validator
 
-from netspresso.enums import (
-    DataType,
-    DeviceName,
-    HardwareType,
-    TaskStatus,
-)
-from netspresso.enums.model import (
-    datatype_literal,
-    launcher_framework_literal,
-)
-from netspresso.enums.device import (
-    device_name_literal,
-)
+from netspresso.enums.device import DeviceName, HardwareType, TaskStatus, device_name_literal
+from netspresso.enums.model import DataType, datatype_literal, launcher_framework_literal
 
 
 class InputShape(BaseModel):
@@ -61,7 +50,9 @@ class TargetDeviceFilter:
         return [device for device in devices if device.device_name == name]
 
     @staticmethod
-    def filter_devices_with_device_software_version(software_version: str, devices: List[TargetDevice]) -> List[TargetDevice]:
+    def filter_devices_with_device_software_version(
+        software_version: str, devices: List[TargetDevice]
+    ) -> List[TargetDevice]:
         return [device for device in devices if device.software_version == software_version]
 
     @staticmethod
