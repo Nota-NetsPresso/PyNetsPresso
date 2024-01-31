@@ -11,7 +11,7 @@ def validate_token(func) -> None:
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         if not check_jwt_exp(self.user_session.access_token):
-            self.user_session.__reissue_token()
+            self.user_session._reissue_token()
         return func(self, *args, **kwargs)
 
     return wrapper
@@ -73,7 +73,7 @@ class SessionClient:
             logger.error(f"Failed to get user information. Error: {e}")
             raise e
 
-    def __reissue_token(self) -> None:
+    def _reissue_token(self) -> None:
         try:
             url = f"{self.base_url}/token"
             data = RefreshTokenRequest(access_token=self.access_token, refresh_token=self.refresh_token)
