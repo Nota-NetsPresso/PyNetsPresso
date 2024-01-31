@@ -44,12 +44,12 @@ class NetsPresso:
         user_info = auth_client.get_user_info(self.token_handler.tokens.access_token)
         return user_info
 
-    def trainer(self, task: Optional[Union[str, Task]] = None, yaml_path: Optional[Union[Path, str]] = None) -> Trainer:
+    def trainer(self, task: Optional[Union[str, Task]] = None, yaml_path: Optional[str] = None) -> Trainer:
         """Initialize and return a Trainer instance.
 
         Args:
-            task (Optional[Union[str, Task]]): Type of task (classification, detection, segmentation).
-            yaml_path (Optional[Union[Path, str]]): Path to the YAML configuration file.
+            task (Union[str, Task], optional): Type of task (classification, detection, segmentation).
+            yaml_path (str, optional): Path to the YAML configuration file.
 
         Returns:
             Trainer: Initialized Trainer instance.
