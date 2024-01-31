@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional
+from typing import List, Optional, Union
 from pydantic import BaseModel, Field, validator
 
 from netspresso.launcher.schemas import DataType, DeviceName, TaskStatus, ModelFramework
@@ -33,7 +33,7 @@ class TargetDevice(BaseModel):
     """
     display_name: str = Field(default=None)
     display_brand_name: str = Field(default=None)
-    device_name: DeviceName = Field(default=None)
+    device_name: Union[DeviceName, str] = Field(default=None, union_mode='left_to_right')
     software_version: Optional[str] = Field(default=None)
     software_version_display_name: Optional[str] = Field(default=None)
 
