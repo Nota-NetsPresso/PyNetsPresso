@@ -1,0 +1,14 @@
+*.jpg
+*.png
+*.onnx
+*.pt
+*.pth
+
+**/*/exp/
+**/*/events*
+outputs/*
+
+data/
+log/
+pretrained/
+weights/
