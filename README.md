@@ -176,6 +176,16 @@ session = SessionClient(email='YOUR_EMAIL', password='YOUR_PASSWORD')
 compressor = ModelCompressor(user_session=session)
 ```
 
+If you face some ssl verification error, please use the following codes.
+
+```python
+from netspresso.client import SessionClient
+from netspresso.compressor import ModelCompressor
+
+session = SessionClient(email='YOUR_EMAIL', password='YOUR_PASSWORD', verify_ssl=False)
+compressor = ModelCompressor(user_session=session)
+```
+
 ### Upload Model
 
 To upload your trained model, simply enter the required information. 
@@ -214,8 +224,10 @@ Convert an ONNX model into a TensorRT model, and benchmark the TensorRT model on
 
 ```python
 from loguru import logger
+from netspresso.client import SessionClient
 from netspresso.launcher import ModelConverter, ModelBenchmarker, ModelFramework, TaskStatus, DeviceName, SoftwareVersion
 
+session = SessionClient(email='YOUR_EMAIL', password='YOUR_PASSWORD')
 converter = ModelConverter(user_session=session)
 
 model = converter.upload_model("./examples/sample_models/test.onnx")
