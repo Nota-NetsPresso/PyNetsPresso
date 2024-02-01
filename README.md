@@ -143,36 +143,34 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
 </div>
 
 
-## Installation
+## Getting started
 
-There are two ways you can install the PyNetsPresso: using pip or manually through our project GitHub repository.
+### Login
 
-To install this package, please use Python 3.8 or higher.
-
-From PyPI (Recommended)
-```bash
-pip install netspresso
-```
-
-From Github
-```bash
-git clone https://github.com/nota-netspresso/pynetspresso.git
-cd pynetspresso
-pip install -e .
-```
-
-
-## Quick Start
-
-### ⭐⭐⭐ (New Feature) Train ⭐⭐⭐
+To use the PyNetsPresso, please enter the email and password registered in NetsPresso.
 
 ```python
-from loguru import logger
-from netspresso.trainer import Trainer, Task
+from netspresso import NetsPresso
 
-trainer = Trainer(task=Task.OBJECT_DETECTION)
-logger.info(trainer.available_models)  # ['EfficientFormer', 'YOLOX']
+netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+```
 
+### Trainer
+
+#### Train
+
+```python
+from netspresso.enums import Task
+from netspresso.trainer.optimizers import AdamW
+from netspresso.trainer.schedulers import CosineAnnealingWarmRestartsWithCustomWarmUp
+from netspresso.trainer.augmentations import Resize
+
+
+# 1. Declare trainer
+trainer = netspresso.trainer(task=Task.OBJECT_DETECTION)
+
+# 2. Set config for training
+# 2-1. Data
 trainer.set_dataset_config(
     name="traffic_sign_config_example",
     root_path="/root/traffic-sign",
@@ -182,91 +180,172 @@ trainer.set_dataset_config(
     valid_label="labels/valid",
     id_mapping=["prohibitory", "danger", "mandatory", "other"],
 )
-trainer.set_model_config(model_name="YOLOX")
-trainer.set_training_config(epochs=40, batch_size=16, lr=6e-3, opt="adamw", warmup_epochs=10)
 
-trainer.train(gpus="0, 1")
+# 2-2. Model
+print(trainer.available_models)  # ['EfficientFormer', 'YOLOX-S', 'ResNet', 'MobileNetV3', 'MixNetL', 'MixNetM', 'MixNetS']
+trainer.set_model_config(model_name="YOLOX-S", img_size=512)
+
+# 2-3. Augmentation
+trainer.set_augmentation_config(
+    train_transforms=[Resize()],
+    inference_transforms=[Resize()],
+)
+
+# 2-4. Training
+optimizer = AdamW(lr=6e-3)
+scheduler = CosineAnnealingWarmRestartsWithCustomWarmUp(warmup_epochs=10)
+trainer.set_training_config(
+    epochs=40,
+    batch_size=16,
+    optimizer=optimizer,
+    scheduler=scheduler,
+)
+
+# 3. Train
+trainer.train(gpus="0, 1", project_name="PROJECT_TRAIN_SAMPLE")
 ```
+
+#### Retrain
 
 ```python
-from netspresso.trainer import Trainer, Task
+from netspresso.trainer.optimizers import AdamW
 
-trainer = Trainer(task=Task.IMAGE_CLASSIFICATION)
+# 1. Declare trainer
+trainer = netspresso.trainer(yaml_path="./temp/hparams.yaml")
 
-trainer.set_dataset_config_with_yaml(yaml_path="config/data/beans.yaml")
-trainer.set_model_config_with_yaml(yaml_path="config/model/resnet50-classification.yaml")
+# 2. Set config for retraining
+# 2-1. FX Model
+trainer.set_fx_model(fx_model_path="./temp/FX_MODEL_PATH.pt")
 
-trainer.train(gpus="0, 1")
+# 2-2. Training
+optimizer = AdamW(lr=6e-3)
+trainer.set_training_config(
+    epochs=30,
+    batch_size=16,
+    optimizer=optimizer,
+)
+
+# 3. Train
+trainer.train(gpus="0, 1", project_name="PROJECT_RETRAIN_SAMPLE")
 ```
 
-#### Download config folder from netspresso-trainer
+### Compressor
 
-If you want to train the trainer as a yaml file, download the config folder and use it.
-
-```bash
-python tools/github_download.py --repo Nota-NetsPresso/netspresso-trainer --path config
-```
-
-### Login
-
-To use the PyNetsPresso, please enter the email and password registered in NetsPresso.
-
-```python
-from netspresso.client import SessionClient
-
-session = SessionClient(email='YOUR_EMAIL', password='YOUR_PASSWORD')
-```
-
-### Automatic Compression
+#### Compress (Automatic compression)
 
 Automatically compress the model by setting the compression ratio for the model.
 
-Enter the ID of the uploaded model, the name and storage path of the compressed model, and the compression ratio.
-
 ```python
-from netspresso.compressor import Compressor
+# 1. Declare compressor
+compressor = netspresso.compressor()
 
-compressor = Compressor(user_session=session)
+# 2. Run automatic compression
 compressed_model = compressor.automatic_compression(
-    model_name="YOUR_MODEL_NAME",
-    task=Task.IMAGE_CLASSIFICATION,
-    framework=Framework.TENSORFLOW_KERAS,
-    input_shapes="YOUR_MODEL_INPUT_SHAPES",  # ex) [{"batch": 1, "channel": 3, "dimension": [32, 32]}]
-    input_path="YOUR_MODEL_PATH",  # ex) "./examples/sample_models/mobilenetv1.h5"
-    output_path="OUTPUT_PATH",  # ex) ./outputs/compressed/compressed_model.h5,
+    input_shapes=[{"batch": 1, "channel": 3, "dimension": [224, 224]}],
+    input_model_path="./examples/sample_models/graphmodule.pt",
+    output_dir="./outputs/compressed1/pytorch_automatic_compression_1",
     compression_ratio=0.5,
 )
 ```
 
-### Convert Model and Benchmark the Converted Model
-Convert an ONNX model into a TensorRT model, and benchmark the TensorRT model on the Jetson Nano.
+### Converter
+
+#### Convert
 
 ```python
-from loguru import logger
-from netspresso.launcher import Converter, Benchmarker, ModelFramework, DeviceName, SoftwareVersion
+from netspresso.enums import DeviceName, Framework, SoftwareVersion
 
-converter = Converter(user_session=session)
+# 1. Declare converter
+converter = netspresso.converter()
+
+# 2. Run convert
 conversion_task = converter.convert_model(
-    model_path="YOUR_MODEL_PATH",  # ex) "./examples/sample_models/test.onnx"
-    target_framework=ModelFramework.TENSORRT,
-    target_device_name=DeviceName.JETSON_AGX_ORIN,
-    target_software_version=SoftwareVersion.JETPACK_5_0_1,
-    output_path="CONVERTED_MODEL_PATH"  # ex) "./outputs/converted/converted_model.trt"
-)
-logger.info(conversion_task)
-
-benchmarker = Benchmarker(user_session=session)
-benchmark_task = benchmarker.benchmark_model(
-    model_path="CONVERTED_MODEL_PATH",  # ex) "./outputs/converted/converted_model.trt"
+    input_model_path="./examples/sample_models/test.onnx",
+    output_dir="./outputs/converted/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1",
+    target_framework=Framework.TENSORRT,
     target_device_name=DeviceName.JETSON_AGX_ORIN,
     target_software_version=SoftwareVersion.JETPACK_5_0_1,
 )
-logger.info(f"model inference latency: {benchmark_task.latency} ms")
-logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} MB")
-logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} MB")
 ```
 
-## Available Options for Launcher (Convert, Benchmark)
+### Benchmarker
+
+#### Benchmark
+
+```python
+from netspresso.enums import DeviceName, SoftwareVersion
+
+# 1. Declare benchmarker
+benchmarker = netspresso.benchmarker()
+
+# 2. Run benchmark
+benchmark_task = benchmarker.benchmark_model(
+    input_model_path="./outputs/converted/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1.trt",
+    target_device_name=DeviceName.JETSON_AGX_ORIN,
+    target_software_version=SoftwareVersion.JETPACK_5_0_1,
+)
+print(f"model inference latency: {benchmark_task['result']['latency']} ms")
+print(f"model gpu memory footprint: {benchmark_task['result']['memory_footprint_gpu']} MB")
+print(f"model cpu memory footprint: {benchmark_task['result']['memory_footprint_cpu']} MB")
+```
+
+## Installation
+
+### Prerequisites
+
+- Python `3.8` | `3.9` | `3.10`
+- PyTorch `1.13.0` (recommended) (compatible with: `1.11.x` - `1.13.x`)
+- TensorFlow `2.8.0` (recommended) (compatible with: `2.3.x` - `2.8.x`)
+
+### Install with PyPI (stable)
+
+```bash
+pip install netspresso
+```
+
+### Install with GitHub
+
+To install with editable mode,
+
+```bash
+git clone https://github.com/nota-netspresso/pynetspresso.git
+cd pynetspresso
+pip install -e .
+```
+
+### Docker with docker-compose
+
+For the latest information, please check `docker-compose.yml`
+
+```python
+# run command
+export TAG=v$(cat netspresso/VERSION) && \
+docker compose run --service-ports --name netspresso-dev netspresso bash
+```
+
+### Docker image build
+
+If you run with `docker run` command, follow the image build and run command in the below:
+
+```python
+# build an image
+docker build -t netspresso:v$(cat netspresso/VERSION) .
+```
+
+```python
+# docker run command
+docker run -it --ipc=host\
+  --gpus='"device=0,1,2,3"'\
+  -v /PATH/TO/DATA:/DATA/PATH/IN/CONTAINER\
+  -v /PATH/TO/CHECKPOINT:/CHECKPOINT/PATH/IN/CONTAINER\
+  -p 50001:50001\
+  -p 50002:50002\
+  -p 50003:50003\
+  --name netspresso-dev netspresso:v$(cat netspresso/VERSION)
+```
+
+
+## Available Options for Converter & Benchmarker
 
 ### Available Target Frameworks for Conversion with Source Models
 
