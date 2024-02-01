@@ -104,9 +104,9 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
 <div width="9%" align="center">
   <table width="90%" align="center">
       <tr>
-          <td width="30%" align="center">Steps</td>
-          <td width="30%" align="center">Types</td>
-          <td width="40%" align="center">Description</td>
+          <th>Steps</th>
+          <th>Types</th>
+          <th>Description</th>
       </tr>
       <tr>
           <td width="30%" align="center" rowspan="2">Train</td>
