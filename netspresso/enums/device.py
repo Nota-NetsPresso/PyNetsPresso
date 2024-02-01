@@ -3,6 +3,7 @@ from typing import Literal
 
 
 class DeviceName(str, Enum):
+    RASPBERRY_PI_5 = "RaspberryPi5"
     RASPBERRY_PI_4B = "RaspberryPi4B"
     RASPBERRY_PI_3B_PLUS = "RaspberryPi3BPlus"
     RASPBERRY_PI_ZERO_W = "RaspberryPi-ZeroW"
@@ -18,10 +19,12 @@ class DeviceName(str, Enum):
     INTEL_XEON_W_2233 = "Intel-Xeon"
     ALIF_ENSEMBLE_E7_DEVKIT_GEN2 = "Ensemble-E7-DevKit-Gen2"
     RENESAS_RA8D1 = "Renesas-RA8D1"
+    ARM_ETHOS_U_SERIES = "Arm Virtual Hardware Ethos-U Series"
 
     @classmethod
     def create_literal(cls):
         return Literal[
+            "RaspberryPi5",
             "RaspberryPi4B",
             "RaspberryPi3BPlus",
             "RaspberryPi-ZeroW",
@@ -37,6 +40,7 @@ class DeviceName(str, Enum):
             "Intel-Xeon",
             "Ensemble-E7-DevKit-Gen2",
             "Renesas-RA8D1",
+            "Arm Virtual Hardware Ethos-U Series",
         ]
 
     JETSON_DEVICES = [
@@ -47,6 +51,7 @@ class DeviceName(str, Enum):
         JETSON_AGX_ORIN,
     ]
     RASPBERRY_PI_DEVICES = [
+        RASPBERRY_PI_5,
         RASPBERRY_PI_4B,
         RASPBERRY_PI_3B_PLUS,
         RASPBERRY_PI_ZERO_W,
@@ -58,12 +63,14 @@ class DeviceName(str, Enum):
     AVAILABLE_INT8_DEVICES = [
         ALIF_ENSEMBLE_E7_DEVKIT_GEN2,
         RENESAS_RA8D1,
+        RASPBERRY_PI_5,
         RASPBERRY_PI_4B,
         RASPBERRY_PI_3B_PLUS,
         RASPBERRY_PI_ZERO_W,
         RASPBERRY_PI_ZERO_2W,
+        ARM_ETHOS_U_SERIES,
     ]
-    ONLY_INT8_DEVICES = [ALIF_ENSEMBLE_E7_DEVKIT_GEN2, RENESAS_RA8D1]
+    ONLY_INT8_DEVICES = [ALIF_ENSEMBLE_E7_DEVKIT_GEN2, RENESAS_RA8D1, ARM_ETHOS_U_SERIES]
 
 
 class SoftwareVersion(str, Enum):
