@@ -101,9 +101,32 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
             <td width="40%" align="center">Description</td>
         </tr>
         <tr>
-            <td width="30%" align="center">Train</td>
+            <td width="30%" align="center" rowspan="2">Train</td>
+            <td width="30%" align="center">
+              <details>
+                  <summary>Image Classification</summary>
+                  <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota">PyTorch-CIFAR-Models</a>
+              </details>
+              <details>
+                  <summary>Object Detection</summary>
+                  <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85">YOLO Fastest</a><br>
+                  <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
+                  <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
+                  <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
+              </details>
+              <details>
+                  <summary>Semantic Segmentation</summary>
+                  <a href="https://github.com/Nota-NetsPresso/PIDNet_nota">PIDNet</a>
+              </details>
+              <details>
+                  <summary>Pose Estimation</summary>
+                  <a href="https://github.com/Nota-NetsPresso/ultralytics_nota">YOLOv8</a>
+              </details>
+            </td>
+            <td width="40%" align="center" rowspan="2">Build and train models.</td>
+        </tr>
+        <tr>
             <td width="30%" align="center">np.trainer</td>
-            <td width="40%" align="center">Build and train models.</td>
         </tr>
         <tr>
             <td width="30%" align="center">Compress</td>
@@ -118,7 +141,7 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
         <tr>
             <td width="30%" align="center">Benchmark</td>
             <td width="30%" align="center">np.benchmarker</td>
-            <td width="40%" align="center">Blank</td>
+            <td width="40%" align="center">Accurate model inference speed measurement on your device.</td>
         </tr>
     </table>
 </div>
@@ -239,7 +262,7 @@ compressor = netspresso.compressor()
 compressed_model = compressor.automatic_compression(
     input_shapes=[{"batch": 1, "channel": 3, "dimension": [224, 224]}],
     input_model_path="./examples/sample_models/graphmodule.pt",
-    output_dir="./outputs/compressed1/pytorch_automatic_compression_1",
+    output_dir="./outputs/compressed/pytorch_automatic_compression",
     compression_ratio=0.5,
 )
 ```
