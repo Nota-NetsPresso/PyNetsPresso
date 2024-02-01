@@ -102,46 +102,49 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
         </tr>
         <tr>
             <td width="30%" align="center" rowspan="2">Train</td>
-            <td width="30%" align="center">
-              <details>
-                  <summary>Image Classification</summary>
-                  <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota">PyTorch-CIFAR-Models</a>
-              </details>
-              <details>
-                  <summary>Object Detection</summary>
-                  <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85">YOLO Fastest</a><br>
-                  <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
-                  <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
-                  <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
-              </details>
-              <details>
-                  <summary>Semantic Segmentation</summary>
-                  <a href="https://github.com/Nota-NetsPresso/PIDNet_nota">PIDNet</a>
-              </details>
-              <details>
-                  <summary>Pose Estimation</summary>
-                  <a href="https://github.com/Nota-NetsPresso/ultralytics_nota">YOLOv8</a>
-              </details>
-            </td>
-            <td width="40%" align="center" rowspan="2">Build and train models.</td>
+            <td width="30%" align="center">Trainer</td>
+            <td width="40%" align="center" rowspan="2">Build and train a model.</td>
         </tr>
         <tr>
-            <td width="30%" align="center">np.trainer</td>
+            <td width="30%" align="center">
+              <details>
+                <summary>Model Zoo</summary>
+                <details>
+                    <summary>Image Classification</summary>
+                    <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota">PyTorch-CIFAR-Models</a>
+                </details>
+                <details>
+                    <summary>Object Detection</summary>
+                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85">YOLO Fastest</a><br>
+                    <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
+                    <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
+                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
+                </details>
+                <details>
+                    <summary>Semantic Segmentation</summary>
+                    <a href="https://github.com/Nota-NetsPresso/PIDNet_nota">PIDNet</a>
+                </details>
+                <details>
+                    <summary>Pose Estimation</summary>
+                    <a href="https://github.com/Nota-NetsPresso/ultralytics_nota">YOLOv8</a>
+                </details>
+              </details>
+            </td>
         </tr>
         <tr>
             <td width="30%" align="center">Compress</td>
-            <td width="30%" align="center">np.compressor</td>
-            <td width="40%" align="center">Compress and optimize the user’s pre-trained model.</td>
+            <td width="30%" align="center">Compressor</td>
+            <td width="40%" align="center">Compress and optimize the user’s model.</td>
         </tr>
         <tr>
             <td width="30%" align="center">Convert</td>
-            <td width="30%" align="center">np.converter</td>
-            <td width="40%" align="center">Convert AI models to run efficiently on the desired hardware and provide easy installation for seamless usage of the converted AI models.</td>
+            <td width="30%" align="center">Converter</td>
+            <td width="40%" align="center">Convert and quantize the user’s model to run efficiently on your device.</td>
         </tr>
         <tr>
             <td width="30%" align="center">Benchmark</td>
-            <td width="30%" align="center">np.benchmarker</td>
-            <td width="40%" align="center">Accurate model inference speed measurement on your device.</td>
+            <td width="30%" align="center">Benchmarker</td>
+            <td width="40%" align="center">Benchmark the user's model to measure model inference speed on your device.</td>
         </tr>
     </table>
 </div>
