@@ -108,7 +108,9 @@ class Converter:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.CONVERT)
 
-            current_credit = auth_client.get_credit(self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            current_credit = auth_client.get_credit(
+                self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
             check_credit_balance(user_credit=current_credit, service_credit=ServiceCredit.MODEL_CONVERT)
             model = launcher_client.upload_model(
                 model_file_path=input_model_path,
@@ -215,7 +217,9 @@ class Converter:
             metadata.update_available_devices(converter_uploaded_model.available_devices)
             MetadataHandler.save_json(data=metadata.asdict(), folder_path=output_dir)
 
-            remaining_credit = auth_client.get_credit(self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            remaining_credit = auth_client.get_credit(
+                self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
             logger.info(
                 f"{ServiceCredit.MODEL_CONVERT} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -258,7 +262,9 @@ class Converter:
                     "There is no available function for the given parameter. The 'conversion_task' should be a UUID string or a ModelConversion object."
                 )
             return launcher_client.get_conversion_task(
-                conversion_task_uuid=conversion_task_uuid, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+                conversion_task_uuid=conversion_task_uuid,
+                access_token=self.token_handler.tokens.access_token,
+                verify_ssl=self.token_handler.verify_ssl,
             )
 
         except Exception as e:

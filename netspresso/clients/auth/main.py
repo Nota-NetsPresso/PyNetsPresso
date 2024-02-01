@@ -95,7 +95,9 @@ class TokenHandler:
 
     def validate_token(self):
         if not self.check_jwt_exp():
-            self.tokens = auth_client.reissue_token(self.tokens.access_token, self.tokens.refresh_token, self.verify_ssl)
+            self.tokens = auth_client.reissue_token(
+                self.tokens.access_token, self.tokens.refresh_token, self.verify_ssl
+            )
 
 
 auth_client = AuthClient()

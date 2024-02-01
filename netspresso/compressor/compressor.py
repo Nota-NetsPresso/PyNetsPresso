@@ -70,7 +70,9 @@ class Compressor:
                 file_path=input_model_path,
                 input_layers=input_shapes,
             )
-            model_info = compressor_client.upload_model(data=data, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            model_info = compressor_client.upload_model(
+                data=data, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
             model = self.model_factory.create_model(model_info=model_info)
 
             logger.info(f"Upload model successfully. Model ID: {model.model_id}")
@@ -100,7 +102,9 @@ class Compressor:
         try:
             logger.info("Getting model...")
             model_info = compressor_client.get_model_info(
-                model_id=model_id, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+                model_id=model_id,
+                access_token=self.token_handler.tokens.access_token,
+                verify_ssl=self.token_handler.verify_ssl,
             )
             if model_info.status.is_compressed:
                 model = self.model_factory.create_compressed_model(model_info=model_info)
@@ -130,7 +134,9 @@ class Compressor:
         try:
             logger.info("Downloading model...")
             download_link = compressor_client.get_download_model_link(
-                model_id=model_id, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+                model_id=model_id,
+                access_token=self.token_handler.tokens.access_token,
+                verify_ssl=self.token_handler.verify_ssl,
             )
             request.urlretrieve(download_link.url, local_path)
             logger.info(f"Model downloaded at {Path(local_path)}")
@@ -155,7 +161,9 @@ class Compressor:
         try:
             logger.info("Deleting model...")
             children_models = compressor_client.get_children_models(
-                model_id=model_id, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+                model_id=model_id,
+                access_token=self.token_handler.tokens.access_token,
+                verify_ssl=self.token_handler.verify_ssl,
             )
             if len(children_models) != 0:
                 if not recursive:
@@ -165,12 +173,18 @@ class Compressor:
                 else:
                     logger.info("The compressed model for that model will also be deleted.")
                     compressor_client.delete_model(
-                        model_id=model_id, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+                        model_id=model_id,
+                        access_token=self.token_handler.tokens.access_token,
+                        verify_ssl=self.token_handler.verify_ssl,
                     )
                     logger.info("Delete model successfully.")
             else:
                 logger.info("The model will be deleted.")
-                compressor_client.delete_model(model_id=model_id, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+                compressor_client.delete_model(
+                    model_id=model_id,
+                    access_token=self.token_handler.tokens.access_token,
+                    verify_ssl=self.token_handler.verify_ssl,
+                )
                 logger.info("Delete model successfully.")
 
         except Exception as e:
@@ -280,7 +294,9 @@ class Compressor:
         try:
             logger.info("Uploading dataset...")
             data = UploadDatasetRequest(model_id=model_id, file_path=dataset_path)
-            compressor_client.upload_dataset(data=data, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            compressor_client.upload_dataset(
+                data=data, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
             logger.info("Upload dataset successfully.")
 
         except Exception as e:
@@ -349,7 +365,9 @@ class Compressor:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
-            current_credit = auth_client.get_credit(self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            current_credit = auth_client.get_credit(
+                self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.ADVANCED_COMPRESSION,
@@ -397,7 +415,9 @@ class Compressor:
                 compressed_model_id=compression_info.new_model_id,
                 options=compression.options,
             )
-            compressor_client.compress_model(data=data, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            compressor_client.compress_model(
+                data=data, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
 
             self.download_model(
                 model_id=compression_info.new_model_id,
@@ -408,7 +428,9 @@ class Compressor:
             converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(f"Compress model successfully. Compressed Model ID: {compressed_model.model_id}")
-            remaining_credit = auth_client.get_credit(self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            remaining_credit = auth_client.get_credit(
+                self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
             logger.info(
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -492,7 +514,9 @@ class Compressor:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
-            current_credit = auth_client.get_credit(self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            current_credit = auth_client.get_credit(
+                self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.ADVANCED_COMPRESSION,
@@ -575,7 +599,9 @@ class Compressor:
                 compressed_model_id=compression_info.new_model_id,
                 options=options.dict(),
             )
-            compressor_client.compress_model(data=data, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            compressor_client.compress_model(
+                data=data, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
 
             self.download_model(
                 model_id=compression_info.new_model_id,
@@ -586,7 +612,9 @@ class Compressor:
             converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(f"Recommendation compression successfully. Compressed Model ID: {compressed_model.model_id}")
-            remaining_credit = auth_client.get_credit(self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            remaining_credit = auth_client.get_credit(
+                self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
             logger.info(
                 f"{ServiceCredit.ADVANCED_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -660,7 +688,9 @@ class Compressor:
             FileHandler.create_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
-            current_credit = auth_client.get_credit(self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            current_credit = auth_client.get_credit(
+                self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
             check_credit_balance(
                 user_credit=current_credit,
                 service_credit=ServiceCredit.AUTOMATIC_COMPRESSION,
@@ -697,7 +727,9 @@ class Compressor:
             converter_uploaded_model = self._get_available_devices(compressed_model, default_model_path)
 
             logger.info(f"Automatic compression successfully. Compressed Model ID: {compressed_model.model_id}")
-            remaining_credit = auth_client.get_credit(self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl)
+            remaining_credit = auth_client.get_credit(
+                self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+            )
             logger.info(
                 f"{ServiceCredit.AUTOMATIC_COMPRESSION} credits have been consumed. Remaining Credit: {remaining_credit}"
             )

@@ -23,7 +23,9 @@ class CompressorAPIClient:
     def upload_model(self, data: UploadModelRequest, access_token, verify_ssl: bool = True) -> ModelResponse:
         url = f"{self.url}/models"
         files = get_files(data.file_path)
-        response = requests.post(url, data=data.dict(), files=files, headers=get_headers(access_token), verify=verify_ssl)
+        response = requests.post(
+            url, data=data.dict(), files=files, headers=get_headers(access_token), verify=verify_ssl
+        )
         response_body = json.loads(response.text)
 
         if response.status_code == 200:
@@ -83,7 +85,9 @@ class CompressorAPIClient:
 
     def get_available_layers(self, data, access_token, verify_ssl: bool = True) -> GetAvailableLayersReponse:
         url = f"{self.url}/models/{data.model_id}/get_available_layers"
-        response = requests.post(url, data=data.json(), headers=get_headers(access_token, json_type=True), verify=verify_ssl)
+        response = requests.post(
+            url, data=data.json(), headers=get_headers(access_token, json_type=True), verify=verify_ssl
+        )
         response_body = json.loads(response.text)
 
         if response.status_code == 200:
@@ -93,7 +97,9 @@ class CompressorAPIClient:
 
     def create_compression(self, data, access_token, verify_ssl: bool = True) -> CompressionResponse:
         url = f"{self.url}/compressions"
-        response = requests.post(url, data=data.json(), headers=get_headers(access_token, json_type=True), verify=verify_ssl)
+        response = requests.post(
+            url, data=data.json(), headers=get_headers(access_token, json_type=True), verify=verify_ssl
+        )
         response_body = json.loads(response.text)
 
         if response.status_code == 200:
@@ -103,7 +109,9 @@ class CompressorAPIClient:
 
     def get_recommendation(self, data, access_token, verify_ssl: bool = True) -> RecommendationResponse:
         url = f"{self.url}/models/{data.model_id}/recommendation"
-        response = requests.post(url, data=data.json(), headers=get_headers(access_token, json_type=True), verify=verify_ssl)
+        response = requests.post(
+            url, data=data.json(), headers=get_headers(access_token, json_type=True), verify=verify_ssl
+        )
         response_body = json.loads(response.text)
 
         if response.status_code == 200:
@@ -114,7 +122,9 @@ class CompressorAPIClient:
 
     def compress_model(self, data, access_token, verify_ssl: bool = True):
         url = f"{self.url}/compressions/{data.compression_id}"
-        response = requests.put(url, data=data.json(), headers=get_headers(access_token, json_type=True), verify=verify_ssl)
+        response = requests.put(
+            url, data=data.json(), headers=get_headers(access_token, json_type=True), verify=verify_ssl
+        )
         response_body = json.loads(response.text)
 
         if response.status_code == 200:
@@ -124,7 +134,9 @@ class CompressorAPIClient:
 
     def auto_compression(self, data, access_token, verify_ssl: bool = True):
         url = f"{self.url}/models/{data.model_id}/auto_compress"
-        response = requests.post(url, data=data.json(), headers=get_headers(access_token, json_type=True), verify=verify_ssl)
+        response = requests.post(
+            url, data=data.json(), headers=get_headers(access_token, json_type=True), verify=verify_ssl
+        )
         response_body = json.loads(response.text)
 
         if response.status_code == 200:

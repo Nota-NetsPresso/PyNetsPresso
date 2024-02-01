@@ -67,7 +67,9 @@ class Benchmarker:
                 metadatas = [metadata.asdict()]
             MetadataHandler.save_json(metadatas, folder_path, file_name="benchmark")
 
-            current_credit = auth_client.get_credit(self.token_handler.tokens.access_token, self.token_handler.verify_ssl)
+            current_credit = auth_client.get_credit(
+                self.token_handler.tokens.access_token, self.token_handler.verify_ssl
+            )
             check_credit_balance(user_credit=current_credit, service_credit=ServiceCredit.MODEL_BENCHMARK)
             model = launcher_client.upload_model(
                 model_file_path=input_model_path,
@@ -163,7 +165,9 @@ class Benchmarker:
             metadatas[-1] = metadata.asdict()
             MetadataHandler.save_json(data=metadatas, folder_path=folder_path, file_name="benchmark")
 
-            remaining_credit = auth_client.get_credit(self.token_handler.tokens.access_token, self.token_handler.verify_ssl)
+            remaining_credit = auth_client.get_credit(
+                self.token_handler.tokens.access_token, self.token_handler.verify_ssl
+            )
             logger.info(
                 f"{ServiceCredit.MODEL_BENCHMARK} credits have been consumed. Remaining Credit: {remaining_credit}"
             )
@@ -209,7 +213,9 @@ class Benchmarker:
                 )
 
             return launcher_client.get_benchmark(
-                benchmark_task_uuid=task_uuid, access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
+                benchmark_task_uuid=task_uuid,
+                access_token=self.token_handler.tokens.access_token,
+                verify_ssl=self.token_handler.verify_ssl,
             )
 
         except Exception as e:
