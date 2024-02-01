@@ -1,0 +1,4 @@
+sphinx>=6.2.1
+recommonmark
+sphinx_rtd_theme
+netspresso
