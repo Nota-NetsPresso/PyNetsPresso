@@ -24,10 +24,10 @@ class LauncherAPIClient:
         self.prefix = self.config.URI_PREFIX
         self.url = f"{self.host}:{self.port}{self.prefix}"
 
-    def upload_model(self, model_file_path: str, target_function: str, access_token) -> Model:
+    def upload_model(self, model_file_path: str, target_function: str, access_token, verify_ssl: bool = True) -> Model:
         url = f"{self.url}/{target_function.value.lower()}/upload_model"
         files = get_files(model_file_path)
-        response = requests.post(url, files=files, headers=get_headers(access_token))
+        response = requests.post(url, files=files, headers=get_headers(access_token), verify=verify_ssl)
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return Model(**response_body)
@@ -45,6 +45,7 @@ class LauncherAPIClient:
         software_version: str,
         dataset_path: str,
         access_token,
+        verify_ssl: bool = True,
     ) -> ConversionTask:
         """Convert a model into the type the specific framework.
 
@@ -85,6 +86,7 @@ class LauncherAPIClient:
             data=request_data.dict(),
             files=files,
             headers=get_headers(access_token),
+            verify=verify_ssl,
         )
         response_body = json.loads(response.text)
         if response.status_code < 300:
@@ -92,7 +94,7 @@ class LauncherAPIClient:
         else:
             raise Exception(response_body["detail"])
 
-    def get_conversion_task(self, conversion_task_uuid: str, access_token) -> ConversionTask:
+    def get_conversion_task(self, conversion_task_uuid: str, access_token, verify_ssl: bool = True) -> ConversionTask:
         """Get the conversion task information with given conversion task uuid.
 
         Args:
@@ -106,14 +108,14 @@ class LauncherAPIClient:
         """
 
         url = f"{self.url}/convert/{conversion_task_uuid}"
-        response = requests.get(url, headers=get_headers(access_token))
+        response = requests.get(url, headers=get_headers(access_token), verify=verify_ssl)
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return ConversionTask(**response_body)
         else:
             raise Exception(response_body["detail"])
 
-    def get_converted_model(self, conversion_task_uuid: str, access_token):
+    def get_converted_model(self, conversion_task_uuid: str, access_token, verify_ssl: bool = True):
         """Download the converted model with given conversion task or conversion task uuid.
 
         Args:
@@ -126,7 +128,7 @@ class LauncherAPIClient:
             ConversionTask: model conversion task object.
         """
         url = f"{self.url}/convert/{conversion_task_uuid}/download"
-        response = requests.get(url, headers=get_headers(access_token))
+        response = requests.get(url, headers=get_headers(access_token), verify=verify_ssl)
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return response_body
@@ -142,6 +144,7 @@ class LauncherAPIClient:
         access_token,
         software_version: str = None,
         hardware_type: str = None,
+        verify_ssl: bool = True,
     ) -> BenchmarkTask:
         """Benchmark given model on the specified device.
 
@@ -170,6 +173,7 @@ class LauncherAPIClient:
             url,
             json=request_data.dict(),
             headers=get_headers(access_token),
+            verify=verify_ssl,
         )
         response_body = json.loads(response.text)
         if response.status_code < 300:
@@ -177,7 +181,7 @@ class LauncherAPIClient:
         else:
             raise Exception(response_body["detail"])
 
-    def get_benchmark(self, benchmark_task_uuid: str, access_token) -> BenchmarkTask:
+    def get_benchmark(self, benchmark_task_uuid: str, access_token, verify_ssl: bool = True) -> BenchmarkTask:
         """Get the benchmark task information with given benchmark task uuid.
 
         Args:
@@ -190,7 +194,7 @@ class LauncherAPIClient:
             BenchmarkTask: model benchmark task object.
         """
         url = f"{self.url}/benchmark/{benchmark_task_uuid}"
-        response = requests.get(url, headers=get_headers(access_token))
+        response = requests.get(url, headers=get_headers(access_token), verify=verify_ssl)
         response_body = json.loads(response.text)
         if response.status_code < 300:
             return BenchmarkTask(**response_body)

@@ -26,11 +26,11 @@ class AuthClient:
         self.uri_prefix = self.config.URI_PREFIX
         self.base_url = f"{self.host}:{self.port}{self.uri_prefix}"
 
-    def login(self, email, password) -> Tokens:
+    def login(self, email, password, verify_ssl: bool = True) -> Tokens:
         try:
             url = f"{self.base_url}/auth/local/login"
             data = LoginRequest(username=email, password=password)
-            response = requests.post(url, json=data.dict(), headers=get_headers())
+            response = requests.post(url, json=data.dict(), headers=get_headers(), verify=verify_ssl)
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
@@ -44,10 +44,10 @@ class AuthClient:
             logger.error(f"Login failed. Error: {e}")
             raise e
 
-    def get_user_info(self, access_token) -> UserInfo:
+    def get_user_info(self, access_token, verify_ssl: bool = True) -> UserInfo:
         try:
             url = f"{self.base_url}/user"
-            response = requests.get(url, headers=get_headers(access_token=access_token))
+            response = requests.get(url, headers=get_headers(access_token=access_token), verify=verify_ssl)
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
@@ -61,16 +61,16 @@ class AuthClient:
             logger.error(f"Failed to get user information. Error: {e}")
             raise e
 
-    def get_credit(self, access_token) -> int:
-        user_info = self.get_user_info(access_token)
+    def get_credit(self, access_token, verify_ssl: bool = True) -> int:
+        user_info = self.get_user_info(access_token, verify_ssl)
 
         return user_info.total
 
-    def reissue_token(self, access_token, refresh_token) -> Tokens:
+    def reissue_token(self, access_token, refresh_token, verify_ssl: bool = True) -> Tokens:
         try:
             url = f"{self.base_url}/auth/token"
             data = Tokens(access_token=access_token, refresh_token=refresh_token)
-            response = requests.post(url, data=data.json(), headers=get_headers(json_type=True))
+            response = requests.post(url, data=data.json(), headers=get_headers(json_type=True), verify=verify_ssl)
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
@@ -85,8 +85,9 @@ class AuthClient:
 
 
 class TokenHandler:
-    def __init__(self, tokens) -> None:
+    def __init__(self, tokens, verify_ssl: bool = True) -> None:
         self.tokens = tokens
+        self.verify_ssl = verify_ssl
 
     def check_jwt_exp(self):
         payload = jwt.decode(self.tokens.access_token, options={"verify_signature": False})
@@ -94,7 +95,9 @@ class TokenHandler:
 
     def validate_token(self):
         if not self.check_jwt_exp():
-            self.tokens = auth_client.reissue_token(self.tokens.access_token, self.tokens.refresh_token)
+            self.tokens = auth_client.reissue_token(
+                self.tokens.access_token, self.tokens.refresh_token, self.verify_ssl
+            )
 
 
 auth_client = AuthClient()
