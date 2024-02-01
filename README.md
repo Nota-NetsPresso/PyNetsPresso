@@ -23,8 +23,8 @@
 <div align="center">
     <p align="center">
         <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue" />
-        <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
         <a href="https://pytorch.org/" target="_blank"><img src="https://img.shields.io/badge/PyTorch-1.11.x ~ 1.13.x.-EE4C2C?style=flat&logo=pytorch&logoColor=#EE4C2C"/></a>
+        <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
         <br>
         <a href="https://netspresso.ai?utm_source=git&utm_medium=text_np&utm_campaign=py_launch"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
         <a href="https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo"><img src="https://img.shields.io/badge/ModelZoo-Open in Github-181717?style=flat&logo=github&logoColor=#181717"/></a>
@@ -142,6 +142,21 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
     </table>
 </div>
 
+## Installation
+
+### Prerequisites
+
+- Python `3.8` | `3.9` | `3.10`
+- PyTorch `1.13.0` (recommended) (compatible with: `1.11.x` - `1.13.x`)
+- TensorFlow `2.8.0` (recommended) (compatible with: `2.3.x` - `2.8.x`)
+
+### Install with PyPI (stable)
+
+```bash
+pip install netspresso
+```
+
+To use **editable mode** or **docker**, see [INSTALLATION.md](INSTALLATION.md).
 
 ## Getting started
 
@@ -288,62 +303,6 @@ print(f"model inference latency: {benchmark_task['result']['latency']} ms")
 print(f"model gpu memory footprint: {benchmark_task['result']['memory_footprint_gpu']} MB")
 print(f"model cpu memory footprint: {benchmark_task['result']['memory_footprint_cpu']} MB")
 ```
-
-## Installation
-
-### Prerequisites
-
-- Python `3.8` | `3.9` | `3.10`
-- PyTorch `1.13.0` (recommended) (compatible with: `1.11.x` - `1.13.x`)
-- TensorFlow `2.8.0` (recommended) (compatible with: `2.3.x` - `2.8.x`)
-
-### Install with PyPI (stable)
-
-```bash
-pip install netspresso
-```
-
-### Install with GitHub
-
-To install with editable mode,
-
-```bash
-git clone https://github.com/nota-netspresso/pynetspresso.git
-cd pynetspresso
-pip install -e .
-```
-
-### Docker with docker-compose
-
-For the latest information, please check `docker-compose.yml`
-
-```python
-# run command
-export TAG=v$(cat netspresso/VERSION) && \
-docker compose run --service-ports --name netspresso-dev netspresso bash
-```
-
-### Docker image build
-
-If you run with `docker run` command, follow the image build and run command in the below:
-
-```python
-# build an image
-docker build -t netspresso:v$(cat netspresso/VERSION) .
-```
-
-```python
-# docker run command
-docker run -it --ipc=host\
-  --gpus='"device=0,1,2,3"'\
-  -v /PATH/TO/DATA:/DATA/PATH/IN/CONTAINER\
-  -v /PATH/TO/CHECKPOINT:/CHECKPOINT/PATH/IN/CONTAINER\
-  -p 50001:50001\
-  -p 50002:50002\
-  -p 50003:50003\
-  --name netspresso-dev netspresso:v$(cat netspresso/VERSION)
-```
-
 
 ## Available Options for Converter & Benchmarker
 
