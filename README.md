@@ -10,6 +10,7 @@
 </br>
 
 <div align="center">
+  ☀️ NetsPresso Model Zoo ☀️ <br>
       <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85"> YOLO Fastest </a>
     | <a href="https://github.com/Nota-NetsPresso/yolox_nota"> YOLOX </a>
     | <a href="https://github.com/Nota-NetsPresso/ultralytics_nota"> YOLOv8 </a> 
@@ -17,6 +18,13 @@
     | <a href="https://github.com/Nota-NetsPresso/yolov5_nota"> YOLOv5 </a> 
     | <a href="https://github.com/Nota-NetsPresso/PIDNet_nota"> PIDNet </a>     
     | <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota"> PyTorch-CIFAR-Models</a>
+</div>
+</br>
+
+<div align="center">
+  🌟 STMicro x NetsPresso 🌟 <br>
+      <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85"> Optimized Model for STM32 MCU</a>
+    | <a href="https://github.com/STMicroelectronics/stm32ai-modelzoo"> STM32 model zoo</a>
 </div>
 </br>
 
