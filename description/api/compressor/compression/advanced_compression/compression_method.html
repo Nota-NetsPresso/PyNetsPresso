@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compression Method &mdash; PyNetsPresso 1.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../../_static/pynetspresso-favicon.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js?v=4c8675c2"></script>
+        <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="Pruning Options" href="pruning_options.html" />
+    <link rel="prev" title="Manual Compression" href="manual_compression.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            PyNetsPresso
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../../description.html">API Description</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../compressor.html">Model Compressor</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../../compressor.html#model">Model</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../../compressor.html#compression">Compression</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../automatic_compression.html">Automatic Compression</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../advanced_compression.html">Advanced Compression</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../get_compression.html">Get Compression Information</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../compressor.html#enums">Enums</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../launcher/launcher.html">Model Launcher</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">PyNetsPresso</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../description.html">API Description</a></li>
+          <li class="breadcrumb-item"><a href="../../compressor.html">Model Compressor</a></li>
+          <li class="breadcrumb-item"><a href="../advanced_compression.html">Advanced Compression</a></li>
+      <li class="breadcrumb-item active">Compression Method</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/description/api/compressor/compression/advanced_compression/compression_method.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="compression-method">
+<span id="compression-method-heading"></span><h1><a class="toc-backref" href="#id7" role="doc-backlink">Compression Method</a><a class="headerlink" href="#compression-method" title="Permalink to this heading"></a></h1>
+<nav class="contents" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#compression-method" id="id7">Compression Method</a></p>
+<ul>
+<li><p><a class="reference internal" href="#structured-pruning" id="id8">Structured Pruning</a></p>
+<ul>
+<li><p><a class="reference internal" href="#pruning-by-criteria" id="id9">Pruning by Criteria</a></p>
+<ul>
+<li><p><a class="reference internal" href="#l2-norm-pruning" id="id10">L2 Norm Pruning</a></p></li>
+<li><p><a class="reference internal" href="#gm-pruning" id="id11">GM Pruning</a></p></li>
+<li><p><a class="reference internal" href="#nuclear-norm-pruning" id="id12">Nuclear Norm Pruning</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#pruning-by-channel-index" id="id13">Pruning by Channel Index</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#filter-decomposition" id="id14">Filter Decomposition</a></p>
+<ul>
+<li><p><a class="reference internal" href="#tucker-decomposition" id="id15">Tucker Decomposition</a></p></li>
+<li><p><a class="reference internal" href="#singular-value-decomposition" id="id16">Singular Value Decomposition</a></p></li>
+<li><p><a class="reference internal" href="#cp-decomposition" id="id17">CP Decomposition</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="structured-pruning">
+<h2><a class="toc-backref" href="#id8" role="doc-backlink">Structured Pruning</a><a class="headerlink" href="#structured-pruning" title="Permalink to this heading"></a></h2>
+<section id="pruning-by-criteria">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Pruning by Criteria</a><a class="headerlink" href="#pruning-by-criteria" title="Permalink to this heading"></a></h3>
+<p>Difference of each pruning method is about measuring importance of filters in each layer. Filters in each layer will be automatically pruned based on certain criteria.</p>
+<section id="l2-norm-pruning">
+<h4><a class="toc-backref" href="#id10" role="doc-backlink">L2 Norm Pruning</a><a class="headerlink" href="#l2-norm-pruning" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>L2-Norm is used to represent the importance of the corresponding filter. In other words, this method prunes filters based on the magnitude of weights.</p></li>
+<li><p>Click the link for more information. (<a class="reference external" href="https://docs.netspresso.ai/docs/mc-structured-pruning#supported-functions">L2 Norm Pruning</a>)</p></li>
+</ul>
+<a class="reference internal image-reference" href="../../../../../_images/pruning_l2.png"><img alt="../../../../../_images/pruning_l2.png" class="align-center" src="../../../../../_images/pruning_l2.png" style="width: 500px;" /></a>
+</section>
+<section id="gm-pruning">
+<h4><a class="toc-backref" href="#id11" role="doc-backlink">GM Pruning</a><a class="headerlink" href="#gm-pruning" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>Geometric Median is used to measure the redundancy of the corresponding filter and remove redundant filters.</p></li>
+<li><p>Click the link for more information. (<a class="reference external" href="https://docs.netspresso.ai/docs/mc-structured-pruning#supported-functions">GM Pruning</a>)</p></li>
+</ul>
+<a class="reference internal image-reference" href="../../../../../_images/pruning_gm.png"><img alt="../../../../../_images/pruning_gm.png" class="align-center" src="../../../../../_images/pruning_gm.png" style="width: 500px;" /></a>
+</section>
+<section id="nuclear-norm-pruning">
+<h4><a class="toc-backref" href="#id12" role="doc-backlink">Nuclear Norm Pruning</a><a class="headerlink" href="#nuclear-norm-pruning" title="Permalink to this heading"></a></h4>
+<ul class="simple">
+<li><p>The Nuclear Norm is the sum of the singular values representing the energy. It computes the nuclear norm on the feature map to determine the filter’s relevance. For this reason, a portion of the dataset is needed.</p></li>
+<li><p>Click the link for more information. (<a class="reference external" href="https://docs.netspresso.ai/docs/mc-structured-pruning#supported-functions">Nuclear Norm Pruning</a>)</p></li>
+</ul>
+<a class="reference internal image-reference" href="../../../../../_images/pruning_nn.png"><img alt="../../../../../_images/pruning_nn.png" class="align-center" src="../../../../../_images/pruning_nn.png" style="width: 500px;" /></a>
+</section>
+</section>
+<section id="pruning-by-channel-index">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Pruning by Channel Index</a><a class="headerlink" href="#pruning-by-channel-index" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>This function prunes the chosen filters of each layer through the index without certain criteria.</p></li>
+<li><p>You can apply your own criteria to prune the model.</p></li>
+<li><p>If the selected filters are redundant or less important, it will return a better performing model.</p></li>
+<li><p>Click the link for more information. (<a class="reference external" href="https://docs.netspresso.ai/docs/mc-structured-pruning#supported-functions">Pruning By Index</a>)</p></li>
+</ul>
+<a class="reference internal image-reference" href="../../../../../_images/pruning_by_index.png"><img alt="../../../../../_images/pruning_by_index.png" class="align-center" src="../../../../../_images/pruning_by_index.png" style="width: 400px;" /></a>
+</section>
+</section>
+<hr class="docutils" />
+<section id="filter-decomposition">
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Filter Decomposition</a><a class="headerlink" href="#filter-decomposition" title="Permalink to this heading"></a></h2>
+<section id="tucker-decomposition">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Tucker Decomposition</a><a class="headerlink" href="#tucker-decomposition" title="Permalink to this heading"></a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Approximating the original filters by Tucker decomposition method.</p></li>
+<li><p>This method decomposes the convolution with a 4D kernel tensor into two factor matrices and one small core tensor.</p></li>
+<li><p>Click the link for more information. (<a class="reference external" href="https://docs.netspresso.ai/docs/mc-filter-decomposition#supported-method">Tucker Decomposition</a>)</p></li>
+</ul>
+<a class="reference internal image-reference" href="../../../../../_images/tucker_decomposition.png"><img alt="../../../../../_images/tucker_decomposition.png" class="align-center" src="../../../../../_images/tucker_decomposition.png" style="width: 500px;" /></a>
+</div></blockquote>
+</section>
+<section id="singular-value-decomposition">
+<h3><a class="toc-backref" href="#id16" role="doc-backlink">Singular Value Decomposition</a><a class="headerlink" href="#singular-value-decomposition" title="Permalink to this heading"></a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Approximating the original filters by Singular value decomposition method.</p></li>
+<li><p>This method decomposes the pointwise convolution or fully-connected layer into two pointwise or fully-connected layers.</p></li>
+<li><p>Click the link for more information. (<a class="reference external" href="https://docs.netspresso.ai/docs/mc-filter-decomposition#supported-method">Singular Value Decomposition</a>)</p></li>
+</ul>
+<a class="reference internal image-reference" href="../../../../../_images/singular_value_decomposition.png"><img alt="../../../../../_images/singular_value_decomposition.png" class="align-center" src="../../../../../_images/singular_value_decomposition.png" style="width: 500px;" /></a>
+</div></blockquote>
+</section>
+<section id="cp-decomposition">
+<h3><a class="toc-backref" href="#id17" role="doc-backlink">CP Decomposition</a><a class="headerlink" href="#cp-decomposition" title="Permalink to this heading"></a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Approximating the original filters by CP decomposition method.</p></li>
+<li><p>This method approximates the convolution with a 4D kernel tensor by the sequence of four convolutions with small 2D kernel tensors.</p></li>
+<li><p>Click the link for more information. (<a class="reference external" href="https://docs.netspresso.ai/docs/mc-filter-decomposition#supported-method">CP Decomposition</a>)</p></li>
+</ul>
+<a class="reference internal image-reference" href="../../../../../_images/cp_decomposition.png"><img alt="../../../../../_images/cp_decomposition.png" class="align-center" src="../../../../../_images/cp_decomposition.png" style="width: 500px;" /></a>
+</div></blockquote>
+<hr class="docutils" />
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="manual_compression.html" class="btn btn-neutral float-left" title="Manual Compression" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pruning_options.html" class="btn btn-neutral float-right" title="Pruning Options" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Nota AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model Launcher &mdash; PyNetsPresso 1.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/pynetspresso-favicon.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=4c8675c2"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Upload Model" href="model/upload_model.html" />
+    <link rel="prev" title="LayerNorm" href="../compressor/enums/layer_norm.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PyNetsPresso
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../description.html">API Description</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../compressor/compressor.html">Model Compressor</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Model Launcher</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#model">Model</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="model/upload_model.html">Upload Model</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#convert">Convert</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="convert/convert_model.html">Convert Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="convert/get_conversion_task.html">Get Conversion Task</a></li>
+<li class="toctree-l4"><a class="reference internal" href="convert/download_converted_model.html">Download Converted Model</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#benchmark">Benchmark</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="benchmark/benchmark_model.html">Benchmark Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="benchmark/get_benchmark_task.html">Get Benchmark Task</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#enums">Enums</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="enums/launcher_function.html">Launcher Function</a></li>
+<li class="toctree-l4"><a class="reference internal" href="enums/data_type.html">Data Type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="enums/framework.html">Framework</a></li>
+<li class="toctree-l4"><a class="reference internal" href="enums/device_name.html">Device Name</a></li>
+<li class="toctree-l4"><a class="reference internal" href="enums/software_version.html">Software Version</a></li>
+<li class="toctree-l4"><a class="reference internal" href="enums/hardware_type.html">Hardware Type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="enums/task_status.html">Task Status</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PyNetsPresso</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../description.html">API Description</a></li>
+      <li class="breadcrumb-item active">Model Launcher</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/description/api/launcher/launcher.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="model-launcher">
+<h1>Model Launcher<a class="headerlink" href="#model-launcher" title="Permalink to this heading"></a></h1>
+<section id="model">
+<h2>Model<a class="headerlink" href="#model" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="model/upload_model.html">Upload Model</a></li>
+</ul>
+</div>
+</section>
+<section id="convert">
+<h2>Convert<a class="headerlink" href="#convert" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="convert/convert_model.html">Convert Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert/get_conversion_task.html">Get Conversion Task</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert/download_converted_model.html">Download Converted Model</a></li>
+</ul>
+</div>
+</section>
+<section id="benchmark">
+<h2>Benchmark<a class="headerlink" href="#benchmark" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="benchmark/benchmark_model.html">Benchmark Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmark/get_benchmark_task.html">Get Benchmark Task</a></li>
+</ul>
+</div>
+</section>
+<section id="enums">
+<h2>Enums<a class="headerlink" href="#enums" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="enums/launcher_function.html">Launcher Function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enums/data_type.html">Data Type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enums/framework.html">Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enums/device_name.html">Device Name</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enums/software_version.html">Software Version</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enums/hardware_type.html">Hardware Type</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enums/task_status.html">Task Status</a></li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../compressor/enums/layer_norm.html" class="btn btn-neutral float-left" title="LayerNorm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="model/upload_model.html" class="btn btn-neutral float-right" title="Upload Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Nota AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

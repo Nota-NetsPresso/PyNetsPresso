@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delete Model &mdash; PyNetsPresso 1.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/pynetspresso-favicon.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=4c8675c2"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Get Uploaded Models" href="get_uploaded_models.html" />
+    <link rel="prev" title="Download Model" href="download_model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            PyNetsPresso
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../description.html">API Description</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../compressor.html">Model Compressor</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../compressor.html#model">Model</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="upload_model.html">Upload Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="get_model.html">Get Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="download_model.html">Download Model</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Delete Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="get_uploaded_models.html">Get Uploaded Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="get_compressed_models.html">Get Compressed Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="get_models.html">Get Models</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../compressor.html#compression">Compression</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../compressor.html#enums">Enums</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../launcher/launcher.html">Model Launcher</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">PyNetsPresso</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../description.html">API Description</a></li>
+          <li class="breadcrumb-item"><a href="../compressor.html">Model Compressor</a></li>
+      <li class="breadcrumb-item active">Delete Model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/description/api/compressor/model/delete_model.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="delete-model">
+<h1>Delete Model<a class="headerlink" href="#delete-model" title="Permalink to this heading"></a></h1>
+<section id="details-of-parameters">
+<h2>Details of Parameters<a class="headerlink" href="#details-of-parameters" title="Permalink to this heading"></a></h2>
+<section id="recursive">
+<h3>Recursive<a class="headerlink" href="#recursive" title="Permalink to this heading"></a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Deleting the model will also delete its compressed models. To proceed with the deletion,
+set the <code class="docutils literal notranslate"><span class="pre">recursive</span></code> parameter to True.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">recursive</span></code> parameter is set to True, the compressed model for that model will also be deleted.</p>
+</div>
+</section>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h2>
+<section id="if-the-model-has-a-compressed-model-and-recursive-is-false">
+<h3>If the model has a compressed model, and recursive is False<a class="headerlink" href="#if-the-model-has-a-compressed-model-and-recursive-is-false" title="Permalink to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">netspresso.compressor</span> <span class="kn">import</span> <span class="n">ModelCompressor</span>
+
+
+<span class="n">compressor</span> <span class="o">=</span> <span class="n">ModelCompressor</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;YOUR_EMAIL&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;YOUR_PASSWORD&quot;</span><span class="p">)</span>
+<span class="n">compressor</span><span class="o">.</span><span class="n">delete_model</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;YOUR_MODEL_ID&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="output">
+<h4>Output<a class="headerlink" href="#output" title="Permalink to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Deleting<span class="w"> </span>model...
+Deleting<span class="w"> </span>the<span class="w"> </span>model<span class="w"> </span>will<span class="w"> </span>also<span class="w"> </span>delete<span class="w"> </span>its<span class="w"> </span>compressed<span class="w"> </span>models.<span class="w"> </span>To<span class="w"> </span>proceed<span class="w"> </span>with<span class="w"> </span>the<span class="w"> </span>deletion,<span class="w"> </span><span class="nb">set</span><span class="w"> </span>the<span class="w"> </span><span class="sb">`</span>recursive<span class="sb">`</span><span class="w"> </span>parameter<span class="w"> </span>to<span class="w"> </span>True.
+</pre></div>
+</div>
+</section>
+</section>
+<section id="if-the-model-has-a-compressed-model-and-recursive-is-true">
+<h3>If the model has a compressed model, and recursive is True<a class="headerlink" href="#if-the-model-has-a-compressed-model-and-recursive-is-true" title="Permalink to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">netspresso.compressor</span> <span class="kn">import</span> <span class="n">ModelCompressor</span>
+
+
+<span class="n">compressor</span> <span class="o">=</span> <span class="n">ModelCompressor</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;YOUR_EMAIL&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;YOUR_PASSWORD&quot;</span><span class="p">)</span>
+<span class="n">compressor</span><span class="o">.</span><span class="n">delete_model</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;YOUR_MODEL_ID&quot;</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="id1">
+<h4>Output<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Deleting<span class="w"> </span>model...
+The<span class="w"> </span>compressed<span class="w"> </span>model<span class="w"> </span><span class="k">for</span><span class="w"> </span>that<span class="w"> </span>model<span class="w"> </span>will<span class="w"> </span>also<span class="w"> </span>be<span class="w"> </span>deleted.
+Delete<span class="w"> </span>model<span class="w"> </span>successful.
+</pre></div>
+</div>
+</section>
+</section>
+<section id="if-there-is-no-compressed-model-in-the-model">
+<h3>If there is no compressed model in the model<a class="headerlink" href="#if-there-is-no-compressed-model-in-the-model" title="Permalink to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">netspresso.compressor</span> <span class="kn">import</span> <span class="n">ModelCompressor</span>
+
+
+<span class="n">compressor</span> <span class="o">=</span> <span class="n">ModelCompressor</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;YOUR_EMAIL&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;YOUR_PASSWORD&quot;</span><span class="p">)</span>
+<span class="n">compressor</span><span class="o">.</span><span class="n">delete_model</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;YOUR_MODEL_ID&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="id2">
+<h4>Output<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Deleting<span class="w"> </span>model...
+The<span class="w"> </span>model<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>deleted.
+Delete<span class="w"> </span>model<span class="w"> </span>successful.
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="download_model.html" class="btn btn-neutral float-left" title="Download Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="get_uploaded_models.html" class="btn btn-neutral float-right" title="Get Uploaded Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Nota AI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
