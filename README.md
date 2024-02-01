@@ -23,7 +23,7 @@
 
 <div align="center">
   🌟 STMicro x NetsPresso 🌟 <br>
-      <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85"> Optimized Model for STM32 MCU</a>
+      <a href="MODELS.md"> Optimized Model for STM32 MCU</a>
     | <a href="https://github.com/STMicroelectronics/stm32ai-modelzoo"> STM32 model zoo</a>
 </div>
 </br>
@@ -102,59 +102,59 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
 </br>
 
 <div width="9%" align="center">
-    <table width="90%" align="center">
-        <tr>
-            <td width="30%" align="center">Steps</td>
-            <td width="30%" align="center">Types</td>
-            <td width="40%" align="center">Description</td>
-        </tr>
-        <tr>
-            <td width="30%" align="center" rowspan="2">Train</td>
-            <td width="30%" align="center">Trainer</td>
-            <td width="40%" align="center" rowspan="2">Build and train a model.</td>
-        </tr>
-        <tr>
-            <td width="30%" align="center">
+  <table width="90%" align="center">
+      <tr>
+          <td width="30%" align="center">Steps</td>
+          <td width="30%" align="center">Types</td>
+          <td width="40%" align="center">Description</td>
+      </tr>
+      <tr>
+          <td width="30%" align="center" rowspan="2">Train</td>
+          <td width="30%" align="center">np.trainer</td>
+          <td width="40%" align="center" rowspan="2">Build and train a model.</td>
+      </tr>
+      <tr>
+          <td width="30%" align="center">
+            <details>
+              <summary>Model Zoo</summary>
               <details>
-                <summary>Model Zoo</summary>
-                <details>
-                    <summary>Image Classification</summary>
-                    <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota">PyTorch-CIFAR-Models</a>
-                </details>
-                <details>
-                    <summary>Object Detection</summary>
-                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85">YOLO Fastest</a><br>
-                    <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
-                    <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
-                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
-                </details>
-                <details>
-                    <summary>Semantic Segmentation</summary>
-                    <a href="https://github.com/Nota-NetsPresso/PIDNet_nota">PIDNet</a>
-                </details>
-                <details>
-                    <summary>Pose Estimation</summary>
-                    <a href="https://github.com/Nota-NetsPresso/ultralytics_nota">YOLOv8</a>
-                </details>
+                  <summary>Image Classification</summary>
+                  <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota">PyTorch-CIFAR-Models</a>
               </details>
-            </td>
-        </tr>
-        <tr>
-            <td width="30%" align="center">Compress</td>
-            <td width="30%" align="center">Compressor</td>
-            <td width="40%" align="center">Compress and optimize the user’s model.</td>
-        </tr>
-        <tr>
-            <td width="30%" align="center">Convert</td>
-            <td width="30%" align="center">Converter</td>
-            <td width="40%" align="center">Convert and quantize the user’s model to run efficiently on your device.</td>
-        </tr>
-        <tr>
-            <td width="30%" align="center">Benchmark</td>
-            <td width="30%" align="center">Benchmarker</td>
-            <td width="40%" align="center">Benchmark the user's model to measure model inference speed on your device.</td>
-        </tr>
-    </table>
+              <details>
+                  <summary>Object Detection</summary>
+                  <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85">YOLO Fastest</a><br>
+                  <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
+                  <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
+                  <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
+              </details>
+              <details>
+                  <summary>Semantic Segmentation</summary>
+                  <a href="https://github.com/Nota-NetsPresso/PIDNet_nota">PIDNet</a>
+              </details>
+              <details>
+                  <summary>Pose Estimation</summary>
+                  <a href="https://github.com/Nota-NetsPresso/ultralytics_nota">YOLOv8</a>
+              </details>
+            </details>
+          </td>
+      </tr>
+      <tr>
+          <td width="30%" align="center">Compress</td>
+          <td width="30%" align="center">np.compressor</td>
+          <td width="40%" align="center">Compress and optimize the user’s model.</td>
+      </tr>
+      <tr>
+          <td width="30%" align="center">Convert</td>
+          <td width="30%" align="center">np.converter</td>
+          <td width="40%" align="center">Convert and quantize the user’s model to run efficiently on your device.</td>
+      </tr>
+      <tr>
+          <td width="30%" align="center">Benchmark</td>
+          <td width="30%" align="center">np.benchmarker</td>
+          <td width="40%" align="center">Benchmark the user's model to measure model inference speed on your device.</td>
+      </tr>
+  </table>
 </div>
 
 ## Installation
@@ -177,7 +177,7 @@ To use **editable mode** or **docker**, see [INSTALLATION.md](INSTALLATION.md).
 
 ### Login
 
-To use the PyNetsPresso, please enter the email and password registered in NetsPresso.
+To use the PyNetsPresso, please enter the email and password registered in [NetsPresso].
 
 ```python
 from netspresso import NetsPresso
@@ -189,6 +189,12 @@ netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
 
 #### Train
 
+To start training a model, first select a task. 
+
+Then configure the dataset, model specifications, augmentation, and hyperparameters. 
+
+Once setup is finished, enter the GPU number and project name for training.
+
 ```python
 from netspresso.enums import Task
 from netspresso.trainer.optimizers import AdamW
@@ -197,7 +203,7 @@ from netspresso.trainer.augmentations import Resize
 
 
 # 1. Declare trainer
-trainer = netspresso.trainer(task=Task.OBJECT_DETECTION)
+trainer = netspresso.trainer(task=Task.OBJECT_DETECTION)  # IMAGE_CLASSIFICATION, OBJECT_DETECTION, SEMANTIC_SEGMENTATION
 
 # 2. Set config for training
 # 2-1. Data
@@ -237,6 +243,12 @@ trainer.train(gpus="0, 1", project_name="PROJECT_TRAIN_SAMPLE")
 
 #### Retrain
 
+To start retraining a model, use `hparam.yaml` that the original model was trained on.
+
+Then, enter the compressed model path.
+
+Adjust the training hyperparameters as needed. (See 2-2. for detailed code.)
+
 ```python
 from netspresso.trainer.optimizers import AdamW
 
@@ -263,7 +275,9 @@ trainer.train(gpus="0, 1", project_name="PROJECT_RETRAIN_SAMPLE")
 
 #### Compress (Automatic compression)
 
-Automatically compress the model by setting the compression ratio for the model.
+To start compressing a model, enter the model path to compress and the appropriate compression ratio.
+
+The compressed model will be saved in the specified output directory (`output_dir`).
 
 ```python
 # 1. Declare compressor
@@ -281,6 +295,12 @@ compressed_model = compressor.automatic_compression(
 ### Converter
 
 #### Convert
+
+To start converting a model, enter the model path to convert and the target framework and device name.
+
+For NVIDIA GPUs and Jetson devices, enter the software version additionally due to the jetpack version.
+
+The converted model will be saved in the specified output directory (`output_dir`).
 
 ```python
 from netspresso.enums import DeviceName, Framework, SoftwareVersion
@@ -301,6 +321,12 @@ conversion_task = converter.convert_model(
 ### Benchmarker
 
 #### Benchmark
+
+To start benchmarking a model, enter the model path to benchmark and the target device name.
+
+For NVIDIA GPUs and Jetson devices, device name and software version have to be matched with the target device of the conversion.
+
+TensorRT Model has strong dependency with the device type and its jetpack version.
 
 ```python
 from netspresso.enums import DeviceName, SoftwareVersion
