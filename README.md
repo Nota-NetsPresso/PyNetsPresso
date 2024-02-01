@@ -101,32 +101,8 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
             <td width="40%" align="center">Description</td>
         </tr>
         <tr>
-            <td width="30%" align="center">
-                Train
-                <br>
-                (Model Zoo)
-            </td>
-            <td width="30%" align="center">
-                <details open>
-                    <summary>Image Classification</summary>
-                    <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota">PyTorch-CIFAR-Models</a>
-                </details>
-                <details open>
-                    <summary>Object Detection</summary>
-                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85">YOLO Fastest</a><br>
-                    <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
-                    <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
-                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
-                </details>
-                <details open>
-                    <summary>Semantic Segmentation</summary>
-                    <a href="https://github.com/Nota-NetsPresso/PIDNet_nota">PIDNet</a>
-                </details>
-                <details open>
-                    <summary>Pose Estimation</summary>
-                    <a href="https://github.com/Nota-NetsPresso/ultralytics_nota">YOLOv8</a>
-                </details>
-            </td>
+            <td width="30%" align="center">Train</td>
+            <td width="30%" align="center">np.trainer</td>
             <td width="40%" align="center">Build and train models.</td>
         </tr>
         <tr>
@@ -136,8 +112,13 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
         </tr>
         <tr>
             <td width="30%" align="center">Convert</td>
-            <td width="30%" align="center">np.launcher</td>
+            <td width="30%" align="center">np.converter</td>
             <td width="40%" align="center">Convert AI models to run efficiently on the desired hardware and provide easy installation for seamless usage of the converted AI models.</td>
+        </tr>
+        <tr>
+            <td width="30%" align="center">Benchmark</td>
+            <td width="30%" align="center">np.benchmarker</td>
+            <td width="40%" align="center">Blank</td>
         </tr>
     </table>
 </div>
