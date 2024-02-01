@@ -23,8 +23,7 @@
 
 <div align="center">
   🌟 STMicro x NetsPresso 🌟 <br>
-      <a href="MODELS.md"> Optimized Model for STM32 MCU</a>
-    | <a href="https://github.com/STMicroelectronics/stm32ai-modelzoo"> STM32 model zoo</a>
+      <a href="https://github.com/STMicroelectronics/stm32ai-modelzoo"> STM32 model zoo</a>
 </div>
 </br>
 
