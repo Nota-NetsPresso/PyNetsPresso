@@ -3,7 +3,7 @@
 </div>
 
 <div align="center">
-    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/NetsPresso2.0_banner.png"/>
+    <a href="https://netspresso.ai?utm_source=git_comp&utm_medium=text_np&utm_campaign=py_launch" target="_blank"><img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/NetsPresso2.0_banner.png"/>
 </div>
 </br>
 
@@ -41,8 +41,6 @@
 Use **NetsPresso** for a seamless model optimization process. 
 NetsPresso resolves AI-related constraints in business use cases and enables cost-efficiency and enhanced performance by removing the requirement for high-spec servers and network connectivity and preventing high latency and personal data breaches.
 
-The **NetsPresso** is a python interface with the NetsPresso web application and REST API.
-
 Easily compress various models with our resources. Please browse the [Docs] for details, and join our [Discussion Forum] for providing feedback or sharing your use cases.
 
 To get started with the NetsPresso, you will need to sign up either at [NetsPresso].</a>
@@ -52,41 +50,41 @@ To get started with the NetsPresso, you will need to sign up either at [NetsPres
 <div align="center">
   <a href="https://github.com/Nota-NetsPresso" style="text-decoration:none;">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/github_white.png">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/github.png">
-      <img alt="github" src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/github.png" width="3%">
+      <source media="(prefers-color-scheme: dark)" srcset="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/github_white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/github.png">
+      <img alt="github" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/github.png" width="3%">
     </picture>
   </a>
-  <img src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/logo-transparent.png" width="3%" alt="" />
+  <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%" alt="" />
   <a href="https://www.facebook.com/NotaAI" style="text-decoration:none;">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/facebook_white.png">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/facebook.png">
-      <img alt="facebook" src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/facebook.png" width="3%">
+      <source media="(prefers-color-scheme: dark)" srcset="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/facebook_white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/facebook.png">
+      <img alt="facebook" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/facebook.png" width="3%">
     </picture>
   </a>
-  <img src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/logo-transparent.png" width="3%" alt="" />
+  <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%" alt="" />
   <a href="https://twitter.com/nota_ai" style="text-decoration:none;">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/twitter_white.png">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/twitter.png">
-      <img alt="twitter" src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/twitter.png" width="3%">
+      <source media="(prefers-color-scheme: dark)" srcset="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/twitter_white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/twitter.png">
+      <img alt="twitter" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/twitter.png" width="3%">
     </picture>
   </a>
-  <img src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/logo-transparent.png" width="3%" alt="" />
+  <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%" alt="" />
   <a href="https://www.youtube.com/channel/UCeewYFAqb2EqwEXZCfH9DVQ" style="text-decoration:none;">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/youtube_white.png">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/youtube.png">
-      <img alt="youtube" src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/youtube.png" width="3%">
+      <source media="(prefers-color-scheme: dark)" srcset="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/youtube_white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/youtube.png">
+      <img alt="youtube" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/youtube.png" width="3%">
     </picture>
   </a>
-  <img src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/logo-transparent.png" width="3%" alt="" />
+  <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/logo-transparent.png" width="3%" alt="" />
   <a href="https://www.linkedin.com/company/nota-incorporated" style="text-decoration:none;">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/linkedin_white.png">
-      <source media="(prefers-color-scheme: light)" srcset="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/linkedin.png">
-      <img alt="youtube" src="https://github.com/Nota-NetsPresso/NetsPresso-Compatible-Models/blob/main/imgs/common/linkedin.png" width="3%">
+      <source media="(prefers-color-scheme: dark)" srcset="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/linkedin_white.png">
+      <source media="(prefers-color-scheme: light)" srcset="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/linkedin.png">
+      <img alt="youtube" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/common/linkedin.png" width="3%">
     </picture>
   </a>
 </div>
@@ -174,7 +172,7 @@ To use **editable mode** or **docker**, see [INSTALLATION.md](INSTALLATION.md).
 
 ### Login
 
-To use the NetsPresso, please enter the email and password registered in [NetsPresso].
+Log-in to your netspresso account. Please sign-up [here](https://netspresso.ai/signup) if you need one.
 
 ```python
 from netspresso import NetsPresso
@@ -235,14 +233,14 @@ trainer.set_training_config(
 )
 
 # 3. Train
-trainer.train(gpus="0, 1", project_name="PROJECT_TRAIN_SAMPLE")
+training_result = trainer.train(gpus="0, 1", project_name="PROJECT_TRAIN_SAMPLE")
 ```
 
 #### Retrain
 
 To start retraining a model, use `hparam.yaml` that the original model was trained on.
 
-Then, enter the compressed model path.
+Then, enter the compressed model path in fx_model_path.
 
 Adjust the training hyperparameters as needed. (See 2-2. for detailed code.)
 
@@ -265,7 +263,7 @@ trainer.set_training_config(
 )
 
 # 3. Train
-trainer.train(gpus="0, 1", project_name="PROJECT_RETRAIN_SAMPLE")
+retraining_result = trainer.train(gpus="0, 1", project_name="PROJECT_RETRAIN_SAMPLE")
 ```
 
 ### Compressor
@@ -281,7 +279,7 @@ The compressed model will be saved in the specified output directory (`output_di
 compressor = netspresso.compressor()
 
 # 2. Run automatic compression
-compressed_model = compressor.automatic_compression(
+compression_result = compressor.automatic_compression(
     input_shapes=[{"batch": 1, "channel": 3, "dimension": [224, 224]}],
     input_model_path="./examples/sample_models/graphmodule.pt",
     output_dir="./outputs/compressed/pytorch_automatic_compression",
@@ -306,7 +304,7 @@ from netspresso.enums import DeviceName, Framework, SoftwareVersion
 converter = netspresso.converter()
 
 # 2. Run convert
-conversion_task = converter.convert_model(
+conversion_result = converter.convert_model(
     input_model_path="./examples/sample_models/test.onnx",
     output_dir="./outputs/converted/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1",
     target_framework=Framework.TENSORRT,
@@ -332,14 +330,14 @@ from netspresso.enums import DeviceName, SoftwareVersion
 benchmarker = netspresso.benchmarker()
 
 # 2. Run benchmark
-benchmark_task = benchmarker.benchmark_model(
+benchmark_result = benchmarker.benchmark_model(
     input_model_path="./outputs/converted/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1.trt",
     target_device_name=DeviceName.JETSON_AGX_ORIN,
     target_software_version=SoftwareVersion.JETPACK_5_0_1,
 )
-print(f"model inference latency: {benchmark_task['result']['latency']} ms")
-print(f"model gpu memory footprint: {benchmark_task['result']['memory_footprint_gpu']} MB")
-print(f"model cpu memory footprint: {benchmark_task['result']['memory_footprint_cpu']} MB")
+print(f"model inference latency: {benchmark_result['result']['latency']} ms")
+print(f"model gpu memory footprint: {benchmark_result['result']['memory_footprint_gpu']} MB")
+print(f"model cpu memory footprint: {benchmark_result['result']['memory_footprint_cpu']} MB")
 ```
 
 <details open>
@@ -469,6 +467,7 @@ Or you can also do it via email([netspresso@nota.ai]) or phone(+82 2-555-8659)!
 [Docs]: https://nota-netspresso.github.io/PyNetsPresso
 [Discussion Forum]: https://github.com/orgs/Nota-NetsPresso/discussions
 [NetsPresso]: https://netspresso.ai?utm_source=git_comp&utm_medium=text_np&utm_campaign=py_launch
+[NetsPresso-Sign-Up]: https://netspresso.ai/signup
 [here]: https://www.nota.ai/contact-us
 [netspresso@nota.ai]: mailto:netspresso@nota.ai
 [NetsPresso-Model-Compressor-ModelZoo]: https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo
