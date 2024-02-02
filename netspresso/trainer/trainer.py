@@ -407,9 +407,9 @@ class Trainer:
         hparams_path = destination_folder / "hparams.yaml"
 
         if best_fx_paths:
-            metadata.update_best_fx_model_path(best_fx_model_path=best_fx_paths[0])
+            metadata.update_best_fx_model_path(best_fx_model_path=best_fx_paths[0].as_posix())
         if best_onnx_paths:
-            metadata.update_best_onnx_model_path(best_onnx_model_path=best_onnx_paths[0])
+            metadata.update_best_onnx_model_path(best_onnx_model_path=best_onnx_paths[0].as_posix())
         metadata.update_model_info(
             task=self.task,
             model=self.model.name,
@@ -418,8 +418,8 @@ class Trainer:
         )
         metadata.update_training_info(epoch=self.training.epochs, batch_size=self.training.batch_size)
         metadata.update_training_result(training_summary=training_summary)
-        metadata.update_logging_dir(logging_dir=destination_folder)
-        metadata.update_hparams(hparams=hparams_path)
+        metadata.update_logging_dir(logging_dir=destination_folder.as_posix())
+        metadata.update_hparams(hparams=hparams_path.as_posix())
         metadata.update_status(status=status)
         MetadataHandler.save_json(data=metadata.asdict(), folder_path=destination_folder)
 
