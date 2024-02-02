@@ -3,7 +3,7 @@
 </div>
 
 <div align="center">
-    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/pynp_main.png"/>
+    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/NetsPresso2.0_banner.png"/>
 </div>
 </br>
 
@@ -27,7 +27,7 @@
 
 <div align="center">
     <p align="center">
-        <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue" />
+        <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue?style=flat&logo=python&logoColor=blue" />
         <a href="https://pytorch.org/" target="_blank"><img src="https://img.shields.io/badge/PyTorch-1.11.x ~ 1.13.x.-EE4C2C?style=flat&logo=pytorch&logoColor=#EE4C2C"/></a>
         <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
         <br>
@@ -38,14 +38,14 @@
 </div>
 </br>
 
-Use **PyNetsPresso** for a seamless model optimization process. 
-PyNetsPresso resolves AI-related constraints in business use cases and enables cost-efficiency and enhanced performance by removing the requirement for high-spec servers and network connectivity and preventing high latency and personal data breaches.
+Use **NetsPresso** for a seamless model optimization process. 
+NetsPresso resolves AI-related constraints in business use cases and enables cost-efficiency and enhanced performance by removing the requirement for high-spec servers and network connectivity and preventing high latency and personal data breaches.
 
-The **PyNetsPresso** is a python interface with the NetsPresso web application and REST API.
+The **NetsPresso** is a python interface with the NetsPresso web application and REST API.
 
 Easily compress various models with our resources. Please browse the [Docs] for details, and join our [Discussion Forum] for providing feedback or sharing your use cases.
 
-To get started with the PyNetsPresso, you will need to sign up either at [NetsPresso] or [PyNetsPresso].</a>
+To get started with the NetsPresso, you will need to sign up either at [NetsPresso].</a>
 </br>
 </br>
 
@@ -94,7 +94,7 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
 </br>
 
 <div align="center">
-    <img width="100%" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/workflow_banner.png">
+    <img width="100%" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/github_pipeline_temp.png">
 </div>
 </br>
 
@@ -174,7 +174,7 @@ To use **editable mode** or **docker**, see [INSTALLATION.md](INSTALLATION.md).
 
 ### Login
 
-To use the PyNetsPresso, please enter the email and password registered in [NetsPresso].
+To use the NetsPresso, please enter the email and password registered in [NetsPresso].
 
 ```python
 from netspresso import NetsPresso
@@ -466,10 +466,9 @@ Join our [Discussion Forum] for providing feedback or sharing your use cases, an
 Or you can also do it via email([netspresso@nota.ai]) or phone(+82 2-555-8659)!
 
 
-[Docs]: https://nota-netspresso.github.io/PyNetsPresso-docs
+[Docs]: https://nota-netspresso.github.io/PyNetsPresso
 [Discussion Forum]: https://github.com/orgs/Nota-NetsPresso/discussions
 [NetsPresso]: https://netspresso.ai?utm_source=git_comp&utm_medium=text_np&utm_campaign=py_launch
-[PyNetsPresso]: https://py.netspresso.ai/?utm_source=git_comp&utm_medium=text_py&utm_campaign=py_launch
 [here]: https://www.nota.ai/contact-us
 [netspresso@nota.ai]: mailto:netspresso@nota.ai
 [NetsPresso-Model-Compressor-ModelZoo]: https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo

@@ -1,6 +1,6 @@
 # Contributing to this repository
 
-## Install pynetspresso locally
+## Install netspresso locally
 
 TBD
 
