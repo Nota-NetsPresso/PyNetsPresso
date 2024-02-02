@@ -3,7 +3,7 @@
 </div>
 
 <div align="center">
-    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/pynp_main.png"/>
+    <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/NetsPresso2.0_banner.png"/>
 </div>
 </br>
 
@@ -94,7 +94,7 @@ To get started with the NetsPresso, you will need to sign up either at [NetsPres
 </br>
 
 <div align="center">
-    <img width="100%" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/workflow_banner.png">
+    <img width="100%" src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/github_pipeline_temp.png">
 </div>
 </br>
 
