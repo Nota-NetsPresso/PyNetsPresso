@@ -2,8 +2,6 @@
   <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FNota-NetsPresso%2Fnetspresso-python&count_bg=%2323E7E7E7&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
 </div>
 
-# PyNetsPresso
-
 <div align="center">
     <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/pynp_main.png"/>
 </div>
@@ -103,8 +101,8 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
 <div width="9%" align="center">
   <table width="90%" align="center">
       <tr>
-          <th>Steps</th>
-          <th>Types</th>
+          <th>Step</th>
+          <th>Type</th>
           <th>Description</th>
       </tr>
       <tr>
@@ -388,6 +386,35 @@ Software Versions requires only Jetson Device. If you are using a different devi
 | JETPACK_5_0_1             |             |            |               |           |       ✔️        |
 | JETPACK_5_0_2             |             |            |               |    ✔️     |                 |
 
+
+## Guide to Credit Consumption by Module
+
+<table width="90%">
+  <tr>
+      <th>Module</th>
+      <th>Feature</th>
+      <th>Credit</th>
+  </tr>
+  <tr>
+      <td align="center" rowspan="2">Compressor</td>
+      <td align="center">Automatic compression</td>
+      <td align="center">25</td>
+  </tr>
+  <tr>
+      <td align="center">Advanced compression</td>
+      <td align="center">50</td>
+  </tr>
+  <tr>
+      <td align="center">Converter</td>
+      <td align="center">Convert</td>
+      <td align="center">50</td>
+  </tr>
+  <tr>
+      <td align="center">Benchmarker</td>
+      <td align="center">Benchmark</td>
+      <td align="center">25</td>
+  </tr>
+</table>
 
 ## NetsPresso Model Compressor Best Practice
 
