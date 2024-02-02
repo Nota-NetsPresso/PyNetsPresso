@@ -142,12 +142,12 @@ To get started with the NetsPresso, you will need to sign up either at [NetsPres
       <tr>
           <td width="30%" align="center">Convert</td>
           <td width="30%" align="center">np.converter</td>
-          <td width="40%" align="center">Convert and quantize the user’s model to run efficiently on your device.</td>
+          <td width="40%" align="center">Convert and quantize the user’s model to run efficiently on device.</td>
       </tr>
       <tr>
           <td width="30%" align="center">Benchmark</td>
           <td width="30%" align="center">np.benchmarker</td>
-          <td width="40%" align="center">Benchmark the user's model to measure model inference speed on your device.</td>
+          <td width="40%" align="center">Benchmark the user's model to measure model inference speed on diverse device.</td>
       </tr>
   </table>
 </div>
