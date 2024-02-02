@@ -342,50 +342,7 @@ print(f"model gpu memory footprint: {benchmark_task['result']['memory_footprint_
 print(f"model cpu memory footprint: {benchmark_task['result']['memory_footprint_cpu']} MB")
 ```
 
-## Available Options for Converter & Benchmarker
-
-### Available Target Frameworks for Conversion with Source Models
-
-| Target / Source Model | ONNX | TENSORFLOW_KERAS | TENSORFLOW |
-| :-------------------- | :--: | :--------------: | :--------: |
-| TENSORRT              |  ✔️  |                  |            |
-| DRPAI                 |  ✔️  |                  |            |
-| OPENVINO              |  ✔️  |                  |            |
-| TENSORFLOW_LITE       |  ✔️  |        ✔️        |     ✔️     |
-
-
-### Available Devices for Framework
-
-| Device / Framework   | ONNX | TENSORRT | TENSORFLOW_LITE | DRPAI | OPENVINO |
-| :------------------- | :--: | :------: | :-------------: | :---: | :------: |
-| RASPBERRY_PI_4B      |  ✔️  |          |       ✔️        |       |          |
-| RASPBERRY_PI_3B_PLUS |  ✔️  |          |       ✔️        |       |          |
-| RASPBERRY_PI_ZERO_W  |  ✔️  |          |       ✔️        |       |          |
-| RASPBERRY_PI_ZERO_2W |  ✔️  |          |       ✔️        |       |          |
-| RENESAS_RZ_V2L       |  ✔️  |          |                 |  ✔️   |          |
-| RENESAS_RZ_V2M       |  ✔️  |          |                 |  ✔️   |          |
-| RENESAS_RA8D1       |      |          |        ✔️(only INT8)        |       |          |
-| ALIF_ENSEMBLE_E7_DEVKIT_GEN2       |     |          |        ✔️(only INT8)       |       |          |
-| JETSON_NANO          |  ✔️  |    ✔️    |                 |       |          |
-| JETSON_TX2           |  ✔️  |    ✔️    |                 |       |          |
-| JETSON_XAVIER        |  ✔️  |    ✔️    |                 |       |          |
-| JETSON_NX            |  ✔️  |    ✔️    |                 |       |          |
-| JETSON_AGX_ORIN      |  ✔️  |    ✔️    |                 |       |          |
-| AWS_T4               |  ✔️  |    ✔️    |                 |       |          |
-| Intel_XEON_W_2233    |      |          |                 |       |    ✔️    |
-
-
-### Available Software Versions for Jetson Devices
-
-Software Versions requires only Jetson Device. If you are using a different device, you do not need to enter it.
-
-| Software Version / Device | JETSON_NANO | JETSON_TX2 | JETSON_XAVIER | JETSON_NX | JETSON_AGX_ORIN |
-| :------------------------ | :---------: | :--------: | :-----------: | :-------: | :-------------: |
-| JETPACK_4_4_1             |     ✔️      |            |               |           |                 |
-| JETPACK_4_6               |     ✔️      |     ✔️     |      ✔️       |    ✔️     |                 |
-| JETPACK_5_0_1             |             |            |               |           |       ✔️        |
-| JETPACK_5_0_2             |             |            |               |    ✔️     |                 |
-
+👉🏻 For additional supported options, see [this link](SUPPORT_OPTIONS.md).
 
 ## Guide to Credit Consumption by Module
 
