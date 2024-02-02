@@ -2,14 +2,13 @@
   <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FNota-NetsPresso%2Fnetspresso-python&count_bg=%2323E7E7E7&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
 </div>
 
-# PyNetsPresso
-
 <div align="center">
     <img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/pynp_main.png"/>
 </div>
 </br>
 
 <div align="center">
+  ☀️ NetsPresso Model Zoo ☀️ <br>
       <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85"> YOLO Fastest </a>
     | <a href="https://github.com/Nota-NetsPresso/yolox_nota"> YOLOX </a>
     | <a href="https://github.com/Nota-NetsPresso/ultralytics_nota"> YOLOv8 </a> 
@@ -21,10 +20,16 @@
 </br>
 
 <div align="center">
+  🌟 STMicro x NetsPresso 🌟 <br>
+      <a href="https://github.com/STMicroelectronics/stm32ai-modelzoo"> STM32 model zoo</a>
+</div>
+</br>
+
+<div align="center">
     <p align="center">
         <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue" />
-        <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
         <a href="https://pytorch.org/" target="_blank"><img src="https://img.shields.io/badge/PyTorch-1.11.x ~ 1.13.x.-EE4C2C?style=flat&logo=pytorch&logoColor=#EE4C2C"/></a>
+        <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
         <br>
         <a href="https://netspresso.ai?utm_source=git&utm_medium=text_np&utm_campaign=py_launch"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
         <a href="https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo"><img src="https://img.shields.io/badge/ModelZoo-Open in Github-181717?style=flat&logo=github&logoColor=#181717"/></a>
@@ -94,85 +99,111 @@ To get started with the PyNetsPresso, you will need to sign up either at [NetsPr
 </br>
 
 <div width="9%" align="center">
-    <table width="90%" align="center">
-        <tr>
-            <td width="30%" align="center">Steps</td>
-            <td width="30%" align="center">Types</td>
-            <td width="40%" align="center">Description</td>
-        </tr>
-        <tr>
-            <td width="30%" align="center">
-                Train
-                <br>
-                (Model Zoo)
-            </td>
-            <td width="30%" align="center">
-                <details open>
-                    <summary>Image Classification</summary>
-                    <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota">PyTorch-CIFAR-Models</a>
-                </details>
-                <details open>
-                    <summary>Object Detection</summary>
-                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85">YOLO Fastest</a><br>
-                    <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
-                    <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
-                    <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
-                </details>
-                <details open>
-                    <summary>Semantic Segmentation</summary>
-                    <a href="https://github.com/Nota-NetsPresso/PIDNet_nota">PIDNet</a>
-                </details>
-                <details open>
-                    <summary>Pose Estimation</summary>
-                    <a href="https://github.com/Nota-NetsPresso/ultralytics_nota">YOLOv8</a>
-                </details>
-            </td>
-            <td width="40%" align="center">Build and train models.</td>
-        </tr>
-        <tr>
-            <td width="30%" align="center">Compress</td>
-            <td width="30%" align="center">np.compressor</td>
-            <td width="40%" align="center">Compress and optimize the user’s pre-trained model.</td>
-        </tr>
-        <tr>
-            <td width="30%" align="center">Convert</td>
-            <td width="30%" align="center">np.launcher</td>
-            <td width="40%" align="center">Convert AI models to run efficiently on the desired hardware and provide easy installation for seamless usage of the converted AI models.</td>
-        </tr>
-    </table>
+  <table width="90%" align="center">
+      <tr>
+          <th>Step</th>
+          <th>Type</th>
+          <th>Description</th>
+      </tr>
+      <tr>
+          <td width="30%" align="center" rowspan="2">Train</td>
+          <td width="30%" align="center">np.trainer</td>
+          <td width="40%" align="center" rowspan="2">Build and train a model.</td>
+      </tr>
+      <tr>
+          <td width="30%" align="center">
+            <details>
+              <summary>Model Zoo</summary>
+              <details>
+                  <summary>Image Classification</summary>
+                  <a href="https://github.com/Nota-NetsPresso/pytorch-cifar-models_nota">PyTorch-CIFAR-Models</a>
+              </details>
+              <details>
+                  <summary>Object Detection</summary>
+                  <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOFastest-for-ARM-U55-M85">YOLO Fastest</a><br>
+                  <a href="https://github.com/Nota-NetsPresso/yolox_nota">YOLOX</a><br>
+                  <a href="https://github.com/Nota-NetsPresso/yolov5_nota">YOLOv5</a><br>
+                  <a href="https://github.com/Nota-NetsPresso/ModelZoo-YOLOv7">YOLOv7</a>
+              </details>
+              <details>
+                  <summary>Semantic Segmentation</summary>
+                  <a href="https://github.com/Nota-NetsPresso/PIDNet_nota">PIDNet</a>
+              </details>
+              <details>
+                  <summary>Pose Estimation</summary>
+                  <a href="https://github.com/Nota-NetsPresso/ultralytics_nota">YOLOv8</a>
+              </details>
+            </details>
+          </td>
+      </tr>
+      <tr>
+          <td width="30%" align="center">Compress</td>
+          <td width="30%" align="center">np.compressor</td>
+          <td width="40%" align="center">Compress and optimize the user’s model.</td>
+      </tr>
+      <tr>
+          <td width="30%" align="center">Convert</td>
+          <td width="30%" align="center">np.converter</td>
+          <td width="40%" align="center">Convert and quantize the user’s model to run efficiently on your device.</td>
+      </tr>
+      <tr>
+          <td width="30%" align="center">Benchmark</td>
+          <td width="30%" align="center">np.benchmarker</td>
+          <td width="40%" align="center">Benchmark the user's model to measure model inference speed on your device.</td>
+      </tr>
+  </table>
 </div>
-
 
 ## Installation
 
-There are two ways you can install the PyNetsPresso: using pip or manually through our project GitHub repository.
+### Prerequisites
 
-To install this package, please use Python 3.8 or higher.
+- Python `3.8` | `3.9` | `3.10`
+- PyTorch `1.13.0` (recommended) (compatible with: `1.11.x` - `1.13.x`)
+- TensorFlow `2.8.0` (recommended) (compatible with: `2.3.x` - `2.8.x`)
 
-From PyPI (Recommended)
+### Install with PyPI (stable)
+
 ```bash
 pip install netspresso
 ```
 
-From Github
-```bash
-git clone https://github.com/nota-netspresso/pynetspresso.git
-cd pynetspresso
-pip install -e .
-```
+To use **editable mode** or **docker**, see [INSTALLATION.md](INSTALLATION.md).
 
+## Getting started
 
-## Quick Start
+### Login
 
-### ⭐⭐⭐ (New Feature) Train ⭐⭐⭐
+To use the PyNetsPresso, please enter the email and password registered in [NetsPresso].
 
 ```python
-from loguru import logger
-from netspresso.trainer import Trainer, Task
+from netspresso import NetsPresso
 
-trainer = Trainer(task=Task.OBJECT_DETECTION)
-logger.info(trainer.available_models)  # ['EfficientFormer', 'YOLOX']
+netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+```
 
+### Trainer
+
+#### Train
+
+To start training a model, first select a task. 
+
+Then configure the dataset, model specifications, augmentation, and hyperparameters. 
+
+Once setup is finished, enter the GPU number and project name for training.
+
+```python
+from netspresso.enums import Task
+from netspresso.trainer.optimizers import AdamW
+from netspresso.trainer.schedulers import CosineAnnealingWarmRestartsWithCustomWarmUp
+from netspresso.trainer.augmentations import Resize
+
+
+# 1. Declare trainer
+trainer = netspresso.trainer(task=Task.OBJECT_DETECTION)  # IMAGE_CLASSIFICATION, OBJECT_DETECTION, SEMANTIC_SEGMENTATION
+
+# 2. Set config for training
+# 2-1. Data
 trainer.set_dataset_config(
     name="traffic_sign_config_example",
     root_path="/root/traffic-sign",
@@ -182,134 +213,248 @@ trainer.set_dataset_config(
     valid_label="labels/valid",
     id_mapping=["prohibitory", "danger", "mandatory", "other"],
 )
-trainer.set_model_config(model_name="YOLOX")
-trainer.set_training_config(epochs=40, batch_size=16, lr=6e-3, opt="adamw", warmup_epochs=10)
 
-trainer.train(gpus="0, 1")
+# 2-2. Model
+print(trainer.available_models)  # ['EfficientFormer', 'YOLOX-S', 'ResNet', 'MobileNetV3', 'MixNetL', 'MixNetM', 'MixNetS']
+trainer.set_model_config(model_name="YOLOX-S", img_size=512)
+
+# 2-3. Augmentation
+trainer.set_augmentation_config(
+    train_transforms=[Resize()],
+    inference_transforms=[Resize()],
+)
+
+# 2-4. Training
+optimizer = AdamW(lr=6e-3)
+scheduler = CosineAnnealingWarmRestartsWithCustomWarmUp(warmup_epochs=10)
+trainer.set_training_config(
+    epochs=40,
+    batch_size=16,
+    optimizer=optimizer,
+    scheduler=scheduler,
+)
+
+# 3. Train
+trainer.train(gpus="0, 1", project_name="PROJECT_TRAIN_SAMPLE")
 ```
+
+#### Retrain
+
+To start retraining a model, use `hparam.yaml` that the original model was trained on.
+
+Then, enter the compressed model path.
+
+Adjust the training hyperparameters as needed. (See 2-2. for detailed code.)
 
 ```python
-from netspresso.trainer import Trainer, Task
+from netspresso.trainer.optimizers import AdamW
 
-trainer = Trainer(task=Task.IMAGE_CLASSIFICATION)
+# 1. Declare trainer
+trainer = netspresso.trainer(yaml_path="./temp/hparams.yaml")
 
-trainer.set_dataset_config_with_yaml(yaml_path="config/data/beans.yaml")
-trainer.set_model_config_with_yaml(yaml_path="config/model/resnet50-classification.yaml")
+# 2. Set config for retraining
+# 2-1. FX Model
+trainer.set_fx_model(fx_model_path="./temp/FX_MODEL_PATH.pt")
 
-trainer.train(gpus="0, 1")
+# 2-2. Training
+optimizer = AdamW(lr=6e-3)
+trainer.set_training_config(
+    epochs=30,
+    batch_size=16,
+    optimizer=optimizer,
+)
+
+# 3. Train
+trainer.train(gpus="0, 1", project_name="PROJECT_RETRAIN_SAMPLE")
 ```
 
-#### Download config folder from netspresso-trainer
+### Compressor
 
-If you want to train the trainer as a yaml file, download the config folder and use it.
+#### Compress (Automatic compression)
 
-```bash
-python tools/github_download.py --repo Nota-NetsPresso/netspresso-trainer --path config
-```
+To start compressing a model, enter the model path to compress and the appropriate compression ratio.
 
-### Login
-
-To use the PyNetsPresso, please enter the email and password registered in NetsPresso.
+The compressed model will be saved in the specified output directory (`output_dir`).
 
 ```python
-from netspresso.client import SessionClient
+# 1. Declare compressor
+compressor = netspresso.compressor()
 
-session = SessionClient(email='YOUR_EMAIL', password='YOUR_PASSWORD')
-```
-
-### Automatic Compression
-
-Automatically compress the model by setting the compression ratio for the model.
-
-Enter the ID of the uploaded model, the name and storage path of the compressed model, and the compression ratio.
-
-```python
-from netspresso.compressor import Compressor
-
-compressor = Compressor(user_session=session)
+# 2. Run automatic compression
 compressed_model = compressor.automatic_compression(
-    model_name="YOUR_MODEL_NAME",
-    task=Task.IMAGE_CLASSIFICATION,
-    framework=Framework.TENSORFLOW_KERAS,
-    input_shapes="YOUR_MODEL_INPUT_SHAPES",  # ex) [{"batch": 1, "channel": 3, "dimension": [32, 32]}]
-    input_path="YOUR_MODEL_PATH",  # ex) "./examples/sample_models/mobilenetv1.h5"
-    output_path="OUTPUT_PATH",  # ex) ./outputs/compressed/compressed_model.h5,
+    input_shapes=[{"batch": 1, "channel": 3, "dimension": [224, 224]}],
+    input_model_path="./examples/sample_models/graphmodule.pt",
+    output_dir="./outputs/compressed/pytorch_automatic_compression",
     compression_ratio=0.5,
 )
 ```
 
-### Convert Model and Benchmark the Converted Model
-Convert an ONNX model into a TensorRT model, and benchmark the TensorRT model on the Jetson Nano.
+### Converter
+
+#### Convert
+
+To start converting a model, enter the model path to convert and the target framework and device name.
+
+For NVIDIA GPUs and Jetson devices, enter the software version additionally due to the jetpack version.
+
+The converted model will be saved in the specified output directory (`output_dir`).
 
 ```python
-from loguru import logger
-from netspresso.launcher import Converter, Benchmarker, ModelFramework, DeviceName, SoftwareVersion
+from netspresso.enums import DeviceName, Framework, SoftwareVersion
 
-converter = Converter(user_session=session)
+# 1. Declare converter
+converter = netspresso.converter()
+
+# 2. Run convert
 conversion_task = converter.convert_model(
-    model_path="YOUR_MODEL_PATH",  # ex) "./examples/sample_models/test.onnx"
-    target_framework=ModelFramework.TENSORRT,
-    target_device_name=DeviceName.JETSON_AGX_ORIN,
-    target_software_version=SoftwareVersion.JETPACK_5_0_1,
-    output_path="CONVERTED_MODEL_PATH"  # ex) "./outputs/converted/converted_model.trt"
-)
-logger.info(conversion_task)
-
-benchmarker = Benchmarker(user_session=session)
-benchmark_task = benchmarker.benchmark_model(
-    model_path="CONVERTED_MODEL_PATH",  # ex) "./outputs/converted/converted_model.trt"
+    input_model_path="./examples/sample_models/test.onnx",
+    output_dir="./outputs/converted/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1",
+    target_framework=Framework.TENSORRT,
     target_device_name=DeviceName.JETSON_AGX_ORIN,
     target_software_version=SoftwareVersion.JETPACK_5_0_1,
 )
-logger.info(f"model inference latency: {benchmark_task.latency} ms")
-logger.info(f"model gpu memory footprint: {benchmark_task.memory_footprint_gpu} MB")
-logger.info(f"model cpu memory footprint: {benchmark_task.memory_footprint_cpu} MB")
 ```
 
-## Available Options for Launcher (Convert, Benchmark)
+### Benchmarker
 
-### Available Target Frameworks for Conversion with Source Models
+#### Benchmark
 
-| Target / Source Model | ONNX | TENSORFLOW_KERAS | TENSORFLOW |
-| :-------------------- | :--: | :--------------: | :--------: |
-| TENSORRT              |  ✔️  |                  |            |
-| DRPAI                 |  ✔️  |                  |            |
-| OPENVINO              |  ✔️  |                  |            |
-| TENSORFLOW_LITE       |  ✔️  |        ✔️        |     ✔️     |
+To start benchmarking a model, enter the model path to benchmark and the target device name.
+
+For NVIDIA GPUs and Jetson devices, device name and software version have to be matched with the target device of the conversion.
+
+TensorRT Model has strong dependency with the device type and its jetpack version.
+
+```python
+from netspresso.enums import DeviceName, SoftwareVersion
+
+# 1. Declare benchmarker
+benchmarker = netspresso.benchmarker()
+
+# 2. Run benchmark
+benchmark_task = benchmarker.benchmark_model(
+    input_model_path="./outputs/converted/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1.trt",
+    target_device_name=DeviceName.JETSON_AGX_ORIN,
+    target_software_version=SoftwareVersion.JETPACK_5_0_1,
+)
+print(f"model inference latency: {benchmark_task['result']['latency']} ms")
+print(f"model gpu memory footprint: {benchmark_task['result']['memory_footprint_gpu']} MB")
+print(f"model cpu memory footprint: {benchmark_task['result']['memory_footprint_cpu']} MB")
+```
+
+<details open>
+  <summary>Supported options for Converter & Benchmarker</summary>
+  <div markdown="1">
+
+  ### Frameworks that support conversion for model's framework
+
+  | Target / Source Framework | ONNX | TENSORFLOW_KERAS | TENSORFLOW |
+  |:--------------------------|:----:|:----------------:|:----------:|
+  | TENSORRT                  |  ✔️  |                  |            |
+  | DRPAI                     |  ✔️  |                  |            |
+  | OPENVINO                  |  ✔️  |                  |            |
+  | TENSORFLOW_LITE           |  ✔️  |        ✔️        |     ✔️     |
+
+  ### Devices that support benchmarks for model's framework
+
+  | Device / Framework           | ONNX | TENSORRT | TENSORFLOW_LITE | DRPAI | OPENVINO |
+  |:-----------------------------|:----:|:--------:|:---------------:|:-----:|:--------:|
+  | RASPBERRY_PI_5               |  ✔️  |          |       ✔️        |       |          |
+  | RASPBERRY_PI_4B              |  ✔️  |          |       ✔️        |       |          |
+  | RASPBERRY_PI_3B_PLUS         |  ✔️  |          |       ✔️        |       |          |
+  | RASPBERRY_PI_ZERO_W          |  ✔️  |          |       ✔️        |       |          |
+  | RASPBERRY_PI_ZERO_2W         |  ✔️  |          |       ✔️        |       |          |
+  | ARM_ETHOS_U_SERIES           |      |          |  ✔️(only INT8)  |       |          |
+  | ALIF_ENSEMBLE_E7_DEVKIT_GEN2 |      |          |  ✔️(only INT8)  |       |          |
+  | RENESAS_RA8D1                |      |          |  ✔️(only INT8)  |       |          |
+  | RENESAS_RZ_V2L               |  ✔️  |          |                 |  ✔️   |          |
+  | RENESAS_RZ_V2M               |  ✔️  |          |                 |  ✔️   |          |
+  | JETSON_NANO                  |  ✔️  |    ✔️    |                 |       |          |
+  | JETSON_TX2                   |  ✔️  |    ✔️    |                 |       |          |
+  | JETSON_XAVIER                |  ✔️  |    ✔️    |                 |       |          |
+  | JETSON_NX                    |  ✔️  |    ✔️    |                 |       |          |
+  | JETSON_AGX_ORIN              |  ✔️  |    ✔️    |                 |       |          |
+  | AWS_T4                       |  ✔️  |    ✔️    |                 |       |          |
+  | INTEL_XEON_W_2233            |      |          |                 |       |    ✔️    |
+
+  ### Software versions that support conversions and benchmarks for specific devices 
+
+  Software Versions requires only Jetson Device. If you are using a different device, you do not need to enter it.
+
+  | Software Version / Device | JETSON_NANO | JETSON_TX2 | JETSON_XAVIER | JETSON_NX | JETSON_AGX_ORIN |
+  |:--------------------------|:-----------:|:----------:|:-------------:|:---------:|:---------------:|
+  | JETPACK_4_4_1             |     ✔️      |            |               |           |                 |
+  | JETPACK_4_6               |     ✔️      |     ✔️     |      ✔️       |    ✔️     |                 |
+  | JETPACK_5_0_1             |             |            |               |           |       ✔️        |
+  | JETPACK_5_0_2             |             |            |               |    ✔️     |                 |
+
+  The code below is an example of using software version.
+
+  ```python
+  conversion_result = converter.convert_model(
+      input_model_path=INPUT_MODEL_PATH,
+      output_dir=OUTPUT_DIR,
+      target_framework=Framework.TENSORRT,
+      target_device_name=DeviceName.JETSON_AGX_ORIN,
+      target_software_version=SoftwareVersion.JETPACK_5_0_1,
+  )
+  benchmark_result = benchmarker.benchmark_model(
+      input_model_path=CONVERTED_MODEL_PATH,
+      target_device_name=DeviceName.JETSON_AGX_ORIN,
+      target_software_version=SoftwareVersion.JETPACK_5_0_1,
+  )
+  ```
+
+  ### Hardware type that support benchmarks for specific devices
+
+  Benchmark and compare models with and without Arm Helium.
+
+  `RENESAS_RA8D1` and `ALIF_ENSEMBLE_E7_DEVKIT_GEN2` are available for use.
+
+  The benchmark results with Helium can be up to twice as fast as without Helium.
+
+  The code below is an example of using hardware type.
+
+  ```python
+  benchmark_result = benchmarker.benchmark_model(
+      input_model_path=CONVERTED_MODEL_PATH,
+      target_device_name=DeviceName.RENESAS_RA8D1,
+      target_data_type=DataType.INT8,
+      target_hardware_type=HardwareType.HELIUM
+  )
+  ```
+  </div>
+</details>
 
 
-### Available Devices for Framework
+## Guide to Credit Consumption by Module
 
-| Device / Framework   | ONNX | TENSORRT | TENSORFLOW_LITE | DRPAI | OPENVINO |
-| :------------------- | :--: | :------: | :-------------: | :---: | :------: |
-| RASPBERRY_PI_4B      |  ✔️  |          |       ✔️        |       |          |
-| RASPBERRY_PI_3B_PLUS |  ✔️  |          |       ✔️        |       |          |
-| RASPBERRY_PI_ZERO_W  |  ✔️  |          |       ✔️        |       |          |
-| RASPBERRY_PI_ZERO_2W |  ✔️  |          |       ✔️        |       |          |
-| RENESAS_RZ_V2L       |  ✔️  |          |                 |  ✔️   |          |
-| RENESAS_RZ_V2M       |  ✔️  |          |                 |  ✔️   |          |
-| RENESAS_RA8D1       |      |          |        ✔️(only INT8)        |       |          |
-| ALIF_ENSEMBLE_E7_DEVKIT_GEN2       |     |          |        ✔️(only INT8)       |       |          |
-| JETSON_NANO          |  ✔️  |    ✔️    |                 |       |          |
-| JETSON_TX2           |  ✔️  |    ✔️    |                 |       |          |
-| JETSON_XAVIER        |  ✔️  |    ✔️    |                 |       |          |
-| JETSON_NX            |  ✔️  |    ✔️    |                 |       |          |
-| JETSON_AGX_ORIN      |  ✔️  |    ✔️    |                 |       |          |
-| AWS_T4               |  ✔️  |    ✔️    |                 |       |          |
-| Intel_XEON_W_2233    |      |          |                 |       |    ✔️    |
-
-
-### Available Software Versions for Jetson Devices
-
-Software Versions requires only Jetson Device. If you are using a different device, you do not need to enter it.
-
-| Software Version / Device | JETSON_NANO | JETSON_TX2 | JETSON_XAVIER | JETSON_NX | JETSON_AGX_ORIN |
-| :------------------------ | :---------: | :--------: | :-----------: | :-------: | :-------------: |
-| JETPACK_4_4_1             |     ✔️      |            |               |           |                 |
-| JETPACK_4_6               |     ✔️      |     ✔️     |      ✔️       |    ✔️     |                 |
-| JETPACK_5_0_1             |             |            |               |           |       ✔️        |
-| JETPACK_5_0_2             |             |            |               |    ✔️     |                 |
-
+<table width="90%">
+  <tr>
+      <th>Module</th>
+      <th>Feature</th>
+      <th>Credit</th>
+  </tr>
+  <tr>
+      <td align="center" rowspan="2">Compressor</td>
+      <td align="center">Automatic compression</td>
+      <td align="center">25</td>
+  </tr>
+  <tr>
+      <td align="center">Advanced compression</td>
+      <td align="center">50</td>
+  </tr>
+  <tr>
+      <td align="center">Converter</td>
+      <td align="center">Convert</td>
+      <td align="center">50</td>
+  </tr>
+  <tr>
+      <td align="center">Benchmarker</td>
+      <td align="center">Benchmark</td>
+      <td align="center">25</td>
+  </tr>
+</table>
 
 ## NetsPresso Model Compressor Best Practice
 
