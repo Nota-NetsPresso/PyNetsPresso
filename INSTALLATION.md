@@ -24,7 +24,7 @@ pip install -e .
 
 ### Docker with docker-compose
 
-For the latest information, please check `docker-compose.yml`
+For the latest information, please check [docker-compose-example.yml](docker-compose-example.yml).
 
 ```python
 # run command
@@ -44,7 +44,7 @@ docker build -t netspresso:v$(cat netspresso/VERSION) .
 ```python
 # docker run command
 docker run -it --ipc=host\
-  --gpus='"device=0,1,2,3"'\
+  --gpus='"device=0,1,2,3"'\  # your GPU id(s)
   -v /PATH/TO/DATA:/DATA/PATH/IN/CONTAINER\
   -v /PATH/TO/CHECKPOINT:/CHECKPOINT/PATH/IN/CONTAINER\
   -p 50001:50001\
