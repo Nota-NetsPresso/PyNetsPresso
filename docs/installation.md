@@ -26,7 +26,7 @@ pip install -e .
 
 ### Docker with docker-compose
 
-For the latest information, please check [docker-compose-example.yml](https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/docker-compose-example.yml).
+For the latest information, please check [docker-compose.yml](https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/docker-compose.yml).
 
 ```bash
 # run command
