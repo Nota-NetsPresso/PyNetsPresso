@@ -1,7 +1,7 @@
 Automatic Compression
 =====================
 
-.. autofunction:: netspresso.compressor.__init__.ModelCompressor.automatic_compression
+.. autofunction:: netspresso.compressor.__init__.Compressor.automatic_compression
 
 
 Details of Parameters
@@ -22,48 +22,20 @@ Compression Ratio
         </div>
 
 
-
-Details of Returns
-------------------
-
-.. autoclass:: netspresso.compressor.__init__.CompressedModel
-    :show-inheritance:
-    :noindex:
-
-
 Example
 -------
 
 .. code-block:: python
 
-    from netspresso.compressor import ModelCompressor
+    from netspresso import NetsPresso
 
 
-    compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+    netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+
+    compressor = netspresso.compressor()
     compressed_model = compressor.automatic_compression(
-        model_id="YOUR_UPLOADED_MODEL_ID",
-        model_name="YOUR_COMPRESSED_MODEL_NAME",
-        output_path="OUTPUT_PATH",  # ex) ./compressed_model.h5
+        input_shapes=[{"batch": 1, "channel": 3, "dimension": [224, 224]}],
+        input_model_path="./examples/sample_models/graphmodule.pt",
+        output_dir="./outputs/compressed/pytorch_automatic_compression_1",
         compression_ratio=0.5,
-    )
-
-Output
-~~~~~~
-
-.. code-block:: bash
-
-    >>> compressed_model
-    CompressedModel(
-        model_id="78f65510-1f99-4856-99d9-60902373bd1d", 
-        model_name="YOUR_COMPRESSED_MODEL_NAME", 
-        task="image_classification", 
-        framework="tensorflow_keras", 
-        input_shapes=[InputShape(batch=1, channel=3, dimension=[32, 32])], 
-        model_size=2.9439, 
-        flops=24.1811, 
-        trainable_parameters=0.6933, 
-        non_trainable_parameters=0.01, 
-        number_of_layers=0, 
-        compression_id="b9feccee-d69e-4074-a225-5417d41aa572", 
-        original_model_id="YOUR_UPLOADED_MODEL_ID"
     )

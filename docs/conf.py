@@ -11,10 +11,10 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "PyNetsPresso"
-copyright = "2023, Nota AI"
+project = "NetsPresso"
+copyright = "2023-2024, Nota Inc."
 author = "Nota AI"
-release = "1.2.0"
+release = "1.3.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -63,4 +63,4 @@ exclude_patterns = []
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
-html_favicon = "./_static/pynetspresso-favicon.png"
+html_favicon = "./_static/netspresso_symbol_navy.png"

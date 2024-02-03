@@ -1,7 +1,7 @@
 Recommendation Compression
 ==========================
 
-.. autofunction:: netspresso.compressor.__init__.ModelCompressor.recommendation_compression
+.. autofunction:: netspresso.compressor.__init__.Compressor.recommendation_compression
 
 
 Details of Parameters
@@ -11,7 +11,7 @@ Details of Parameters
 Compression Method
 ~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: netspresso.compressor.__init__.CompressionMethod
+.. autoclass:: netspresso.enums.__init__.CompressionMethod
     :noindex:
 
 
@@ -36,7 +36,7 @@ Example
 
 .. code-block:: python
 
-    from netspresso.compressor import CompressionMethod
+    from netspresso.enums import CompressionMethod
 
     COMPRESSION_METHOD = CompressionMethod.PR_L2
 
@@ -49,7 +49,7 @@ Example
 Recommendation Method
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: netspresso.compressor.__init__.RecommendationMethod
+.. autoclass:: netspresso.enums.__init__.RecommendationMethod
     :noindex:
 
 
@@ -68,7 +68,7 @@ Example
 
 .. code-block:: python
 
-    from netspresso.compressor import RecommendationMethod
+    from netspresso.enums import RecommendationMethod
 
     RECOMMENDATION_METHOD = RecommendationMethod.SLAMP
 
@@ -129,7 +129,7 @@ Example
 
 .. code-block:: python
 
-    from netspresso.compressor import Policy, LayerNorm, GroupPolicy, Options
+    from netspresso.enums import Policy, LayerNorm, GroupPolicy, Options
 
     OPTIONS = Options(
         policy=Policy.AVERAGE,
@@ -146,55 +146,23 @@ Example
 
     - This parameter applies only to the Pruning Method (PR_L2, PR_GM, PR_NN).
 
-
-Details of Returns
-------------------
-
-.. autoclass:: netspresso.compressor.__init__.CompressedModel
-    :noindex:
-
-
 Example
 -------
 
 .. code-block:: python
 
-    from netspresso.compressor import ModelCompressor
+    from netspresso import NetsPresso
+    from netspresso.enums import CompressionMethod, RecommendationMethod
 
 
-    compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+    netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+
+    compressor = netspresso.compressor()
     compressed_model = compressor.recommendation_compression(
-        model_id="YOUR_UPLOADED_MODEL_ID",
-        model_name="YOUR_COMPRESSED_MODEL_NAME",
         compression_method=CompressionMethod.PR_L2,
         recommendation_method=RecommendationMethod.SLAMP,
         recommendation_ratio=0.5,
-        output_path="OUTPUT_PATH",  # ex) ./compressed_model.h5
-        options=Options(
-            policy=Policy.AVERAGE,
-            layer_norm=LayerNorm.TSS_NORM,
-            group_policy=GroupPolicy.COUNT,
-            reshape_channel_axis=-1
-        )
-    )
-
-Output
-~~~~~~
-
-.. code-block:: bash
-
-    >>> compressed_model
-    CompressedModel(
-        model_id="78f65510-1f99-4856-99d9-60902373bd1d", 
-        model_name="YOUR_COMPRESSED_MODEL_NAME", 
-        task="image_classification", 
-        framework="tensorflow_keras", 
-        input_shapes=[InputShape(batch=1, channel=3, dimension=[32, 32])], 
-        model_size=2.9439, 
-        flops=24.1811, 
-        trainable_parameters=0.6933, 
-        non_trainable_parameters=0.01, 
-        number_of_layers=0, 
-        compression_id="b9feccee-d69e-4074-a225-5417d41aa572", 
-        original_model_id="YOUR_UPLOADED_MODEL_ID"
+        input_model_path="./examples/sample_models/graphmodule.pt",
+        output_dir="./outputs/compressed/graphmodule_recommend",
+        input_shapes=[{"batch": 1, "channel": 3, "dimension": [224, 224]}],
     )

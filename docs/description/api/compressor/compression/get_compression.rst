@@ -1,13 +1,13 @@
 Get Compression Information
 ===========================
 
-.. autofunction:: netspresso.compressor.__init__.ModelCompressor.get_compression
+.. autofunction:: netspresso.compressor.__init__.Compressor.get_compression
 
 
 Details of Returns
 ------------------
 
-.. autoclass:: netspresso.compressor.__init__.CompressionInfo
+.. autoclass:: netspresso.compressor.core.compression.CompressionInfo
     :noindex:
 
 
@@ -16,10 +16,12 @@ Example
 
 .. code-block:: python
 
-    from netspresso.compressor import ModelCompressor
+    from netspresso import NetsPresso
 
 
-    compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+    netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+
+    compressor = netspresso.compressor()
     compressed_info = compressor.get_compression(compression_id="YOUR_COMPRESSION_ID")
 
 Output

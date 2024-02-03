@@ -1,7 +1,7 @@
 Download Model
 ==============
 
-.. autofunction:: netspresso.compressor.__init__.ModelCompressor.download_model
+.. autofunction:: netspresso.compressor.__init__.Compressor.download_model
 
 
 Example
@@ -9,10 +9,12 @@ Example
 
 .. code-block:: python
 
-    from netspresso.compressor import ModelCompressor
+    from netspresso import NetsPresso
 
 
-    compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+    netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+
+    compressor = netspresso.compressor()
     compressor.download_model(
         model_id="YOUR_MODEL_ID",
         local_path="YOUR_LOCAL_PATH",  # ex) ./downloaded_model.h5
