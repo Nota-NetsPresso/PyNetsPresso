@@ -1,52 +1,16 @@
 Upload Model
 =============
 
-.. autofunction:: netspresso.compressor.__init__.ModelCompressor.upload_model
+.. autofunction:: netspresso.compressor.__init__.Compressor.upload_model
 
 
 Details of Parameters
 ---------------------
 
-Task
-~~~~
-
-.. autoclass:: netspresso.compressor.__init__.Task
-    :noindex:
-
-
-Available Task
-++++++++++++++
-+-----------------------+-----------------------+
-| Name                  | Description           |
-+=======================+=======================+
-| IMAGE_CLASSIFICATION  | Image Classification  |
-+-----------------------+-----------------------+
-| OBJECT_DETECTION      | Object Detection      |
-+-----------------------+-----------------------+
-| IMAGE_SEGMENTATION    | Image Segmentation    |
-+-----------------------+-----------------------+
-| SEMANTIC_SEGMENTATION | Semantic Segmentation |
-+-----------------------+-----------------------+
-| INSTANCE_SEGMENTATION | Instance Segmentation |
-+-----------------------+-----------------------+
-| PANOPTIC_SEGMENTATION | Panoptic Segmentation |
-+-----------------------+-----------------------+
-| OTHER                 | Other                 |
-+-----------------------+-----------------------+
-
-Example
-+++++++
-
-.. code-block:: python
-
-    from netspresso.compressor import Task
-
-    TASK = Task.IMAGE_CLASSIFICATION
-
 Framework
 ~~~~~~~~~
 
-.. autoclass:: netspresso.compressor.__init__.Framework
+.. autoclass:: netspresso.enums.__init__.Framework
     :noindex:
 
 Available Framework
@@ -66,19 +30,19 @@ Example
 
 .. code-block:: python
 
-    from netspresso.compressor import Framework
+    from netspresso.enums import Framework
 
-    FRAMEWORK = Framework.TENSORFLOW_KERAS
+    FRAMEWORK = Framework.PYTORCH
 
 .. note::
     - ONNX (.onnx)
-        - Supported version: Pytorch >= 1.11.x, ONNX >= 1.10.x.
-        - If a model is defined in Pytorch, it should be converted into the ONNX format before being uploaded.
+        - Supported version: PyTorch >= 1.11.x, ONNX >= 1.10.x.
+        - If a model is defined in PyTorch, it should be converted into the ONNX format before being uploaded.
         - `How-to-guide for the conversion of PyTorch into ONNX.`_
 
     - PyTorch GraphModule (.pt)
-        - Supported version: Pytorch >= 1.11.x.
-        - If a model is defined in Pytorch, it should be converted into the GraphModule before being uploaded.
+        - Supported version: PyTorch >= 1.11.x.
+        - If a model is defined in PyTorch, it should be converted into the GraphModule before being uploaded.
         - The model must contain not only the status dictionary but also the structure of the model (do not use state_dict).
         - `How-to-guide for the conversion of PyTorch into GraphModule.`_
 
@@ -118,7 +82,7 @@ Input Shapes
 Details of Returns 
 ------------------
 
-.. autoclass:: netspresso.compressor.__init__.Model
+.. autoclass:: netspresso.compressor.core.model.Model
     :noindex:
 
 
@@ -127,33 +91,13 @@ Example
 
 .. code-block:: python
 
-    from netspresso.compressor import ModelCompressor, Task, Framework
+    from netspresso import NetsPresso
 
 
-    compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+    netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+
+    compressor = netspresso.compressor()
     model = compressor.upload_model(
-        model_name="YOUR_MODEL_NAME",
-        task=Task.IMAGE_CLASSIFICATION,
-        framework=Framework.TENSORFLOW_KERAS,
-        file_path="YOUR_MODEL_PATH", # ex) ./model.h5
-        input_shapes="YOUR_MODEL_INPUT_SHAPES",  # ex) [{"batch": 1, "channel": 3, "dimension": [32, 32]}]
-    )
-
-Output
-~~~~~~
-
-.. code-block:: bash
-
-    >>> model
-    Model(
-        model_id="5eeb0edb-57d2-4a20-adf4-a6c05516015d",
-        model_name="YOUR_MODEL_NAME",
-        task="image_classification",
-        framework="tensorflow_keras", 
-        input_shapes=[InputShape(batch=1, channel=3, dimension=[32, 32])],
-        model_size=12.9641,
-        flops=92.8979,
-        trainable_parameters=3.3095,
-        non_trainable_parameters=0.0219,
-        number_of_layers=0,
+        input_model_path="./examples/sample_models/mobilenetv1.h5",
+        input_shapes=[{"batch": 1, "channel": 3, "dimension": [224, 224]}],
     )
