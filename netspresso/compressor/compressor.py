@@ -555,7 +555,6 @@ class Compressor:
             model_name = Path(output_dir).name
 
             model = self.upload_model(
-                model_name=model_name,
                 framework=framework,
                 input_model_path=input_model_path,
                 input_shapes=input_shapes,
@@ -700,7 +699,6 @@ class Compressor:
             model_name = Path(output_dir).name
 
             model = self.upload_model(
-                model_name=model_name,
                 framework=framework,
                 input_model_path=input_model_path,
                 input_shapes=input_shapes,
