@@ -10,14 +10,12 @@ netspresso = NetsPresso(email=EMAIL, password=PASSWORD)
 compressor = netspresso.compressor()
 
 # 2. Set variables for upload
-UPLOAD_MODEL_NAME = "sample_h5"
 FRAMEWORK = Framework.TENSORFLOW_KERAS
 INPUT_MODEL_PATH = "./examples/sample_models/mobilenetv1.h5"
 INPUT_SHAPES = [{"batch": 1, "channel": 3, "dimension": [32, 32]}]
 
 # 3. Upload model
 model = compressor.upload_model(
-    model_name=UPLOAD_MODEL_NAME,
     input_model_path=INPUT_MODEL_PATH,
     input_shapes=INPUT_SHAPES,
     framework=FRAMEWORK,
