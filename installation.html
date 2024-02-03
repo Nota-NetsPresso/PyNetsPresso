@@ -51,8 +51,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-with-pypi-stable">Install with PyPI (stable)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-with-github">Install with GitHub</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#docker-with-docker-compose">Docker with docker-compose</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#docker-image-build">Docker image build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-with-docker">Install with Docker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#docker-with-docker-compose">Docker with docker-compose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#docker-image-build">Docker image build</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="description.html">API Description</a></li>
@@ -84,13 +87,12 @@
              
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
-<p>If you want to install netspresso library, it is required to set your python version first. And choose one of installation methods described below.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading"></a></h2>
 <ul class="simple">
-<li><p>Python <code class="docutils literal notranslate"><span class="pre">3.8</span></code> | <code class="docutils literal notranslate"><span class="pre">3.9</span></code> | <code class="docutils literal notranslate"><span class="pre">3.10</span></code></p></li>
-<li><p>PyTorch <code class="docutils literal notranslate"><span class="pre">1.13.0</span></code> (recommended) (compatible with: <code class="docutils literal notranslate"><span class="pre">1.11.x</span></code> - <code class="docutils literal notranslate"><span class="pre">1.13.x</span></code>)</p></li>
-<li><p>TensorFlow <code class="docutils literal notranslate"><span class="pre">2.8.0</span></code> (recommended) (compatible with: <code class="docutils literal notranslate"><span class="pre">2.3.x</span></code> - <code class="docutils literal notranslate"><span class="pre">2.8.x</span></code>)</p></li>
+<li><p>Python <code class="docutils literal notranslate"><span class="pre">3.8</span></code> | <code class="docutils literal notranslate"><span class="pre">3.9</span></code> | <code class="docutils literal notranslate"><span class="pre">3.10</span></code></p></li>
+<li><p>PyTorch <code class="docutils literal notranslate"><span class="pre">1.13.0</span></code> (recommended) (compatible with: <code class="docutils literal notranslate"><span class="pre">1.11.x</span></code> - <code class="docutils literal notranslate"><span class="pre">1.13.x</span></code>)</p></li>
+<li><p>TensorFlow <code class="docutils literal notranslate"><span class="pre">2.8.0</span></code> (recommended) (compatible with: <code class="docutils literal notranslate"><span class="pre">2.3.x</span></code> - <code class="docutils literal notranslate"><span class="pre">2.8.x</span></code>)</p></li>
 </ul>
 </section>
 <section id="install-with-pypi-stable">
@@ -108,8 +110,11 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 </pre></div>
 </div>
 </section>
+<section id="install-with-docker">
+<h2>Install with Docker<a class="headerlink" href="#install-with-docker" title="Permalink to this heading"></a></h2>
+<p>Please clone this repository and refer to <a class="reference external" href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/docker-compose.yml">Dockerfile</a> and <a class="reference external" href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/docker-compose.yml">docker-compose.yml</a>.</p>
 <section id="docker-with-docker-compose">
-<h2>Docker with docker-compose<a class="headerlink" href="#docker-with-docker-compose" title="Permalink to this heading"></a></h2>
+<h3>Docker with docker-compose<a class="headerlink" href="#docker-with-docker-compose" title="Permalink to this heading"></a></h3>
 <p>For the latest information, please check <a class="reference external" href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/docker-compose.yml">docker-compose.yml</a>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># run command</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">TAG</span><span class="o">=</span>v<span class="k">$(</span>cat<span class="w"> </span>netspresso/VERSION<span class="k">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
@@ -118,7 +123,7 @@ docker<span class="w"> </span>compose<span class="w"> </span>run<span class="w">
 </div>
 </section>
 <section id="docker-image-build">
-<h2>Docker image build<a class="headerlink" href="#docker-image-build" title="Permalink to this heading"></a></h2>
+<h3>Docker image build<a class="headerlink" href="#docker-image-build" title="Permalink to this heading"></a></h3>
 <p>If you run with <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code> command, follow the image build and run command in the below:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># build an image</span>
 docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>netspresso:v<span class="k">$(</span>cat<span class="w"> </span>netspresso/VERSION<span class="k">)</span><span class="w"> </span>.
@@ -135,6 +140,7 @@ docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </s
 <span class="w">  </span>--name<span class="w"> </span>netspresso-dev<span class="w"> </span>netspresso:v<span class="k">$(</span>cat<span class="w"> </span>netspresso/VERSION<span class="k">)</span>
 </pre></div>
 </div>
+</section>
 </section>
 </section>
 
