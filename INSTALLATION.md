@@ -24,7 +24,7 @@ pip install -e .
 
 ### Docker with docker-compose
 
-For the latest information, please check [docker-compose-example.yml](docker-compose-example.yml).
+For the latest information, please check [docker-compose.yml](docker-compose.yml).
 
 ```python
 # run command
