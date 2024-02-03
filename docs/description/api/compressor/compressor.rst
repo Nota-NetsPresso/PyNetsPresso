@@ -19,6 +19,6 @@ Compress
 .. toctree::
    :maxdepth: 1
    
-   compression/automatic_compression
-   compression/advanced_compression
-   compression/get_compression
+   compress/automatic_compression
+   compress/advanced_compression
+   compress/get_compression
