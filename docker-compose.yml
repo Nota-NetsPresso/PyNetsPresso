@@ -13,8 +13,9 @@ services:
     ports:
       # HOST_PORT for tensorboard
       - "50001:50001" # tensorboard
-      - "50002:50002" # (optional, gradio) configuration helper
-      - "50003:50003" # (optional, gradio) inference demo
+      - "50002:50002" # jupyter notebook
+      - "50003:50003" # (optional, gradio) configuration helper
+      - "50004:50004" # (optional, gradio) inference demo
     volumes:
       # from path: your working directory
       # - /PATH/TO/netspresso:/home/appuser/netspresso
