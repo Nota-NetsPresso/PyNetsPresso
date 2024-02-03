@@ -238,9 +238,9 @@ training_result = trainer.train(gpus="0, 1", project_name="PROJECT_TRAIN_SAMPLE"
 
 #### Retrain
 
-To start retraining a model, use `hparam.yaml` that the original model was trained on.
+To start retraining a model, use `hparams.yaml` file which is one of the artifacts generated during the training of the original model.
 
-Then, enter the compressed model path in fx_model_path.
+Then, enter the compressed model path, which is an artifact of the compressor in fx_model_path.
 
 Adjust the training hyperparameters as needed. (See 2-2. for detailed code.)
 
