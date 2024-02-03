@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "NetsPresso"
-copyright = "2023-2024, Nota Inc."
+copyright = "2023-2024, Nota Inc"
 author = "Nota AI"
 release = "1.3.0"
 
