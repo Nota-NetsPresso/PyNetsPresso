@@ -44,7 +44,7 @@ Easily compress various models with our resources. Please browse the [Docs] for 
 
 To get started with the NetsPresso, you will need to sign up either at [NetsPresso].</a>
 
-We offer a comprehensive guide to walk you through the process of optimizing an AI model using NetPresso. A full tutorial can be found [here](https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a#scrollTo=-SO6lDi5-WY0).
+We offer a comprehensive guide to walk you through the process of optimizing an AI model using NetPresso. A full tutorial can be found [Google Colab](https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a#scrollTo=-SO6lDi5-WY0).
 </br>
 </br>
 
