@@ -36,7 +36,6 @@ class Compressor:
 
     def upload_model(
         self,
-        model_name: str,
         input_model_path: str,
         input_shapes: List[Dict[str, int]] = None,
         framework: Framework = Framework.PYTORCH,
@@ -44,7 +43,6 @@ class Compressor:
         """Upload a model for compression.
 
         Args:
-            model_name (str): The name of the model.
             input_model_path (str): The file path where the model is located.
             input_shapes (List[Dict[str, int]], optional): Input shapes of the model. Defaults to [].
             framework (Framework): The framework of the model.
@@ -64,6 +62,9 @@ class Compressor:
 
         try:
             logger.info("Uploading Model...")
+
+            model_name = Path(input_model_path).stem
+
             data = UploadModelRequest(
                 model_name=model_name,
                 framework=framework,
