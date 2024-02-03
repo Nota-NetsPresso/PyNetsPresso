@@ -1,20 +1,18 @@
-## Installation
+# Installation
 
-If you want to install netspresso library, it is required to set your python version first. And choose one of installation methods described below.
+## Prerequisites
 
-### Prerequisites
+- Python `3.8` | `3.9` | `3.10`
+- PyTorch `1.13.0` (recommended) (compatible with: `1.11.x` - `1.13.x`)
+- TensorFlow `2.8.0` (recommended) (compatible with: `2.3.x` - `2.8.x`)
 
-- Python `3.8` | `3.9` | `3.10`
-- PyTorch `1.13.0` (recommended) (compatible with: `1.11.x` - `1.13.x`)
-- TensorFlow `2.8.0` (recommended) (compatible with: `2.3.x` - `2.8.x`)
-
-### Install with PyPI (stable)
+## Install with PyPI (stable)
 
 ```bash
 pip install netspresso
 ```
 
-### Install with GitHub
+## Install with GitHub
 
 To install with editable mode,
 
@@ -23,6 +21,10 @@ git clone https://github.com/nota-netspresso/pynetspresso.git
 cd pynetspresso
 pip install -e .
 ```
+
+## Install with Docker
+
+Please clone this repository and refer to [Dockerfile](https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/docker-compose.yml) and [docker-compose.yml](https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/docker-compose.yml).
 
 ### Docker with docker-compose
 
