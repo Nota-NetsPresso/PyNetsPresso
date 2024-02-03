@@ -32,8 +32,7 @@
         <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
         <br>
         <a href="https://netspresso.ai?utm_source=git&utm_medium=text_np&utm_campaign=py_launch"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
-        <a href="https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo"><img src="https://img.shields.io/badge/ModelZoo-Open in Github-181717?style=flat&logo=github&logoColor=#181717"/></a>
-        <a href="https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo/tree/main/best_practices"><img src="https://img.shields.io/badge/Best Practice-Open in Colab-F9AB00?style=flat&logo=googlecolab&logoColor=#F9AB00"/></a>
+        <a href="https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a#scrollTo=F6cxAIsG4XZq"><img src="https://img.shields.io/badge/Best Practice-Open in Colab-F9AB00?style=flat&logo=googlecolab&logoColor=#F9AB00"/></a>
     </p>
 </div>
 </br>
@@ -44,6 +43,8 @@ NetsPresso resolves AI-related constraints in business use cases and enables cos
 Easily compress various models with our resources. Please browse the [Docs] for details, and join our [Discussion Forum] for providing feedback or sharing your use cases.
 
 To get started with the NetsPresso, you will need to sign up either at [NetsPresso].</a>
+
+We offer a comprehensive guide to walk you through the process of optimizing an AI model using NetPresso. A full tutorial can be found [here](https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a#scrollTo=F6cxAIsG4XZq).
 </br>
 </br>
 
@@ -454,10 +455,6 @@ print(f"model cpu memory footprint: {benchmark_result['result']['memory_footprin
   </tr>
 </table>
 
-## NetsPresso Model Compressor Best Practice
-
-If you want to experience Model Compressor online without any installation, please refer to the [NetsPresso-Model-Compressor-ModelZoo] repo that runs on Google Colab.
-
 ## Contact
 
 Join our [Discussion Forum] for providing feedback or sharing your use cases, and if you want to talk more with Nota, please contact us [here].</br>
@@ -470,4 +467,3 @@ Or you can also do it via email([netspresso@nota.ai]) or phone(+82 2-555-8659)!
 [NetsPresso-Sign-Up]: https://netspresso.ai/signup
 [here]: https://www.nota.ai/contact-us
 [netspresso@nota.ai]: mailto:netspresso@nota.ai
-[NetsPresso-Model-Compressor-ModelZoo]: https://github.com/Nota-NetsPresso/NetsPresso-Model-Compressor-ModelZoo
