@@ -32,7 +32,7 @@
         <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
         <br>
         <a href="https://netspresso.ai?utm_source=git&utm_medium=text_np&utm_campaign=py_launch"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
-        <a href="https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a#scrollTo=F6cxAIsG4XZq"><img src="https://img.shields.io/badge/Best Practice-Open in Colab-F9AB00?style=flat&logo=googlecolab&logoColor=#F9AB00"/></a>
+        <a href="https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a#scrollTo=-SO6lDi5-WY0" target="_blank"><img src="https://img.shields.io/badge/Best Practice-Open in Colab-F9AB00?style=flat&logo=googlecolab&logoColor=#F9AB00"/></a>
     </p>
 </div>
 </br>
@@ -44,7 +44,7 @@ Easily compress various models with our resources. Please browse the [Docs] for 
 
 To get started with the NetsPresso, you will need to sign up either at [NetsPresso].</a>
 
-We offer a comprehensive guide to walk you through the process of optimizing an AI model using NetPresso. A full tutorial can be found [here](https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a#scrollTo=F6cxAIsG4XZq).
+We offer a comprehensive guide to walk you through the process of optimizing an AI model using NetPresso. A full tutorial can be found [here](https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a#scrollTo=-SO6lDi5-WY0).
 </br>
 </br>
 
