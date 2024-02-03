@@ -1,7 +1,7 @@
 Delete Model
 ============
 
-.. autofunction:: netspresso.compressor.__init__.ModelCompressor.delete_model
+.. autofunction:: netspresso.compressor.__init__.Compressor.delete_model
 
 
 Details of Parameters
@@ -28,10 +28,12 @@ If the model has a compressed model, and recursive is False
 
 .. code-block:: python
 
-    from netspresso.compressor import ModelCompressor
+    from netspresso import NetsPresso
 
 
-    compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+    netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+
+    compressor = netspresso.compressor()
     compressor.delete_model(model_id="YOUR_MODEL_ID")
 
 Output
@@ -48,10 +50,12 @@ If the model has a compressed model, and recursive is True
 
 .. code-block:: python
 
-    from netspresso.compressor import ModelCompressor
+    from netspresso import NetsPresso
 
 
-    compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+    netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+
+    compressor = netspresso.compressor()
     compressor.delete_model(model_id="YOUR_MODEL_ID", recursive=True)
 
 Output
@@ -69,10 +73,12 @@ If there is no compressed model in the model
 
 .. code-block:: python
 
-    from netspresso.compressor import ModelCompressor
+    from netspresso import NetsPresso
 
 
-    compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+    netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+
+    compressor = netspresso.compressor()
     compressor.delete_model(model_id="YOUR_MODEL_ID")
 
 Output

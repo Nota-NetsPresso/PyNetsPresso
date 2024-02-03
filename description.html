@@ -4,25 +4,25 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API Description &mdash; PyNetsPresso 1.2.0 documentation</title>
+  <title>API Description &mdash; NetsPresso 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
-    <link rel="shortcut icon" href="_static/pynetspresso-favicon.png"/>
+    <link rel="shortcut icon" href="_static/netspresso_symbol_navy.png"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=4c8675c2"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=3d533f9b"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Model Compressor" href="description/api/compressor/compressor.html" />
+    <link rel="next" title="Trainer" href="description/api/trainer/trainer.html" />
     <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
@@ -35,7 +35,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            PyNetsPresso
+            NetsPresso
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -49,8 +49,11 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API Description</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="description/api/compressor/compressor.html">Model Compressor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="description/api/launcher/launcher.html">Model Launcher</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/trainer/trainer.html">Trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/compressor/compressor.html">Compressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/converter/converter.html">Converter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/benchmarker/benchmarker.html">Benchmarker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enums.html">Enums</a></li>
 </ul>
 </li>
 </ul>
@@ -61,7 +64,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">PyNetsPresso</a>
+          <a href="index.html">NetsPresso</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -83,17 +86,38 @@
 <h1>API Description<a class="headerlink" href="#api-description" title="Permalink to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="description/api/compressor/compressor.html">Model Compressor</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="description/api/compressor/compressor.html#model">Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="description/api/compressor/compressor.html#compression">Compression</a></li>
-<li class="toctree-l2"><a class="reference internal" href="description/api/compressor/compressor.html#enums">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="description/api/trainer/trainer.html">Trainer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="description/api/trainer/trainer.html#train">Train</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="description/api/launcher/launcher.html">Model Launcher</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="description/api/launcher/launcher.html#model">Model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="description/api/launcher/launcher.html#convert">Convert</a></li>
-<li class="toctree-l2"><a class="reference internal" href="description/api/launcher/launcher.html#benchmark">Benchmark</a></li>
-<li class="toctree-l2"><a class="reference internal" href="description/api/launcher/launcher.html#enums">Enums</a></li>
+<li class="toctree-l1"><a class="reference internal" href="description/api/compressor/compressor.html">Compressor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="description/api/compressor/compressor.html#model">Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/compressor/compressor.html#compress">Compress</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="description/api/converter/converter.html">Converter</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="description/api/converter/converter.html#convert">Convert</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="description/api/benchmarker/benchmarker.html">Benchmarker</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="description/api/benchmarker/benchmarker.html#benchmark">Benchmark</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="description/api/enums/enums.html">Enums</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/task.html">Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/framework.html">Framework</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/extension.html">Extension</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/origin_from.html">Origin From</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/compression_method.html">Compression Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/recommendation_method.html">Recommendation Method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/policy.html">Policy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/group_policy.html">Group Policy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/layer_norm.html">LayerNorm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/device_name.html">Device Name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/software_version.html">Software Version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/hardware_type.html">Hardware Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/task_status.html">Task Status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="description/api/enums/enum/data_type.html">Data Type</a></li>
 </ul>
 </li>
 </ul>
@@ -105,13 +129,13 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="description/api/compressor/compressor.html" class="btn btn-neutral float-right" title="Model Compressor" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="description/api/trainer/trainer.html" class="btn btn-neutral float-right" title="Trainer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Nota AI.</p>
+    <p>&#169; Copyright 2023-2024, Nota Inc..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

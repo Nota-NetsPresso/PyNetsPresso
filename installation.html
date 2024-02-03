@@ -4,26 +4,26 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; PyNetsPresso 1.2.0 documentation</title>
+  <title>Installation &mdash; NetsPresso 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
-    <link rel="shortcut icon" href="_static/pynetspresso-favicon.png"/>
+    <link rel="shortcut icon" href="_static/netspresso_symbol_navy.png"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=4c8675c2"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=3d533f9b"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API Description" href="description.html" />
-    <link rel="prev" title="Welcome to PyNetsPresso!" href="index.html" /> 
+    <link rel="prev" title="Welcome to NetsPresso!" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -35,7 +35,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            PyNetsPresso
+            NetsPresso
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -48,8 +48,11 @@
               <p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#from-pypi-recommended">From PyPI (Recommended)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#from-github">From Github</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-with-pypi-stable">Install with PyPI (stable)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-with-github">Install with GitHub</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#docker-with-docker-compose">Docker with docker-compose</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#docker-image-build">Docker image build</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="description.html">API Description</a></li>
@@ -61,7 +64,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">PyNetsPresso</a>
+          <a href="index.html">NetsPresso</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -71,7 +74,7 @@
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Installation</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/installation.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -81,19 +84,55 @@
              
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
-<p>There are two ways you can install the PyNetsPresso: using pip or manually through our project GitHub repository.</p>
-<p>To install this package, please use <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.8</span></code> or higher.</p>
-<section id="from-pypi-recommended">
-<h2>From PyPI (Recommended)<a class="headerlink" href="#from-pypi-recommended" title="Permalink to this heading"></a></h2>
+<p>If you want to install netspresso library, it is required to set your python version first. And choose one of installation methods described below.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>Python <code class="docutils literal notranslate"><span class="pre">3.8</span></code> | <code class="docutils literal notranslate"><span class="pre">3.9</span></code> | <code class="docutils literal notranslate"><span class="pre">3.10</span></code></p></li>
+<li><p>PyTorch <code class="docutils literal notranslate"><span class="pre">1.13.0</span></code> (recommended) (compatible with: <code class="docutils literal notranslate"><span class="pre">1.11.x</span></code> - <code class="docutils literal notranslate"><span class="pre">1.13.x</span></code>)</p></li>
+<li><p>TensorFlow <code class="docutils literal notranslate"><span class="pre">2.8.0</span></code> (recommended) (compatible with: <code class="docutils literal notranslate"><span class="pre">2.3.x</span></code> - <code class="docutils literal notranslate"><span class="pre">2.8.x</span></code>)</p></li>
+</ul>
+</section>
+<section id="install-with-pypi-stable">
+<h2>Install with PyPI (stable)<a class="headerlink" href="#install-with-pypi-stable" title="Permalink to this heading"></a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>netspresso
 </pre></div>
 </div>
 </section>
-<section id="from-github">
-<h2>From Github<a class="headerlink" href="#from-github" title="Permalink to this heading"></a></h2>
+<section id="install-with-github">
+<h2>Install with GitHub<a class="headerlink" href="#install-with-github" title="Permalink to this heading"></a></h2>
+<p>To install with editable mode,</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/nota-netspresso/pynetspresso.git
 <span class="nb">cd</span><span class="w"> </span>pynetspresso
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="docker-with-docker-compose">
+<h2>Docker with docker-compose<a class="headerlink" href="#docker-with-docker-compose" title="Permalink to this heading"></a></h2>
+<p>For the latest information, please check <a class="reference external" href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/docker-compose-example.yml">docker-compose-example.yml</a>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># run command</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TAG</span><span class="o">=</span>v<span class="k">$(</span>cat<span class="w"> </span>netspresso/VERSION<span class="k">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+docker<span class="w"> </span>compose<span class="w"> </span>run<span class="w"> </span>--service-ports<span class="w"> </span>--name<span class="w"> </span>netspresso-dev<span class="w"> </span>netspresso<span class="w"> </span>bash
+</pre></div>
+</div>
+</section>
+<section id="docker-image-build">
+<h2>Docker image build<a class="headerlink" href="#docker-image-build" title="Permalink to this heading"></a></h2>
+<p>If you run with <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code> command, follow the image build and run command in the below:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># build an image</span>
+docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>netspresso:v<span class="k">$(</span>cat<span class="w"> </span>netspresso/VERSION<span class="k">)</span><span class="w"> </span>.
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># docker run command</span>
+docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--ipc<span class="o">=</span>host<span class="se">\</span>
+<span class="w">  </span>--gpus<span class="o">=</span><span class="s1">&#39;&quot;device=0,1,2,3&quot;&#39;</span><span class="se">\ </span><span class="w"> </span><span class="c1"># your GPU id(s)</span>
+<span class="w">  </span>-v<span class="w"> </span>/PATH/TO/DATA:/DATA/PATH/IN/CONTAINER<span class="se">\</span>
+<span class="w">  </span>-v<span class="w"> </span>/PATH/TO/CHECKPOINT:/CHECKPOINT/PATH/IN/CONTAINER<span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">50001</span>:50001<span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">50002</span>:50002<span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="m">50003</span>:50003<span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span>netspresso-dev<span class="w"> </span>netspresso:v<span class="k">$(</span>cat<span class="w"> </span>netspresso/VERSION<span class="k">)</span>
 </pre></div>
 </div>
 </section>
@@ -103,14 +142,14 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to PyNetsPresso!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to NetsPresso!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="description.html" class="btn btn-neutral float-right" title="API Description" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Nota AI.</p>
+    <p>&#169; Copyright 2023-2024, Nota Inc..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

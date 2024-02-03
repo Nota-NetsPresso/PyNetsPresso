@@ -1,16 +1,16 @@
 Get Model
 =========
 
-.. autofunction:: netspresso.compressor.__init__.ModelCompressor.get_model
+.. autofunction:: netspresso.compressor.__init__.Compressor.get_model
 
 
 Details of Returns
 ------------------
 
-.. autoclass:: netspresso.compressor.__init__.Model
+.. autoclass:: netspresso.compressor.core.model.Model
     :noindex:
 
-.. autoclass:: netspresso.compressor.__init__.CompressedModel
+.. autoclass:: netspresso.compressor.core.model.CompressedModel
     :show-inheritance:
     :noindex:
 
@@ -23,10 +23,12 @@ If the model is uploaded model
 
 .. code-block:: python
 
-    from netspresso.compressor import ModelCompressor
+    from netspresso import NetsPresso
 
 
-    compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+    netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+
+    compressor = netspresso.compressor()
     model = compressor.get_model(model_id="YOUR_UPLOADED_MODEL_ID")
 
 Output
@@ -54,10 +56,12 @@ If the model is compressed model
 
 .. code-block:: python
 
-    from netspresso.compressor import ModelCompressor
+    from netspresso import NetsPresso
 
 
-    compressor = ModelCompressor(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+    netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+
+    compressor = netspresso.compressor()
     model = compressor.get_model(model_id="YOUR_COMPRESSED_MODEL_ID")
 
 Output

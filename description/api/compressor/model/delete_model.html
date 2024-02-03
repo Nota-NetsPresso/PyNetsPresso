@@ -4,25 +4,25 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Delete Model &mdash; PyNetsPresso 1.2.0 documentation</title>
+  <title>Delete Model &mdash; NetsPresso 1.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
 
   
-    <link rel="shortcut icon" href="../../../../_static/pynetspresso-favicon.png"/>
+    <link rel="shortcut icon" href="../../../../_static/netspresso_symbol_navy.png"/>
   <!--[if lt IE 9]>
     <script src="../../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
         <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=4c8675c2"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=3d533f9b"></script>
         <script src="../../../../_static/doctools.js?v=888ff710"></script>
         <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="Get Uploaded Models" href="get_uploaded_models.html" />
+    <link rel="next" title="Automatic Compression" href="../compress/automatic_compression.html" />
     <link rel="prev" title="Download Model" href="download_model.html" /> 
 </head>
 
@@ -35,7 +35,7 @@
           
           
           <a href="../../../../index.html" class="icon icon-home">
-            PyNetsPresso
+            NetsPresso
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -49,22 +49,21 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../../../description.html">API Description</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="../compressor.html">Model Compressor</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../trainer/trainer.html">Trainer</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../compressor.html">Compressor</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="../compressor.html#model">Model</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="upload_model.html">Upload Model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="get_model.html">Get Model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="download_model.html">Download Model</a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#">Delete Model</a></li>
-<li class="toctree-l4"><a class="reference internal" href="get_uploaded_models.html">Get Uploaded Models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="get_compressed_models.html">Get Compressed Models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="get_models.html">Get Models</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../compressor.html#compression">Compression</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../compressor.html#enums">Enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../compressor.html#compress">Compress</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../../launcher/launcher.html">Model Launcher</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../converter/converter.html">Converter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../benchmarker/benchmarker.html">Benchmarker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../enums/enums.html">Enums</a></li>
 </ul>
 </li>
 </ul>
@@ -75,7 +74,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../../index.html">PyNetsPresso</a>
+          <a href="../../../../index.html">NetsPresso</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -84,7 +83,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../../../description.html">API Description</a></li>
-          <li class="breadcrumb-item"><a href="../compressor.html">Model Compressor</a></li>
+          <li class="breadcrumb-item"><a href="../compressor.html">Compressor</a></li>
       <li class="breadcrumb-item active">Delete Model</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../../_sources/description/api/compressor/model/delete_model.rst.txt" rel="nofollow"> View page source</a>
@@ -116,10 +115,12 @@ set the <code class="docutils literal notranslate"><span class="pre">recursive</
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h2>
 <section id="if-the-model-has-a-compressed-model-and-recursive-is-false">
 <h3>If the model has a compressed model, and recursive is False<a class="headerlink" href="#if-the-model-has-a-compressed-model-and-recursive-is-false" title="Permalink to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">netspresso.compressor</span> <span class="kn">import</span> <span class="n">ModelCompressor</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">netspresso</span> <span class="kn">import</span> <span class="n">NetsPresso</span>
 
 
-<span class="n">compressor</span> <span class="o">=</span> <span class="n">ModelCompressor</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;YOUR_EMAIL&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;YOUR_PASSWORD&quot;</span><span class="p">)</span>
+<span class="n">netspresso</span> <span class="o">=</span> <span class="n">NetsPresso</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;YOUR_EMAIL&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;YOUR_PASSWORD&quot;</span><span class="p">)</span>
+
+<span class="n">compressor</span> <span class="o">=</span> <span class="n">netspresso</span><span class="o">.</span><span class="n">compressor</span><span class="p">()</span>
 <span class="n">compressor</span><span class="o">.</span><span class="n">delete_model</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;YOUR_MODEL_ID&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -133,10 +134,12 @@ Deleting<span class="w"> </span>the<span class="w"> </span>model<span class="w">
 </section>
 <section id="if-the-model-has-a-compressed-model-and-recursive-is-true">
 <h3>If the model has a compressed model, and recursive is True<a class="headerlink" href="#if-the-model-has-a-compressed-model-and-recursive-is-true" title="Permalink to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">netspresso.compressor</span> <span class="kn">import</span> <span class="n">ModelCompressor</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">netspresso</span> <span class="kn">import</span> <span class="n">NetsPresso</span>
 
 
-<span class="n">compressor</span> <span class="o">=</span> <span class="n">ModelCompressor</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;YOUR_EMAIL&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;YOUR_PASSWORD&quot;</span><span class="p">)</span>
+<span class="n">netspresso</span> <span class="o">=</span> <span class="n">NetsPresso</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;YOUR_EMAIL&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;YOUR_PASSWORD&quot;</span><span class="p">)</span>
+
+<span class="n">compressor</span> <span class="o">=</span> <span class="n">netspresso</span><span class="o">.</span><span class="n">compressor</span><span class="p">()</span>
 <span class="n">compressor</span><span class="o">.</span><span class="n">delete_model</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;YOUR_MODEL_ID&quot;</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -151,10 +154,12 @@ Delete<span class="w"> </span>model<span class="w"> </span>successful.
 </section>
 <section id="if-there-is-no-compressed-model-in-the-model">
 <h3>If there is no compressed model in the model<a class="headerlink" href="#if-there-is-no-compressed-model-in-the-model" title="Permalink to this heading"></a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">netspresso.compressor</span> <span class="kn">import</span> <span class="n">ModelCompressor</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">netspresso</span> <span class="kn">import</span> <span class="n">NetsPresso</span>
 
 
-<span class="n">compressor</span> <span class="o">=</span> <span class="n">ModelCompressor</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;YOUR_EMAIL&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;YOUR_PASSWORD&quot;</span><span class="p">)</span>
+<span class="n">netspresso</span> <span class="o">=</span> <span class="n">NetsPresso</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;YOUR_EMAIL&quot;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s2">&quot;YOUR_PASSWORD&quot;</span><span class="p">)</span>
+
+<span class="n">compressor</span> <span class="o">=</span> <span class="n">netspresso</span><span class="o">.</span><span class="n">compressor</span><span class="p">()</span>
 <span class="n">compressor</span><span class="o">.</span><span class="n">delete_model</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;YOUR_MODEL_ID&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -175,13 +180,13 @@ Delete<span class="w"> </span>model<span class="w"> </span>successful.
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="download_model.html" class="btn btn-neutral float-left" title="Download Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="get_uploaded_models.html" class="btn btn-neutral float-right" title="Get Uploaded Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../compress/automatic_compression.html" class="btn btn-neutral float-right" title="Automatic Compression" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Nota AI.</p>
+    <p>&#169; Copyright 2023-2024, Nota Inc..</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LayerNorm &mdash; NetsPresso 1.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/netspresso_symbol_navy.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js?v=3d533f9b"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="Device Name" href="device_name.html" />
+    <link rel="prev" title="Group Policy" href="group_policy.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            NetsPresso
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../description.html">API Description</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../trainer/trainer.html">Trainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../compressor/compressor.html">Compressor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../converter/converter.html">Converter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../benchmarker/benchmarker.html">Benchmarker</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../enums.html">Enums</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="task.html">Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="framework.html">Framework</a></li>
+<li class="toctree-l3"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l3"><a class="reference internal" href="origin_from.html">Origin From</a></li>
+<li class="toctree-l3"><a class="reference internal" href="compression_method.html">Compression Method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recommendation_method.html">Recommendation Method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="policy.html">Policy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="group_policy.html">Group Policy</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">LayerNorm</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#netspresso.enums.__init__.LayerNorm"><code class="docutils literal notranslate"><span class="pre">LayerNorm</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="device_name.html">Device Name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="software_version.html">Software Version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hardware_type.html">Hardware Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="task_status.html">Task Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_type.html">Data Type</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">NetsPresso</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../description.html">API Description</a></li>
+          <li class="breadcrumb-item"><a href="../enums.html">Enums</a></li>
+      <li class="breadcrumb-item active">LayerNorm</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/description/api/enums/enum/layer_norm.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="layernorm">
+<h1>LayerNorm<a class="headerlink" href="#layernorm" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="netspresso.enums.__init__.LayerNorm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LayerNorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/netspresso/enums/compression.html#LayerNorm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#netspresso.enums.__init__.LayerNorm" title="Permalink to this definition"></a></dt>
+<dd><p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="netspresso.enums.__init__.LayerNorm.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'none'</span></em><a class="headerlink" href="#netspresso.enums.__init__.LayerNorm.NONE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="netspresso.enums.__init__.LayerNorm.STANDARD_SCORE">
+<span class="sig-name descname"><span class="pre">STANDARD_SCORE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'standard_score'</span></em><a class="headerlink" href="#netspresso.enums.__init__.LayerNorm.STANDARD_SCORE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="netspresso.enums.__init__.LayerNorm.TSS_NORM">
+<span class="sig-name descname"><span class="pre">TSS_NORM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'tss_norm'</span></em><a class="headerlink" href="#netspresso.enums.__init__.LayerNorm.TSS_NORM" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="netspresso.enums.__init__.LayerNorm.LINEAR_SCALING">
+<span class="sig-name descname"><span class="pre">LINEAR_SCALING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'linear_scaling'</span></em><a class="headerlink" href="#netspresso.enums.__init__.LayerNorm.LINEAR_SCALING" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="netspresso.enums.__init__.LayerNorm.SOFTMAX_NORM">
+<span class="sig-name descname"><span class="pre">SOFTMAX_NORM</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'softmax_norm'</span></em><a class="headerlink" href="#netspresso.enums.__init__.LayerNorm.SOFTMAX_NORM" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="group_policy.html" class="btn btn-neutral float-left" title="Group Policy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="device_name.html" class="btn btn-neutral float-right" title="Device Name" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2024, Nota Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

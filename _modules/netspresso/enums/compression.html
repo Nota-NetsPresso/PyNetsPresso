@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>netspresso.enums.compression &mdash; NetsPresso 1.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/netspresso_symbol_navy.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js?v=3d533f9b"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            NetsPresso
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../description.html">API Description</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">NetsPresso</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">netspresso.enums.compression</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for netspresso.enums.compression</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span>
+
+
+<div class="viewcode-block" id="CompressionMethod"><a class="viewcode-back" href="../../../description/api/enums/enum/compression_method.html#netspresso.enums.__init__.CompressionMethod">[docs]</a><span class="k">class</span> <span class="nc">CompressionMethod</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">PR_L2</span> <span class="o">=</span> <span class="s2">&quot;PR_L2&quot;</span>
+    <span class="n">PR_GM</span> <span class="o">=</span> <span class="s2">&quot;PR_GM&quot;</span>
+    <span class="n">PR_NN</span> <span class="o">=</span> <span class="s2">&quot;PR_NN&quot;</span>
+    <span class="n">PR_ID</span> <span class="o">=</span> <span class="s2">&quot;PR_ID&quot;</span>
+    <span class="n">FD_TK</span> <span class="o">=</span> <span class="s2">&quot;FD_TK&quot;</span>
+    <span class="n">FD_CP</span> <span class="o">=</span> <span class="s2">&quot;FD_CP&quot;</span>
+    <span class="n">FD_SVD</span> <span class="o">=</span> <span class="s2">&quot;FD_SVD&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_literal</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;PR_L2&quot;</span><span class="p">,</span> <span class="s2">&quot;PR_GM&quot;</span><span class="p">,</span> <span class="s2">&quot;PR_NN&quot;</span><span class="p">,</span> <span class="s2">&quot;PR_ID&quot;</span><span class="p">,</span> <span class="s2">&quot;FD_TK&quot;</span><span class="p">,</span> <span class="s2">&quot;FD_CP&quot;</span><span class="p">,</span> <span class="s2">&quot;FD_SVD&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="RecommendationMethod"><a class="viewcode-back" href="../../../description/api/enums/enum/recommendation_method.html#netspresso.enums.__init__.RecommendationMethod">[docs]</a><span class="k">class</span> <span class="nc">RecommendationMethod</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">SLAMP</span> <span class="o">=</span> <span class="s2">&quot;slamp&quot;</span>
+    <span class="n">VBMF</span> <span class="o">=</span> <span class="s2">&quot;vbmf&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_literal</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;slamp&quot;</span><span class="p">,</span> <span class="s2">&quot;vbmf&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Policy"><a class="viewcode-back" href="../../../description/api/enums/enum/policy.html#netspresso.enums.__init__.Policy">[docs]</a><span class="k">class</span> <span class="nc">Policy</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">SUM</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span>
+    <span class="n">AVERAGE</span> <span class="o">=</span> <span class="s2">&quot;average&quot;</span>
+    <span class="n">BACKWARD</span> <span class="o">=</span> <span class="s2">&quot;backward&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_literal</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="s2">&quot;average&quot;</span><span class="p">,</span> <span class="s2">&quot;backward&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GroupPolicy"><a class="viewcode-back" href="../../../description/api/enums/enum/group_policy.html#netspresso.enums.__init__.GroupPolicy">[docs]</a><span class="k">class</span> <span class="nc">GroupPolicy</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">SUM</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span>
+    <span class="n">AVERAGE</span> <span class="o">=</span> <span class="s2">&quot;average&quot;</span>
+    <span class="n">COUNT</span> <span class="o">=</span> <span class="s2">&quot;count&quot;</span>
+    <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_literal</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="s2">&quot;average&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="LayerNorm"><a class="viewcode-back" href="../../../description/api/enums/enum/layer_norm.html#netspresso.enums.__init__.LayerNorm">[docs]</a><span class="k">class</span> <span class="nc">LayerNorm</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
+    <span class="n">STANDARD_SCORE</span> <span class="o">=</span> <span class="s2">&quot;standard_score&quot;</span>
+    <span class="n">TSS_NORM</span> <span class="o">=</span> <span class="s2">&quot;tss_norm&quot;</span>
+    <span class="n">LINEAR_SCALING</span> <span class="o">=</span> <span class="s2">&quot;linear_scaling&quot;</span>
+    <span class="n">SOFTMAX_NORM</span> <span class="o">=</span> <span class="s2">&quot;softmax_norm&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_literal</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="s2">&quot;standard_score&quot;</span><span class="p">,</span> <span class="s2">&quot;tss_norm&quot;</span><span class="p">,</span> <span class="s2">&quot;linear_scaling&quot;</span><span class="p">,</span> <span class="s2">&quot;softmax_norm&quot;</span><span class="p">]</span></div>
+
+
+<span class="n">compression_literal</span> <span class="o">=</span> <span class="n">CompressionMethod</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
+<span class="n">recommendation_literal</span> <span class="o">=</span> <span class="n">RecommendationMethod</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
+<span class="n">policy_literal</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
+<span class="n">grouppolicy_literal</span> <span class="o">=</span> <span class="n">GroupPolicy</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
+<span class="n">layernorm_literal</span> <span class="o">=</span> <span class="n">LayerNorm</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2024, Nota Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
