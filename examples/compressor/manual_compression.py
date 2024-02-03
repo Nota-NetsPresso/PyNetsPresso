@@ -10,11 +10,9 @@ netspresso = NetsPresso(email=EMAIL, password=PASSWORD)
 compressor = netspresso.compressor()
 
 # 2. Upload model
-MODEL_NAME = "sample_graphmodule_pt"
 INPUT_MODEL_PATH = "./examples/sample_models/graphmodule.pt"
 INPUT_SHAPES = [{"batch": 1, "channel": 3, "dimension": [224, 224]}]
 model = compressor.upload_model(
-    model_name=MODEL_NAME,
     input_model_path=INPUT_MODEL_PATH,
     input_shapes=INPUT_SHAPES,
 )
