@@ -19,7 +19,7 @@ setup(
     url="https://github.com/Nota-NetsPresso/PyNetsPresso",
     install_requires=install_requires,
     packages=find_packages(exclude=("tests",)),
-    package_data={"netspresso.client": ["configs/*.ini"], "netspresso": ["VERSION"]},
+    package_data={"netspresso.clients": ["configs/*.ini"], "netspresso": ["VERSION"]},
     python_requires=">=3.8",
     classifiers=[
         "Intended Audience :: Developers",
