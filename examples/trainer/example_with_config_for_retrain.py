@@ -1,5 +1,6 @@
 from netspresso import NetsPresso
 from netspresso.trainer.optimizers import AdamW
+from netspresso.trainer.schedulers import CosineAnnealingWarmRestartsWithCustomWarmUp
 
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"
@@ -17,10 +18,12 @@ trainer.set_fx_model(fx_model_path=FX_MODEL_PATH)
 
 # 2-2. Training
 optimizer = AdamW(lr=6e-3)
+scheduler = CosineAnnealingWarmRestartsWithCustomWarmUp(warmup_epochs=10)
 trainer.set_training_config(
     epochs=30,
     batch_size=16,
     optimizer=optimizer,
+    scheduler=scheduler,
 )
 
 # 3. Train
