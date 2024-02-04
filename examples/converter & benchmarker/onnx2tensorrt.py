@@ -47,14 +47,14 @@ TARGET_DEVICE_NAME = DeviceName.JETSON_AGX_ORIN
 TARGET_SOFTWARE_VERSION = SoftwareVersion.JETPACK_5_0_1
 
 # 3. Run convert
-conversion_task = converter.convert_model(
+conversion_result = converter.convert_model(
     input_model_path=INPUT_MODEL_PATH,
     output_dir=OUTPUT_DIR,
     target_framework=TARGET_FRAMEWORK,
     target_device_name=TARGET_DEVICE_NAME,
     target_software_version=TARGET_SOFTWARE_VERSION,
 )
-print(conversion_task)
+print(conversion_result)
 
 ###
 # !!WARNING!!
@@ -72,11 +72,11 @@ CONVERTED_MODEL_PATH = (
 )
 
 # 6. Run benchmark
-benchmark_task = benchmarker.benchmark_model(
+benchmark_result = benchmarker.benchmark_model(
     input_model_path=CONVERTED_MODEL_PATH,
     target_device_name=DeviceName.JETSON_AGX_ORIN,
     target_software_version=SoftwareVersion.JETPACK_5_0_1,
 )
-print(f"model inference latency: {benchmark_task['result']['latency']} ms")
-print(f"model gpu memory footprint: {benchmark_task['result']['memory_footprint_gpu']} MB")
-print(f"model cpu memory footprint: {benchmark_task['result']['memory_footprint_cpu']} MB")
+print(f"model inference latency: {benchmark_result['result']['latency']} ms")
+print(f"model gpu memory footprint: {benchmark_result['result']['memory_footprint_gpu']} MB")
+print(f"model cpu memory footprint: {benchmark_result['result']['memory_footprint_cpu']} MB")

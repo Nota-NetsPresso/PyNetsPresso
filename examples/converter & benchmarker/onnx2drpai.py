@@ -32,13 +32,13 @@ TARGET_FRAMEWORK = Framework.DRPAI
 TARGET_DEVICE_NAME = DeviceName.RENESAS_RZ_V2L
 
 # 3. Run convert
-conversion_task = converter.convert_model(
+conversion_result = converter.convert_model(
     input_model_path=INPUT_MODEL_PATH,
     output_dir=OUTPUT_DIR,
     target_framework=TARGET_FRAMEWORK,
     target_device_name=TARGET_DEVICE_NAME,
 )
-print(conversion_task)
+print(conversion_result)
 
 # 4. Declare benchmarker
 benchmarker = netspresso.benchmarker()
@@ -47,8 +47,8 @@ benchmarker = netspresso.benchmarker()
 CONVERTED_MODEL_PATH = "./outputs/converted/DRPAI_RENESAS_RZ_V2L/DRPAI_RENESAS_RZ_V2L.zip"
 
 # 6. Run benchmark
-benchmark_task = benchmarker.benchmark_model(
+benchmark_result = benchmarker.benchmark_model(
     input_model_path=CONVERTED_MODEL_PATH,
     target_device_name=TARGET_DEVICE_NAME,
 )
-print(f"model inference latency: {benchmark_task['result']['latency']} ms")
+print(f"model inference latency: {benchmark_result['result']['latency']} ms")
