@@ -3,7 +3,7 @@
 </div>
 
 <div align="center">
-    <a href="https://netspresso.ai?utm_source=git_comp&utm_medium=text_np&utm_campaign=py_launch" target="_blank"><img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/NetsPresso2.0_banner.png"/>
+    <a href="https://netspresso.ai/?utm_source=git&utm_medium=banner_py&utm_campaign=np_renew" target="_blank"><img src="https://netspresso-docs-imgs.s3.ap-northeast-2.amazonaws.com/imgs/banner/NetsPresso2.0_banner.png"/>
 </div>
 </br>
 
@@ -31,7 +31,7 @@
         <a href="https://pytorch.org/" target="_blank"><img src="https://img.shields.io/badge/PyTorch-1.11.x ~ 1.13.x.-EE4C2C?style=flat&logo=pytorch&logoColor=#EE4C2C"/></a>
         <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
         <br>
-        <a href="https://netspresso.ai?utm_source=git&utm_medium=text_np&utm_campaign=py_launch"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
+        <a href="https://netspresso.ai/?utm_source=git&utm_medium=badge&utm_campaign=np_renew"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
         <a href="https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a" target="_blank"><img src="https://img.shields.io/badge/Best Practice-Open in Colab-F9AB00?style=flat&logo=googlecolab&logoColor=#F9AB00"/></a>
     </p>
 </div>
@@ -42,7 +42,7 @@ NetsPresso resolves AI-related constraints in business use cases and enables cos
 
 Easily compress various models with our resources. Please browse the [Docs] for details, and join our [Discussion Forum] for providing feedback or sharing your use cases.
 
-To get started with NetsPresso, you'll need to sign up [here](https://netspresso.ai/signup).
+To get started with NetsPresso, you'll need to sign up [here](https://netspresso.ai/?utm_source=git&utm_medium=text_signup&utm_campaign=np_renew).
 
 We offer a comprehensive guide to walk you through the process of optimizing an AI model using NetPresso. A full tutorial can be found [Google Colab](https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a).
 </br>
@@ -173,7 +173,7 @@ To use **editable mode** or **docker**, see [INSTALLATION.md](INSTALLATION.md).
 
 ### Login
 
-Log-in to your netspresso account. Please sign-up [here](https://netspresso.ai/signup) if you need one.
+Log-in to your netspresso account. Please sign-up [here](https://netspresso.ai/?utm_source=git&utm_medium=text_signup2&utm_campaign=np_renew) if you need one.
 
 ```python
 from netspresso import NetsPresso
