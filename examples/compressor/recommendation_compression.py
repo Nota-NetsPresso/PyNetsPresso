@@ -18,7 +18,7 @@ RECOMMENDATION_METHOD = RecommendationMethod.SLAMP
 RECOMMENDATION_RATIO = 0.5
 
 # 3. Run recommendation compression
-compressed_model = compressor.recommendation_compression(
+compression_result = compressor.recommendation_compression(
     compression_method=COMPRESSION_METHOD,
     recommendation_method=RECOMMENDATION_METHOD,
     recommendation_ratio=RECOMMENDATION_RATIO,

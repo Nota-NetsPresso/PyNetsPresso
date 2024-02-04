@@ -44,7 +44,7 @@ DATA_TYPE = DataType.INT8
 DATASET_PATH = "./examples/sample_datasets/20x64x64x3.npy"
 
 # 3. Run convert
-conversion_task = converter.convert_model(
+conversion_result = converter.convert_model(
     input_model_path=INPUT_MODEL_PATH,
     output_dir=OUTPUT_DIR,
     target_framework=TARGET_FRAMEWORK,
@@ -52,7 +52,7 @@ conversion_task = converter.convert_model(
     target_data_type=DATA_TYPE,
     dataset_path=DATASET_PATH,
 )
-print(conversion_task)
+print(conversion_result)
 
 # 4. Declare benchmarker
 benchmarker = netspresso.benchmarker()
@@ -61,9 +61,9 @@ benchmarker = netspresso.benchmarker()
 CONVERTED_MODEL_PATH = "./outputs/converted/TFLITE_INT8_RASPBERRY_PI_4B/TFLITE_INT8_RASPBERRY_PI_4B.tflite"
 
 # 6. Run benchmark
-benchmark_task = benchmarker.benchmark_model(
+benchmark_result = benchmarker.benchmark_model(
     input_model_path=CONVERTED_MODEL_PATH,
     target_device_name=TARGET_DEVICE_NAME,
     target_data_type=DATA_TYPE,
 )
-print(f"model inference latency: {benchmark_task['result']['latency']} ms")
+print(f"model inference latency: {benchmark_result['result']['latency']} ms")

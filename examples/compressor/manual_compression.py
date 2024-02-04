@@ -39,7 +39,7 @@ for available_layer in compression_info.available_layers[:5]:
 
 # 5. Compress model
 OUTPUT_DIR = "./outputs/compressed/graphmodule_manual"
-compressed_model = compressor.compress_model(
+compression_result = compressor.compress_model(
     compression=compression_info,
     output_dir=OUTPUT_DIR,
 )

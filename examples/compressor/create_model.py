@@ -20,7 +20,3 @@ model = compressor.upload_model(
     input_shapes=INPUT_SHAPES,
     framework=FRAMEWORK,
 )
-
-# 4. Get Model
-model = compressor.get_model(model_id=model.model_id)
-print(model)
