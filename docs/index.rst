@@ -33,7 +33,7 @@ Learn how to install and use the NetsPresso.
 
    .. raw:: html
 
-      👉🏻 Please create an account at <a href="https://netspresso.ai/signup?redirection_link=https://www,netspresso.ai&utm_source=py_docs&utm_medium=page&utm_campaign=np_renew" target="_blank">NetsPresso</a>
+      👉🏻 Please create an account at <a href="https://portal.netspresso.ai/signup?redirection_link=https://netspresso.ai&utm_source=py_docs&utm_medium=page&utm_campaign=np_renew" target="_blank">NetsPresso</a>
 
 
 .. toctree::
