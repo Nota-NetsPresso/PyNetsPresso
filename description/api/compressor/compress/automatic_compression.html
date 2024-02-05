@@ -94,6 +94,32 @@
              
   <section id="automatic-compression">
 <h1>Automatic Compression<a class="headerlink" href="#automatic-compression" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="netspresso.compressor.__init__.Compressor.automatic_compression">
+<span class="sig-name descname"><span class="pre">automatic_compression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_shapes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../enums/enum/framework.html#netspresso.enums.__init__.Framework" title="netspresso.enums.model.Framework"><span class="pre">Framework</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Framework.PYTORCH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#netspresso.compressor.__init__.Compressor.automatic_compression" title="Permalink to this definition"></a></dt>
+<dd><p>Compress a model automatically based on the given compression ratio.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_model_path</strong> (<em>str</em>) – The file path where the model is located.</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – The local path to save the compressed model.</p></li>
+<li><p><strong>input_shapes</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em><em>]</em>) – Input shapes of the model.</p></li>
+<li><p><strong>framework</strong> (<a class="reference internal" href="../../enums/enum/framework.html#netspresso.enums.__init__.Framework" title="netspresso.enums.__init__.Framework"><em>Framework</em></a><em>, </em><em>optional</em>) – The framework of the model.</p></li>
+<li><p><strong>compression_ratio</strong> (<em>float</em><em>, </em><em>optional</em>) – The compression ratio for automatic compression. Defaults to 0.5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>e</strong> – If an error occurs while performing automatic compression.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Source model and compressed model information.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 <section id="details-of-parameters">
 <h2>Details of Parameters<a class="headerlink" href="#details-of-parameters" title="Permalink to this heading"></a></h2>
 <section id="compression-ratio">

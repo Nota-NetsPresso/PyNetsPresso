@@ -95,6 +95,36 @@
              
   <section id="recommendation-compression">
 <h1>Recommendation Compression<a class="headerlink" href="#recommendation-compression" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="netspresso.compressor.__init__.Compressor.recommendation_compression">
+<span class="sig-name descname"><span class="pre">recommendation_compression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self,</span> <span class="pre">compression_method:</span> <span class="pre">~netspresso.enums.compression.CompressionMethod,</span> <span class="pre">recommendation_method:</span> <span class="pre">~netspresso.enums.compression.RecommendationMethod,</span> <span class="pre">recommendation_ratio:</span> <span class="pre">float,</span> <span class="pre">input_model_path:</span> <span class="pre">str,</span> <span class="pre">output_dir:</span> <span class="pre">str,</span> <span class="pre">input_shapes:</span> <span class="pre">~typing.List[~typing.Dict[str,</span> <span class="pre">int]],</span> <span class="pre">framework:</span> <span class="pre">~netspresso.enums.model.Framework</span> <span class="pre">=</span> <span class="pre">Framework.PYTORCH,</span> <span class="pre">options:</span> <span class="pre">~netspresso.clients.compressor.schemas.compression.Options</span> <span class="pre">=</span> <span class="pre">Options(reshape_channel_axis=-1,</span> <span class="pre">policy=&lt;Policy.AVERAGE:</span> <span class="pre">'average'&gt;,</span> <span class="pre">layer_norm=&lt;LayerNorm.STANDARD_SCORE:</span> <span class="pre">'standard_score'&gt;,</span> <span class="pre">group_policy=&lt;GroupPolicy.AVERAGE:</span> <span class="pre">'average'&gt;),</span> <span class="pre">dataset_path:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#netspresso.compressor.__init__.Compressor.recommendation_compression" title="Permalink to this definition"></a></dt>
+<dd><p>Compress a recommendation-based model using the given compression and recommendation methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>compression_method</strong> (<a class="reference internal" href="../../../enums/enum/compression_method.html#netspresso.enums.__init__.CompressionMethod" title="netspresso.enums.__init__.CompressionMethod"><em>CompressionMethod</em></a>) – The selected compression method.</p></li>
+<li><p><strong>recommendation_method</strong> (<a class="reference internal" href="../../../enums/enum/recommendation_method.html#netspresso.enums.__init__.RecommendationMethod" title="netspresso.enums.__init__.RecommendationMethod"><em>RecommendationMethod</em></a>) – The selected recommendation method.</p></li>
+<li><p><strong>recommendation_ratio</strong> (<em>float</em>) – The compression ratio recommended by the recommendation method.</p></li>
+<li><p><strong>input_model_path</strong> (<em>str</em>) – The file path where the model is located.</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – The local path to save the compressed model.</p></li>
+<li><p><strong>input_shapes</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em><em>]</em>) – Input shapes of the model.</p></li>
+<li><p><strong>framework</strong> (<a class="reference internal" href="../../../enums/enum/framework.html#netspresso.enums.__init__.Framework" title="netspresso.enums.__init__.Framework"><em>Framework</em></a><em>, </em><em>optional</em>) – The framework of the model.</p></li>
+<li><p><strong>options</strong> (<em>Options</em><em>, </em><em>optional</em>) – The options for pruning method.</p></li>
+<li><p><strong>dataset_path</strong> (<em>str</em><em>, </em><em>optional</em>) – The path of the dataset used for nuclear norm compression method. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>e</strong> – If an error occurs while performing recommendation compression.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Source model and compressed model information.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 <section id="details-of-parameters">
 <h2>Details of Parameters<a class="headerlink" href="#details-of-parameters" title="Permalink to this heading"></a></h2>
 <section id="compression-method">

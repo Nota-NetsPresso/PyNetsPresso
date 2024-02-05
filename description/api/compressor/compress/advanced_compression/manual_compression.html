@@ -97,6 +97,30 @@
 <h1>Manual Compression<a class="headerlink" href="#manual-compression" title="Permalink to this heading"></a></h1>
 <section id="upload-model">
 <h2>Upload Model<a class="headerlink" href="#upload-model" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="netspresso.compressor.__init__.Compressor.upload_model">
+<span class="sig-name descname"><span class="pre">upload_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_shapes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">framework</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../enums/enum/framework.html#netspresso.enums.__init__.Framework" title="netspresso.enums.model.Framework"><span class="pre">Framework</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Framework.PYTORCH</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="headerlink" href="#netspresso.compressor.__init__.Compressor.upload_model" title="Permalink to this definition"></a></dt>
+<dd><p>Upload a model for compression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_model_path</strong> (<em>str</em>) – The file path where the model is located.</p></li>
+<li><p><strong>input_shapes</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Input shapes of the model. Defaults to [].</p></li>
+<li><p><strong>framework</strong> (<a class="reference internal" href="../../../enums/enum/framework.html#netspresso.enums.__init__.Framework" title="netspresso.enums.__init__.Framework"><em>Framework</em></a>) – The framework of the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>e</strong> – If an error occurs while uploading the model.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Uploaded model object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
 <section id="details-of-parameters">
 <h3>Details of Parameters<a class="headerlink" href="#details-of-parameters" title="Permalink to this heading"></a></h3>
 </section>
@@ -218,6 +242,30 @@
 </section>
 <section id="select-compression-method">
 <h2>Select Compression Method<a class="headerlink" href="#select-compression-method" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="netspresso.compressor.__init__.Compressor.select_compression_method">
+<span class="sig-name descname"><span class="pre">select_compression_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_method:</span> <span class="pre">~netspresso.enums.compression.CompressionMethod</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options:</span> <span class="pre">~netspresso.clients.compressor.schemas.compression.Options</span> <span class="pre">=</span> <span class="pre">Options(reshape_channel_axis=-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy=&lt;Policy.AVERAGE:</span> <span class="pre">'average'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_norm=&lt;LayerNorm.STANDARD_SCORE:</span> <span class="pre">'standard_score'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_policy=&lt;GroupPolicy.AVERAGE:</span> <span class="pre">'average'&gt;)</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">CompressionInfo</span></span></span><a class="headerlink" href="#netspresso.compressor.__init__.Compressor.select_compression_method" title="Permalink to this definition"></a></dt>
+<dd><p>Select a compression method for a model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_id</strong> (<em>str</em>) – The ID of the model.</p></li>
+<li><p><strong>compression_method</strong> (<a class="reference internal" href="../../../enums/enum/compression_method.html#netspresso.enums.__init__.CompressionMethod" title="netspresso.enums.__init__.CompressionMethod"><em>CompressionMethod</em></a>) – The selected compression method.</p></li>
+<li><p><strong>options</strong> (<em>Options</em><em>, </em><em>optional</em>) – The options for pruning method.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>e</strong> – If an error occurs while selecting the compression method.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The compression information for the selected compression method.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>CompressionInfo</p>
+</dd>
+</dl>
+</dd></dl>
+
 <section id="id2">
 <h3>Details of Parameters<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
 <section id="compression-method">
@@ -481,6 +529,30 @@ CompressionInfo<span class="o">(</span>
 </section>
 <section id="compress-model">
 <h2>Compress Model<a class="headerlink" href="#compress-model" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="netspresso.compressor.__init__.Compressor.compress_model">
+<span class="sig-name descname"><span class="pre">compress_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CompressionInfo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#netspresso.compressor.__init__.Compressor.compress_model" title="Permalink to this definition"></a></dt>
+<dd><p>Compress a model using the provided compression information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>compression</strong> (<em>CompressionInfo</em>) – The information about the compression.</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – The local path to save the compressed model.</p></li>
+<li><p><strong>dataset_path</strong> (<em>str</em><em>, </em><em>optional</em>) – The path of the dataset used for nuclear norm compression method. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>e</strong> – If an error occurs while compressing the model.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Source model and compressed model information.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 <section id="id9">
 <h3>Example<a class="headerlink" href="#id9" title="Permalink to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">compressed_model</span> <span class="o">=</span> <span class="n">compressor</span><span class="o">.</span><span class="n">compress_model</span><span class="p">(</span>

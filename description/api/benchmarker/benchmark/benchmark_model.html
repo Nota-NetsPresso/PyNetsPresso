@@ -92,6 +92,34 @@
              
   <section id="benchmark-model">
 <h1>Benchmark Model<a class="headerlink" href="#benchmark-model" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="netspresso.benchmarker.__init__.Benchmarker.benchmark_model">
+<span class="sig-name descname"><span class="pre">benchmark_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_device_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../enums/enum/device_name.html#netspresso.enums.__init__.DeviceName" title="netspresso.enums.device.DeviceName"><span class="pre">DeviceName</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_data_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../enums/enum/data_type.html#netspresso.enums.__init__.DataType" title="netspresso.enums.model.DataType"><span class="pre">DataType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DataType.FP16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_software_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../../enums/enum/software_version.html#netspresso.enums.__init__.SoftwareVersion" title="netspresso.enums.device.SoftwareVersion"><span class="pre">SoftwareVersion</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_hardware_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../../enums/enum/hardware_type.html#netspresso.enums.__init__.HardwareType" title="netspresso.enums.device.HardwareType"><span class="pre">HardwareType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_until_done</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#netspresso.benchmarker.__init__.Benchmarker.benchmark_model" title="Permalink to this definition"></a></dt>
+<dd><p>Benchmark the specified model on the specified device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_model_path</strong> (<em>str</em>) – The file path where the model is located.</p></li>
+<li><p><strong>target_device_name</strong> (<a class="reference internal" href="../../enums/enum/device_name.html#netspresso.enums.__init__.DeviceName" title="netspresso.enums.__init__.DeviceName"><em>DeviceName</em></a>) – Target device name.</p></li>
+<li><p><strong>target_data_type</strong> (<a class="reference internal" href="../../enums/enum/data_type.html#netspresso.enums.__init__.DataType" title="netspresso.enums.__init__.DataType"><em>DataType</em></a>) – Data type of the model.</p></li>
+<li><p><strong>target_software_version</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="../../enums/enum/software_version.html#netspresso.enums.__init__.SoftwareVersion" title="netspresso.enums.__init__.SoftwareVersion"><em>SoftwareVersion</em></a><em>]</em><em>, </em><em>optional</em>) – Target software version. Required if target_device_name is one of the Jetson devices.</p></li>
+<li><p><strong>target_hardware_type</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="../../enums/enum/hardware_type.html#netspresso.enums.__init__.HardwareType" title="netspresso.enums.__init__.HardwareType"><em>HardwareType</em></a><em>]</em><em>, </em><em>optional</em>) – Hardware type. Acceleration options for processing the model inference.</p></li>
+<li><p><strong>wait_until_done</strong> (<em>bool</em>) – If True, wait for the conversion result before returning the function.
+If False, request the conversion and return the function immediately.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>e</strong> – If an error occurs during the benchmarking of the model.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Model benchmark task dictionary.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">netspresso</span> <span class="kn">import</span> <span class="n">NetsPresso</span>
