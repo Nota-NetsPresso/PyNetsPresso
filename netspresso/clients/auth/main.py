@@ -85,8 +85,10 @@ class AuthClient:
 
 
 class TokenHandler:
-    def __init__(self, tokens, verify_ssl: bool = True) -> None:
-        self.tokens = tokens
+    def __init__(self, email, password, verify_ssl: bool = True) -> None:
+        self.tokens = auth_client.login(email=email, password=password, verify_ssl=verify_ssl)
+        self.email = email
+        self.password = password
         self.verify_ssl = verify_ssl
 
     def check_jwt_exp(self):
@@ -95,9 +97,12 @@ class TokenHandler:
 
     def validate_token(self):
         if not self.check_jwt_exp():
-            self.tokens = auth_client.reissue_token(
-                self.tokens.access_token, self.tokens.refresh_token, self.verify_ssl
-            )
-
+            try:
+                self.tokens = auth_client.reissue_token(
+                    self.tokens.access_token, self.tokens.refresh_token, self.verify_ssl
+                )
+            except Exception as e:
+                auth_client.login(email=self.email, password=self.password, verify_ssl=self.verify_ssl)
+                logger.info("The refresh token has expired. the token has been reissued.")
 
 auth_client = AuthClient()
