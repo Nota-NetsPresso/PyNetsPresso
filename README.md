@@ -373,6 +373,7 @@ print(f"model cpu memory footprint: {benchmark_result['result']['memory_footprin
   | JETSON_XAVIER                |  ✔️  |    ✔️    |                 |       |          |
   | JETSON_NX                    |  ✔️  |    ✔️    |                 |       |          |
   | JETSON_AGX_ORIN              |  ✔️  |    ✔️    |                 |       |          |
+  | JETSON_ORIN_NANO             |  ✔️  |    ✔️    |                 |       |          |
   | AWS_T4                       |  ✔️  |    ✔️    |                 |       |          |
   | INTEL_XEON_W_2233            |      |          |                 |       |    ✔️    |
 
@@ -380,12 +381,13 @@ print(f"model cpu memory footprint: {benchmark_result['result']['memory_footprin
 
   Software Versions requires only Jetson Device. If you are using a different device, you do not need to enter it.
 
-  | Software Version / Device | JETSON_NANO | JETSON_TX2 | JETSON_XAVIER | JETSON_NX | JETSON_AGX_ORIN |
-  |:--------------------------|:-----------:|:----------:|:-------------:|:---------:|:---------------:|
-  | JETPACK_4_4_1             |     ✔️      |            |               |           |                 |
-  | JETPACK_4_6               |     ✔️      |     ✔️     |      ✔️       |    ✔️     |                 |
-  | JETPACK_5_0_1             |             |            |               |           |       ✔️        |
-  | JETPACK_5_0_2             |             |            |               |    ✔️     |                 |
+  | Software Version / Device | JETSON_NANO | JETSON_TX2 | JETSON_XAVIER | JETSON_NX | JETSON_AGX_ORIN | JETSON_ORIN_NANO |
+  |:--------------------------|:-----------:|:----------:|:-------------:|:---------:|:---------------:|:----------------:|
+  | JETPACK_4_4_1             |     ✔️      |            |               |           |                 |                  |
+  | JETPACK_4_6               |     ✔️      |     ✔️     |      ✔️       |    ✔️     |                 |                  |
+  | JETPACK_5_0_1             |             |            |               |           |       ✔️        |                  |
+  | JETPACK_5_0_2             |             |            |               |    ✔️     |                 |                  |
+  | JETPACK_6_0               |             |            |               |           |                 |        ✔️        |
 
   The code below is an example of using software version.
 
