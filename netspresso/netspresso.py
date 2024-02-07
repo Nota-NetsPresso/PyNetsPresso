@@ -19,22 +19,8 @@ class NetsPresso:
             password (str): User's password for authentication.
             verify_ssl (bool): Flag to indicate whether SSL certificates should be verified. Defaults to True.
         """
-        tokens = self.login(email, password, verify_ssl)
-        self.token_handler = TokenHandler(tokens=tokens, verify_ssl=verify_ssl)
+        self.token_handler = TokenHandler(email=email, password=password, verify_ssl=verify_ssl)
         self.user_info = self.get_user()
-
-    def login(self, email: str, password: str, verify_ssl: bool = True) -> Tokens:
-        """Perform user login and retrieve authentication tokens.
-
-        Args:
-            email (str): User's email for login.
-            password (str): User's password for login.
-
-        Returns:
-            Tokens: Authentication tokens containing access and refresh tokens.
-        """
-        tokens = auth_client.login(email, password, verify_ssl)
-        return tokens
 
     def get_user(self) -> UserInfo:
         """Get user information using the access token.
