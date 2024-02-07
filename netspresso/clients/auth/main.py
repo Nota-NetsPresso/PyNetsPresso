@@ -101,7 +101,7 @@ class TokenHandler:
                 self.tokens = auth_client.reissue_token(
                     self.tokens.access_token, self.tokens.refresh_token, self.verify_ssl
                 )
-            except Exception as e:
+            except Exception:
                 auth_client.login(email=self.email, password=self.password, verify_ssl=self.verify_ssl)
                 logger.info("The refresh token has expired. the token has been reissued.")
 
