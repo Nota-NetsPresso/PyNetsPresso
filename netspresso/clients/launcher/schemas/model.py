@@ -31,17 +31,17 @@ class TargetDevice(BaseModel):
     Attributes:
         display_name (str): devices's display name.
         display_brand_name (str): the manufacturer name of the device.
-        device_name (str): internal devcie name (using as an internal identifier)
+        device_name (DeviceName): internal devcie name (using as an internal identifier)
         software_version (str, optional): software version of the device (ex: jetpack 5.0.1)
         software_version_display_name (str, optional): display name of the devcie's software version
     """
 
     display_name: str = Field(default=None)
     display_brand_name: str = Field(default=None)
-    device_name: DeviceName = Field(default=None)
+    device_name: str = Field(default=None)
     software_version: Optional[str] = Field(default=None)
     software_version_display_name: Optional[str] = Field(default=None)
-    hardware_type: Optional[HardwareType] = Field(default=None)
+    hardware_type: Optional[str] = Field(default=None)
 
 
 class TargetDeviceFilter:
@@ -106,11 +106,11 @@ class ModelBenchmarkRequest(BaseRequestModel):
         input_shape: (InputShape, optional): input shape of the model.
     """
 
-    target_device: DeviceName = Field(default=None)
+    target_device: str = Field(default=None)
     target_framework: Optional[str] = Field(default=None)
-    data_type: Optional[DataType] = Field(default=None)
+    data_type: Optional[str] = Field(default=None)
     input_shape: Optional[InputShape] = Field(default=None)
-    hardware_type: Optional[HardwareType] = Field(default=None)
+    hardware_type: Optional[str] = Field(default=None)
 
 
 class ModelConversionRequest(BaseRequestModel):
@@ -154,7 +154,6 @@ class BaseTaskModel(BaseModel):
     status: TaskStatus = Field(default=None)
     input_shape: InputShape = Field(default=None)
     data_type: DataType = Field(default=DataType.FP16)
-    input_shape: InputShape = Field(default=None)
     software_version: str = Field(default=None)
     framework: str = Field(default=None)
 
@@ -175,7 +174,7 @@ class BenchmarkTask(BaseTaskModel):
         benchmark_result (Optional[dict]): original benchmark result in dictionary.
     """
 
-    target_device: DeviceName = Field(default=None)
+    target_device: str = Field(default=None)
     filename: str = Field(default=None)
     data_type: Optional[DataType] = Field(default=DataType.FP16)
     memory_footprint_gpu: Optional[float] = Field(default=None)
@@ -187,7 +186,7 @@ class BenchmarkTask(BaseTaskModel):
     file_size: Optional[int] = Field(default=0)
     benchmark_result: Optional[dict] = Field(default=None)
     software_version: Optional[str] = Field(default=None)
-    hardware_type: Optional[HardwareType] = Field(default=None)
+    hardware_type: Optional[str] = Field(default=None)
     input_model_uuid: str = Field(default=None)
     benchmark_task_uuid: str = Field(default=None)
     devicefarm_benchmark_task_uuid: str = Field(default=None)
@@ -208,5 +207,5 @@ class ConversionTask(BaseTaskModel):
     convert_task_uuid: str = Field(default=None)
     output_model_uuid: str = Field(default=None)
     model_file_name: str = Field(default=None)
-    target_device_name: DeviceName = Field(default=None)
+    target_device_name: str = Field(default=None)
     target_framework: str = Field(default=None)
