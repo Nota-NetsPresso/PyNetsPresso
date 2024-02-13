@@ -109,7 +109,7 @@ class ModelBenchmarkRequest(BaseRequestModel):
     target_device: str = Field(default=None)
     target_framework: Optional[str] = Field(default=None)
     data_type: Optional[str] = Field(default=None)
-    input_shape: Optional[str] = Field(default=None)
+    input_shape: Optional[InputShape] = Field(default=None)
     hardware_type: Optional[str] = Field(default=None)
 
 
@@ -154,7 +154,6 @@ class BaseTaskModel(BaseModel):
     status: TaskStatus = Field(default=None)
     input_shape: InputShape = Field(default=None)
     data_type: DataType = Field(default=DataType.FP16)
-    input_shape: InputShape = Field(default=None)
     software_version: str = Field(default=None)
     framework: str = Field(default=None)
 
