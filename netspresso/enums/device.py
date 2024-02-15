@@ -15,6 +15,7 @@ class DeviceName(str, Enum):
     JETSON_XAVIER = "Jetson-Xavier"
     JETSON_NX = "Jetson-Nx"
     JETSON_AGX_ORIN = "Jetson-AGX-Orin"
+    JETSON_ORIN_NANO = "Jetson-Orin-Nano"
     AWS_T4 = "AWS-T4"
     INTEL_XEON_W_2233 = "Intel-Xeon"
     ALIF_ENSEMBLE_E7_DEVKIT_GEN2 = "Ensemble-E7-DevKit-Gen2"
@@ -36,6 +37,7 @@ class DeviceName(str, Enum):
             "Jetson-Xavier",
             "Jetson-Nx",
             "Jetson-AGX-Orin",
+            "Jetson-Orin-Nano",
             "AWS-T4",
             "Intel-Xeon",
             "Ensemble-E7-DevKit-Gen2",
@@ -49,6 +51,7 @@ class DeviceName(str, Enum):
         JETSON_XAVIER,
         JETSON_NX,
         JETSON_AGX_ORIN,
+        JETSON_ORIN_NANO,
     ]
     RASPBERRY_PI_DEVICES = [
         RASPBERRY_PI_5,
@@ -78,10 +81,11 @@ class SoftwareVersion(str, Enum):
     JETPACK_4_6 = "4.6-b199"
     JETPACK_5_0_1 = "5.0.1-b118"
     JETPACK_5_0_2 = "5.0.2-b231"
+    JETPACK_6_0 = "6.0-b52"
 
     @classmethod
     def create_literal(cls):
-        return Literal["4.4.1-b50", "4.6-b199", "5.0.1-b118", "5.0.2-b231"]
+        return Literal["4.4.1-b50", "4.6-b199", "5.0.1-b118", "5.0.2-b231", "6.0-b52"]
 
 
 class HardwareType(str, Enum):
