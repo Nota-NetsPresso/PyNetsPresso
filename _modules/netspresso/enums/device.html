@@ -90,6 +90,7 @@
     <span class="n">JETSON_XAVIER</span> <span class="o">=</span> <span class="s2">&quot;Jetson-Xavier&quot;</span>
     <span class="n">JETSON_NX</span> <span class="o">=</span> <span class="s2">&quot;Jetson-Nx&quot;</span>
     <span class="n">JETSON_AGX_ORIN</span> <span class="o">=</span> <span class="s2">&quot;Jetson-AGX-Orin&quot;</span>
+    <span class="n">JETSON_ORIN_NANO</span> <span class="o">=</span> <span class="s2">&quot;Jetson-Orin-Nano&quot;</span>
     <span class="n">AWS_T4</span> <span class="o">=</span> <span class="s2">&quot;AWS-T4&quot;</span>
     <span class="n">INTEL_XEON_W_2233</span> <span class="o">=</span> <span class="s2">&quot;Intel-Xeon&quot;</span>
     <span class="n">ALIF_ENSEMBLE_E7_DEVKIT_GEN2</span> <span class="o">=</span> <span class="s2">&quot;Ensemble-E7-DevKit-Gen2&quot;</span>
@@ -111,6 +112,7 @@
             <span class="s2">&quot;Jetson-Xavier&quot;</span><span class="p">,</span>
             <span class="s2">&quot;Jetson-Nx&quot;</span><span class="p">,</span>
             <span class="s2">&quot;Jetson-AGX-Orin&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Jetson-Orin-Nano&quot;</span><span class="p">,</span>
             <span class="s2">&quot;AWS-T4&quot;</span><span class="p">,</span>
             <span class="s2">&quot;Intel-Xeon&quot;</span><span class="p">,</span>
             <span class="s2">&quot;Ensemble-E7-DevKit-Gen2&quot;</span><span class="p">,</span>
@@ -124,6 +126,7 @@
         <span class="n">JETSON_XAVIER</span><span class="p">,</span>
         <span class="n">JETSON_NX</span><span class="p">,</span>
         <span class="n">JETSON_AGX_ORIN</span><span class="p">,</span>
+        <span class="n">JETSON_ORIN_NANO</span><span class="p">,</span>
     <span class="p">]</span>
     <span class="n">RASPBERRY_PI_DEVICES</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">RASPBERRY_PI_5</span><span class="p">,</span>
@@ -153,10 +156,11 @@
     <span class="n">JETPACK_4_6</span> <span class="o">=</span> <span class="s2">&quot;4.6-b199&quot;</span>
     <span class="n">JETPACK_5_0_1</span> <span class="o">=</span> <span class="s2">&quot;5.0.1-b118&quot;</span>
     <span class="n">JETPACK_5_0_2</span> <span class="o">=</span> <span class="s2">&quot;5.0.2-b231&quot;</span>
+    <span class="n">JETPACK_6_0</span> <span class="o">=</span> <span class="s2">&quot;6.0-b52&quot;</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">create_literal</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;4.4.1-b50&quot;</span><span class="p">,</span> <span class="s2">&quot;4.6-b199&quot;</span><span class="p">,</span> <span class="s2">&quot;5.0.1-b118&quot;</span><span class="p">,</span> <span class="s2">&quot;5.0.2-b231&quot;</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;4.4.1-b50&quot;</span><span class="p">,</span> <span class="s2">&quot;4.6-b199&quot;</span><span class="p">,</span> <span class="s2">&quot;5.0.1-b118&quot;</span><span class="p">,</span> <span class="s2">&quot;5.0.2-b231&quot;</span><span class="p">,</span> <span class="s2">&quot;6.0-b52&quot;</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="HardwareType"><a class="viewcode-back" href="../../../description/api/enums/enum/hardware_type.html#netspresso.enums.__init__.HardwareType">[docs]</a><span class="k">class</span> <span class="nc">HardwareType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
