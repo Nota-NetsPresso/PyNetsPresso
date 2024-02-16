@@ -5,17 +5,33 @@ class ExperimentAPI:
     def __init__(self, url: str):
         self.url = url
 
-    def get_experiments(self, user_id, skip, size, sort, name, type, arch, read_only, user_only, headers):
+    def get_experiments(
+        self,
+        user_id,
+        headers,
+        skip=None,
+        size=None,
+        sort=None,
+        name=None,
+        type=None,
+        network_arch=None,
+        read_only=None,
+        user_only=None,
+    ):
         endpoint = f"{self.url}/users/{user_id}/experiments"
         params = {
-            "skip": skip,
-            "size": size,
-            "sort": sort,
-            "name": name,
-            "type": type,
-            "arch": arch,
-            "read_only": read_only,
-            "user_only": user_only,
+            key: value
+            for key, value in {
+                "skip": skip,
+                "size": size,
+                "sort": sort,
+                "name": name,
+                "type": type,
+                "network_arch": network_arch,
+                "read_only": read_only,
+                "user_only": user_only,
+            }.items()
+            if value is not None
         }
 
         response = Requester.get(url=endpoint, params=params, headers=headers)

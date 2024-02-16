@@ -8,9 +8,20 @@ class DatasetAPI:
     def __init__(self, url: str):
         self.url = url
 
-    def get_datasets(self, user_id, skip, size, sort, name, format, type, headers):
+    def get_datasets(self, user_id, headers, skip=None, size=None, sort=None, name=None, format=None, type=None):
         endpoint = f"{self.url}/users/{user_id}/datasets"
-        params = {"skip": skip, "size": size, "sort": sort, "name": name, "format": format, "type": type}
+        params = {
+            key: value
+            for key, value in {
+                "skip": skip,
+                "size": size,
+                "sort": sort,
+                "name": name,
+                "format": format,
+                "type": type,
+            }.items()
+            if value is not None
+        }
 
         response = Requester.get(url=endpoint, params=params, headers=headers)
 
