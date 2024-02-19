@@ -137,3 +137,18 @@ class ExperimentAPI:
         response = Requester.get(url=endpoint, headers=headers)
 
         return response.json()
+
+    def get_list_files(self, user_id, experiment_id, job_id, headers):
+        endpoint = f"{self.url}/users/{user_id}/experiments/{experiment_id}/jobs/{job_id}:list_files"
+
+        response = Requester.get(url=endpoint, headers=headers)
+
+        return response.json()
+
+    def download_selective_files(self, user_id, experiment_id, job_id, file_lists, best_model, latest_model, headers):
+        endpoint = f"{self.url}/users/{user_id}/experiments/{experiment_id}/jobs/{job_id}:download_selective_files"
+        params = {"file_lists": file_lists, "best_model": best_model, "latest_model": latest_model}
+
+        response = Requester.get(url=endpoint, params=params, headers=headers, stream=True)
+
+        return response.json()
