@@ -27,7 +27,7 @@ class Requester:
         return Requester.__make_response(response=response)
 
     @staticmethod
-    def post_as_json(url: str, request_body: dict, headers=None, **kwargs) -> Response:
+    def post_as_json(url: str, request_body: dict = None, headers=None, **kwargs) -> Response:
         response = requests.post(url, headers=headers, json=request_body, **kwargs)
 
         return Requester.__make_response(response=response)
