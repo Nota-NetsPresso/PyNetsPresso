@@ -1,7 +1,6 @@
 from typing import Optional
 
 import requests
-from fastapi import HTTPException
 from requests import Response
 
 
@@ -11,7 +10,7 @@ class Requester:
         if response.ok:
             return response
         else:
-            raise HTTPException(status_code=response.status_code, detail=response.json())
+            raise Exception(response.json())
 
     @staticmethod
     def get(url: str, params: Optional[dict] = None, headers=None, **kwargs) -> Response:
