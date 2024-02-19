@@ -62,9 +62,17 @@ class DatasetAPI:
 
         return response.json()
 
-    def get_dataset_jobs(self, user_id, dataset_id, skip, size, sort, headers):
+    def get_dataset_jobs(self, user_id, dataset_id, headers, skip=None, size=None, sort=None):
         endpoint = f"{self.url}/users/{user_id}/datasets/{dataset_id}/jobs"
-        params = {"skip": skip, "size": size, "sort": sort}
+        params = {
+            key: value
+            for key, value in {
+                "skip": skip,
+                "size": size,
+                "sort": sort,
+            }.items()
+            if value is not None
+        }
 
         response = Requester.get(url=endpoint, params=params, headers=headers)
 

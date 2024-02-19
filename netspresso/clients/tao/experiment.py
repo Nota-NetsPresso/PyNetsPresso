@@ -73,9 +73,17 @@ class ExperimentAPI:
 
         return response.json()
 
-    def get_experiment_jobs(self, user_id, experiment_id, skip, size, sort, headers):
+    def get_experiment_jobs(self, user_id, experiment_id, headers, skip=None, size=None, sort=None):
         endpoint = f"{self.url}/users/{user_id}/experiments/{experiment_id}/jobs"
-        params = {"skip": skip, "size": size, "sort": sort}
+        params = {
+            key: value
+            for key, value in {
+                "skip": skip,
+                "size": size,
+                "sort": sort,
+            }.items()
+            if value is not None
+        }
 
         response = Requester.get(url=endpoint, params=params, headers=headers)
 
