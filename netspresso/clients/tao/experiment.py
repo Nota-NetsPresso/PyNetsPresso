@@ -151,4 +151,4 @@ class ExperimentAPI:
 
         response = Requester.get(url=endpoint, params=params, headers=headers, stream=True)
 
-        return response.json()
+        return response
