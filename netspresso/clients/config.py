@@ -21,6 +21,7 @@ class Module(str, Enum):
     GENERAL = "GENERAL"
     COMPRESSOR = "COMPRESSOR"
     LAUNCHER = "LAUNCHER"
+    TAO = "TAO"
 
 
 class EndPointProperty(str, Enum):
