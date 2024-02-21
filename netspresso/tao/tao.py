@@ -3,10 +3,10 @@ from typing import Dict
 
 from loguru import logger
 
-from netspresso.tao.utils.file import split_tar_file
 from netspresso.clients.tao import tao_client
 from netspresso.clients.utils.common import create_tao_headers
 from netspresso.enums.action import ConvertAction
+from netspresso.tao.utils.file import split_tar_file
 
 
 class TAO:
@@ -38,7 +38,9 @@ class TAO:
             logger.error(f"Create dataset failed. Error: {e}")
             raise e
 
-    def upload_dataset(self, name: str, dataset_type: str, dataset_format: str, dataset_path: str, split_name: str = "train"):
+    def upload_dataset(
+        self, name: str, dataset_type: str, dataset_format: str, dataset_path: str, split_name: str = "train"
+    ):
         try:
             logger.info("Creating dataset...")
             data = {"name": name, "type": dataset_type, "format": dataset_format}
@@ -51,7 +53,9 @@ class TAO:
 
             for idx, tar_dataset_path in enumerate(output_dir.iterdir()):
                 logger.info(f"Uploading {idx+1}/{len(list(output_dir.iterdir()))} tar split")
-                upload_dataset_response = tao_client.dataset.upload_dataset(self.user_id, dataset_id, str(tar_dataset_path), self.headers)
+                upload_dataset_response = tao_client.dataset.upload_dataset(
+                    self.user_id, dataset_id, str(tar_dataset_path), self.headers
+                )
                 logger.info(upload_dataset_response["message"])
 
             return response
@@ -60,14 +64,18 @@ class TAO:
             logger.error(f"Upload dataset failed. Error: {e}")
             raise e
 
-    def update_dataset(self, dataset_id: str, name: str = None, description: str = None, docker_env_vars: Dict[str, str] = {}):
+    def update_dataset(
+        self, dataset_id: str, name: str = None, description: str = None, docker_env_vars: Dict[str, str] = None
+    ):
         try:
             logger.info("Updating dataset...")
-            data = {"docker_env_vars": docker_env_vars}
+            data = {}
             if name:
                 data["name"] = name
             if description:
                 data["description"] = description
+            if docker_env_vars:
+                data["docker_env_vars"] = docker_env_vars
             response = tao_client.dataset.update_dataset(self.user_id, dataset_id, data, self.headers)
 
             return response
@@ -91,7 +99,7 @@ class TAO:
         try:
             logger.info("Getting datasets...")
             response = tao_client.dataset.get_datasets(self.user_id, self.headers, skip, size, sort, name, format, type)
-            
+
             return response
 
         except Exception as e:

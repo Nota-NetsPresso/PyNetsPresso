@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Optional, Union
 
 from netspresso.benchmarker import Benchmarker
@@ -7,8 +6,8 @@ from netspresso.clients.auth.schemas import UserInfo
 from netspresso.compressor import Compressor
 from netspresso.converter import Converter
 from netspresso.enums import Task
-from netspresso.trainer import Trainer
 from netspresso.tao import TAO
+from netspresso.trainer import Trainer
 
 
 class NetsPresso:
