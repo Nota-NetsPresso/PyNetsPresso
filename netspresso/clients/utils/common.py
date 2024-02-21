@@ -19,9 +19,9 @@ def create_tao_headers(token):
 
 
 def read_file_bytes(file_path: str) -> bytes:
-        with open(file_path, "rb") as f:
-            file_byte = f.read()
-        return file_byte
+    with open(file_path, "rb") as f:
+        file_byte = f.read()
+    return file_byte
 
 
 def get_files(file_path):

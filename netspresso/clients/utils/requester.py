@@ -19,9 +19,7 @@ class Requester:
         return Requester.__make_response(response=response)
 
     @staticmethod
-    def post_as_form(
-        url: str, request_body: Optional[dict] = None, binary=None, headers=None, **kwargs
-    ) -> Response:
+    def post_as_form(url: str, request_body: Optional[dict] = None, binary=None, headers=None, **kwargs) -> Response:
         response = requests.post(url, headers=headers, data=request_body, files=binary, **kwargs)
 
         return Requester.__make_response(response=response)
