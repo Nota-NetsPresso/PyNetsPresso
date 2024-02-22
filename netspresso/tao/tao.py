@@ -16,7 +16,8 @@ class TAO:
 
     def login(self):
         try:
-            credentials = tao_client.auth.login({"ngc_api_key": self.ngc_api_key})
+            data = {"ngc_api_key": self.ngc_api_key}
+            credentials = tao_client.auth.login(data)
             logger.info("Login was successfully to TAO.")
             self.user_id = credentials["user_id"]
             self.token = credentials["token"]
@@ -48,7 +49,7 @@ class TAO:
             dataset_id = response["id"]
 
             dataset_path = Path(dataset_path)
-            output_dir = dataset_path.parent / split_name
+            output_dir = dataset_path.parent / "split" / split_name
             split_tar_file(dataset_path, str(output_dir))
 
             for idx, tar_dataset_path in enumerate(output_dir.iterdir()):
@@ -128,10 +129,11 @@ class TAO:
             logger.error(f"Get dataset jobs failed. Error: {e}")
             raise e
 
-    def run_dataset_jobs(self, dataset_id: str, job_id: str):
+    def run_dataset_jobs(self, dataset_id, parent_job_id, action, specs):
         try:
             logger.info("Running dataset jobs...")
-            response = tao_client.dataset.get_dataset_job(self.user_id, dataset_id, job_id, self.headers)
+            data = {"parent_job_id": parent_job_id, "action": action, "specs": specs}
+            response = tao_client.dataset.run_dataset_jobs(self.user_id, dataset_id, data, self.headers)
 
             return response
 
