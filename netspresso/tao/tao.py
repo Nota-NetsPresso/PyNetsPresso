@@ -16,7 +16,8 @@ class TAO:
 
     def login(self):
         try:
-            credentials = tao_client.auth.login({"ngc_api_key": self.ngc_api_key})
+            data = {"ngc_api_key": self.ngc_api_key}
+            credentials = tao_client.auth.login(data)
             logger.info("Login was successfully to TAO.")
             self.user_id = credentials["user_id"]
             self.token = credentials["token"]
@@ -48,7 +49,7 @@ class TAO:
             dataset_id = response["id"]
 
             dataset_path = Path(dataset_path)
-            output_dir = dataset_path.parent / split_name
+            output_dir = dataset_path.parent / "split" / split_name
             split_tar_file(dataset_path, str(output_dir))
 
             for idx, tar_dataset_path in enumerate(output_dir.iterdir()):
