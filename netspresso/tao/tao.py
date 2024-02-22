@@ -129,10 +129,11 @@ class TAO:
             logger.error(f"Get dataset jobs failed. Error: {e}")
             raise e
 
-    def run_dataset_jobs(self, dataset_id: str, job_id: str):
+    def run_dataset_jobs(self, dataset_id, parent_job_id, action, specs):
         try:
             logger.info("Running dataset jobs...")
-            response = tao_client.dataset.get_dataset_job(self.user_id, dataset_id, job_id, self.headers)
+            data = {"parent_job_id": parent_job_id, "action": action, "specs": specs}
+            response = tao_client.dataset.run_dataset_jobs(self.user_id, dataset_id, data, self.headers)
 
             return response
 
