@@ -105,4 +105,5 @@ class TokenHandler:
                 auth_client.login(email=self.email, password=self.password, verify_ssl=self.verify_ssl)
                 logger.info("The refresh token has expired. the token has been reissued.")
 
+
 auth_client = AuthClient()

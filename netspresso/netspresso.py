@@ -1,12 +1,12 @@
-from pathlib import Path
 from typing import Optional, Union
 
 from netspresso.benchmarker import Benchmarker
 from netspresso.clients.auth import TokenHandler, auth_client
-from netspresso.clients.auth.schemas import Tokens, UserInfo
+from netspresso.clients.auth.schemas import UserInfo
 from netspresso.compressor import Compressor
 from netspresso.converter import Converter
 from netspresso.enums import Task
+from netspresso.tao import TAOTrainer
 from netspresso.trainer import Trainer
 
 
@@ -66,3 +66,14 @@ class NetsPresso:
             Benchmarker: Initialized Benchmarker instance.
         """
         return Benchmarker(token_handler=self.token_handler, user_info=self.user_info)
+
+    def tao_trainer(self, ngc_api_key: str) -> TAOTrainer:
+        """Initialize and return a TAO instance.
+
+        Args:
+            ngc_api_key (str): API key for TAO authentication.
+
+        Returns:
+            TAO: Initialized TAO instance.
+        """
+        return TAOTrainer(ngc_api_key=ngc_api_key)
