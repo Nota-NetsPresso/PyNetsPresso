@@ -1,6 +1,17 @@
 from enum import Enum
 
 
+class ExperimentAction(Enum):
+    TRAIN = "train"
+    EVALUATE = "evaluate"
+    EXPORT = "export"
+    GEN_TRT_ENGINE = "gen_trt_engine"
+    INFERENCE = "inference"
+    PRUNE = "prune"
+    RETRAIN = "retrain"
+    CONFMAT = "confmat"
+
+
 class ConvertAction(Enum):
     DATASET_CONVERT = "dataset_convert"
     CONVERT = "convert"

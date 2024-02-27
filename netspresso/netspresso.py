@@ -6,7 +6,7 @@ from netspresso.clients.auth.schemas import UserInfo
 from netspresso.compressor import Compressor
 from netspresso.converter import Converter
 from netspresso.enums import Task
-from netspresso.tao import TAO
+from netspresso.tao import TAOTrainer
 from netspresso.trainer import Trainer
 
 
@@ -67,7 +67,7 @@ class NetsPresso:
         """
         return Benchmarker(token_handler=self.token_handler, user_info=self.user_info)
 
-    def tao(self, ngc_api_key: str) -> TAO:
+    def tao_trainer(self, ngc_api_key: str) -> TAOTrainer:
         """Initialize and return a TAO instance.
 
         Args:
@@ -76,4 +76,4 @@ class NetsPresso:
         Returns:
             TAO: Initialized TAO instance.
         """
-        return TAO(ngc_api_key=ngc_api_key)
+        return TAOTrainer(ngc_api_key=ngc_api_key)
