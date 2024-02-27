@@ -1,6 +1,6 @@
 from netspresso.clients.compressor.schemas.compression import Options
 
-from .compression import CompressionMethod, GroupPolicy, LayerNorm, Policy, RecommendationMethod
+from .compression import CompressionMethod, GroupPolicy, LayerNorm, Policy, RecommendationMethod, StepOp
 from .credit import ServiceCredit
 from .device import DeviceName, HardwareType, SoftwareVersion, TaskStatus
 from .metadata import Status, TaskType
@@ -29,4 +29,5 @@ __all__ = [
     "TaskStatus",
     "Module",
     "Options",
+    "StepOp",
 ]

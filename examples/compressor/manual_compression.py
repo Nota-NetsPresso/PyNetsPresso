@@ -1,5 +1,5 @@
 from netspresso import NetsPresso
-from netspresso.enums import CompressionMethod, GroupPolicy, LayerNorm, Options, Policy
+from netspresso.enums import CompressionMethod, GroupPolicy, LayerNorm, Options, Policy, StepOp
 
 EMAIL = "YOUR_EMAIL"
 PASSWORD = "YOUR_PASSWORD"
@@ -24,6 +24,8 @@ OPTIONS = Options(
     layer_norm=LayerNorm.STANDARD_SCORE,
     group_policy=GroupPolicy.AVERAGE,
     reshape_channel_axis=-1,
+    step_size=8,
+    step_op=StepOp.ROUND,
 )
 compression_info = compressor.select_compression_method(
     model_id=model.model_id,

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, List
 
-from netspresso.enums import GroupPolicy, LayerNorm, Policy
+from netspresso.enums import GroupPolicy, LayerNorm, Policy, StepOp
 
 
 @dataclass
@@ -36,6 +36,9 @@ class Options:
     policy: Policy = Policy.AVERAGE
     layer_norm: LayerNorm = LayerNorm.STANDARD_SCORE
     group_policy: GroupPolicy = GroupPolicy.AVERAGE
+    step_size: int = 8
+    step_op: StepOp = StepOp.ROUND
+    reverse: bool = False
 
 
 @dataclass

@@ -58,8 +58,20 @@ class LayerNorm(str, Enum):
         return Literal["none", "standard_score", "tss_norm", "linear_scaling", "softmax_norm"]
 
 
+class StepOp(str, Enum):
+    ROUND_UP = "round_up"
+    ROUND_DOWN = "round_down"
+    ROUND = "round"
+    NONE = "none"
+
+    @classmethod
+    def create_literal(cls):
+        return Literal["round_up", "round_down", "round", "none"]
+
+
 compression_literal = CompressionMethod.create_literal()
 recommendation_literal = RecommendationMethod.create_literal()
 policy_literal = Policy.create_literal()
 grouppolicy_literal = GroupPolicy.create_literal()
 layernorm_literal = LayerNorm.create_literal()
+stepop_literal = StepOp.create_literal()
