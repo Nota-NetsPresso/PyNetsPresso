@@ -242,7 +242,7 @@ class TAOTrainer:
     def assign_ptm(self, experiment_id, network_arch, ptm_name):
         try:
             logger.info("Assigning pre-trained model...")
-            no_ptm_models = set([])
+            no_ptm_models = set()
 
             # Get pretrained model for entered task
             if network_arch not in no_ptm_models:
