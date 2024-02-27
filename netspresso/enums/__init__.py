@@ -7,6 +7,7 @@ from .metadata import Status, TaskType
 from .model import DataType, Extension, Framework, OriginFrom
 from .module import Module
 from .task import Task
+from .action import ConvertAction, ExperimentAction
 
 __all__ = [
     "ServiceCredit",
@@ -29,4 +30,6 @@ __all__ = [
     "TaskStatus",
     "Module",
     "Options",
+    "ConvertAction",
+    "ExperimentAction",
 ]

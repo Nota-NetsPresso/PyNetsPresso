@@ -1,3 +1,3 @@
-from .tao import TAO
+from .tao import TAOTrainer
 
-__all__ = ["TAO"]
+__all__ = ["TAOTrainer"]

@@ -5,11 +5,12 @@ from loguru import logger
 
 from netspresso.clients.tao import tao_client
 from netspresso.clients.utils.common import create_tao_headers
-from netspresso.enums.action import ConvertAction
+from netspresso.enums.action import ConvertAction, ExperimentAction
+from netspresso.tao.models import CLASSIFICATION
 from netspresso.tao.utils.file import split_tar_file
 
 
-class TAO:
+class TAOTrainer:
     def __init__(self, ngc_api_key) -> None:
         self.ngc_api_key = ngc_api_key
         self.login()
@@ -192,4 +193,222 @@ class TAO:
 
         except Exception as e:
             logger.error(f"Convert dataset failed. Error: {e}")
+            raise e
+
+    def get_dataset_schema(self, dataset_id, action):
+        try:
+            logger.info("Getting dataset schema...")
+            response = tao_client.dataset.get_specs_schema(self.user_id, dataset_id, action, self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Convert dataset failed. Error: {e}")
+            raise e
+
+    def create_experiment(self, network_arch, encryption_key, checkpoint_choose_method):
+        try:
+            logger.info("Creating experiment...")
+            data = {
+                "network_arch": network_arch,
+                "encryption_key": encryption_key,
+                "checkpoint_choose_method": checkpoint_choose_method,
+            }
+            response = tao_client.experiment.create_experiments(self.user_id, data, self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Create experiment failed. Error: {e}")
+            raise e
+
+    def assign_datasets(self, experiment_id, train_datasets, eval_dataset, inference_dataset, calibration_dataset):
+        try:
+            logger.info("Assigning datasets...")
+            data = {
+                "train_datasets": train_datasets,
+                "eval_dataset": eval_dataset,
+                "inference_dataset": inference_dataset,
+                "calibration_dataset": calibration_dataset,
+            }
+            response = tao_client.experiment.partial_update_experiment(self.user_id, experiment_id, data, self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Assign datasets failed. Error: {e}")
+            raise e
+
+    def assign_ptm(self, experiment_id, network_arch, ptm_name):
+        try:
+            logger.info("Assigning pre-trained model...")
+            no_ptm_models = set([])
+
+            # Get pretrained model for entered task
+            if network_arch not in no_ptm_models:
+                experiments = tao_client.experiment.get_experiments(
+                    user_id=self.user_id, headers=self.headers, network_arch=network_arch
+                )
+
+                # Search for ptm with given ngc path
+                ptm = []
+                for experiment in experiments:
+                    rsp_keys = experiment.keys()
+                    assert "ngc_path" in rsp_keys
+                    if experiment["ngc_path"].endswith(CLASSIFICATION[network_arch][ptm_name]):
+                        assert "id" in rsp_keys
+                        ptm = [experiment["id"]]
+                        print("Metadata for model with requested NGC Path")
+                        break
+
+                data = {"base_experiment": ptm}
+                response = tao_client.experiment.partial_update_experiment(
+                    self.user_id, experiment_id, data, self.headers
+                )
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Assign pre-trained model failed. Error: {e}")
+            raise e
+
+    def get_train_schema(self, experiment_id):
+        try:
+            logger.info("Getting train schema...")
+            response = tao_client.experiment.get_specs_schema(self.user_id, experiment_id, "train", self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Get train schema failed. Error: {e}")
+            raise e
+
+    def get_experiments(
+        self, skip=None, size=None, sort=None, name=None, type=None, network_arch=None, read_only=None, user_only=None
+    ):
+        try:
+            logger.info("Getting experiments...")
+            experiments = tao_client.experiment.get_experiments(
+                self.user_id,
+                self.headers,
+                skip,
+                size,
+                sort,
+                name,
+                type,
+                network_arch,
+                read_only,
+                user_only,
+            )
+
+            return experiments
+
+        except Exception as e:
+            logger.error(f"Get train schema failed. Error: {e}")
+            raise e
+
+    def get_experiment(self, experiment_id):
+        try:
+            logger.info("Getting experiment...")
+            experiment = tao_client.experiment.get_experiment(self.user_id, experiment_id, self.headers)
+
+            return experiment
+
+        except Exception as e:
+            logger.error(f"Get experiment failed. Error: {e}")
+            raise e
+
+    def update_experiment(self, experiment_id, name):
+        try:
+            logger.info("Updating experiment...")
+            data = {"name": name}
+            response = tao_client.experiment.partial_update_experiment(self.user_id, experiment_id, data, self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Update experiment failed. Error: {e}")
+            raise e
+
+    def delete_experiment(self, experiment_id):
+        try:
+            logger.info("Deleting experiment...")
+            response = tao_client.experiment.delete_experiment(self.user_id, experiment_id, self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Delete experiment failed. Error: {e}")
+            raise e
+
+    def train(self, experiment_id, name, train_specs):
+        try:
+            logger.info("Running train...")
+            data = {
+                "name": name,
+                "action": ExperimentAction.TRAIN,
+                "parent_job_id": None,
+                "specs": train_specs,
+            }
+            experiment_jobs = tao_client.experiment.run_experiment_jobs(self.user_id, experiment_id, data, self.headers)
+
+            return experiment_jobs
+
+        except Exception as e:
+            logger.error(f"Train failed. Error: {e}")
+            raise e
+
+    def cancel_experiment_job(self, experiment_id, job_id):
+        try:
+            logger.info("Canceling experiment job...")
+            response = tao_client.experiment.cancel_experiment_job(self.user_id, experiment_id, job_id, self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Cancel experiment job failed. Error: {e}")
+            raise e
+
+    def get_experiment_jobs(self, experiment_id):
+        try:
+            logger.info("Getting experiment jobs...")
+            response = tao_client.experiment.get_experiment_jobs(self.user_id, experiment_id, self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Get experiment jobs failed. Error: {e}")
+            raise e
+
+    def get_experiment_job(self, experiment_id, job_id):
+        try:
+            logger.info("Getting experiment job...")
+            response = tao_client.experiment.get_experiment_job(self.user_id, experiment_id, job_id, self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Get experiment job failed. Error: {e}")
+            raise e
+
+    def delete_experiment_job(self, experiment_id, job_id):
+        try:
+            logger.info("Deleting experiment job...")
+            response = tao_client.experiment.delete_experiment_job(self.user_id, experiment_id, job_id, self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Delete experiment job failed. Error: {e}")
+            raise e
+
+    def resume_experiment_job(self, experiment_id, job_id):
+        try:
+            logger.info("Resuming experiment job...")
+            response = tao_client.experiment.resume_experiment_job(self.user_id, experiment_id, job_id, self.headers)
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Resume experiment job failed. Error: {e}")
             raise e
