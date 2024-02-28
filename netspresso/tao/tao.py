@@ -535,3 +535,18 @@ class TAOTrainer:
         except Exception as e:
             logger.error(f"Inference failed. Error: {e}")
             raise e
+
+    def download_artifacts(self, experiment_id, job_id, best_model=False, latest_model=True):
+        try:
+            logger.info("Downloading selective files...")
+            file_lists = tao_client.experiment.get_list_files(self.user_id, experiment_id, job_id, self.headers)
+
+            response = tao_client.experiment.download_selective_files(
+                self.user_id, experiment_id, job_id, file_lists, best_model, latest_model, self.headers
+            )
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Get train schema failed. Error: {e}")
+            raise e
