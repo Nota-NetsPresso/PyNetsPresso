@@ -133,11 +133,23 @@
         <span class="k">return</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="s2">&quot;standard_score&quot;</span><span class="p">,</span> <span class="s2">&quot;tss_norm&quot;</span><span class="p">,</span> <span class="s2">&quot;linear_scaling&quot;</span><span class="p">,</span> <span class="s2">&quot;softmax_norm&quot;</span><span class="p">]</span></div>
 
 
+<span class="k">class</span> <span class="nc">StepOp</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">ROUND_UP</span> <span class="o">=</span> <span class="s2">&quot;round_up&quot;</span>
+    <span class="n">ROUND_DOWN</span> <span class="o">=</span> <span class="s2">&quot;round_down&quot;</span>
+    <span class="n">ROUND</span> <span class="o">=</span> <span class="s2">&quot;round&quot;</span>
+    <span class="n">NONE</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_literal</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;round_up&quot;</span><span class="p">,</span> <span class="s2">&quot;round_down&quot;</span><span class="p">,</span> <span class="s2">&quot;round&quot;</span><span class="p">,</span> <span class="s2">&quot;none&quot;</span><span class="p">]</span>
+
+
 <span class="n">compression_literal</span> <span class="o">=</span> <span class="n">CompressionMethod</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
 <span class="n">recommendation_literal</span> <span class="o">=</span> <span class="n">RecommendationMethod</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
 <span class="n">policy_literal</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
 <span class="n">grouppolicy_literal</span> <span class="o">=</span> <span class="n">GroupPolicy</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
 <span class="n">layernorm_literal</span> <span class="o">=</span> <span class="n">LayerNorm</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
+<span class="n">stepop_literal</span> <span class="o">=</span> <span class="n">StepOp</span><span class="o">.</span><span class="n">create_literal</span><span class="p">()</span>
 </pre></div>
 
            </div>

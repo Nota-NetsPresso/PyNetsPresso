@@ -76,7 +76,7 @@
 <span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
 
-<span class="kn">from</span> <span class="nn">netspresso.enums</span> <span class="kn">import</span> <span class="n">GroupPolicy</span><span class="p">,</span> <span class="n">LayerNorm</span><span class="p">,</span> <span class="n">Policy</span>
+<span class="kn">from</span> <span class="nn">netspresso.enums</span> <span class="kn">import</span> <span class="n">GroupPolicy</span><span class="p">,</span> <span class="n">LayerNorm</span><span class="p">,</span> <span class="n">Policy</span><span class="p">,</span> <span class="n">StepOp</span>
 
 
 <span class="nd">@dataclass</span>
@@ -111,6 +111,9 @@
     <span class="n">policy</span><span class="p">:</span> <span class="n">Policy</span> <span class="o">=</span> <span class="n">Policy</span><span class="o">.</span><span class="n">AVERAGE</span>
     <span class="n">layer_norm</span><span class="p">:</span> <span class="n">LayerNorm</span> <span class="o">=</span> <span class="n">LayerNorm</span><span class="o">.</span><span class="n">STANDARD_SCORE</span>
     <span class="n">group_policy</span><span class="p">:</span> <span class="n">GroupPolicy</span> <span class="o">=</span> <span class="n">GroupPolicy</span><span class="o">.</span><span class="n">AVERAGE</span>
+    <span class="n">step_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">step_op</span><span class="p">:</span> <span class="n">StepOp</span> <span class="o">=</span> <span class="n">StepOp</span><span class="o">.</span><span class="n">ROUND</span>
+    <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
 
 <div class="viewcode-block" id="CompressionInfo"><a class="viewcode-back" href="../../../../description/api/compressor/compress/get_compression.html#netspresso.compressor.core.compression.CompressionInfo">[docs]</a><span class="nd">@dataclass</span>
