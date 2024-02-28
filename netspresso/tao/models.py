@@ -1,4 +1,4 @@
-CLASSIFICATION = {
+MODELS = {
     "multitask_classification": {
         "vgg19": "nvidia/tao/pretrained_classification:vgg19",
         "vgg16": "nvidia/tao/pretrained_classification:vgg16",
@@ -99,5 +99,9 @@ CLASSIFICATION = {
         "efficientdet-b1": "nvidia/tao/pretrained_efficientdet_tf2_nvimagenet:efficientnet-b1",
         "efficientdet-b0": "nvidia/tao/pretrained_efficientdet_tf2_nvimagenet:efficientnet-b0",
         "efficientnet_b0": "nvidia/tao/pretrained_classification_tf2:efficientnet_b0",
+    },
+    "efficientdet_tf2": {
+        "efficientnet-b0": "nvidia/tao/pretrained_efficientdet_tf2_nvimagenet:efficientnet-b0",
+        "efficientnet_b0": "nvidia/tao/pretrained_efficientdet_tf2:efficientnet_b0",
     },
 }

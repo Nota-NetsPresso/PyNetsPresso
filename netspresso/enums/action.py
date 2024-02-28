@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ExperimentAction(Enum):
+class ExperimentAction(str, Enum):
     TRAIN = "train"
     EVALUATE = "evaluate"
     EXPORT = "export"
@@ -12,7 +12,7 @@ class ExperimentAction(Enum):
     CONFMAT = "confmat"
 
 
-class ConvertAction(Enum):
+class ConvertAction(str, Enum):
     DATASET_CONVERT = "dataset_convert"
     CONVERT = "convert"
     CONVERT_AND_INDEX = "convert_and_index"

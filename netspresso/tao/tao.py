@@ -6,7 +6,7 @@ from loguru import logger
 from netspresso.clients.tao import tao_client
 from netspresso.clients.utils.common import create_tao_headers
 from netspresso.enums.action import ConvertAction, ExperimentAction
-from netspresso.tao.models import CLASSIFICATION
+from netspresso.tao.models import MODELS
 from netspresso.tao.utils.file import split_tar_file
 
 
@@ -14,6 +14,7 @@ class TAOTrainer:
     def __init__(self, ngc_api_key) -> None:
         self.ngc_api_key = ngc_api_key
         self.login()
+        self.job_map = {}
 
     def login(self):
         try:
@@ -257,7 +258,7 @@ class TAOTrainer:
                 for experiment in experiments:
                     rsp_keys = experiment.keys()
                     assert "ngc_path" in rsp_keys
-                    if experiment["ngc_path"].endswith(CLASSIFICATION[network_arch][ptm_name]):
+                    if experiment["ngc_path"].endswith(MODELS[network_arch][ptm_name]):
                         assert "id" in rsp_keys
                         ptm = [experiment["id"]]
                         print("Metadata for model with requested NGC Path")
@@ -272,17 +273,6 @@ class TAOTrainer:
 
         except Exception as e:
             logger.error(f"Assign pre-trained model failed. Error: {e}")
-            raise e
-
-    def get_train_schema(self, experiment_id):
-        try:
-            logger.info("Getting train schema...")
-            response = tao_client.experiment.get_specs_schema(self.user_id, experiment_id, "train", self.headers)
-
-            return response
-
-        except Exception as e:
-            logger.error(f"Get train schema failed. Error: {e}")
             raise e
 
     def get_experiments(
@@ -343,18 +333,31 @@ class TAOTrainer:
             logger.error(f"Delete experiment failed. Error: {e}")
             raise e
 
-    def train(self, experiment_id, name, train_specs):
+    def get_train_schema(self, experiment_id):
+        try:
+            logger.info("Getting train schema...")
+            response = tao_client.experiment.get_specs_schema(
+                self.user_id, experiment_id, ExperimentAction.TRAIN, self.headers
+            )
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Get train schema failed. Error: {e}")
+            raise e
+
+    def train(self, experiment_id, name, train_specs, parent_job_id=None):
         try:
             logger.info("Running train...")
             data = {
                 "name": name,
                 "action": ExperimentAction.TRAIN,
-                "parent_job_id": None,
+                "parent_job_id": parent_job_id,
                 "specs": train_specs,
             }
-            experiment_jobs = tao_client.experiment.run_experiment_jobs(self.user_id, experiment_id, data, self.headers)
+            train_job_id = tao_client.experiment.run_experiment_jobs(self.user_id, experiment_id, data, self.headers)
 
-            return experiment_jobs
+            return train_job_id
 
         except Exception as e:
             logger.error(f"Train failed. Error: {e}")
@@ -413,4 +416,62 @@ class TAOTrainer:
 
         except Exception as e:
             logger.error(f"Resume experiment job failed. Error: {e}")
+            raise e
+
+    def get_evaluate_schema(self, experiment_id):
+        try:
+            logger.info("Getting evaluate schema...")
+            response = tao_client.experiment.get_specs_schema(
+                self.user_id, experiment_id, ExperimentAction.EVALUATE, self.headers
+            )
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Get evaluate schema failed. Error: {e}")
+            raise e
+
+    def evaluate(self, experiment_id, eval_specs, parent_job_id):
+        try:
+            logger.info("Evaluating...")
+            data = {
+                "parent_job_id": parent_job_id,
+                "action": ExperimentAction.EVALUATE,
+                "specs": eval_specs,
+            }
+            evaluate_job_id = tao_client.experiment.run_experiment_jobs(self.user_id, experiment_id, data, self.headers)
+
+            return evaluate_job_id
+
+        except Exception as e:
+            logger.error(f"Evaluate failed. Error: {e}")
+            raise e
+
+    def get_export_schema(self, experiment_id):
+        try:
+            logger.info("Getting export schema...")
+            response = tao_client.experiment.get_specs_schema(
+                self.user_id, experiment_id, ExperimentAction.EXPORT, self.headers
+            )
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Get export schema failed. Error: {e}")
+            raise e
+
+    def export(self, experiment_id, export_specs, parent_job_id):
+        try:
+            logger.info("Exporting...")
+            data = {
+                "parent_job_id": parent_job_id,
+                "action": ExperimentAction.EXPORT,
+                "specs": export_specs,
+            }
+            export_job_id = tao_client.experiment.run_experiment_jobs(self.user_id, experiment_id, data, self.headers)
+
+            return export_job_id
+
+        except Exception as e:
+            logger.error(f"Export failed. Error: {e}")
             raise e
