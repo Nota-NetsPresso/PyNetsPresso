@@ -7,11 +7,13 @@ from netspresso.enums.compression import (
     GroupPolicy,
     LayerNorm,
     Policy,
+    StepOp,
     compression_literal,
     grouppolicy_literal,
     layernorm_literal,
     policy_literal,
     recommendation_literal,
+    stepop_literal,
 )
 
 
@@ -30,6 +32,9 @@ class Options(OptionsBase):
     policy: policy_literal = Field(Policy.AVERAGE, description="Policy")
     layer_norm: layernorm_literal = Field(LayerNorm.STANDARD_SCORE, description="layer Norm")
     group_policy: grouppolicy_literal = Field(GroupPolicy.AVERAGE, description="Group Policy")
+    step_size: int = Field(8, description="Step Size")
+    step_op: stepop_literal = Field(StepOp.ROUND, description="Step Operator")
+    reverse: bool = Field(False, description="Reverse")
 
 
 class CreateCompressionRequest(BaseModel):
