@@ -475,3 +475,63 @@ class TAOTrainer:
         except Exception as e:
             logger.error(f"Export failed. Error: {e}")
             raise e
+
+    def get_gen_trt_engine_schema(self, experiment_id):
+        try:
+            logger.info("Getting gen_trt_engine schema...")
+            response = tao_client.experiment.get_specs_schema(
+                self.user_id, experiment_id, ExperimentAction.GEN_TRT_ENGINE, self.headers
+            )
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Get gen_trt_engine schema failed. Error: {e}")
+            raise e
+
+    def gen_trt_engine(self, experiment_id, tao_deploy_specs, parent_job_id):
+        try:
+            logger.info("Generating trt engine...")
+            data = {
+                "parent_job_id": parent_job_id,
+                "action": ExperimentAction.GEN_TRT_ENGINE,
+                "specs": tao_deploy_specs,
+            }
+            gen_trt_job_id = tao_client.experiment.run_experiment_jobs(self.user_id, experiment_id, data, self.headers)
+
+            return gen_trt_job_id
+
+        except Exception as e:
+            logger.error(f"Generate trt engine failed. Error: {e}")
+            raise e
+
+    def get_inference_schema(self, experiment_id):
+        try:
+            logger.info("Getting inference schema...")
+            response = tao_client.experiment.get_specs_schema(
+                self.user_id, experiment_id, ExperimentAction.INFERENCE, self.headers
+            )
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Get inference schema failed. Error: {e}")
+            raise e
+
+    def inference(self, experiment_id, inference_specs, parent_job_id):
+        try:
+            logger.info("Inferring...")
+            data = {
+                "parent_job_id": parent_job_id,
+                "action": ExperimentAction.INFERENCE,
+                "specs": inference_specs,
+            }
+            inference_job_id = tao_client.experiment.run_experiment_jobs(
+                self.user_id, experiment_id, data, self.headers
+            )
+
+            return inference_job_id
+
+        except Exception as e:
+            logger.error(f"Inference failed. Error: {e}")
+            raise e
