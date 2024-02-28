@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import Dict
 
@@ -536,17 +537,29 @@ class TAOTrainer:
             logger.error(f"Inference failed. Error: {e}")
             raise e
 
-    def download_artifacts(self, experiment_id, job_id, best_model=False, latest_model=True):
+    def download_artifacts(self, experiment_id, job_id, output_dir, best_model=False, latest_model=True):
         try:
-            logger.info("Downloading selective files...")
+            logger.info("Downloading selective artifacts...")
             file_lists = tao_client.experiment.get_list_files(self.user_id, experiment_id, job_id, self.headers)
 
-            response = tao_client.experiment.download_selective_files(
+            # Save
+            temptar = f"{job_id}.tar.gz"
+            with tao_client.experiment.download_selective_files(
                 self.user_id, experiment_id, job_id, file_lists, best_model, latest_model, self.headers
-            )
+            ) as r:
+                r.raise_for_status()
+                with open(temptar, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
 
-            return response
+            # Untar to destination
+            logger.info("Untarring...")
+            tar_command = f"tar -xvf {temptar} -C {output_dir}/"
+            os.system(tar_command)
+            os.remove(temptar)
+
+            return output_dir
 
         except Exception as e:
-            logger.error(f"Get train schema failed. Error: {e}")
+            logger.error(f"Download artifacts failed. Error: {e}")
             raise e
