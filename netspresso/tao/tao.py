@@ -554,6 +554,7 @@ class TAOTrainer:
 
             # Untar to destination
             logger.info("Untarring...")
+            Path(output_dir).mkdir(exist_ok=True)
             tar_command = f"tar -xvf {temptar} -C {output_dir}/"
             os.system(tar_command)
             os.remove(temptar)
