@@ -24,7 +24,7 @@ OPTIONS = Options(
     layer_norm=LayerNorm.STANDARD_SCORE,
     group_policy=GroupPolicy.AVERAGE,
     reshape_channel_axis=-1,
-    step_size=8,
+    step_size=2,
     step_op=StepOp.ROUND,
 )
 compression_info = compressor.select_compression_method(
