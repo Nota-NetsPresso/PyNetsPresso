@@ -228,3 +228,66 @@ class Plotter:
 
         plt.tight_layout()
         plt.show()
+
+    @staticmethod
+    def _plot_epoch_metrics(train_data, valid_data, title, xlabel, ylabel):
+        labels = {
+            "map50": "mAP@[.50]",
+            "map75": "mAP@[.75]",
+            "map50_95": "mAP@[.0.5:.95]",
+        }
+        metric = labels[ylabel]
+
+        train_epochs = list(train_data.keys())
+        valid_epochs = list(valid_data.keys())
+
+        train_metric_values = [metric[ylabel] for _, metric in train_data.items()]
+        valid_metric_values = [metric[ylabel] for _, metric in valid_data.items()]
+
+        plt.figure(figsize=(15, 6))
+        plt.plot(train_epochs, train_metric_values, label="Train Metric", marker="o")
+        plt.plot(valid_epochs, valid_metric_values, label="Validation Metric", marker="x", color="dodgerblue")
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(metric)
+        plt.legend()
+        plt.grid(True)
+
+        for epoch, metric in valid_data.items():
+            metric = metric[ylabel]
+            Plotter._add_text_annotation(plt.gca(), epoch, metric, metric)
+
+        plt.show()
+
+    @staticmethod
+    def plot_metric_by_epoch(train_data, valid_data, title="Train and Validation metric per epoch", xlabel="Epochs"):
+        for _ylabel in ["map50", "map75", "map50_95"]:
+            Plotter._plot_epoch_metrics(train_data, valid_data, title, xlabel, _ylabel)
+
+    @staticmethod
+    def _plot_epoch_losses(train_data, valid_data, title, xlabel, ylabel):
+        train_epochs = list(train_data.keys())
+        valid_epochs = list(valid_data.keys())
+
+        train_loss_values = list(train_data.values())
+        valid_loss_values = list(valid_data.values())
+
+        plt.figure(figsize=(15, 6))
+        plt.plot(train_epochs, train_loss_values, label="Train Loss", marker="o")
+        plt.plot(valid_epochs, valid_loss_values, label="Validation Loss", marker="x")
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.legend()
+        plt.grid(True)
+
+        for epoch, loss in valid_data.items():
+            Plotter._add_text_annotation(plt.gca(), epoch, loss, loss)
+
+        plt.show()
+
+    @staticmethod
+    def plot_loss_by_epoch(
+        train_data, valid_data, title="Train and Validation loss per epoch", xlabel="Epochs", ylabel="Loss"
+    ):
+        Plotter._plot_epoch_losses(train_data, valid_data, title, xlabel, ylabel)
