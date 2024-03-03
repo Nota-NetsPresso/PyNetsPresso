@@ -234,7 +234,7 @@ class Plotter:
         labels = {
             "map50": "mAP@[.50]",
             "map75": "mAP@[.75]",
-            "map50_95": "mAP@[.0.5:.95]",
+            "map50_95": "mAP@[.50:.95]",
         }
         metric = labels[ylabel]
 
