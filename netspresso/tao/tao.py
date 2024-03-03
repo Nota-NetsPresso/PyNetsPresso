@@ -574,7 +574,7 @@ class TAOTrainer:
             logger.info("Monitoring job stauts...")
 
             while True:
-                response = tao_client.experimentget_experiment_job(experiment_id, job_id)
+                response = tao_client.experiment.get_experiment_job(self.user_id, experiment_id, job_id, self.headers)
                 logger.info(response)
                 if response.get("status") in ["Done", "Error", "Canceled"]:
                     break
