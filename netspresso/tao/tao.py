@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 from typing import Dict
 
@@ -16,6 +17,7 @@ class TAOTrainer:
         self.ngc_api_key = ngc_api_key
         self.login()
         self.job_map = {}
+        self.exp_map = {}
 
     def login(self):
         try:
@@ -260,9 +262,10 @@ class TAOTrainer:
                     rsp_keys = experiment.keys()
                     assert "ngc_path" in rsp_keys
                     if experiment["ngc_path"].endswith(MODELS[network_arch][ptm_name]):
+                        logger.info(f"PTM info: {experiment}")
                         assert "id" in rsp_keys
                         ptm = [experiment["id"]]
-                        print("Metadata for model with requested NGC Path")
+                        logger.info("Metadata for model with requested NGC Path")
                         break
 
                 data = {"base_experiment": ptm}
@@ -541,6 +544,7 @@ class TAOTrainer:
         try:
             logger.info("Downloading selective artifacts...")
             file_lists = tao_client.experiment.get_list_files(self.user_id, experiment_id, job_id, self.headers)
+            logger.info(f"File lists: {file_lists}")
 
             # Save
             temptar = f"{job_id}.tar.gz"
@@ -564,3 +568,22 @@ class TAOTrainer:
         except Exception as e:
             logger.error(f"Download artifacts failed. Error: {e}")
             raise e
+
+    def monitor_job_status(self, experiment_id, job_id, interval=15):
+        try:
+            logger.info("Monitoring job stauts...")
+
+            while True:
+                response = tao_client.experimentget_experiment_job(experiment_id, job_id)
+                logger.info(response)
+                if response.get("status") in ["Done", "Error", "Canceled"]:
+                    break
+                time.sleep(interval)
+            return response
+
+        except Exception as e:
+            logger.error(f"Monitor job staus failed. Error: {e}")
+            raise e
+
+        except KeyboardInterrupt:
+            logger.info("End monitoring.")
