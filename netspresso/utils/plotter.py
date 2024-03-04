@@ -124,7 +124,13 @@ class Plotter:
 
         fig, axs = plt.subplots(ncols=len(metrics_list), figsize=(15, 6))
 
-        for idx, metric in enumerate(metrics_list):
+        for idx, _metric in enumerate(metrics_list):
+            labels = {
+                "map50": "mAP@[.50]",
+                "map75": "mAP@[.75]",
+                "map50_95": "mAP@[.50:.95]",
+            }
+            metric = labels[_metric]
             bars_original = Plotter._plot_single_bar(
                 axs[idx], "Original Model", original_best_metrics[idx], "slategray"
             )
@@ -245,7 +251,7 @@ class Plotter:
         valid_metric_values = [metric[ylabel] for _, metric in valid_data.items()]
 
         plt.figure(figsize=(15, 6))
-        plt.plot(train_epochs, train_metric_values, label="Train Metric", marker="o")
+        plt.plot(train_epochs, train_metric_values, label="Train Metric", marker="o", color="slategray")
         plt.plot(valid_epochs, valid_metric_values, label="Validation Metric", marker="x", color="dodgerblue")
         plt.title(title)
         plt.xlabel(xlabel)
@@ -273,8 +279,8 @@ class Plotter:
         valid_loss_values = list(valid_data.values())
 
         plt.figure(figsize=(15, 6))
-        plt.plot(train_epochs, train_loss_values, label="Train Loss", marker="o")
-        plt.plot(valid_epochs, valid_loss_values, label="Validation Loss", marker="x")
+        plt.plot(train_epochs, train_loss_values, label="Train Loss", marker="o", color="slategray")
+        plt.plot(valid_epochs, valid_loss_values, label="Validation Loss", marker="x", color="dodgerblue")
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
@@ -291,3 +297,143 @@ class Plotter:
         train_data, valid_data, title="Train and Validation loss per epoch", xlabel="Epochs", ylabel="Loss"
     ):
         Plotter._plot_epoch_losses(train_data, valid_data, title, xlabel, ylabel)
+
+    @staticmethod
+    def compare_by_step_size(
+        a_compression_result, b_compression_result, a_benchmark_result, b_benchmark_result, x_labels=[2, 32]
+    ):
+        x_labels = [f"step_size={x_label}" for x_label in x_labels]
+        y_labels = ["Latency(ms)", "FLOPs(M)", "Num of Params(M)", "Model Size(MB)"]
+        keys = ["latency", "flops", "number_of_parameters", "size"]
+
+        a_values = [a_benchmark_result["result"]["latency"]]
+        b_values = [b_benchmark_result["result"]["latency"]]
+
+        for _key in keys[1:]:
+            a_values.append(a_compression_result["results"]["compressed_model"][_key])
+
+        for _key in keys[1:]:
+            b_values.append(b_compression_result["results"]["compressed_model"][_key])
+
+        fig, axs = plt.subplots(ncols=len(y_labels), figsize=(15, 5))
+
+        for idx, label in enumerate(y_labels):
+            bars_original = axs[idx].bar(
+                [x_labels[0]],
+                [a_values[idx]],
+                color="slategray",
+                label=x_labels[0],
+                width=Plotter.BAR_WIDTH,
+            )
+            bars_compressed = axs[idx].bar(
+                [x_labels[1]],
+                [b_values[idx]],
+                color="dodgerblue",
+                label=x_labels[1],
+                width=Plotter.BAR_WIDTH,
+            )
+
+            for bar in bars_original:
+                axs[idx].text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 0.01,
+                    f"{bar.get_height():.4f}",
+                    ha="center",
+                    va="bottom",
+                )
+
+            for bar in bars_compressed:
+                axs[idx].text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 0.01,
+                    f"{bar.get_height():.4f}",
+                    ha="center",
+                    va="bottom",
+                )
+
+            axs[idx].set_ylabel(label)
+            axs[idx].set_title(f"Step Size vs. {label}")
+            axs[idx].legend()
+            axs[idx].grid(axis="y")
+            max_value = max(a_values[idx], b_values[idx])
+            axs[idx].set_ylim(0, max_value * 1.2)
+
+        plt.tight_layout()
+        plt.show()
+
+    @staticmethod
+    def plot_profile_results(data, x_labels, title_prefix, y_labels=["latency", "flops", "params", "size"]):
+        y_label_names = {
+            "latency": "Latency(ms)",
+            "flops": "FLOPs(M)",
+            "params": "Num of Params(M)",
+            "size": "Model Size(MB)",
+        }
+
+        fig, axs = plt.subplots(nrows=1, ncols=4, figsize=(15, 5))
+
+        for idx, label in enumerate(y_labels):
+            y_label_name = y_label_names[label]
+            axs[idx].plot(x_labels, data[label], marker="o", color="dodgerblue", label=label)
+
+            axs[idx].set_xlabel("Step Size" if "Step" in title_prefix else "Compression Ratio")
+            axs[idx].set_ylabel(y_label_name)
+            axs[idx].set_title(f"{title_prefix} vs. {y_label_name}")
+            axs[idx].grid(True)
+
+            max_value = max(data[label])
+            axs[idx].set_ylim(0, max_value * 1.2)
+            axs[idx].set_xlim(-0.5, len(x_labels) - 0.5)
+
+            for i, value in enumerate(data[label]):
+                axs[idx].text(i, value, f"{value:.2f}", ha="center", va="bottom")
+
+        plt.tight_layout()
+        plt.show()
+
+    @staticmethod
+    def line_plot_overall_latencies(step_sizes, compression_ratios, latencies):
+        plt.figure(figsize=(10, 6))
+
+        for i, step_size in enumerate(step_sizes):
+            plt.plot(compression_ratios, latencies[i], marker="o", label=f"Step Size={step_size}")
+            for j, latency in enumerate(latencies[i]):
+                plt.text(compression_ratios[j], latency, f"{latency:.2f}", ha="center", va="bottom")
+
+        plt.xlabel("Compression Ratio")
+        plt.ylabel("Latency (ms)")
+        plt.title("Latency vs. Compression Ratio for Different Step Sizes")
+        plt.legend()
+        plt.grid(True)
+        plt.xticks(compression_ratios)
+
+        plt.tight_layout()
+        plt.show()
+
+    @staticmethod
+    def bar_plot_overall_latencies(step_sizes, compression_ratios, latencies):
+        fig, ax = plt.subplots(figsize=(10, 6))
+        x = np.arange(len(compression_ratios))
+        width = 0.35
+
+        for i, step_size in enumerate(step_sizes):
+            bars = ax.bar(x + i * width, latencies[i], width, label=f"Step Size={step_size}")
+            for bar in bars:
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height(),
+                    f"{bar.get_height():.2f}",
+                    ha="center",
+                    va="bottom",
+                )
+
+        ax.set_xlabel("Compression Ratio")
+        ax.set_ylabel("Latency")
+        ax.set_title("Latency for Different Compression Ratios and Step Sizes")
+        ax.set_xticks(x + width / 2)
+        ax.set_xticklabels(compression_ratios)
+        ax.legend()
+        ax.grid(True)
+
+        plt.tight_layout()
+        plt.show()
