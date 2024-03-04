@@ -69,7 +69,7 @@ class FileHandler:
             Path(folder_path).mkdir(parents=parents, exist_ok=exist_ok)
         elif is_folder_check:
             sys.exit(f"This folder already exists. Local Path: {Path(folder_path)}")
-    
+
     @staticmethod
     def create_unique_folder(folder_path: str) -> None:
         folder_path = Path(folder_path)
