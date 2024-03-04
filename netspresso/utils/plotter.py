@@ -300,8 +300,10 @@ class Plotter:
 
     @staticmethod
     def compare_by_step_size(
-        a_compression_result, b_compression_result, a_benchmark_result, b_benchmark_result, x_labels=[2, 32]
+        a_compression_result, b_compression_result, a_benchmark_result, b_benchmark_result, x_labels=None
     ):
+        if x_labels is None:
+            x_labels = [2, 32]
         x_labels = [f"step_size={x_label}" for x_label in x_labels]
         y_labels = ["Latency(ms)", "FLOPs(M)", "Num of Params(M)", "Model Size(MB)"]
         keys = ["latency", "flops", "number_of_parameters", "size"]
@@ -362,7 +364,9 @@ class Plotter:
         plt.show()
 
     @staticmethod
-    def plot_profile_results(data, x_labels, title_prefix, y_labels=["latency", "flops", "params", "size"]):
+    def plot_profile_results(data, x_labels, title_prefix, y_labels=None):
+        if y_labels is None:
+            y_labels = ["latency", "flops", "params", "size"]
         y_label_names = {
             "latency": "Latency(ms)",
             "flops": "FLOPs(M)",
