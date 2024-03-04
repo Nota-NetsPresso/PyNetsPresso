@@ -363,7 +363,7 @@ class Compressor:
             default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_dir, framework=model_info.framework
             )
-            FileHandler.create_folder(folder_path=output_dir)
+            FileHandler.create_unique_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
             current_credit = auth_client.get_credit(
@@ -512,7 +512,7 @@ class Compressor:
             default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_dir, framework=framework
             )
-            FileHandler.create_folder(folder_path=output_dir)
+            FileHandler.create_unique_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
             current_credit = auth_client.get_credit(
@@ -685,7 +685,7 @@ class Compressor:
             default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_dir, framework=framework
             )
-            FileHandler.create_folder(folder_path=output_dir)
+            FileHandler.create_unique_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
             current_credit = auth_client.get_credit(
