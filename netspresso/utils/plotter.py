@@ -396,7 +396,101 @@ class Plotter:
         plt.show()
 
     @staticmethod
-    def line_plot_overall_latencies(step_sizes, compression_ratios, latencies):
+    def prepare_data(original_benchmark_result, compressed_benchmark_result, profile_result):
+        # Original and compressed latency values
+        original_latency = original_benchmark_result["result"]["latency"]
+        compressed_latency = compressed_benchmark_result["result"]["latency"]
+        original_values = [original_latency]
+        compressed_values = [compressed_latency]
+
+        # FLOPs, number of parameters, and model size
+        keys = ["flops", "number_of_parameters", "size"]
+        original_values.extend(profile_result["results"]["original_model"][_key] for _key in keys)
+        compressed_values.extend(profile_result["results"]["compressed_model"][_key] for _key in keys)
+
+        return original_values, compressed_values
+
+    @staticmethod
+    def summary_profile_results(original_benchmark_result, compressed_benchmark_result, profile_result):
+        original_values, compressed_values = Plotter.prepare_data(
+            original_benchmark_result, compressed_benchmark_result, profile_result
+        )
+        y_labels = ["Latency(ms)", "FLOPs(M)", "Num of Params(M)", "Model Size(MB)"]
+
+        difference_values = np.array(original_values) / np.array(compressed_values)
+
+        fig, axs = plt.subplots(ncols=len(y_labels), figsize=(15, 6))
+
+        for idx, label in enumerate(y_labels):
+            bars_original = axs[idx].bar(
+                ["Original Model"],
+                [original_values[idx]],
+                color="slategray",
+                label="Original Model",
+                width=Plotter.BAR_WIDTH,
+            )
+            bars_compressed = axs[idx].bar(
+                ["Compressed Model"],
+                [compressed_values[idx]],
+                color="dodgerblue",
+                label="Compressed Model",
+                width=Plotter.BAR_WIDTH,
+            )
+
+            for bar in bars_original:
+                axs[idx].text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 0.01,
+                    f"{bar.get_height():.4f}",
+                    ha="center",
+                    va="bottom",
+                )
+
+            for bar in bars_compressed:
+                axs[idx].text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 0.01,
+                    f"{bar.get_height():.4f}",
+                    ha="center",
+                    va="bottom",
+                )
+
+            axs[idx].scatter(
+                ["Original Model", "Compressed Model"],
+                [original_values[idx], compressed_values[idx]],
+                color="red",
+                marker="o",
+                zorder=3,
+            )
+
+            axs[idx].plot(
+                ["Original Model", "Compressed Model"],
+                [original_values[idx], compressed_values[idx]],
+                color="red",
+                linestyle="--",
+                linewidth=2,
+                zorder=2,
+            )
+
+            diff_x = np.mean(axs[idx].get_xlim())
+            axs[idx].text(
+                diff_x,
+                original_values[idx] * 0.5,
+                f"{difference_values[idx]:.4f}x",
+                ha="center",
+                va="bottom",
+                color="black",
+            )
+
+            axs[idx].set_ylabel(label)
+            axs[idx].legend()
+            axs[idx].grid(axis="y")
+
+        plt.tight_layout()
+        plt.show()
+
+    @staticmethod
+    def line_plot_overall_latencies(step_sizes, compression_ratios, latencies, original_latency, target_latency):
         plt.figure(figsize=(10, 6))
 
         for i, step_size in enumerate(step_sizes):
@@ -407,6 +501,9 @@ class Plotter:
         plt.xlabel("Compression Ratio")
         plt.ylabel("Latency (ms)")
         plt.title("Latency vs. Compression Ratio for Different Step Sizes")
+        plt.axhline(original_latency, color="slategray", linestyle="--", label="Original Model")
+        if target_latency:
+            plt.axhline(target_latency, color="red", linestyle="--", label="Target Value")
         plt.legend()
         plt.grid(True)
         plt.xticks(compression_ratios)
@@ -441,3 +538,21 @@ class Plotter:
 
         plt.tight_layout()
         plt.show()
+
+    @staticmethod
+    def bar_plot_overall_latencies_by_device(model_names, latency_of_models, devices):
+        for model, data in zip(model_names, latency_of_models):
+            fig, ax = plt.subplots(figsize=(12, 6))
+            bars = ax.bar(devices, data, color="dodgerblue")
+            ax.set_xlabel("Devices")
+            ax.set_ylabel("Latency")
+            ax.set_title(f"Latency of {model} on Different Devices")
+            ax.grid(True)
+            plt.xticks(rotation=90)
+
+            for bar in bars:
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width() / 2, height, f"{height:.2f}", ha="center", va="bottom")
+
+            plt.tight_layout()
+            plt.show()
