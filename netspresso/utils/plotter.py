@@ -258,6 +258,8 @@ class Plotter:
         plt.ylabel(metric)
         plt.legend()
         plt.grid(True)
+        max_value = max(train_metric_values + valid_metric_values)
+        plt.ylim(0, max_value * 1.2)
 
         for epoch, metric in valid_data.items():
             metric = metric[ylabel]
@@ -286,6 +288,8 @@ class Plotter:
         plt.ylabel(ylabel)
         plt.legend()
         plt.grid(True)
+        max_value = max(train_loss_values + valid_loss_values)
+        plt.ylim(0, max_value * 1.2)
 
         for epoch, loss in valid_data.items():
             Plotter._add_text_annotation(plt.gca(), epoch, loss, loss)
@@ -358,7 +362,7 @@ class Plotter:
             axs[idx].legend()
             axs[idx].grid(axis="y")
             max_value = max(a_values[idx], b_values[idx])
-            axs[idx].set_ylim(0, max_value * 1.2)
+            axs[idx].set_ylim(max_value * 0.8, max_value * 1.1)
 
         plt.tight_layout()
         plt.show()
@@ -485,6 +489,8 @@ class Plotter:
             axs[idx].set_ylabel(label)
             axs[idx].legend()
             axs[idx].grid(axis="y")
+            max_value = max([original_values[idx], compressed_values[idx]])
+            axs[idx].set_ylim(0, max_value * 1.2)
 
         plt.tight_layout()
         plt.show()
@@ -501,9 +507,9 @@ class Plotter:
         plt.xlabel("Compression Ratio")
         plt.ylabel("Latency (ms)")
         plt.title("Latency vs. Compression Ratio for Different Step Sizes")
-        plt.axhline(original_latency, color="slategray", linestyle="--", label="Original Model")
+        plt.axhline(original_latency, color="slategray", linestyle="--", label=f"Original Latency: {original_latency:.2f} ms")
         if target_latency:
-            plt.axhline(target_latency, color="red", linestyle="--", label="Target Value")
+            plt.axhline(target_latency, color="red", linestyle="--", label=f"Target Latency: {target_latency:.2f} ms")
         plt.legend()
         plt.grid(True)
         plt.xticks(compression_ratios)
@@ -549,6 +555,8 @@ class Plotter:
             ax.set_title(f"Latency of {model} on Different Devices")
             ax.grid(True)
             plt.xticks(rotation=90)
+            max_value = max(data)
+            ax.set_ylim(0, max_value * 1.2)
 
             for bar in bars:
                 height = bar.get_height()
