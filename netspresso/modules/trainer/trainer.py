@@ -11,9 +11,9 @@ from omegaconf import OmegaConf
 
 from netspresso.enums import Status, Task, TaskType
 
-from ..utils import FileHandler
-from ..utils.metadata import MetadataHandler
-from ..utils.metadata.default.trainer import InputShape
+from netspresso.utils import FileHandler
+from netspresso.utils.metadata import MetadataHandler
+from netspresso.utils.metadata.default.trainer import InputShape
 from .registries import (
     AUGMENTATION_CONFIG_TYPE,
     CLASSIFICATION_MODELS,

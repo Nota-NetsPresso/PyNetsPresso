@@ -6,7 +6,7 @@ import pytz
 import requests
 from loguru import logger
 
-from netspresso.clients.auth.schemas import LoginRequest, LoginResponse, Tokens, UserInfo
+from netspresso.clients.auth.v1.schemas import LoginRequest, LoginResponse, Tokens, UserInfo
 from netspresso.clients.config import Config, Module
 from netspresso.clients.utils import get_headers
 

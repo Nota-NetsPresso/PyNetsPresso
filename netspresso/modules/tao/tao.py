@@ -8,8 +8,8 @@ from loguru import logger
 from netspresso.clients.tao import tao_client
 from netspresso.clients.utils.common import create_tao_headers
 from netspresso.enums.action import ConvertAction, ExperimentAction
-from netspresso.tao.models import MODELS
-from netspresso.tao.utils.file import split_tar_file
+from netspresso.modules.tao.models import MODELS
+from netspresso.modules.tao.utils.file import split_tar_file
 
 
 class TAOTrainer:
