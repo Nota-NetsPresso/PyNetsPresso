@@ -1,17 +1,20 @@
 import json
-from datetime import datetime
 
-import jwt
-import pytz
 import requests
 from loguru import logger
 
-from netspresso.clients.auth.v1.schemas import LoginRequest, LoginResponse, Tokens, UserInfo
+from netspresso.clients.auth.response_body import UserResponse
+from netspresso.clients.auth.v1.schemas import (
+    LoginRequest,
+    LoginResponse,
+    Tokens,
+    UserInfo,
+)
 from netspresso.clients.config import Config, Module
 from netspresso.clients.utils import get_headers
 
 
-class AuthClient:
+class AuthClientV1:
     def __init__(self, config: Config = Module.GENERAL):
         """Initialize the UserSession.
 
@@ -30,7 +33,9 @@ class AuthClient:
         try:
             url = f"{self.base_url}/auth/local/login"
             data = LoginRequest(username=email, password=password)
-            response = requests.post(url, json=data.dict(), headers=get_headers(), verify=verify_ssl)
+            response = requests.post(
+                url, json=data.dict(), headers=get_headers(), verify=verify_ssl
+            )
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
@@ -44,16 +49,18 @@ class AuthClient:
             logger.error(f"Login failed. Error: {e}")
             raise e
 
-    def get_user_info(self, access_token, verify_ssl: bool = True) -> UserInfo:
+    def get_user_info(self, access_token, verify_ssl: bool = True) -> UserResponse:
         try:
             url = f"{self.base_url}/user"
-            response = requests.get(url, headers=get_headers(access_token=access_token), verify=verify_ssl)
+            response = requests.get(
+                url, headers=get_headers(access_token=access_token), verify=verify_ssl
+            )
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
                 user_info = UserInfo(**response_body)
                 logger.info("Successfully got user information")
-                return user_info
+                return user_info.to()
             else:
                 raise Exception(response_body["detail"])
 
@@ -64,13 +71,20 @@ class AuthClient:
     def get_credit(self, access_token, verify_ssl: bool = True) -> int:
         user_info = self.get_user_info(access_token, verify_ssl)
 
-        return user_info.total
+        return user_info.credit_info.total
 
-    def reissue_token(self, access_token, refresh_token, verify_ssl: bool = True) -> Tokens:
+    def reissue_token(
+        self, access_token, refresh_token, verify_ssl: bool = True
+    ) -> Tokens:
         try:
             url = f"{self.base_url}/auth/token"
             data = Tokens(access_token=access_token, refresh_token=refresh_token)
-            response = requests.post(url, data=data.json(), headers=get_headers(json_type=True), verify=verify_ssl)
+            response = requests.post(
+                url,
+                data=data.json(),
+                headers=get_headers(json_type=True),
+                verify=verify_ssl,
+            )
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
@@ -84,26 +98,4 @@ class AuthClient:
             raise e
 
 
-class TokenHandler:
-    def __init__(self, email, password, verify_ssl: bool = True) -> None:
-        self.tokens = auth_client.login(email=email, password=password, verify_ssl=verify_ssl)
-        self.email = email
-        self.password = password
-        self.verify_ssl = verify_ssl
-
-    def check_jwt_exp(self):
-        payload = jwt.decode(self.tokens.access_token, options={"verify_signature": False})
-        return datetime.now(pytz.utc).timestamp() <= payload["exp"]
-
-    def validate_token(self):
-        if not self.check_jwt_exp():
-            try:
-                self.tokens = auth_client.reissue_token(
-                    self.tokens.access_token, self.tokens.refresh_token, self.verify_ssl
-                )
-            except Exception:
-                auth_client.login(email=self.email, password=self.password, verify_ssl=self.verify_ssl)
-                logger.info("The refresh token has expired. the token has been reissued.")
-
-
-auth_client = AuthClient()
+auth_client_v1 = AuthClientV1()

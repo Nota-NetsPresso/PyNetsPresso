@@ -1,13 +1,14 @@
 from typing import Optional, Union
 
-from netspresso.benchmarker import Benchmarker
+
 from netspresso.clients.auth import TokenHandler, auth_client
-from netspresso.clients.auth.schemas import UserInfo
-from netspresso.compressor import Compressor
-from netspresso.converter import Converter
+from netspresso.clients.auth.response_body import UserResponse
 from netspresso.enums import Task
-from netspresso.tao import TAOTrainer
-from netspresso.trainer import Trainer
+from netspresso.modules.benchmarker import Benchmarker
+from netspresso.modules.compressor import Compressor
+from netspresso.modules.converter import Converter
+from netspresso.modules.tao import TAOTrainer
+from netspresso.modules.trainer import Trainer
 
 
 class NetsPresso:
@@ -22,7 +23,7 @@ class NetsPresso:
         self.token_handler = TokenHandler(email=email, password=password, verify_ssl=verify_ssl)
         self.user_info = self.get_user()
 
-    def get_user(self) -> UserInfo:
+    def get_user(self) -> UserResponse:
         """Get user information using the access token.
 
         Returns:

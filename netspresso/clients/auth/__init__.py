@@ -1,3 +1,3 @@
-from netspresso.clients.auth.v1.client import TokenHandler, auth_client
+from netspresso.clients.auth.client import auth_client, TokenHandler
 
 __all__ = ["auth_client", "TokenHandler"]

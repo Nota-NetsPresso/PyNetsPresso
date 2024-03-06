@@ -1,4 +1,4 @@
-from .auth import CreditResponse, LoginRequest, LoginResponse, Tokens, UserInfo
+from .auth import CreditResponse, LoginResponse, Tokens, UserInfo
 
 __all__ = [
     "LoginRequest",
@@ -7,3 +7,5 @@ __all__ = [
     "UserInfo",
     "Tokens",
 ]
+
+from ...request_body import LoginRequest
