@@ -3,9 +3,7 @@ from typing import Optional
 from datetime import datetime
 
 from netspresso.clients.auth import response_body
-from netspresso.clients.auth.response_body import (
-    UserDetailResponse
-)
+from netspresso.clients.auth.response_body import UserDetailResponse
 from netspresso.clients.auth.v2.schemas.common import (
     AbstractResponse,
     MembershipType,
@@ -33,9 +31,6 @@ class UserPayload(UserBase):
     membership_type: MembershipType
 
     user_agreement: UserAgreementBase
-
-    class Config:
-        from_attributes = True
 
 
 class UserResponse(AbstractResponse):
