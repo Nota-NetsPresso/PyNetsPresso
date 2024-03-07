@@ -3,6 +3,7 @@ from typing import Optional, Union
 from netspresso.benchmarker import Benchmarker
 from netspresso.clients.auth import TokenHandler, auth_client
 from netspresso.clients.auth.schemas import UserInfo
+from netspresso.clients.tao import TAOTokenHandler
 from netspresso.compressor import Compressor
 from netspresso.converter import Converter
 from netspresso.enums import Task
@@ -67,13 +68,21 @@ class NetsPresso:
         """
         return Benchmarker(token_handler=self.token_handler, user_info=self.user_info)
 
-    def tao_trainer(self, ngc_api_key: str) -> TAOTrainer:
-        """Initialize and return a TAO instance.
+
+class TAO:
+    def __init__(self, ngc_api_key: str) -> None:
+        """Initialize TAO instance and perform user authentication.
 
         Args:
             ngc_api_key (str): API key for TAO authentication.
+        """
+        self.ngc_api_key = ngc_api_key
+        self.token_handler = TAOTokenHandler(ngc_api_key=ngc_api_key)
+
+    def trainer(self) -> TAOTrainer:
+        """Initialize and return a Trainer instance.
 
         Returns:
-            TAO: Initialized TAO instance.
+            TAO: Initialized Trainer instance.
         """
-        return TAOTrainer(ngc_api_key=ngc_api_key)
+        return TAOTrainer(token_handler=self.token_handler)
