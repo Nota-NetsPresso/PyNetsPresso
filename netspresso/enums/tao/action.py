@@ -5,11 +5,6 @@ class ExperimentAction(str, Enum):
     TRAIN = "train"
     EVALUATE = "evaluate"
     EXPORT = "export"
-    GEN_TRT_ENGINE = "gen_trt_engine"
-    INFERENCE = "inference"
-    PRUNE = "prune"
-    RETRAIN = "retrain"
-    CONFMAT = "confmat"
 
 
 class ConvertAction(str, Enum):
