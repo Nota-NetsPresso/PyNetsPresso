@@ -366,6 +366,7 @@ print(f"model cpu memory footprint: {benchmark_result['result']['memory_footprin
   | ARM_ETHOS_U_SERIES           |      |          |  ✔️(only INT8)  |       |          |
   | ALIF_ENSEMBLE_E7_DEVKIT_GEN2 |      |          |  ✔️(only INT8)  |       |          |
   | RENESAS_RA8D1                |      |          |  ✔️(only INT8)  |       |          |
+  | NXP_iMX93                    |      |          |  ✔️(only INT8)  |       |          |
   | RENESAS_RZ_V2L               |  ✔️  |          |                 |  ✔️   |          |
   | RENESAS_RZ_V2M               |  ✔️  |          |                 |  ✔️   |          |
   | JETSON_NANO                  |  ✔️  |    ✔️    |                 |       |          |
