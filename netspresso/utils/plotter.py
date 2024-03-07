@@ -507,7 +507,9 @@ class Plotter:
         plt.xlabel("Compression Ratio")
         plt.ylabel("Latency (ms)")
         plt.title("Latency vs. Compression Ratio for Different Step Sizes")
-        plt.axhline(original_latency, color="slategray", linestyle="--", label=f"Original Latency: {original_latency:.2f} ms")
+        plt.axhline(
+            original_latency, color="slategray", linestyle="--", label=f"Original Latency: {original_latency:.2f} ms"
+        )
         if target_latency:
             plt.axhline(target_latency, color="red", linestyle="--", label=f"Target Latency: {target_latency:.2f} ms")
         plt.legend()
