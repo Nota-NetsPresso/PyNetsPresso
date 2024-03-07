@@ -3,11 +3,11 @@ import json
 import requests
 from loguru import logger
 
-from netspresso.clients.auth.response_body import UserResponse
+from netspresso.clients.auth.response_body import UserResponse, TokenResponse
 from netspresso.clients.auth.v1.schemas import (
     LoginRequest,
     LoginResponse,
-    Tokens,
+    TokenRequest,
     UserInfo,
 )
 from netspresso.clients.config import Config, Module
@@ -29,7 +29,7 @@ class AuthClientV1:
         self.uri_prefix = self.config.URI_PREFIX
         self.base_url = f"{self.host}:{self.port}{self.uri_prefix}"
 
-    def login(self, email, password, verify_ssl: bool = True) -> Tokens:
+    def login(self, email, password, verify_ssl: bool = True) -> TokenResponse:
         try:
             url = f"{self.base_url}/auth/local/login"
             data = LoginRequest(username=email, password=password)
@@ -69,16 +69,20 @@ class AuthClientV1:
             raise e
 
     def get_credit(self, access_token, verify_ssl: bool = True) -> int:
-        user_info = self.get_user_info(access_token, verify_ssl)
-
-        return user_info.credit_info.total
+        try:
+            user_info = self.get_user_info(access_token, verify_ssl)
+            logger.info("Successfully got user credit")
+            return user_info.credit_info.total
+        except Exception as e:
+            logger.error(f"Failed to get user credit. Error: {e}")
+            raise e
 
     def reissue_token(
         self, access_token, refresh_token, verify_ssl: bool = True
-    ) -> Tokens:
+    ) -> TokenResponse:
         try:
             url = f"{self.base_url}/auth/token"
-            data = Tokens(access_token=access_token, refresh_token=refresh_token)
+            data = TokenRequest(access_token=access_token, refresh_token=refresh_token)
             response = requests.post(
                 url,
                 data=data.json(),
@@ -88,13 +92,14 @@ class AuthClientV1:
             response_body = json.loads(response.text)
 
             if response.status_code == 200 or response.status_code == 201:
-                tokens = Tokens(**response_body["tokens"])
+                token_response = TokenResponse(**response_body["tokens"])
                 logger.info("Successfully reissued token")
-                return tokens
+                return token_response
             else:
                 raise Exception(response_body["detail"])
 
         except Exception as e:
+            logger.info(f"Failed to reissue token. Error: {e}")
             raise e
 
 

@@ -1,6 +1,11 @@
 from pydantic import BaseModel, Field, EmailStr
 
 
+class TokenResponse(BaseModel):
+    access_token: str = Field(..., description="Access Token")
+    refresh_token: str = Field(..., description="Refresh Token")
+
+
 class CreditResponse(BaseModel):
     free: int = Field(..., description="Free Credit")
     reward: int = Field(..., description="Reward Credit")

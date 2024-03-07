@@ -6,8 +6,4 @@ class LoginRequest(BaseModel):
     password: str = Field(..., description="Password")
 
 
-class Tokens(BaseModel):
-    access_token: str = Field(..., description="Access Token")
-    refresh_token: str = Field(..., description="Refresh Token")
-
 

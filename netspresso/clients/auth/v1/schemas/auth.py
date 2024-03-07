@@ -1,17 +1,23 @@
 from pydantic import BaseModel, EmailStr, Field
 
-from netspresso.clients.auth.request_body import Tokens
 from netspresso.clients.auth.response_body import (
     UserResponse,
     UserDetailResponse,
-    CreditResponse,
+    CreditResponse, TokenResponse,
 )
+
+
+class TokenRequest(BaseModel):
+    access_token: str = Field(..., description="Access Token")
+    refresh_token: str = Field(..., description="Refresh Token")
 
 
 class LoginResponse(BaseModel):
     current_time: str = Field(..., description="Login Time")
     region: str = Field(..., description="User Resion")
-    tokens: Tokens = Field(default_factory=Tokens, description="Session Token")
+    tokens: TokenResponse = Field(
+        default_factory=TokenResponse, description="Session Token"
+    )
 
 
 class UserInfo(BaseModel):

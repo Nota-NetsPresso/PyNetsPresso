@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from netspresso.clients.auth.request_body import Tokens
+from netspresso.clients.auth import response_body
 from netspresso.clients.auth.v2.schemas.common import AbstractResponse
 
 
@@ -14,7 +14,7 @@ class TokenResponse(AbstractResponse):
     access_token: str = None
     refresh_token: str = None
 
-    def to(self) -> Tokens:
-        return Tokens(
+    def to(self) -> response_body.TokenResponse:
+        return response_body.TokenResponse(
             access_token=self.data.access_token, refresh_token=self.data.refresh_token
         )

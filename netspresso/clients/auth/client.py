@@ -4,8 +4,7 @@ import jwt
 import pytz
 from loguru import logger
 
-from netspresso.clients.auth.request_body import Tokens
-from netspresso.clients.auth.response_body import UserResponse
+from netspresso.clients.auth.response_body import UserResponse, TokenResponse
 from netspresso.clients.auth.v1.client import auth_client_v1
 from netspresso.clients.auth.v2.client import auth_client_v2
 from netspresso.clients.config import Config, Module
@@ -29,7 +28,7 @@ class AuthClient:
         else:
             return auth_client_v2
 
-    def login(self, email, password, verify_ssl: bool = True) -> Tokens:
+    def login(self, email, password, verify_ssl: bool = True) -> TokenResponse:
         return self.api_client.login(
             email=email, password=password, verify_ssl=verify_ssl
         )
@@ -46,7 +45,7 @@ class AuthClient:
 
     def reissue_token(
         self, access_token, refresh_token, verify_ssl: bool = True
-    ) -> Tokens:
+    ) -> TokenResponse:
         return self.api_client.reissue_token(
             access_token=access_token,
             refresh_token=refresh_token,
