@@ -33,7 +33,7 @@ class TAOTrainer:
                 )
                 logger.info(upload_dataset_response["message"])
 
-            dataset = Dataset(id=response["id"])
+            dataset = Dataset(id=response["id"], token_handler=self.token_handler)
 
             return dataset
 
@@ -61,7 +61,7 @@ class TAOTrainer:
                 self.token_handler.user_id, dataset_id, self.token_handler.headers
             )
 
-            dataset = Dataset(id=response["id"])
+            dataset = Dataset(id=response["id"], token_handler=self.token_handler)
 
             return dataset
 
