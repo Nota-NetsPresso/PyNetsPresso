@@ -179,7 +179,7 @@ class Experiment:
 
     def monitor_job_status(self, job_id, interval=15):
         try:
-            logger.info("Monitoring job stauts...")
+            logger.info("Monitoring experiment job stauts...")
 
             while True:
                 response = tao_client.experiment.get_experiment_job(
@@ -189,10 +189,9 @@ class Experiment:
                 if response.get("status") in ["Done", "Error", "Canceled"]:
                     break
                 time.sleep(interval)
-            return response
 
         except Exception as e:
-            logger.error(f"Monitor job staus failed. Error: {e}")
+            logger.error(f"Monitor experiment job staus failed. Error: {e}")
             raise e
 
         except KeyboardInterrupt:
