@@ -146,16 +146,3 @@ class Dataset:
         except Exception as e:
             logger.error(f"Cancel dataset job failed. Error: {e}")
             raise e
-
-    def download_job_artifacts(self, job_id: str):
-        try:
-            logger.info("Downloading job artifacts...")
-            response = tao_client.dataset.download_job_artifacts(
-                self.token_handler.user_id, self.id, job_id, self.token_handler.headers
-            )
-
-            return response
-
-        except Exception as e:
-            logger.error(f"Download job artifacts failed. Error: {e}")
-            raise e
