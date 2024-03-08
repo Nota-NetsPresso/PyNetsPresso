@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from .netspresso import NetsPresso
+from .netspresso import TAO, NetsPresso
 
-__all__ = ["NetsPresso"]
+__all__ = ["NetsPresso", "TAO"]
 
 
 version = (Path(__file__).parent / "VERSION").read_text().strip()
