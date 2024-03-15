@@ -1,40 +1,63 @@
 from dataclasses import dataclass, field
-from typing import List, Dict
+from typing import List
 
-from netspresso_v2.metadata.enums import Status, TaskType
+from netspresso_v2.metadata.enums import (
+    Status,
+    TaskType,
+    DataType,
+    Framework,
+    DeviceName,
+    SoftwareVersion,
+    HardwareType,
+)
 
 
 @dataclass
-class InputShape:
+class InputLayer:
+    name: str = None
     batch: int = 1
     channel: int = 3
     dimension: List[int] = field(default_factory=list)
 
 
 @dataclass
-class ModelInfo:
-    data_type: str = ""
-    framework: str = ""
-    input_shapes: List[InputShape] = field(default_factory=lambda: [InputShape()])
+class ConvertTaskInfo:
+    convert_task_id: str = ""
+    data_type: DataType = ""
+    target_framework: Framework = ""
+    target_device_name: DeviceName = ""
+    software_version: SoftwareVersion = ""
 
 
 @dataclass
-class ConvertInfo:
-    target_framework: str = ""
-    target_device_name: str = ""
-    data_type: str = ""
-    software_version: str = ""
-    model_file_name: str = ""
-    convert_task_uuid: str = ""
-    input_model_uuid: str = ""
-    output_model_uuid: str = ""
+class ModelInfo:
+    model_fime_name: str = ""
+    model_file_path: str = ""
+    data_type: DataType = ""
+    framework: Framework = ""
+    input_layer: InputLayer = field(default_factory=InputLayer)
+
+
+class InputModelInfo(ModelInfo):
+    pass
+
+
+class OutputModelInfo(ModelInfo):
+    pass
+
+
+@dataclass()
+class DeviceInfo:
+    device_name: DeviceName = ""
+    software_version: SoftwareVersion = ""
+    hardware_type: HardwareType = ""
 
 
 @dataclass
 class ConverterMetadata:
     status: Status = Status.IN_PROGRESS
     task_type: TaskType = TaskType.CONVERT
-    converted_model_path: str = ""
-    model_info: ModelInfo = field(default_factory=ModelInfo)
-    convert_info: ConvertInfo = field(default_factory=ConvertInfo)
-    available_devices: List[Dict] = field(default_factory=list)
+    convert_task_info: ConvertTaskInfo = field(default_factory=ConvertTaskInfo)
+    input_model_info: InputModelInfo = field(default_factory=InputModelInfo)
+    output_model_info: OutputModelInfo = field(default_factory=OutputModelInfo)
+    available_options: List[DeviceInfo] = field(default_factory=lambda: [DeviceInfo()])
