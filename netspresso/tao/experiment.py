@@ -143,7 +143,7 @@ class Experiment:
         except Exception as e:
             logger.error(f"Get evaluate specs failed. Error: {e}")
             raise e
-    
+
     def get_prune_specs(self):
         try:
             logger.info("Getting prune specs...")
