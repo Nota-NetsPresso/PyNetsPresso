@@ -68,6 +68,38 @@ class Experiment:
         else:
             logger.warning("No pretrained model specified for the given PTM name.")
 
+    def set_automl_with_bayesian(self, metric, automl_max_recommendations, override_automl_disabled_params, additional_automl_params, remove_default_automl_params):
+        automl_information = {
+            "automl_enabled": True,
+            "automl_algorithm": "bayesian",
+            "metric": metric,
+            "automl_max_recommendations": automl_max_recommendations,
+            "override_automl_disabled_params": override_automl_disabled_params,
+            "automl_add_hyperparameters": str(additional_automl_params),
+            "automl_remove_hyperparameters": str(remove_default_automl_params)
+        }
+
+        tao_client.experiment.partial_update_experiment(
+            self.token_handler.user_id, self.id, automl_information, self.token_handler.headers
+        )
+
+    def set_automl_with_hyperband(self, metric, automl_R, automl_nu, epoch_multiplier, override_automl_disabled_params, additional_automl_params, remove_default_automl_params):
+        automl_information = {
+            "automl_enabled": True,
+            "automl_algorithm": "hyperband",
+            "metric": metric,
+            "automl_R": automl_R,
+            "automl_nu": automl_nu,
+            "epoch_multiplier": epoch_multiplier,
+            "override_automl_disabled_params": override_automl_disabled_params,
+            "automl_add_hyperparameters": str(additional_automl_params),
+            "automl_remove_hyperparameters": str(remove_default_automl_params)
+        }
+
+        tao_client.experiment.partial_update_experiment(
+            self.token_handler.user_id, self.id, automl_information, self.token_handler.headers
+        )
+
     def get_train_specs(self):
         try:
             logger.info("Getting train specs...")
