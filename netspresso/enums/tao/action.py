@@ -7,6 +7,7 @@ class ExperimentAction(str, Enum):
     EXPORT = "export"
     PRUNE = "prune"
     RETRAIN = "retrain"
+    GEN_TRT_ENGINE = "gen_trt_engine"
 
 
 class ConvertAction(str, Enum):
