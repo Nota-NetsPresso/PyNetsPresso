@@ -184,6 +184,20 @@ class Experiment:
             logger.error(f"Get trt engine specs failed. Error: {e}")
             raise e
 
+    def get_inference_spces(self):
+        try:
+            logger.info("Getting inference specs...")
+            response = tao_client.experiment.get_specs_schema(
+                self.token_handler.user_id, self.id, ExperimentAction.INFERENCE, self.token_handler.headers
+            )
+            inference_specs = response["default"]
+
+            return inference_specs
+
+        except Exception as e:
+            logger.error(f"Get inference specs failed. Error: {e}")
+            raise e
+
     def train(self, name: str, parent_job_id: str = None):
         try:
             logger.info("Running train...")
@@ -311,6 +325,25 @@ class Experiment:
 
         except Exception as e:
             logger.error(f"Generate TRT engine failed. Error: {e}")
+            raise e
+
+    def inference(self, parent_job_id, inference_specs):
+        try:
+            logger.info("Inferring...")
+            data = {
+                "name": f"{self.name} inference",
+                "parent_job_id": parent_job_id,
+                "action": ExperimentAction.INFERENCE,
+                "specs": inference_specs,
+            }
+            inference_job_id = tao_client.experiment.run_experiment_jobs(
+                self.token_handler.user_id, self.id, data, self.token_handler.headers
+            )
+
+            return inference_job_id
+
+        except Exception as e:
+            logger.error(f"Inference failed. Error: {e}")
             raise e
 
     def monitor_job_status(self, job_id, interval=15):

@@ -8,6 +8,7 @@ class ExperimentAction(str, Enum):
     PRUNE = "prune"
     RETRAIN = "retrain"
     GEN_TRT_ENGINE = "gen_trt_engine"
+    INFERENCE = "inference"
 
 
 class ConvertAction(str, Enum):
