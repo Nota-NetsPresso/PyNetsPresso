@@ -6,6 +6,7 @@ class ExperimentAction(str, Enum):
     EVALUATE = "evaluate"
     EXPORT = "export"
     PRUNE = "prune"
+    RETRAIN = "retrain"
 
 
 class ConvertAction(str, Enum):

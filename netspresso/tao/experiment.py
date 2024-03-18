@@ -20,11 +20,9 @@ class Experiment:
         self.train_specs = self.get_train_specs()
         self.export_specs = self.get_export_specs()
         self.evaluate_specs = self.get_evaluate_specs()
-        self.prune_specs = self.get_prune_specs()
         self.job_map = {}
         self.train_job_cnt = 1
         self.export_job_cnt = 1
-        self.prune_job_cnt = 1
 
     def delete_experiment(self):
         try:
@@ -150,12 +148,26 @@ class Experiment:
             response = tao_client.experiment.get_specs_schema(
                 self.token_handler.user_id, self.id, ExperimentAction.PRUNE, self.token_handler.headers
             )
-            evaluate_specs = response["default"]
+            prune_specs = response["default"]
 
-            return evaluate_specs
+            return prune_specs
 
         except Exception as e:
             logger.error(f"Get prune specs failed. Error: {e}")
+            raise e
+
+    def get_retrain_specs(self):
+        try:
+            logger.info("Getting retrain specs...")
+            response = tao_client.experiment.get_specs_schema(
+                self.token_handler.user_id, self.id, ExperimentAction.RETRAIN, self.token_handler.headers
+            )
+            retrain_specs = response["default"]
+
+            return retrain_specs
+
+        except Exception as e:
+            logger.error(f"Get retrain specs failed. Error: {e}")
             raise e
 
     def train(self, name: str, parent_job_id: str = None):
@@ -225,26 +237,47 @@ class Experiment:
             logger.error(f"Export failed. Error: {e}")
             raise e
 
-    def prune(self, parent_job_id):
+    def prune(self, parent_job_id, prune_specs):
         try:
             logger.info("Pruning...")
             data = {
                 "name": f"{self.name} prune",
                 "parent_job_id": parent_job_id,
                 "action": ExperimentAction.PRUNE,
-                "specs": self.prune_specs,
+                "specs": prune_specs,
             }
             prune_job_id = tao_client.experiment.run_experiment_jobs(
                 self.token_handler.user_id, self.id, data, self.token_handler.headers
             )
-            job_key = f"prune_job_{self.prune_job_cnt}"
-            self.job_map[job_key] = prune_job_id
-            self.prune_job_cnt += 1
 
             return prune_job_id
 
         except Exception as e:
             logger.error(f"Export failed. Error: {e}")
+            raise e
+
+    def retrain(self, name: str, parent_job_id: str, retrain_specs):
+        try:
+            logger.info("Running train...")
+            update_data = {**self.data, **self.pretrained_model}
+            tao_client.experiment.partial_update_experiment(
+                self.token_handler.user_id, self.id, update_data, self.token_handler.headers
+            )
+
+            data = {
+                "name": name,
+                "action": ExperimentAction.RETRAIN,
+                "parent_job_id": parent_job_id,
+                "specs": retrain_specs,
+            }
+            retrain_job_id = tao_client.experiment.run_experiment_jobs(
+                self.token_handler.user_id, self.id, data, self.token_handler.headers
+            )
+
+            return retrain_job_id
+
+        except Exception as e:
+            logger.error(f"Train failed. Error: {e}")
             raise e
 
     def monitor_job_status(self, job_id, interval=15):
