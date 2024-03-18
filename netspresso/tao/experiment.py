@@ -170,6 +170,20 @@ class Experiment:
             logger.error(f"Get retrain specs failed. Error: {e}")
             raise e
 
+    def get_trt_engine_spces(self):
+        try:
+            logger.info("Getting trt engine specs...")
+            response = tao_client.experiment.get_specs_schema(
+                self.token_handler.user_id, self.id, ExperimentAction.GEN_TRT_ENGINE, self.token_handler.headers
+            )
+            trt_engine_specs = response["default"]
+
+            return trt_engine_specs
+
+        except Exception as e:
+            logger.error(f"Get trt engine specs failed. Error: {e}")
+            raise e
+
     def train(self, name: str, parent_job_id: str = None):
         try:
             logger.info("Running train...")
@@ -253,7 +267,7 @@ class Experiment:
             return prune_job_id
 
         except Exception as e:
-            logger.error(f"Export failed. Error: {e}")
+            logger.error(f"Prune failed. Error: {e}")
             raise e
 
     def retrain(self, name: str, parent_job_id: str, retrain_specs):
@@ -277,7 +291,26 @@ class Experiment:
             return retrain_job_id
 
         except Exception as e:
-            logger.error(f"Train failed. Error: {e}")
+            logger.error(f"Retrain failed. Error: {e}")
+            raise e
+
+    def gen_trt_engine(self, parent_job_id, trt_engine_specs):
+        try:
+            logger.info("Generating TRT engine...")
+            data = {
+                "name": f"{self.name} trt engine",
+                "parent_job_id": parent_job_id,
+                "action": ExperimentAction.GEN_TRT_ENGINE,
+                "specs": trt_engine_specs,
+            }
+            gen_trt_job_id = tao_client.experiment.run_experiment_jobs(
+                self.token_handler.user_id, self.id, data, self.token_handler.headers
+            )
+
+            return gen_trt_job_id
+
+        except Exception as e:
+            logger.error(f"Generate TRT engine failed. Error: {e}")
             raise e
 
     def monitor_job_status(self, job_id, interval=15):
