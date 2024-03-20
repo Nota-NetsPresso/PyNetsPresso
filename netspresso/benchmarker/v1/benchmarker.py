@@ -7,15 +7,15 @@ from loguru import logger
 from netspresso.clients.auth import TokenHandler, auth_client
 from netspresso.clients.auth.schemas.auth import UserInfo
 from netspresso.clients.launcher import launcher_client
-from netspresso.clients.launcher.schemas import BenchmarkTask, TargetDeviceFilter
+from netspresso.clients.launcher.v1.schemas import BenchmarkTask, TargetDeviceFilter
 from netspresso.enums.credit import ServiceCredit
 from netspresso.enums.device import DeviceName, HardwareType, SoftwareVersion, TaskStatus
 from netspresso.enums.metadata import Status, TaskType
 from netspresso.enums.model import DataType
 from netspresso.enums.module import Module
 
-from ..utils import FileHandler, check_credit_balance
-from ..utils.metadata import MetadataHandler
+from netspresso.utils import FileHandler, check_credit_balance
+from netspresso.utils.metadata import MetadataHandler
 
 
 class Benchmarker:

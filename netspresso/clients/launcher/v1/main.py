@@ -3,7 +3,7 @@ import json
 import requests
 
 from netspresso.clients.config import Config, Module
-from netspresso.clients.launcher.schemas.model import (
+from netspresso.clients.launcher.v1.schemas.model import (
     BenchmarkTask,
     ConversionTask,
     InputShape,

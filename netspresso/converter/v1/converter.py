@@ -8,8 +8,8 @@ from loguru import logger
 from netspresso.clients.auth import TokenHandler, auth_client
 from netspresso.clients.auth.schemas.auth import UserInfo
 from netspresso.clients.launcher import launcher_client
-from netspresso.clients.launcher.schemas import TargetDeviceFilter
-from netspresso.clients.launcher.schemas.model import ConversionTask, InputShape, Model
+from netspresso.clients.launcher.v1.schemas import TargetDeviceFilter
+from netspresso.clients.launcher.v1.schemas.model import ConversionTask, InputShape, Model
 from netspresso.enums import (
     DataType,
     DeviceName,
@@ -22,8 +22,8 @@ from netspresso.enums import (
     TaskType,
 )
 
-from ..utils import FileHandler, check_credit_balance
-from ..utils.metadata import MetadataHandler
+from netspresso.utils import FileHandler, check_credit_balance
+from netspresso.utils.metadata import MetadataHandler
 
 
 class Converter:
