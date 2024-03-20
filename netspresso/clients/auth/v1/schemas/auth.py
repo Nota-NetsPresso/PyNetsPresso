@@ -1,12 +1,13 @@
 from pydantic import BaseModel, EmailStr, Field
 
+from netspresso.clients.auth.response_body import (
+    UserResponse,
+    UserDetailResponse,
+    CreditResponse, TokenResponse,
+)
 
-class LoginRequest(BaseModel):
-    username: str = Field(..., description="User Name")
-    password: str = Field(..., description="Password")
 
-
-class Tokens(BaseModel):
+class TokenRequest(BaseModel):
     access_token: str = Field(..., description="Access Token")
     refresh_token: str = Field(..., description="Refresh Token")
 
@@ -14,21 +15,9 @@ class Tokens(BaseModel):
 class LoginResponse(BaseModel):
     current_time: str = Field(..., description="Login Time")
     region: str = Field(..., description="User Resion")
-    tokens: Tokens = Field(default_factory=Tokens, description="Session Token")
-
-
-class CreditResponse(BaseModel):
-    free: int = Field(..., description="Free Credit")
-    reward: int = Field(..., description="Reward Credit")
-    contract: int = Field(..., description="Contract Credit")
-    paid: int = Field(..., description="Paid Credit")
-    total: int = Field(..., description="Total Credit")
-
-
-class UserDetailResponse(BaseModel):
-    first_name: str = Field(..., description="First Name")
-    last_name: str = Field(..., description="Last Name")
-    company: str = Field(..., description="Company")
+    tokens: TokenResponse = Field(
+        default_factory=TokenResponse, description="Session Token"
+    )
 
 
 class UserInfo(BaseModel):
@@ -46,3 +35,21 @@ class UserInfo(BaseModel):
     contract: int = Field(0, description="Contract Credit")
     paid: int = Field(0, description="Paid Credit")
     total: int = Field(0, description="Total Credit")
+
+    def to(self) -> UserResponse:
+        return UserResponse(
+            **{
+                "user_id": self.user_id,
+                "email": self.email,
+                "detail_data": self.detail_data,
+                "credit_info": CreditResponse(
+                    **{
+                        "free": self.free,
+                        "reward": self.reward,
+                        "contract": self.contract,
+                        "paid": self.paid,
+                        "total": self.total,
+                    }
+                ),
+            }
+        )

@@ -2,7 +2,7 @@ from typing import Optional, Union
 
 from netspresso.benchmarker import Benchmarker
 from netspresso.clients.auth import TokenHandler, auth_client
-from netspresso.clients.auth.schemas import UserInfo
+from netspresso.clients.auth.response_body import UserResponse
 from netspresso.clients.tao import TAOTokenHandler
 from netspresso.compressor import Compressor
 from netspresso.converter import Converter
@@ -23,7 +23,7 @@ class NetsPresso:
         self.token_handler = TokenHandler(email=email, password=password, verify_ssl=verify_ssl)
         self.user_info = self.get_user()
 
-    def get_user(self) -> UserInfo:
+    def get_user(self) -> UserResponse:
         """Get user information using the access token.
 
         Returns:

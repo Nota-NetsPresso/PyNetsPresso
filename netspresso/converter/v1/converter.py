@@ -6,7 +6,7 @@ from urllib import request
 from loguru import logger
 
 from netspresso.clients.auth import TokenHandler, auth_client
-from netspresso.clients.auth.schemas.auth import UserInfo
+from netspresso.clients.auth.response_body import UserResponse
 from netspresso.clients.launcher import launcher_client
 from netspresso.clients.launcher.v1.schemas import TargetDeviceFilter
 from netspresso.clients.launcher.v1.schemas.model import ConversionTask, InputShape, Model
@@ -27,7 +27,7 @@ from netspresso.utils.metadata import MetadataHandler
 
 
 class Converter:
-    def __init__(self, token_handler: TokenHandler, user_info: UserInfo):
+    def __init__(self, token_handler: TokenHandler, user_info: UserResponse):
         """Initialize the Converter."""
 
         self.token_handler = token_handler

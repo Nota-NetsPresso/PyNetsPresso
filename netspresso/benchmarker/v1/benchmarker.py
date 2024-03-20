@@ -5,7 +5,7 @@ from typing import Dict, Optional, Union
 from loguru import logger
 
 from netspresso.clients.auth import TokenHandler, auth_client
-from netspresso.clients.auth.schemas.auth import UserInfo
+from netspresso.clients.auth.response_body import UserResponse
 from netspresso.clients.launcher import launcher_client
 from netspresso.clients.launcher.v1.schemas import BenchmarkTask, TargetDeviceFilter
 from netspresso.enums.credit import ServiceCredit
@@ -19,7 +19,7 @@ from netspresso.utils.metadata import MetadataHandler
 
 
 class Benchmarker:
-    def __init__(self, token_handler: TokenHandler, user_info: UserInfo) -> None:
+    def __init__(self, token_handler: TokenHandler, user_info: UserResponse) -> None:
         """Initialize the Benchmarker."""
 
         self.token_handler = token_handler
