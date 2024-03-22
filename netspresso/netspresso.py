@@ -6,6 +6,7 @@ from netspresso.clients.auth.response_body import UserResponse
 from netspresso.clients.tao import TAOTokenHandler
 from netspresso.compressor import Compressor
 from netspresso.converter import Converter
+from netspresso.converter.v2.converter import ConverterV2
 from netspresso.enums import Task
 from netspresso.tao import TAOTrainer
 from netspresso.trainer import Trainer
@@ -59,6 +60,14 @@ class NetsPresso:
             Converter: Initialized Converter instance.
         """
         return Converter(token_handler=self.token_handler, user_info=self.user_info)
+
+    def converter_v2(self) -> ConverterV2:
+        """Initialize and return a Converter instance.
+
+        Returns:
+            Converter: Initialized Converter instance.
+        """
+        return ConverterV2(token_handler=self.token_handler, user_info=self.user_info)
 
     def benchmarker(self) -> Benchmarker:
         """Initialize and return a Benchmarker instance.

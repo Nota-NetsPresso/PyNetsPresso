@@ -79,7 +79,7 @@ class AuthClientV2:
                 )
                 user_id = user_response.data.user_id
 
-            url = f"{self.base_url}/api/v3/users/{user_id}/credit/summarized"
+            url = f"{self.base_url}/users/{user_id}/credit/summarized"
             headers = self.__make_bearer_header(token=access_token)
 
             response = Requester.get(url=url, headers=headers)

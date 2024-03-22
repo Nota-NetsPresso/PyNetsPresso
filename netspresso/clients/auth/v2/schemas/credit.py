@@ -20,5 +20,5 @@ class SummarizedCreditResponse(AbstractResponse):
             reward=0,
             contract=0,
             paid=self.data.paid_credit,
-            totla=self.data.total_credit,
+            total=self.data.total_credit,
         )
