@@ -71,7 +71,7 @@ class FileHandler:
             sys.exit(f"This folder already exists. Local Path: {Path(folder_path)}")
 
     @staticmethod
-    def create_unique_folder(folder_path: str) -> None:
+    def create_unique_folder(folder_path: str) -> str:
         folder_path = Path(folder_path)
         if not folder_path.exists():
             folder_path.mkdir(parents=True)
@@ -81,8 +81,11 @@ class FileHandler:
                 new_folder_path = folder_path.with_name(f"{folder_path.name} ({count})")
                 if not new_folder_path.exists():
                     new_folder_path.mkdir(parents=True)
+                    folder_path = new_folder_path
                     break
                 count += 1
+
+        return str(folder_path)
 
     @staticmethod
     def create_file_path(folder_path: str, name: str, extension: str) -> Union[str, Path]:
