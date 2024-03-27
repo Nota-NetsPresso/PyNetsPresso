@@ -366,11 +366,11 @@ class Trainer:
 
         self._validate_config()
         self._apply_img_size()
-        self.logging.project_id = project_name
 
-        destination_folder = Path(self.logging.output_dir) / self.logging.project_id
-        FileHandler.create_unique_folder(folder_path=destination_folder)
+        destination_folder = Path(self.logging.output_dir) / project_name
+        destination_folder = FileHandler.create_unique_folder(folder_path=destination_folder)
         metadata = MetadataHandler.init_metadata(folder_path=destination_folder, task_type=TaskType.TRAIN)
+        self.logging.project_id = Path(destination_folder).name
 
         configs = TrainerConfigs(
             self.data,

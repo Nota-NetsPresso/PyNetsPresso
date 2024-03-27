@@ -54,7 +54,7 @@ print(conversion_result)
 benchmarker = netspresso.benchmarker()
 
 # 5. Set variables for benchmark
-CONVERTED_MODEL_PATH = "./outputs/converted/TFLITE_RASPBERRY_PI_3B_PLUS/TFLITE_RASPBERRY_PI_3B_PLUS.tflite"
+CONVERTED_MODEL_PATH = conversion_result["converted_model_path"]
 
 # 6. Run benchmark
 benchmark_result = benchmarker.benchmark_model(

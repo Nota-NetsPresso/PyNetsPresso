@@ -360,10 +360,10 @@ class Compressor:
 
             model_info = self.get_model(compression.original_model_id)
 
+            output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
             default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_dir, framework=model_info.framework
             )
-            FileHandler.create_unique_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
             current_credit = auth_client.get_credit(
@@ -509,10 +509,10 @@ class Compressor:
         try:
             logger.info("Compressing recommendation-based model...")
 
+            output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
             default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_dir, framework=framework
             )
-            FileHandler.create_unique_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
             current_credit = auth_client.get_credit(
@@ -682,10 +682,10 @@ class Compressor:
         try:
             logger.info("Compressing automatic-based model...")
 
+            output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
             default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_dir, framework=framework
             )
-            FileHandler.create_unique_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.COMPRESS)
 
             current_credit = auth_client.get_credit(

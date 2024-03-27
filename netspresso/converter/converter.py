@@ -102,10 +102,10 @@ class Converter:
         self.token_handler.validate_token()
 
         try:
+            output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
             default_model_path, extension = FileHandler.get_path_and_extension(
                 folder_path=output_dir, framework=target_framework
             )
-            FileHandler.create_unique_folder(folder_path=output_dir)
             metadata = MetadataHandler.init_metadata(folder_path=output_dir, task_type=TaskType.CONVERT)
 
             current_credit = auth_client.get_credit(
