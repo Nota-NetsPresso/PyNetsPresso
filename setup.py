@@ -6,7 +6,8 @@ version = (Path("netspresso") / "VERSION").read_text().strip()
 
 long_description = Path("README.md").read_text(encoding="UTF8")
 
-install_requires = Path("requirements.txt").read_text().split('\n')
+install_requires = Path("requirements.txt").read_text().split("\n")
+extras_require = {"minimal": [req for req in install_requires if "netspresso_trainer" not in req]}
 
 setup(
     name="netspresso",
@@ -18,6 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/Nota-NetsPresso/PyNetsPresso",
     install_requires=install_requires,
+    extras_require=extras_require,
     packages=find_packages(exclude=("tests",)),
     package_data={"netspresso.clients": ["configs/*.ini"], "netspresso": ["VERSION"]},
     python_requires=">=3.8",
