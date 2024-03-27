@@ -44,7 +44,7 @@ print(conversion_result)
 benchmarker = netspresso.benchmarker()
 
 # 5. Set variables for benchmark
-CONVERTED_MODEL_PATH = "./outputs/converted/DRPAI_RENESAS_RZ_V2L/DRPAI_RENESAS_RZ_V2L.zip"
+CONVERTED_MODEL_PATH = conversion_result["converted_model_path"]
 
 # 6. Run benchmark
 benchmark_result = benchmarker.benchmark_model(

@@ -43,7 +43,7 @@ print(conversion_result)
 benchmarker = netspresso.benchmarker()
 
 # 5. Set variables for benchmark
-CONVERTED_MODEL_PATH = "./outputs/converted/OPENVINO_INTEL_XEON_W_2233/OPENVINO_INTEL_XEON_W_2233.zip"
+CONVERTED_MODEL_PATH = conversion_result["converted_model_path"]
 
 # 6. Run benchmark
 benchmark_result = benchmarker.benchmark_model(
