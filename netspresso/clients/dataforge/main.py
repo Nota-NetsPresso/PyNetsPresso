@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from typing import Any, Dict, Final, Optional
 from urllib.parse import urljoin
@@ -11,7 +12,7 @@ from netspresso.clients.dataforge.schemas.response_body import (
     DatasetsResponse,
 )
 
-BASE_URL: Final[str] = "http://3.38.186.22:8000"
+BASE_URL: Final[str] = os.getenv("DATAFORGE_BASE_URL")
 
 # API 버전을 상수로 관리
 API_VERSION: Final[str] = "v1"
