@@ -168,5 +168,45 @@ class BenchmarkTaskService:
 
         return benchmark_payload
 
+    def cancel_benchmark_task(self, db: Session, task_id: str, api_key: str):
+        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        benchmarker = netspresso.benchmarker_v2()
+        benchmark_task = benchmark_task_repository.get_by_task_id(db, task_id)
+        benchmark_task = benchmarker.cancel_benchmark_task(benchmark_task.benchmark_task_id)
+
+        if benchmark_task.status == TaskStatusForDisplay.USER_CANCEL:
+            benchmark_task.status = Status.STOPPED
+            benchmark_task = benchmark_task_repository.save(db, benchmark_task)
+        else:
+            raise ValueError(f"Failed to cancel benchmark task: {benchmark_task.status}")
+
+        framework = TargetFrameworkPayload(name=benchmark_task.framework)
+        device = TargetDevicePayload(name=benchmark_task.device_name)
+        software_version = (
+            SoftwareVersionPayload(name=benchmark_task.software_version) if benchmark_task.software_version else None
+        )
+        hardware_type = (
+            HardwareTypePayload(name=benchmark_task.hardware_type) if benchmark_task.hardware_type else None
+        )
+        precision = PrecisionForBenchmarkPayload(name=benchmark_task.precision)
+
+        benchmark_payload = BenchmarkPayload(
+            task_id=benchmark_task.task_id,
+            model_id=benchmark_task.model_id,
+            framework=framework,
+            device=device,
+            software_version=software_version,
+            hardware_type=hardware_type,
+            precision=precision,
+            status=benchmark_task.status,
+            is_deleted=benchmark_task.is_deleted,
+            error_detail=benchmark_task.error_detail,
+            input_model_id=benchmark_task.input_model_id,
+            created_at=benchmark_task.created_at,
+            updated_at=benchmark_task.updated_at,
+        )
+
+        return benchmark_payload
+
 
 benchmark_task_service = BenchmarkTaskService()
