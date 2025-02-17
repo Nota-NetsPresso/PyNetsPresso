@@ -3,19 +3,19 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from app.api.v1.schemas.device import (
+    HardwareTypePayload,
+    PrecisionForConversionPayload,
+    SoftwareVersionPayload,
+    SupportedDevicePayload,
+    SupportedDeviceResponse,
+    TargetDevicePayload,
+)
 from app.api.v1.schemas.task.conversion.conversion_task import (
     ConversionCreate,
     ConversionCreatePayload,
     ConversionPayload,
-    SupportedDeviceResponse,
     TargetFrameworkPayload,
-)
-from app.api.v1.schemas.task.conversion.device import (
-    HardwareTypePayload,
-    PrecisionPayload,
-    SoftwareVersionPayload,
-    SupportedDevicePayload,
-    TargetDevicePayload,
 )
 from app.services.project import project_service
 from app.services.user import user_service
@@ -75,7 +75,7 @@ class ConversionTaskService:
             software_versions=[
                 SoftwareVersionPayload(name=version.software_version) for version in device.software_versions
             ],
-            precisions=[PrecisionPayload(name=precision) for precision in device.data_types],
+            precisions=[PrecisionForConversionPayload(name=precision) for precision in device.data_types],
             hardware_types=[HardwareTypePayload(name=hardware_type) for hardware_type in device.hardware_types],
         )
 
@@ -118,7 +118,7 @@ class ConversionTaskService:
         task_id = task.get()
         return ConversionCreatePayload(task_id=task_id)
 
-    def get_conversion_task(self, db: Session, task_id: str, api_key: str):
+    def get_conversion_task(self, db: Session, task_id: str, api_key: str) -> ConversionPayload:
         conversion_task = conversion_task_repository.get_by_task_id(db, task_id)
 
         netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
@@ -139,17 +139,17 @@ class ConversionTaskService:
             conversion_task = conversion_task_repository.save(db, conversion_task)
 
         framework = TargetFrameworkPayload(name=conversion_task.framework)
-        device_name = TargetDevicePayload(name=conversion_task.device_name)
+        device = TargetDevicePayload(name=conversion_task.device_name)
         software_version = (
             SoftwareVersionPayload(name=conversion_task.software_version) if conversion_task.software_version else None
         )
-        precision = PrecisionPayload(name=conversion_task.precision)
+        precision = PrecisionForConversionPayload(name=conversion_task.precision)
 
         conversion_payload = ConversionPayload(
             task_id=conversion_task.task_id,
             model_id=conversion_task.model_id,
             framework=framework,
-            device_name=device_name,
+            device=device,
             software_version=software_version,
             precision=precision,
             status=conversion_task.status,
@@ -175,17 +175,17 @@ class ConversionTaskService:
             raise ValueError(f"Failed to cancel conversion task: {convert_task.status}")
 
         framework = TargetFrameworkPayload(name=conversion_task.framework)
-        device_name = TargetDevicePayload(name=conversion_task.device_name)
+        device = TargetDevicePayload(name=conversion_task.device_name)
         software_version = (
             SoftwareVersionPayload(name=conversion_task.software_version) if conversion_task.software_version else None
         )
-        precision = PrecisionPayload(name=conversion_task.precision)
+        precision = PrecisionForConversionPayload(name=conversion_task.precision)
 
         conversion_payload = ConversionPayload(
             task_id=conversion_task.task_id,
             model_id=conversion_task.model_id,
             framework=framework,
-            device_name=device_name,
+            device=device,
             software_version=software_version,
             precision=precision,
             status=conversion_task.status,

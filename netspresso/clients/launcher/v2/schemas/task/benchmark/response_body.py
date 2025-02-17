@@ -45,6 +45,12 @@ class BenchmarkEnvironment:
     cpu: str = ""
     gpu: str = ""
 
+    def __init__(self, **kwargs):
+        names = {f.name for f in dataclasses.fields(self)}
+        for k, v in kwargs.items():
+            if k in names:
+                setattr(self, k, v)
+
 
 @dataclass
 class BenchmarkTask:

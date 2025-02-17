@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import api_key_header
+from app.api.v1.schemas.device import SupportedDevicesResponse
 from app.api.v1.schemas.task.conversion.conversion_task import (
     ConversionCreate,
     ConversionCreateResponse,
     ConversionResponse,
-    SupportedDevicesResponse,
 )
 from app.services.conversion_task import conversion_task_service
 from netspresso.enums.conversion import SourceFramework

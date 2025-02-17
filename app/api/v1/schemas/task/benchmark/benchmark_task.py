@@ -5,25 +5,23 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.v1.schemas.base import ResponseItem
 from app.api.v1.schemas.device import (
-    PrecisionForConversionPayload,
+    HardwareTypePayload,
+    PrecisionForBenchmarkPayload,
     SoftwareVersionPayload,
     TargetDevicePayload,
     TargetFrameworkPayload,
 )
-from netspresso.enums.conversion import Precision, TargetFramework
-from netspresso.enums.device import DeviceName, SoftwareVersion
+from netspresso.enums.device import DeviceName, HardwareType, SoftwareVersion
 
 
-class ConversionCreate(BaseModel):
+class BenchmarkCreate(BaseModel):
     input_model_id: str = Field(description="Input model ID")
-    framework: TargetFramework = Field(description="Framework name")
     device_name: DeviceName = Field(description="Device name")
     software_version: Optional[SoftwareVersion] = Field(default=None, description="Software version")
-    precision: Precision = Field(description="Precision")
-    calibration_dataset_path: Optional[str] = Field(default=None, description="Path to the calibration dataset")
+    hardware_type: Optional[HardwareType] = Field(default=None, description="Hardware type")
 
 
-class ConversionPayload(BaseModel):
+class BenchmarkPayload(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     task_id: str
@@ -31,7 +29,8 @@ class ConversionPayload(BaseModel):
     framework: TargetFrameworkPayload
     device: TargetDevicePayload
     software_version: Optional[SoftwareVersionPayload] = None
-    precision: PrecisionForConversionPayload
+    hardware_type: Optional[HardwareTypePayload] = None
+    precision: PrecisionForBenchmarkPayload
     status: str
     is_deleted: bool
     error_detail: Optional[Dict] = None
@@ -40,13 +39,13 @@ class ConversionPayload(BaseModel):
     updated_at: Optional[datetime] = None
 
 
-class ConversionCreatePayload(BaseModel):
+class BenchmarkCreatePayload(BaseModel):
     task_id: str
 
 
-class ConversionCreateResponse(ResponseItem):
-    data: ConversionCreatePayload
+class BenchmarkCreateResponse(ResponseItem):
+    data: BenchmarkCreatePayload
 
 
-class ConversionResponse(ResponseItem):
-    data: ConversionPayload
+class BenchmarkResponse(ResponseItem):
+    data: BenchmarkPayload

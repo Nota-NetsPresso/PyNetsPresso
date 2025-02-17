@@ -1,20 +1,29 @@
 import time
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from loguru import logger
 
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.auth.response_body import UserResponse
+from netspresso.clients.compressor.v2.schemas.common import DeviceInfo
 from netspresso.clients.launcher import launcher_client_v2
-from netspresso.clients.launcher.v2.schemas.task.benchmark.response_body import BenchmarkTask
+from netspresso.clients.launcher.v2.schemas.common import ModelOption
+from netspresso.clients.launcher.v2.schemas.task.benchmark.response_body import BenchmarkTask as BenchmarkTaskInfo
 from netspresso.enums import Status, TaskStatusForDisplay
+from netspresso.enums.conversion import TargetFramework
 from netspresso.enums.credit import ServiceTask
 from netspresso.enums.device import DeviceName, HardwareType, SoftwareVersion
 from netspresso.enums.model import DataType
+from netspresso.enums.project import SubFolder
 from netspresso.metadata.benchmarker import BenchmarkerMetadata
 from netspresso.utils import FileHandler
+from netspresso.utils.db.models.benchmark import BenchmarkResult, BenchmarkTask
+from netspresso.utils.db.models.model import Model
+from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
+from netspresso.utils.db.repositories.model import model_repository
+from netspresso.utils.db.session import get_db_session
 from netspresso.utils.metadata import MetadataHandler
 
 
@@ -24,6 +33,79 @@ class BenchmarkerV2(NetsPressoBase):
 
         super().__init__(token_handler)
         self.user_info = user_info
+
+    def filter_device_by_version(
+        self, device: DeviceInfo, target_software_version: Optional[SoftwareVersion] = None
+    ) -> Optional[DeviceInfo]:
+        """Filter device by software version.
+
+        Args:
+            device: Device information to filter
+            target_software_version: Target software version to filter by
+
+        Returns:
+            Optional[DeviceInfo]: Filtered device info or None if no matching version
+        """
+        filtered_versions = [
+            version for version in device.software_versions if version.software_version == target_software_version
+        ]
+
+        if filtered_versions:
+            device.software_versions = filtered_versions
+            return device
+        return None
+
+    def filter_devices_by_name_and_version(
+        self, devices: List[DeviceInfo], target_device: DeviceName, target_version: Optional[SoftwareVersion] = None
+    ) -> List[DeviceInfo]:
+        """Filter devices by name and software version.
+
+        Args:
+            devices: List of devices to filter
+            target_device: Target device name to filter by
+            target_version: Target software version to filter by
+
+        Returns:
+            List[DeviceInfo]: List of filtered devices
+        """
+        filtered_devices = [
+            self.filter_device_by_version(device, target_version)
+            for device in devices
+            if device.device_name == target_device
+        ]
+        return [device for device in filtered_devices if device]
+
+    def get_supported_options(
+        self, framework: TargetFramework, device: DeviceName, software_version: Optional[SoftwareVersion] = None
+    ) -> List[ModelOption]:
+        """Get supported options for given framework, device and software version.
+
+        Args:
+            framework: Target framework
+            device: Target device name
+            software_version: Target software version
+
+        Returns:
+            List[ModelOption]: List of supported model options
+        """
+        self.token_handler.validate_token()
+
+        # Get all options from launcher
+        options_response = launcher_client_v2.benchmarker.read_framework_options(
+            access_token=self.token_handler.tokens.access_token,
+            framework=framework,
+        )
+        supported_options = options_response.data
+
+        # Filter options for specific frameworks
+        if framework in [TargetFramework.TENSORRT, TargetFramework.DRPAI]:
+            for option in supported_options:
+                if option.framework == framework:
+                    option.devices = self.filter_devices_by_name_and_version(
+                        devices=option.devices, target_device=device, target_version=software_version
+                    )
+
+        return supported_options
 
     def get_data_type(self, input_model_dir):
         metadata_path = input_model_dir / "metadata.json"
@@ -37,35 +119,66 @@ class BenchmarkerV2(NetsPressoBase):
 
         return DataType.FP32
 
-    def initialize_metadata(self, input_model_path: str):
-        def create_metadata_with_status(status, error_message=None):
-            metadata = BenchmarkerMetadata()
-            metadata.status = status
-            if error_message:
-                logger.error(error_message)
-            return metadata
+    def get_input_model(self, input_model_id: str, user_id: str) -> Model:
+        with get_db_session() as db:
+            input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id, user_id=user_id)
+            return input_model
 
-        try:
-            metadata = BenchmarkerMetadata()
-        except Exception as e:
-            error_message = f"An unexpected error occurred during metadata initialization: {e}"
-            metadata = create_metadata_with_status(Status.ERROR, error_message)
-        except KeyboardInterrupt:
-            warning_message = "Benchmark task was interrupted by the user."
-            metadata = create_metadata_with_status(Status.STOPPED, warning_message)
-        finally:
-            # Load existing metadata if available
-            metadatas = []
-            output_dir = Path(input_model_path).parent
-            file_path = output_dir / "benchmark.json"
-            if FileHandler.check_exists(file_path):
-                metadatas = MetadataHandler.load_json(file_path)
+    def save_model(self, model_name, project_id, user_id, object_path) -> Model:
+        model = Model(
+            name=model_name,
+            type=SubFolder.BENCHMARKED_MODELS,
+            is_retrainable=False,
+            project_id=project_id,
+            user_id=user_id,
+            object_path=object_path,
+        )
+        with get_db_session() as db:
+            model = model_repository.save(db=db, model=model)
+            return model
 
-            metadata.input_model_path = Path(input_model_path).resolve().as_posix()
-            metadatas.append(metadata)
-            MetadataHandler.save_benchmark_result(data=metadatas, folder_path=output_dir)
+    def _save_benchmark_task(self, benchmark_task: BenchmarkTask) -> BenchmarkTask:
+        with get_db_session() as db:
+            benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
 
-        return metadatas
+            return benchmark_task
+
+    def save_benchmark_result(self, benchmark_task: BenchmarkTask, benchmark_result, file_size_in_mb) -> BenchmarkTask:
+        benchmark_result = BenchmarkResult(
+            processor=benchmark_result.processor,
+            memory_footprint_gpu=benchmark_result.memory_footprint_gpu,
+            memory_footprint_cpu=benchmark_result.memory_footprint_cpu,
+            power_consumption=benchmark_result.power_consumption,
+            ram_size=benchmark_result.ram_size,
+            latency=benchmark_result.latency,
+            file_size=file_size_in_mb,
+        )
+
+        with get_db_session() as db:
+            benchmark_task.result = benchmark_result
+            benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
+
+            return benchmark_task
+
+    def create_benchmark_task(
+        self,
+        device_name: Union[str, DeviceName],
+        software_version: Union[str, SoftwareVersion],
+        data_type: Union[str, DataType],
+        input_model_id: Optional[str] = None,
+        model_id: Optional[str] = None,
+    ) -> BenchmarkTask:
+        with get_db_session() as db:
+            benchmark_task = BenchmarkTask(
+                device_name=device_name,
+                software_version=software_version,
+                precision=data_type,
+                status=Status.NOT_STARTED,
+                input_model_id=input_model_id,
+                model_id=model_id,
+            )
+            benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
+            return benchmark_task
 
     def benchmark_model(
         self,
@@ -75,6 +188,7 @@ class BenchmarkerV2(NetsPressoBase):
         target_hardware_type: Optional[Union[str, HardwareType]] = None,
         wait_until_done: bool = True,
         sleep_interval: int = 30,
+        input_model_id: Optional[str] = None,
     ) -> BenchmarkerMetadata:
         """Benchmark the specified model on the specified device.
 
@@ -94,13 +208,28 @@ class BenchmarkerV2(NetsPressoBase):
         """
 
         FileHandler.check_input_model_path(input_model_path)
-        metadatas = self.initialize_metadata(input_model_path=input_model_path)
+        output_dir = Path(input_model_path).parent
+
+        if input_model_id:
+            input_model = self.get_input_model(input_model_id, self.user_info.user_id)
+            input_model.user_id = self.user_info.user_id
+
+        data_type = self.get_data_type(output_dir)
+        model = self.save_model(
+            model_name=f"{input_model.name}_benchmarked",
+            project_id=input_model.project_id,
+            user_id=self.user_info.user_id,
+            object_path=input_model_path,
+        )
+        benchmark_task = self.create_benchmark_task(
+            device_name=target_device_name,
+            software_version=target_software_version,
+            data_type=data_type,
+            input_model_id=input_model_id,
+            model_id=model.model_id,
+        )
 
         try:
-            metadata: BenchmarkerMetadata = metadatas[-1]
-            output_dir = Path(input_model_path).parent
-            if metadata.status in [Status.ERROR, Status.STOPPED]:
-                return metadata
 
             self.validate_token_and_check_credit(service_task=ServiceTask.MODEL_BENCHMARK)
 
@@ -135,9 +264,9 @@ class BenchmarkerV2(NetsPressoBase):
                 software_version=target_software_version,
             )
 
-            metadata.benchmark_task_info = benchmark_response.data.to()
-            metadata.benchmark_task_info.data_type = self.get_data_type(output_dir)
-            MetadataHandler.save_benchmark_result(data=metadatas, folder_path=output_dir)
+            benchmark_task.benchmark_task_id = benchmark_response.data.benchmark_task_id
+            benchmark_task.framework = benchmark_response.data.benchmark_task_option.framework
+            benchmark_task = self._save_benchmark_task(benchmark_task)
 
             if wait_until_done:
                 while True:
@@ -150,32 +279,45 @@ class BenchmarkerV2(NetsPressoBase):
                         TaskStatusForDisplay.FINISHED,
                         TaskStatusForDisplay.ERROR,
                         TaskStatusForDisplay.TIMEOUT,
+                        TaskStatusForDisplay.USER_CANCEL,
                     ]:
                         break
 
                     time.sleep(sleep_interval)
 
-            if benchmark_response.data.status == TaskStatusForDisplay.FINISHED:
+            if benchmark_response.data.status in [TaskStatusForDisplay.IN_PROGRESS, TaskStatusForDisplay.IN_QUEUE]:
+                benchmark_task.status = Status.IN_PROGRESS
+                logger.info(f"Benchmark task was running. Status: {benchmark_response.data.status}")
+            elif benchmark_response.data.status == TaskStatusForDisplay.FINISHED:
                 self.print_remaining_credit(service_task=ServiceTask.MODEL_BENCHMARK)
-                metadata.status = Status.COMPLETED
-                metadata.benchmark_result = benchmark_response.data.benchmark_result.to(
-                    file_size=validate_model_response.data.file_size_in_mb
-                )
+                benchmark_task.status = Status.COMPLETED
+
+                # Save benchmark results
+                _benchmark_result = benchmark_response.data.benchmark_result
+                benchmark_task = self.save_benchmark_result(benchmark_task, _benchmark_result, validate_model_response.data.file_size_in_mb)
+
                 logger.info("Benchmark task was completed successfully.")
-            else:
-                metadata = self.handle_error(metadata, ServiceTask.MODEL_BENCHMARK, benchmark_response.data.error_log)
+            elif benchmark_response.data.status in [
+                TaskStatusForDisplay.ERROR,
+                TaskStatusForDisplay.USER_CANCEL,
+                TaskStatusForDisplay.TIMEOUT,
+            ]:
+                benchmark_task.status = Status.ERROR
+                benchmark_task.error_detail = benchmark_response.data.error_log
+                benchmark_task = self._save_benchmark_task(benchmark_task)
+                logger.error(f"Benchmark task was failed. Error: {benchmark_response.data.error_log}")
 
         except Exception as e:
-            metadata = self.handle_error(metadata, ServiceTask.MODEL_BENCHMARK, e.args[0])
+            benchmark_task.status = Status.ERROR
+            benchmark_task.error_detail = e.args[0]
         except KeyboardInterrupt:
-            metadata = self.handle_stop(metadata, ServiceTask.MODEL_BENCHMARK)
+            benchmark_task.status = Status.STOPPED
         finally:
-            metadatas[-1] = metadata
-            MetadataHandler.save_benchmark_result(data=metadatas, folder_path=output_dir)
+            benchmark_task = self._save_benchmark_task(benchmark_task)
 
-        return metadata
+        return benchmark_task.task_id
 
-    def get_benchmark_task(self, benchmark_task_id: str) -> BenchmarkTask:
+    def get_benchmark_task(self, benchmark_task_id: str) -> BenchmarkTaskInfo:
         """Get information about the specified benchmark task using the benchmark task UUID.
 
         Args:
@@ -185,7 +327,7 @@ class BenchmarkerV2(NetsPressoBase):
             e: If an error occurs while retrieving information about the benchmark task.
 
         Returns:
-            BenchmarkTask: Model benchmark task object.
+            BenchmarkTaskInfo: Model benchmark task object.
         """
 
         self.token_handler.validate_token()
@@ -196,7 +338,7 @@ class BenchmarkerV2(NetsPressoBase):
         )
         return response.data
 
-    def cancel_benchmark_task(self, benchmark_task_id: str) -> BenchmarkTask:
+    def cancel_benchmark_task(self, benchmark_task_id: str) -> BenchmarkTaskInfo:
         """Cancel the benchmark task with given benchmark task uuid.
 
         Args:
@@ -206,7 +348,7 @@ class BenchmarkerV2(NetsPressoBase):
             e: If an error occurs during the task cancel.
 
         Returns:
-            BenchmarkTask: Model benchmark task dictionary.
+            BenchmarkTaskInfo: Model benchmark task dictionary.
         """
 
         self.token_handler.validate_token()

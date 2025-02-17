@@ -36,17 +36,35 @@ TARGET_FRAMEWORK_DISPLAY_MAP = {
 }
 
 
-class Precision(str, Enum):
+class PrecisionForConversion(str, Enum):
     FP16 = "FP16"
     INT8 = "INT8"
 
 
-class PrecisionDisplay(str, Enum):
+class PrecisionForConversionDisplay(str, Enum):
     FP16 = "FP16"
     INT8 = "INT8"
 
 
-PRECISION_DISPLAY_MAP = {
-    Precision.FP16: PrecisionDisplay.FP16,
-    Precision.INT8: PrecisionDisplay.INT8,
+class PrecisionForBenchmark(str, Enum):
+    FP32 = "FP32"
+    FP16 = "FP16"
+    INT8 = "INT8"
+
+
+class PrecisionForBenchmarkDisplay(str, Enum):
+    FP32 = "FP32"
+    FP16 = "FP16"
+    INT8 = "INT8"
+
+
+PRECISION_FOR_CONVERSION_DISPLAY_MAP = {
+    PrecisionForConversion.FP16: PrecisionForConversionDisplay.FP16,
+    PrecisionForConversion.INT8: PrecisionForConversionDisplay.INT8,
+}
+
+PRECISION_FOR_BENCHMARK_DISPLAY_MAP = {
+    PrecisionForBenchmark.FP32: PrecisionForBenchmarkDisplay.FP32,
+    PrecisionForBenchmark.FP16: PrecisionForBenchmarkDisplay.FP16,
+    PrecisionForBenchmark.INT8: PrecisionForBenchmarkDisplay.INT8,
 }
