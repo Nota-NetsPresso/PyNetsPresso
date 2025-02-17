@@ -6,6 +6,7 @@ from app.api.v1.schemas.device import SupportedDevicesResponse
 from app.api.v1.schemas.task.benchmark.benchmark_task import (
     BenchmarkCreate,
     BenchmarkCreateResponse,
+    BenchmarkResponse,
 )
 from app.services.benchmark_task import benchmark_task_service
 from netspresso.utils.db.session import get_db
@@ -41,3 +42,14 @@ def create_benchmark_task(
     benchmark_task = benchmark_task_service.create_benchmark_task(db=db, benchmark_in=request_body, api_key=api_key)
 
     return BenchmarkCreateResponse(data=benchmark_task)
+
+
+@router.get("/benchmarks/{task_id}", response_model=BenchmarkResponse)
+def get_benchmark_task(
+    task_id: str,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> BenchmarkResponse:
+    benchmark_task = benchmark_task_service.get_benchmark_task(db=db, task_id=task_id, api_key=api_key)
+
+    return BenchmarkResponse(data=benchmark_task)

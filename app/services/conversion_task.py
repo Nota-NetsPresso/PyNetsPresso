@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.device import (
     HardwareTypePayload,
-    PrecisionPayload,
+    PrecisionForConversionPayload,
     SoftwareVersionPayload,
     SupportedDevicePayload,
     SupportedDeviceResponse,
@@ -75,7 +75,7 @@ class ConversionTaskService:
             software_versions=[
                 SoftwareVersionPayload(name=version.software_version) for version in device.software_versions
             ],
-            precisions=[PrecisionPayload(name=precision) for precision in device.data_types],
+            precisions=[PrecisionForConversionPayload(name=precision) for precision in device.data_types],
             hardware_types=[HardwareTypePayload(name=hardware_type) for hardware_type in device.hardware_types],
         )
 
@@ -143,7 +143,7 @@ class ConversionTaskService:
         software_version = (
             SoftwareVersionPayload(name=conversion_task.software_version) if conversion_task.software_version else None
         )
-        precision = PrecisionPayload(name=conversion_task.precision)
+        precision = PrecisionForConversionPayload(name=conversion_task.precision)
 
         conversion_payload = ConversionPayload(
             task_id=conversion_task.task_id,
@@ -179,7 +179,7 @@ class ConversionTaskService:
         software_version = (
             SoftwareVersionPayload(name=conversion_task.software_version) if conversion_task.software_version else None
         )
-        precision = PrecisionPayload(name=conversion_task.precision)
+        precision = PrecisionForConversionPayload(name=conversion_task.precision)
 
         conversion_payload = ConversionPayload(
             task_id=conversion_task.task_id,

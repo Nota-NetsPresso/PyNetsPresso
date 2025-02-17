@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.v1.schemas.base import ResponseItem
 from app.api.v1.schemas.device import (
-    PrecisionPayload,
+    PrecisionForConversionPayload,
     SoftwareVersionPayload,
     TargetDevicePayload,
     TargetFrameworkPayload,
@@ -31,7 +31,7 @@ class ConversionPayload(BaseModel):
     framework: TargetFrameworkPayload
     device: TargetDevicePayload
     software_version: Optional[SoftwareVersionPayload] = None
-    precision: PrecisionPayload
+    precision: PrecisionForConversionPayload
     status: str
     is_deleted: bool
     error_detail: Optional[Dict] = None

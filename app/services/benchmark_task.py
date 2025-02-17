@@ -5,14 +5,17 @@ from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.device import (
     HardwareTypePayload,
-    PrecisionPayload,
+    PrecisionForBenchmarkPayload,
     SoftwareVersionPayload,
     SupportedDevicePayload,
     SupportedDeviceResponse,
+    TargetDevicePayload,
 )
 from app.api.v1.schemas.task.benchmark.benchmark_task import (
     BenchmarkCreate,
     BenchmarkCreatePayload,
+    BenchmarkPayload,
+    BenchmarkResponse,
     TargetFrameworkPayload,
 )
 from app.services.conversion_task import conversion_task_service
@@ -20,6 +23,9 @@ from app.services.project import project_service
 from app.services.user import user_service
 from app.worker.celery_app import benchmark_model_task
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
+from netspresso.enums.metadata import Status
+from netspresso.enums.task import TaskStatusForDisplay
+from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 
 
@@ -84,7 +90,7 @@ class BenchmarkTaskService:
             software_versions=[
                 SoftwareVersionPayload(name=version.software_version) for version in device.software_versions
             ],
-            precisions=[PrecisionPayload(name=precision) for precision in device.data_types],
+            precisions=[PrecisionForBenchmarkPayload(name=precision) for precision in device.data_types],
             hardware_types=[HardwareTypePayload(name=hardware_type) for hardware_type in device.hardware_types],
         )
 
@@ -113,6 +119,54 @@ class BenchmarkTaskService:
         )
         task_id = task.get()
         return BenchmarkCreatePayload(task_id=task_id)
+
+    def get_benchmark_task(self, db: Session, task_id: str, api_key: str) -> BenchmarkResponse:
+        benchmark_task = benchmark_task_repository.get_by_task_id(db, task_id)
+
+        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        benchmarker = netspresso.benchmarker_v2()
+
+        if benchmark_task.status == Status.NOT_STARTED or benchmark_task.status == Status.IN_PROGRESS:
+            # Check launcher server status
+            launcher_status = benchmarker.get_benchmark_task(benchmark_task.benchmark_task_id)
+
+            if launcher_status.status in [TaskStatusForDisplay.FINISHED]:
+                benchmark_task.status = Status.COMPLETED
+            elif launcher_status.status in [TaskStatusForDisplay.ERROR, TaskStatusForDisplay.TIMEOUT]:
+                benchmark_task.status = Status.ERROR
+                benchmark_task.error_detail = launcher_status.error_log
+            elif launcher_status.status in [TaskStatusForDisplay.USER_CANCEL]:
+                benchmark_task.status = Status.STOPPED
+
+            benchmark_task = benchmark_task_repository.save(db, benchmark_task)
+
+        framework = TargetFrameworkPayload(name=benchmark_task.framework)
+        device = TargetDevicePayload(name=benchmark_task.device_name)
+        software_version = (
+            SoftwareVersionPayload(name=benchmark_task.software_version) if benchmark_task.software_version else None
+        )
+        hardware_type = (
+            HardwareTypePayload(name=benchmark_task.hardware_type) if benchmark_task.hardware_type else None
+        )
+        precision = PrecisionForBenchmarkPayload(name=benchmark_task.precision)
+
+        benchmark_payload = BenchmarkPayload(
+            task_id=benchmark_task.task_id,
+            model_id=benchmark_task.model_id,
+            framework=framework,
+            device=device,
+            software_version=software_version,
+            hardware_type=hardware_type,
+            precision=precision,
+            status=benchmark_task.status,
+            is_deleted=benchmark_task.is_deleted,
+            error_detail=benchmark_task.error_detail,
+            input_model_id=benchmark_task.input_model_id,
+            created_at=benchmark_task.created_at,
+            updated_at=benchmark_task.updated_at,
+        )
+
+        return benchmark_payload
 
 
 benchmark_task_service = BenchmarkTaskService()

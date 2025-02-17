@@ -4,10 +4,13 @@ from pydantic import BaseModel, Field, model_validator
 
 from app.api.v1.schemas.base import ResponseListItems
 from netspresso.enums.conversion import (
-    PRECISION_DISPLAY_MAP,
+    PRECISION_FOR_BENCHMARK_DISPLAY_MAP,
+    PRECISION_FOR_CONVERSION_DISPLAY_MAP,
     TARGET_FRAMEWORK_DISPLAY_MAP,
-    Precision,
-    PrecisionDisplay,
+    PrecisionForBenchmark,
+    PrecisionForBenchmarkDisplay,
+    PrecisionForConversion,
+    PrecisionForConversionDisplay,
     TargetFramework,
     TargetFrameworkDisplay,
 )
@@ -37,13 +40,24 @@ class SoftwareVersionPayload(BaseModel):
         return self
 
 
-class PrecisionPayload(BaseModel):
-    name: Precision
-    display_name: Optional[PrecisionDisplay] = Field(default=None, description="Precision display name")
+class PrecisionForConversionPayload(BaseModel):
+    name: PrecisionForConversion
+    display_name: Optional[PrecisionForConversionDisplay] = Field(default=None, description="Precision display name")
 
     @model_validator(mode="after")
     def set_display_name(self) -> str:
-        self.display_name = PRECISION_DISPLAY_MAP.get(self.name)
+        self.display_name = PRECISION_FOR_CONVERSION_DISPLAY_MAP.get(self.name)
+
+        return self
+
+
+class PrecisionForBenchmarkPayload(BaseModel):
+    name: PrecisionForBenchmark
+    display_name: Optional[PrecisionForBenchmarkDisplay] = Field(default=None, description="Precision display name")
+
+    @model_validator(mode="after")
+    def set_display_name(self) -> str:
+        self.display_name = PRECISION_FOR_BENCHMARK_DISPLAY_MAP.get(self.name)
 
         return self
 
@@ -64,7 +78,7 @@ class SupportedDevicePayload(BaseModel):
     display_name: Optional[DeviceDisplay] = Field(default=None, description="Device display name")
     brand_name: Optional[DeviceBrand] = Field(default=None, description="Device brand name")
     software_versions: List[SoftwareVersionPayload]
-    precisions: List[PrecisionPayload]
+    precisions: List[PrecisionForConversionPayload]
     hardware_types: List[HardwareTypePayload]
 
     @model_validator(mode="after")
