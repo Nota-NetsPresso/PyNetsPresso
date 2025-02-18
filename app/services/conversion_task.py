@@ -23,6 +23,7 @@ from app.worker.celery_app import convert_model_task
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums import Status, TaskStatusForDisplay
 from netspresso.enums.conversion import SourceFramework
+from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 
@@ -197,6 +198,34 @@ class ConversionTaskService:
         )
 
         return conversion_payload
+
+    def _create_conversion_payload(self, conversion_task: ConversionTask) -> ConversionPayload:
+        framework = TargetFrameworkPayload(name=conversion_task.framework)
+        device = TargetDevicePayload(name=conversion_task.device_name)
+        software_version = (
+            SoftwareVersionPayload(name=conversion_task.software_version) if conversion_task.software_version else None
+        )
+        precision = PrecisionForConversionPayload(name=conversion_task.precision)
+
+        return ConversionPayload(
+            task_id=conversion_task.task_id,
+            model_id=conversion_task.model_id,
+            framework=framework,
+            device=device,
+            software_version=software_version,
+            precision=precision,
+            status=conversion_task.status,
+            is_deleted=conversion_task.is_deleted,
+            error_detail=conversion_task.error_detail,
+            input_model_id=conversion_task.input_model_id,
+            created_at=conversion_task.created_at,
+            updated_at=conversion_task.updated_at,
+        )
+
+    def get_conversion_tasks(self, db: Session, model_id: str, api_key: str) -> List[ConversionPayload]:
+        conversion_tasks = conversion_task_repository.get_all_by_model_id(db=db, model_id=model_id)
+
+        return [self._create_conversion_payload(task) for task in conversion_tasks]
 
 
 conversion_task_service = ConversionTaskService()

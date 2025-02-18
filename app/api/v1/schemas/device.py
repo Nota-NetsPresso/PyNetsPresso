@@ -89,6 +89,23 @@ class SupportedDevicePayload(BaseModel):
         return self
 
 
+class SupportedDeviceForBenchmarkPayload(BaseModel):
+    input_model_id: str
+    name: DeviceName
+    display_name: Optional[DeviceDisplay] = Field(default=None, description="Device display name")
+    brand_name: Optional[DeviceBrand] = Field(default=None, description="Device brand name")
+    software_version: Optional[SoftwareVersion] = Field(default=None, description="Software version of the device")
+    data_type: Optional[PrecisionForBenchmark] = Field(default=None, description="Data type supported by the device")
+    hardware_type: Optional[HardwareType] = Field(default=None, description="Hardware type of the device")
+
+    @model_validator(mode="after")
+    def set_display_name(self) -> str:
+        self.display_name = DEVICE_DISPLAY_MAP.get(self.name)
+        self.brand_name = DEVICE_BRAND_MAP.get(self.name)
+
+        return self
+
+
 class TargetDevicePayload(BaseModel):
     name: DeviceName
     display_name: Optional[DeviceDisplay] = Field(default=None, description="Device display name")
@@ -120,3 +137,11 @@ class SupportedDeviceResponse(BaseModel):
 
 class SupportedDevicesResponse(ResponseListItems):
     data: List[SupportedDeviceResponse]
+
+
+class SupportedDeviceForBenchmarkResponse(BaseModel):
+    data: SupportedDeviceForBenchmarkPayload
+
+
+class SupportedDevicesForBenchmarkResponse(ResponseListItems):
+    data: List[SupportedDeviceForBenchmarkPayload]

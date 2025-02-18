@@ -7,8 +7,7 @@ from app.api.v1.schemas.device import (
     HardwareTypePayload,
     PrecisionForBenchmarkPayload,
     SoftwareVersionPayload,
-    SupportedDevicePayload,
-    SupportedDeviceResponse,
+    SupportedDeviceForBenchmarkPayload,
     TargetDevicePayload,
 )
 from app.api.v1.schemas.task.benchmark.benchmark_task import (
@@ -24,74 +23,72 @@ from app.services.user import user_service
 from app.worker.celery_app import benchmark_model_task
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums.metadata import Status
+from netspresso.enums.model import Framework
+from netspresso.enums.project import SubFolder
 from netspresso.enums.task import TaskStatusForDisplay
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 
 
 class BenchmarkTaskService:
-    def get_supported_devices(
-        self, db: Session, conversion_task_id: str, api_key: str
-    ) -> List[SupportedDeviceResponse]:
-        """Get supported devices for conversion tasks.
-
-        Args:
-            db (Session): Database session
-            conversion_task_id (str): Conversion task ID
-            api_key (str): API key for authentication
-
-        Returns:
-            List[SupportedDeviceResponse]: List of supported devices grouped by framework
-        """
+    def get_supported_devices(self, db: Session, model_id: str, api_key: str) -> List[SupportedDeviceForBenchmarkPayload]:
         netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
         benchmarker = netspresso.benchmarker_v2()
 
-        conversion_task = conversion_task_service.get_conversion_task(
-            db=db, task_id=conversion_task_id, api_key=api_key
+        model = model_repository.get_by_model_id(db=db, model_id=model_id, user_id=netspresso.user_info.user_id)
+        if model.type not in [SubFolder.TRAINED_MODELS, SubFolder.COMPRESSED_MODELS]:
+            raise ValueError("Model is not a trained or compressed model")
+
+        conversion_tasks = conversion_task_service.get_conversion_tasks(db=db, model_id=model_id, api_key=api_key)
+
+        unique_device_keys = set()
+        unique_devices = []
+        checked_frameworks = set()
+
+        for conversion_task in conversion_tasks:
+            framework = conversion_task.framework.name
+
+            # TensorRT와 DRPAI는 항상 체크, 다른 프레임워크는 한 번만 체크
+            if framework not in [Framework.TENSORRT, Framework.DRPAI] and framework in checked_frameworks:
+                continue
+
+            checked_frameworks.add(framework)
+
+            device = conversion_task.device.name
+            software_version = conversion_task.software_version.name if conversion_task.software_version else None
+            input_model_id = conversion_task.model_id
+
+            _supported_options = benchmarker.get_supported_options(
+                framework=framework, device=device, software_version=software_version
+            )
+
+            for option in _supported_options:
+                for device_info in option.devices:
+                    device_key = self._create_device_key(device_info)
+
+                    if device_key not in unique_device_keys:
+                        unique_device_keys.add(device_key)
+                        device_payload = self._create_device_payload(input_model_id, device_info)
+                        unique_devices.append(device_payload)
+
+        return unique_devices
+
+    def _create_device_key(self, device_info: DeviceInfo) -> tuple:
+        base_key = (
+            device_info.device_name,
+            tuple(v.software_version for v in device_info.software_versions),
+            tuple(device_info.data_types),
+            tuple(device_info.hardware_types)
         )
+        return base_key
 
-        framework = conversion_task.framework.name
-        device = conversion_task.device.name
-        software_version = conversion_task.software_version.name if conversion_task.software_version else None
-
-        supported_options = benchmarker.get_supported_options(
-            framework=framework, device=device, software_version=software_version
-        )
-
-        return [self._create_supported_device_response(option) for option in supported_options]
-
-    def _create_supported_device_response(self, option) -> SupportedDeviceResponse:
-        """Create SupportedDeviceResponse from converter option.
-
-        Args:
-            option: Converter option containing framework and devices information
-
-        Returns:
-            SupportedDeviceResponse: Response containing framework and supported devices
-        """
-        response = SupportedDeviceResponse(
-            framework=TargetFrameworkPayload(name=option.framework),
-            devices=[self._create_device_payload(device) for device in option.devices],
-        )
-
-        return response
-
-    def _create_device_payload(self, device: DeviceInfo) -> SupportedDevicePayload:
-        """Create SupportedDevicePayload from device information.
-
-        Args:
-            device: Device information containing name, versions, precisions, and hardware types
-
-        Returns:
-            SupportedDevicePayload: Payload containing device information
-        """
-        return SupportedDevicePayload(
-            name=device.device_name,
-            software_versions=[
-                SoftwareVersionPayload(name=version.software_version) for version in device.software_versions
-            ],
-            precisions=[PrecisionForBenchmarkPayload(name=precision) for precision in device.data_types],
-            hardware_types=[HardwareTypePayload(name=hardware_type) for hardware_type in device.hardware_types],
+    def _create_device_payload(self, input_model_id: str, device_info: DeviceInfo) -> SupportedDeviceForBenchmarkPayload:
+        return SupportedDeviceForBenchmarkPayload(
+            input_model_id=input_model_id,
+            name=device_info.device_name,
+            software_version=device_info.software_versions[0].software_version if device_info.software_versions else None,
+            data_type=device_info.data_types[0] if device_info.data_types else None,
+            hardware_type=device_info.hardware_types[0] if device_info.hardware_types else None
         )
 
     def create_benchmark_task(self, db: Session, benchmark_in: BenchmarkCreate, api_key: str) -> BenchmarkCreatePayload:
@@ -210,3 +207,4 @@ class BenchmarkTaskService:
 
 
 benchmark_task_service = BenchmarkTaskService()
+

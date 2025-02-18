@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import api_key_header
-from app.api.v1.schemas.device import SupportedDevicesResponse
+from app.api.v1.schemas.device import SupportedDevicesForBenchmarkResponse
 from app.api.v1.schemas.task.benchmark.benchmark_task import (
     BenchmarkCreate,
     BenchmarkCreateResponse,
@@ -16,21 +16,21 @@ router = APIRouter()
 
 @router.get(
     "/benchmarks/configuration/devices",
-    response_model=SupportedDevicesResponse,
+    response_model=SupportedDevicesForBenchmarkResponse,
     description="Get supported devices for model benchmark based on the conversion task.",
 )
 def get_supported_benchmark_devices(
-    conversion_task_id: str = Query(..., description="Conversion task id of the model to be benchmarked."),
+    model_id: str = Query(..., description="Model id of the model to be benchmarked."),
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
-) -> SupportedDevicesResponse:
+) -> SupportedDevicesForBenchmarkResponse:
     supported_devices = benchmark_task_service.get_supported_devices(
         db=db,
-        conversion_task_id=conversion_task_id,
+        model_id=model_id,
         api_key=api_key,
     )
 
-    return SupportedDevicesResponse(data=supported_devices)
+    return SupportedDevicesForBenchmarkResponse(data=supported_devices)
 
 
 @router.post("/benchmarks", response_model=BenchmarkCreateResponse, status_code=201)
