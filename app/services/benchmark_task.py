@@ -7,8 +7,8 @@ from app.api.v1.schemas.device import (
     HardwareTypePayload,
     PrecisionForBenchmarkPayload,
     SoftwareVersionPayload,
-    SupportedDevicePayload,
-    SupportedDeviceResponse,
+    SupportedDeviceForBenchmarkPayload,
+    SupportedDeviceForBenchmarkResponse,
     TargetDevicePayload,
 )
 from app.api.v1.schemas.task.benchmark.benchmark_task import (
@@ -32,7 +32,7 @@ from netspresso.utils.db.repositories.model import model_repository
 class BenchmarkTaskService:
     def get_supported_devices(
         self, db: Session, conversion_task_id: str, api_key: str
-    ) -> List[SupportedDeviceResponse]:
+    ) -> List[SupportedDeviceForBenchmarkResponse]:
         """Get supported devices for conversion tasks.
 
         Args:
@@ -41,7 +41,7 @@ class BenchmarkTaskService:
             api_key (str): API key for authentication
 
         Returns:
-            List[SupportedDeviceResponse]: List of supported devices grouped by framework
+            List[SupportedDeviceForBenchmarkResponse]: List of supported devices grouped by framework
         """
         netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
         benchmarker = netspresso.benchmarker_v2()
@@ -60,32 +60,32 @@ class BenchmarkTaskService:
 
         return [self._create_supported_device_response(option) for option in supported_options]
 
-    def _create_supported_device_response(self, option) -> SupportedDeviceResponse:
-        """Create SupportedDeviceResponse from converter option.
+    def _create_supported_device_response(self, option) -> SupportedDeviceForBenchmarkResponse:
+        """Create SupportedDeviceForBenchmarkResponse from converter option.
 
         Args:
             option: Converter option containing framework and devices information
 
         Returns:
-            SupportedDeviceResponse: Response containing framework and supported devices
+            SupportedDeviceForBenchmarkResponse: Response containing framework and supported devices
         """
-        response = SupportedDeviceResponse(
+        response = SupportedDeviceForBenchmarkResponse(
             framework=TargetFrameworkPayload(name=option.framework),
             devices=[self._create_device_payload(device) for device in option.devices],
         )
 
         return response
 
-    def _create_device_payload(self, device: DeviceInfo) -> SupportedDevicePayload:
-        """Create SupportedDevicePayload from device information.
+    def _create_device_payload(self, device: DeviceInfo) -> SupportedDeviceForBenchmarkPayload:
+        """Create SupportedDeviceForBenchmarkPayload from device information.
 
         Args:
             device: Device information containing name, versions, precisions, and hardware types
 
         Returns:
-            SupportedDevicePayload: Payload containing device information
+            SupportedDeviceForBenchmarkPayload: Payload containing device information
         """
-        return SupportedDevicePayload(
+        return SupportedDeviceForBenchmarkPayload(
             name=device.device_name,
             software_versions=[
                 SoftwareVersionPayload(name=version.software_version) for version in device.software_versions
