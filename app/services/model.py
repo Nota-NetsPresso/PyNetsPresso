@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.model import ModelPayload
 from app.services.user import user_service
+from netspresso.enums.project import SubFolder
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
@@ -17,7 +18,7 @@ class ModelService:
 
         new_models = []
         for model in models:
-            if model.type == "converted_models":
+            if model.type in [SubFolder.CONVERTED_MODELS, SubFolder.BENCHMARKED_MODELS]:
                 continue
 
             training_task = training_task_repository.get_by_model_id(db=db, model_id=model.model_id)

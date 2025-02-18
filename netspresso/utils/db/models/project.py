@@ -2,6 +2,7 @@ from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
+from netspresso.enums.project import SubFolder
 from netspresso.utils.db.generate_uuid import generate_uuid
 from netspresso.utils.db.mixins import TimestampMixin
 from netspresso.utils.db.session import Base
@@ -30,4 +31,8 @@ class Project(Base, TimestampMixin):
     # Property to get model IDs
     @hybrid_property
     def model_ids(self):
-        return [model.model_id for model in self.models] if self.models else []
+        return [
+            model.model_id
+            for model in self.models
+            if model.type in [SubFolder.TRAINED_MODELS, SubFolder.COMPRESSED_MODELS]
+        ]
