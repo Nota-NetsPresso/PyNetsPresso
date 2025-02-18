@@ -8,7 +8,6 @@ from app.api.v1.schemas.device import (
     PrecisionForBenchmarkPayload,
     SoftwareVersionPayload,
     SupportedDeviceForBenchmarkPayload,
-    SupportedDeviceForBenchmarkResponse,
     TargetDevicePayload,
 )
 from app.api.v1.schemas.task.benchmark.benchmark_task import (
@@ -24,6 +23,7 @@ from app.services.user import user_service
 from app.worker.celery_app import benchmark_model_task
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums.metadata import Status
+from netspresso.enums.model import Framework
 from netspresso.enums.project import SubFolder
 from netspresso.enums.task import TaskStatusForDisplay
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
@@ -43,9 +43,17 @@ class BenchmarkTaskService:
 
         unique_device_keys = set()
         unique_devices = []
+        checked_frameworks = set()
 
         for conversion_task in conversion_tasks:
             framework = conversion_task.framework.name
+
+            # TensorRT와 DRPAI는 항상 체크, 다른 프레임워크는 한 번만 체크
+            if framework not in [Framework.TENSORRT, Framework.DRPAI] and framework in checked_frameworks:
+                continue
+
+            checked_frameworks.add(framework)
+
             device = conversion_task.device.name
             software_version = conversion_task.software_version.name if conversion_task.software_version else None
             input_model_id = conversion_task.model_id
@@ -56,7 +64,7 @@ class BenchmarkTaskService:
 
             for option in _supported_options:
                 for device_info in option.devices:
-                    device_key = self._create_device_key(framework, device_info)
+                    device_key = self._create_device_key(device_info)
 
                     if device_key not in unique_device_keys:
                         unique_device_keys.add(device_key)
@@ -65,12 +73,7 @@ class BenchmarkTaskService:
 
         return unique_devices
 
-    def _create_device_key(self, framework: str, device_info: DeviceInfo) -> tuple:
-        """Create a unique key for device based on framework type.
-
-        For TensorRT and DRPA, check device, software version, and data type.
-        For other frameworks, check only data type.
-        """
+    def _create_device_key(self, device_info: DeviceInfo) -> tuple:
         base_key = (
             device_info.device_name,
             tuple(v.software_version for v in device_info.software_versions),
@@ -80,7 +83,6 @@ class BenchmarkTaskService:
         return base_key
 
     def _create_device_payload(self, input_model_id: str, device_info: DeviceInfo) -> SupportedDeviceForBenchmarkPayload:
-        """Create a dictionary containing device information."""
         return SupportedDeviceForBenchmarkPayload(
             input_model_id=input_model_id,
             name=device_info.device_name,
