@@ -48,7 +48,6 @@ class BenchmarkTaskService:
         for conversion_task in conversion_tasks:
             framework = conversion_task.framework.name
 
-            # TensorRT와 DRPAI는 항상 체크, 다른 프레임워크는 한 번만 체크
             if framework not in [Framework.TENSORRT, Framework.DRPAI] and framework in checked_frameworks:
                 continue
 
