@@ -20,13 +20,13 @@ router = APIRouter()
     description="Get supported devices for model benchmark based on the conversion task.",
 )
 def get_supported_benchmark_devices(
-    conversion_task_id: str = Query(..., description="Conversion task id of the model to be benchmarked."),
+    model_id: str = Query(..., description="Model id of the model to be benchmarked."),
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> SupportedDevicesForBenchmarkResponse:
     supported_devices = benchmark_task_service.get_supported_devices(
         db=db,
-        conversion_task_id=conversion_task_id,
+        model_id=model_id,
         api_key=api_key,
     )
 

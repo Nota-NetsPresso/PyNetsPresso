@@ -1,8 +1,9 @@
 from typing import List, Optional
 
-from sqlalchemy import func
+from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
 
+from netspresso.enums.metadata import Status
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.repositories.base import BaseRepository, Order
 
@@ -28,7 +29,7 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
         order: Optional[Order] = Order.DESC,
     ) -> Optional[List[ConversionTask]]:
         ordering_func = self.choose_order_func(order)
-        query = db.query(self.model).filter(condition)
+        query = db.query(self.model).filter(and_(*condition))
 
         if order:
             query = query.order_by(ordering_func(self.model.updated_at))
@@ -50,7 +51,11 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
     ) -> Optional[List[ConversionTask]]:
         return self._get_tasks(
             db=db,
-            condition=self.model.input_model_id == model_id,
+            condition=[
+                self.model.input_model_id == model_id,
+                self.model.is_deleted.is_(False),
+                self.model.status == Status.COMPLETED,
+            ],
             start=start,
             size=size,
             order=order,
