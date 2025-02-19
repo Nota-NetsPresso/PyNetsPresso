@@ -1,3 +1,4 @@
+from netspresso.utils.db.models.benchmark import BenchmarkResult, BenchmarkTask
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.models.project import Project
@@ -14,4 +15,6 @@ __all__ = [
     "TrainingTask",
     "User",
     "ConversionTask",
+    "BenchmarkTask",
+    "BenchmarkResult",
 ]

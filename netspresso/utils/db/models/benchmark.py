@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import JSON, Boolean, Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from netspresso.utils.db.generate_uuid import generate_uuid
@@ -13,15 +13,15 @@ class BenchmarkResult(Base):
 
     # Performance metrics
     processor = Column(String(30), nullable=True)
-    memory_footprint_gpu = Column(Integer, nullable=True)
-    memory_footprint_cpu = Column(Integer, nullable=True)
-    power_consumption = Column(Integer, nullable=True)
-    ram_size = Column(Integer, nullable=True)
-    latency = Column(Integer, nullable=True)
-    file_size = Column(Integer, nullable=True)
+    memory_footprint_gpu = Column(Float, server_default="0", nullable=True)
+    memory_footprint_cpu = Column(Float, server_default="0", nullable=True)
+    power_consumption = Column(Float, server_default="0", nullable=True)
+    ram_size = Column(Float, server_default="0", nullable=True)
+    latency = Column(Float, server_default="0", nullable=True)
+    file_size = Column(Float, server_default="0", nullable=True)
 
     # Relationship to BenchmarkTask
-    task_id = Column(String(36), ForeignKey("benchmark_task.task_id"), nullable=False, unique=True)
+    task_id = Column(String(36), ForeignKey("benchmark_task.task_id"), nullable=False)
     task = relationship("BenchmarkTask", back_populates="result")
 
 

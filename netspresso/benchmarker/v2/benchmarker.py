@@ -160,6 +160,14 @@ class BenchmarkerV2(NetsPressoBase):
 
             return benchmark_task
 
+    def create_benchmark_result(self, benchmark_task: BenchmarkTask) -> BenchmarkTask:
+        benchmark_result = BenchmarkResult()
+        with get_db_session() as db:
+            benchmark_task.result = benchmark_result
+            benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
+
+            return benchmark_task
+
     def create_benchmark_task(
         self,
         device_name: Union[str, DeviceName],
@@ -267,6 +275,7 @@ class BenchmarkerV2(NetsPressoBase):
             benchmark_task.benchmark_task_id = benchmark_response.data.benchmark_task_id
             benchmark_task.framework = benchmark_response.data.benchmark_task_option.framework
             benchmark_task = self._save_benchmark_task(benchmark_task)
+            benchmark_task = self.create_benchmark_result(benchmark_task)
 
             if wait_until_done:
                 while True:

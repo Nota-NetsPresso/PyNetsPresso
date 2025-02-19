@@ -19,12 +19,12 @@ from netspresso.metadata.benchmarker import BenchmarkTaskInfo
 @dataclass
 class BenchmarkResult:
     processor: str
-    ram_size: float
-    file_size: float
-    latency: float
-    power_consumption: float
-    memory_footprint_cpu: float
-    memory_footprint_gpu: float
+    ram_size: float = 0
+    file_size: float = 0
+    latency: float = 0
+    power_consumption: float = 0
+    memory_footprint_cpu: float = 0
+    memory_footprint_gpu: float = 0
 
     def to(self, file_size: float) -> benchmarker.BenchmarkResult:
         benchmark_result = benchmarker.BenchmarkResult()

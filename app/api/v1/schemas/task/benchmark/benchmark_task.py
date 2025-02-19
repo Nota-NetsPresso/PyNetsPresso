@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.v1.schemas.base import ResponseItem
 from app.api.v1.schemas.device import (
+    BenchmarkResultPayload,
     HardwareTypePayload,
     PrecisionForBenchmarkPayload,
     SoftwareVersionPayload,
@@ -31,6 +32,7 @@ class BenchmarkPayload(BaseModel):
     software_version: Optional[SoftwareVersionPayload] = None
     hardware_type: Optional[HardwareTypePayload] = None
     precision: PrecisionForBenchmarkPayload
+    result: BenchmarkResultPayload
     status: str
     is_deleted: bool
     error_detail: Optional[Dict] = None

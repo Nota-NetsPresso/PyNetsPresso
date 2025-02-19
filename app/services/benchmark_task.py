@@ -4,6 +4,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.device import (
+    BenchmarkResultPayload,
     HardwareTypePayload,
     PrecisionForBenchmarkPayload,
     SoftwareVersionPayload,
@@ -145,6 +146,14 @@ class BenchmarkTaskService:
             HardwareTypePayload(name=benchmark_task.hardware_type) if benchmark_task.hardware_type else None
         )
         precision = PrecisionForBenchmarkPayload(name=benchmark_task.precision)
+        result = BenchmarkResultPayload(
+            memory_footprint_gpu=benchmark_task.result.memory_footprint_gpu,
+            memory_footprint_cpu=benchmark_task.result.memory_footprint_cpu,
+            power_consumption=benchmark_task.result.power_consumption,
+            ram_size=benchmark_task.result.ram_size,
+            latency=benchmark_task.result.latency,
+            file_size=benchmark_task.result.file_size,
+        )
 
         benchmark_payload = BenchmarkPayload(
             task_id=benchmark_task.task_id,
@@ -154,6 +163,7 @@ class BenchmarkTaskService:
             software_version=software_version,
             hardware_type=hardware_type,
             precision=precision,
+            result=result,
             status=benchmark_task.status,
             is_deleted=benchmark_task.is_deleted,
             error_detail=benchmark_task.error_detail,

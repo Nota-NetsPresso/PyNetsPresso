@@ -73,6 +73,15 @@ class HardwareTypePayload(BaseModel):
         return self
 
 
+class BenchmarkResultPayload(BaseModel):
+    memory_footprint_gpu: float = Field(default=0, description="Memory footprint of the device in GPU")
+    memory_footprint_cpu: float = Field(default=0, description="Memory footprint of the device in CPU")
+    power_consumption: float = Field(default=0, description="Power consumption of the device")
+    ram_size: float = Field(default=0, description="RAM size of the device")
+    latency: float = Field(default=0, description="Latency of the device")
+    file_size: float = Field(default=0, description="File size of the device")
+
+
 class SupportedDevicePayload(BaseModel):
     name: DeviceName
     display_name: Optional[DeviceDisplay] = Field(default=None, description="Device display name")

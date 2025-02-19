@@ -96,6 +96,7 @@ def benchmark_model_task(
         target_software_version=target_software_version,
         target_hardware_type=target_hardware_type,
         input_model_id=input_model_id,
+        wait_until_done=False,
     )
     chain(poll_benchmark_status.s(api_key, task_id).set(countdown=POLLING_INTERVAL))()
     return task_id
