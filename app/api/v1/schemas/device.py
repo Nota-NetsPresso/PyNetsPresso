@@ -91,16 +91,41 @@ class SupportedDevicePayload(BaseModel):
 
 class SupportedDeviceForBenchmarkPayload(BaseModel):
     input_model_id: str
+    display_name: Optional[str] = Field(default=None, description="Device display name")
     name: DeviceName
-    display_name: Optional[DeviceDisplay] = Field(default=None, description="Device display name")
     brand_name: Optional[DeviceBrand] = Field(default=None, description="Device brand name")
     software_version: Optional[SoftwareVersion] = Field(default=None, description="Software version of the device")
     data_type: Optional[PrecisionForBenchmark] = Field(default=None, description="Data type supported by the device")
     hardware_type: Optional[HardwareType] = Field(default=None, description="Hardware type of the device")
 
     @model_validator(mode="after")
-    def set_display_name(self) -> str:
-        self.display_name = DEVICE_DISPLAY_MAP.get(self.name)
+    def set_display_name(self):
+        # Get base device name from map
+        base_name = DEVICE_DISPLAY_MAP.get(self.name, str(self.name))
+
+        # Build display name parts
+        display_parts = [base_name]
+
+        # Add software version if exists
+        if self.software_version:
+            display_parts.append(str(self.software_version))
+
+        # Add data type if exists
+        if self.data_type:
+            display_parts.append(f"({self.data_type})")
+
+        # Add "with helium" if hardware type exists
+        if self.hardware_type:
+            display_hardware_type = HARDWARE_TYPE_DISPLAY_MAP.get(self.hardware_type)
+            display_parts.append(f"with {display_hardware_type}")
+
+        # Join all parts with spaces
+        self.display_name = " ".join(display_parts)
+
+        return self
+
+    @model_validator(mode="after")
+    def set_brand_name(self):
         self.brand_name = DEVICE_BRAND_MAP.get(self.name)
 
         return self
