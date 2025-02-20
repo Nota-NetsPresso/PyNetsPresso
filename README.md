@@ -8,21 +8,32 @@
 </br>
 
 <div align="center">
+    <p align="center">
+        <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue?style=flat&logo=python&logoColor=blue" />
+        <a href="https://pytorch.org/" target="_blank"><img src="https://img.shields.io/badge/PyTorch-1.11.x ~ 1.13.x.-EE4C2C?style=flat&logo=pytorch&logoColor=#EE4C2C"/></a>
+        <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
+        <br>
+        <a href="https://netspresso.ai/?utm_source=git&utm_medium=badge&utm_campaign=np_renew"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
+    </p>
+</div>
+</br>
+
+<div align="center">
   <a href="https://netspresso.ai/?utm_source=git&utm_medium=text_signup&utm_campaign=np_renew"> Sign Up </a>
     | <a href="https://nota-netspresso.github.io/PyNetsPresso"> Docs </a> 
 </div>
 </br>
 
 <div align="center">
-  🎉 Qualcomm AI Hub x NetsPresso (<a href="https://www.nota.ai/qualcomm-ai-hub-landing">Link</a>) 🎉 <br>
-    <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20QAI%20Hub).ipynb"> A Practical Guide to Using NetsPresso with Qualcomm AI Hub </a></br>
+  🤝 Collaboration with partners 🤝 <br>
 </div>
-</br>
 
 <div align="center">
-  🔥 NetsPresso Model Optimization Tutorials 🔥 <br>
-    <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20Compressor).ipynb"> A Practical Guide to Using NetsPresso's Compressor Module </a></br>
-    <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20Quantizer).ipynb"> A Practical Guide to Using NetsPresso's Quantizer Module </a></br>
+  <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20QAI%20Hub).ipynb">Qualcomm AI Hub x NetsPresso</a>
+</div>
+
+<div align="center">
+  <a href="https://github.com/STMicroelectronics/stm32ai-modelzoo"> STM32 x NetsPresso</a>
 </div>
 </br>
 
@@ -38,22 +49,14 @@
 </div>
 </br>
 
+
 <div align="center">
-  🌟 STMicro x NetsPresso 🌟 <br>
-      <a href="https://github.com/STMicroelectronics/stm32ai-modelzoo"> STM32 model zoo</a>
+  🔥 NetsPresso Model Optimization Tutorials 🔥 <br>
+    <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20Compressor).ipynb"> A Practical Guide to Using NetsPresso's Compressor Module </a></br>
+    <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20Quantizer).ipynb"> A Practical Guide to Using NetsPresso's Quantizer Module </a></br>
 </div>
 </br>
 
-<div align="center">
-    <p align="center">
-        <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue?style=flat&logo=python&logoColor=blue" />
-        <a href="https://pytorch.org/" target="_blank"><img src="https://img.shields.io/badge/PyTorch-1.11.x ~ 1.13.x.-EE4C2C?style=flat&logo=pytorch&logoColor=#EE4C2C"/></a>
-        <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
-        <br>
-        <a href="https://netspresso.ai/?utm_source=git&utm_medium=badge&utm_campaign=np_renew"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
-    </p>
-</div>
-</br>
 
 Use **NetsPresso** for a seamless model optimization process. 
 NetsPresso resolves AI-related constraints in business use cases and enables cost-efficiency and enhanced performance by removing the requirement for high-spec servers and network connectivity and preventing high latency and personal data breaches.
