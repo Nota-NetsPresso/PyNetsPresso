@@ -13,12 +13,16 @@
 </div>
 </br>
 
-
+<div align="center">
+  🎉 Qualcomm AI Hub x NetsPresso (<a href="https://www.nota.ai/qualcomm-ai-hub-landing">Link</a>) 🎉 <br>
+    <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20QAI%20Hub).ipynb"> A Practical Guide to Using NetsPresso with Qualcomm AI Hub </a></br>
+</div>
+</br>
 
 <div align="center">
-  🔥 NetsPresso Tutorials (Google Colab) 🔥 <br>
-    <a href="https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a"> NetsPresso Tutorial(with Compressor) </a></br>
-    <a href="https://colab.research.google.com/drive/1IJq9QXgQWVIdPasVApT1lrGyvrKq--Pp?usp=sharing"> NetsPresso Tutorial(with Quantizer) </a></br>
+  🔥 NetsPresso Model Optimization Tutorials 🔥 <br>
+    <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20Compressor).ipynb"> A Practical Guide to Using NetsPresso's Compressor Module </a></br>
+    <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20Quantizer).ipynb"> A Practical Guide to Using NetsPresso's Quantizer Module </a></br>
 </div>
 </br>
 
@@ -47,7 +51,6 @@
         <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
         <br>
         <a href="https://netspresso.ai/?utm_source=git&utm_medium=badge&utm_campaign=np_renew"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
-        <a href="https://colab.research.google.com/drive/15HBp88qfUDQl5PaEcZ5J-dnLo-1kvw-a" target="_blank"><img src="https://img.shields.io/badge/Best Practice-Open in Colab-F9AB00?style=flat&logo=googlecolab&logoColor=#F9AB00"/></a>
     </p>
 </div>
 </br>
@@ -201,7 +204,7 @@ from netspresso import NetsPresso
 netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
 ```
 
-### ⭐⭐⭐ (New Feature) Quantizer ⭐⭐⭐
+### Quantizer
 
 #### Automatic quantization
 
