@@ -34,19 +34,24 @@ class ModelService:
             if conversion_tasks:
                 # Set latest experiment status from the most recent conversion task
                 model.latest_experiments.convert = conversion_tasks[0].status
-                # Collect all task IDs and get benchmark tasks for each converted model
+                # Collect conversion task IDs
+                converted_model_ids = []
                 for conversion_task in conversion_tasks:
                     model.convert_task_ids.append(conversion_task.task_id)
-                    # Get benchmark tasks for this converted model
-                    benchmark_tasks = benchmark_task_repository.get_all_by_model_id(
-                        db=db,
-                        model_id=conversion_task.model_id
-                    )
-                    if benchmark_tasks:
-                        model.latest_experiments.benchmark = benchmark_tasks[0].status
-                        # Collect benchmark task IDs
-                        for benchmark_task in benchmark_tasks:
-                            model.benchmark_task_ids.append(benchmark_task.task_id)
+                    converted_model_ids.append(conversion_task.model_id)
+
+                # Get all benchmark tasks for converted models in single query
+                benchmark_tasks = benchmark_task_repository.get_all_by_converted_models(
+                    db=db,
+                    converted_model_ids=converted_model_ids
+                )
+
+                if benchmark_tasks:
+                    # First task is most recent due to order_by in query
+                    model.latest_experiments.benchmark = benchmark_tasks[0].status
+                    # Collect all benchmark task IDs
+                    for benchmark_task in benchmark_tasks:
+                        model.benchmark_task_ids.append(benchmark_task.task_id)
 
             model.status = task_status
             new_models.append(model)
@@ -69,19 +74,24 @@ class ModelService:
         if conversion_tasks:
             # Set latest experiment status from the most recent conversion task
             model.latest_experiments.convert = conversion_tasks[0].status
-            # Collect all task IDs and get benchmark tasks for each converted model
+            # Collect conversion task IDs
+            converted_model_ids = []
             for conversion_task in conversion_tasks:
                 model.convert_task_ids.append(conversion_task.task_id)
-                # Get benchmark tasks for this converted model
-                benchmark_tasks = benchmark_task_repository.get_all_by_model_id(
-                    db=db,
-                    model_id=conversion_task.model_id
-                )
-                if benchmark_tasks:
-                    model.latest_experiments.benchmark = benchmark_tasks[0].status
-                    # Collect benchmark task IDs
-                    for benchmark_task in benchmark_tasks:
-                        model.benchmark_task_ids.append(benchmark_task.task_id)
+                converted_model_ids.append(conversion_task.model_id)
+
+            # Get all benchmark tasks for converted models in single query
+            benchmark_tasks = benchmark_task_repository.get_all_by_converted_models(
+                db=db,
+                converted_model_ids=converted_model_ids
+            )
+
+            if benchmark_tasks:
+                # First task is most recent due to order_by in query
+                model.latest_experiments.benchmark = benchmark_tasks[0].status
+                # Collect all benchmark task IDs
+                for benchmark_task in benchmark_tasks:
+                    model.benchmark_task_ids.append(benchmark_task.task_id)
 
         model.status = task_status
 
