@@ -60,5 +60,15 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
             order=order,
         )
 
+    def get_by_model_id(self, db: Session, model_id: str) -> Optional[ConversionTask]:
+        task = (
+            db.query(self.model)
+            .filter(
+                self.model.model_id == model_id,
+            )
+            .first()
+        )
+
+        return task
 
 conversion_task_repository = ConversionTaskRepository(ConversionTask)

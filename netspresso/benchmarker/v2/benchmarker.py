@@ -20,8 +20,10 @@ from netspresso.enums.project import SubFolder
 from netspresso.metadata.benchmarker import BenchmarkerMetadata
 from netspresso.utils import FileHandler
 from netspresso.utils.db.models.benchmark import BenchmarkResult, BenchmarkTask
+from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
+from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.session import get_db_session
 from netspresso.utils.metadata import MetadataHandler
@@ -124,6 +126,11 @@ class BenchmarkerV2(NetsPressoBase):
             input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id, user_id=user_id)
             return input_model
 
+    def get_conversion_task(self, input_model_id: str) -> ConversionTask:
+        with get_db_session() as db:
+            conversion_task = conversion_task_repository.get_by_model_id(db=db, model_id=input_model_id)
+            return conversion_task
+
     def save_model(self, model_name, project_id, user_id, object_path) -> Model:
         model = Model(
             name=model_name,
@@ -143,7 +150,7 @@ class BenchmarkerV2(NetsPressoBase):
 
             return benchmark_task
 
-    def save_benchmark_result(self, benchmark_task: BenchmarkTask, benchmark_result, file_size_in_mb) -> BenchmarkTask:
+    def save_benchmark_result(self, benchmark_task: BenchmarkTask, benchmark_result) -> BenchmarkTask:
         benchmark_result = BenchmarkResult(
             processor=benchmark_result.processor,
             memory_footprint_gpu=benchmark_result.memory_footprint_gpu,
@@ -151,7 +158,6 @@ class BenchmarkerV2(NetsPressoBase):
             power_consumption=benchmark_result.power_consumption,
             ram_size=benchmark_result.ram_size,
             latency=benchmark_result.latency,
-            file_size=file_size_in_mb,
         )
 
         with get_db_session() as db:
@@ -160,8 +166,8 @@ class BenchmarkerV2(NetsPressoBase):
 
             return benchmark_task
 
-    def create_benchmark_result(self, benchmark_task: BenchmarkTask) -> BenchmarkTask:
-        benchmark_result = BenchmarkResult()
+    def create_benchmark_result(self, benchmark_task: BenchmarkTask, file_size: float) -> BenchmarkTask:
+        benchmark_result = BenchmarkResult(file_size=file_size)
         with get_db_session() as db:
             benchmark_task.result = benchmark_result
             benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
@@ -170,6 +176,7 @@ class BenchmarkerV2(NetsPressoBase):
 
     def create_benchmark_task(
         self,
+        framework: TargetFramework,
         device_name: Union[str, DeviceName],
         software_version: Union[str, SoftwareVersion],
         data_type: Union[str, DataType],
@@ -178,6 +185,7 @@ class BenchmarkerV2(NetsPressoBase):
     ) -> BenchmarkTask:
         with get_db_session() as db:
             benchmark_task = BenchmarkTask(
+                framework=framework,
                 device_name=device_name,
                 software_version=software_version,
                 precision=data_type,
@@ -216,13 +224,15 @@ class BenchmarkerV2(NetsPressoBase):
         """
 
         FileHandler.check_input_model_path(input_model_path)
-        output_dir = Path(input_model_path).parent
 
         if input_model_id:
             input_model = self.get_input_model(input_model_id, self.user_info.user_id)
             input_model.user_id = self.user_info.user_id
+            input_model_path = Path(input_model.object_path)
+            conversion_task = self.get_conversion_task(input_model_id)
+            framework = conversion_task.framework
+            data_type = conversion_task.precision
 
-        data_type = self.get_data_type(output_dir)
         model = self.save_model(
             model_name=f"{input_model.name}_benchmarked",
             project_id=input_model.project_id,
@@ -230,6 +240,7 @@ class BenchmarkerV2(NetsPressoBase):
             object_path=input_model_path,
         )
         benchmark_task = self.create_benchmark_task(
+            framework=framework,
             device_name=target_device_name,
             software_version=target_software_version,
             data_type=data_type,
@@ -273,9 +284,8 @@ class BenchmarkerV2(NetsPressoBase):
             )
 
             benchmark_task.benchmark_task_id = benchmark_response.data.benchmark_task_id
-            benchmark_task.framework = benchmark_response.data.benchmark_task_option.framework
             benchmark_task = self._save_benchmark_task(benchmark_task)
-            benchmark_task = self.create_benchmark_result(benchmark_task)
+            benchmark_task = self.create_benchmark_result(benchmark_task, validate_model_response.data.file_size_in_mb)
 
             if wait_until_done:
                 while True:
@@ -303,7 +313,7 @@ class BenchmarkerV2(NetsPressoBase):
 
                 # Save benchmark results
                 _benchmark_result = benchmark_response.data.benchmark_result
-                benchmark_task = self.save_benchmark_result(benchmark_task, _benchmark_result, validate_model_response.data.file_size_in_mb)
+                benchmark_task = self.save_benchmark_result(benchmark_task, _benchmark_result)
 
                 logger.info("Benchmark task was completed successfully.")
             elif benchmark_response.data.status in [
@@ -367,3 +377,41 @@ class BenchmarkerV2(NetsPressoBase):
             task_id=benchmark_task_id,
         )
         return response.data
+
+    def update_benchmark_task_status(self, task_id: str) -> bool:
+        """Update benchmark task status in DB based on launcher status.
+
+        Args:
+            task_id (str): Benchmark task ID to update
+
+        Returns:
+            bool: True if status was updated, False if task is still in progress
+        """
+        with get_db_session() as db:
+            benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=task_id)
+            if not benchmark_task:
+                logger.error(f"Benchmark task {task_id} not found")
+                return True
+
+            launcher_status = self.get_benchmark_task(benchmark_task.benchmark_task_id)
+            status_updated = False
+
+            if launcher_status.status == TaskStatusForDisplay.FINISHED:
+                benchmark_task.status = Status.COMPLETED
+                status_updated = True
+                benchmark_task = self.save_benchmark_result(benchmark_task, launcher_status.benchmark_result)
+
+            elif launcher_status.status in [TaskStatusForDisplay.ERROR, TaskStatusForDisplay.TIMEOUT]:
+                benchmark_task.status = Status.ERROR
+                benchmark_task.error_detail = launcher_status.error_log
+                status_updated = True
+
+            elif launcher_status.status == TaskStatusForDisplay.USER_CANCEL:
+                benchmark_task.status = Status.STOPPED
+                status_updated = True
+
+            if status_updated:
+                benchmark_task_repository.save(db, benchmark_task)
+                logger.info(f"Benchmark task {task_id} status updated to {benchmark_task.status}")
+
+            return status_updated

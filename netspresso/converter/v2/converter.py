@@ -364,3 +364,50 @@ class ConverterV2(NetsPressoBase):
             task_id=conversion_task_id,
         )
         return response.data
+
+    def update_conversion_task_status(self, task_id: str) -> bool:
+        """Update conversion task status in DB based on launcher status.
+
+        Args:
+            task_id (str): Conversion task ID to update
+
+        Returns:
+            bool: True if status was updated, False if task is still in progress
+        """
+        with get_db_session() as db:
+            conversion_task = conversion_task_repository.get_by_task_id(db=db, task_id=task_id)
+            if not conversion_task:
+                logger.error(f"Conversion task {task_id} not found")
+                return True
+
+            launcher_status = self.get_conversion_task(conversion_task.convert_task_uuid)
+            status_updated = False
+
+            if launcher_status.status == TaskStatusForDisplay.FINISHED:
+                conversion_task.status = Status.COMPLETED
+                status_updated = True
+                model = model_repository.get_by_model_id(
+                    db=db,
+                    model_id=conversion_task.model_id,
+                    user_id=self.user_info.user_id
+                )
+                self._download_converted_model(
+                    convert_task=launcher_status,
+                    local_path=model.object_path,
+                )
+                logger.info(f"Downloaded model to {model.object_path}")
+
+            elif launcher_status.status in [TaskStatusForDisplay.ERROR, TaskStatusForDisplay.TIMEOUT]:
+                conversion_task.status = Status.ERROR
+                conversion_task.error_detail = launcher_status.error_log
+                status_updated = True
+
+            elif launcher_status.status == TaskStatusForDisplay.USER_CANCEL:
+                conversion_task.status = Status.STOPPED
+                status_updated = True
+
+            if status_updated:
+                conversion_task_repository.save(db, conversion_task)
+                logger.info(f"Conversion task {task_id} status updated to {conversion_task.status}")
+
+            return status_updated
