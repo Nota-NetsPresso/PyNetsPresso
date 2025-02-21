@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import and_, func
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from netspresso.enums.metadata import Status
@@ -70,5 +70,32 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
         )
 
         return task
+
+    def get_unique_completed_tasks(self, db: Session, model_id: str) -> List[ConversionTask]:
+        """Get unique completed conversion tasks for a model using SQLAlchemy ORM.
+
+        Args:
+            db: Database session
+            model_id: Model ID to get tasks for
+
+        Returns:
+            List[ConversionTask]: List of unique completed conversion tasks
+        """
+        return (
+            db.query(self.model)
+            .filter(
+                and_(
+                    self.model.input_model_id == model_id,
+                    self.model.status == Status.COMPLETED
+                )
+            )
+            .group_by(
+                self.model.framework,
+                self.model.device_name,
+                self.model.software_version,
+                self.model.precision
+            )
+            .all()
+        )
 
 conversion_task_repository = ConversionTaskRepository(ConversionTask)

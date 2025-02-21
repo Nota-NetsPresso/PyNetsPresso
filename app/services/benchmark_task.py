@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.device import (
@@ -18,7 +19,6 @@ from app.api.v1.schemas.task.benchmark.benchmark_task import (
     BenchmarkResponse,
     TargetFrameworkPayload,
 )
-from app.services.conversion_task import conversion_task_service
 from app.services.project import project_service
 from app.services.user import user_service
 from app.worker.celery_app import benchmark_model_task
@@ -28,6 +28,7 @@ from netspresso.enums.model import Framework
 from netspresso.enums.project import SubFolder
 from netspresso.enums.task import TaskStatusForDisplay
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
+from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 
 
@@ -40,54 +41,113 @@ class BenchmarkTaskService:
         if model.type not in [SubFolder.TRAINED_MODELS, SubFolder.COMPRESSED_MODELS]:
             raise ValueError("Model is not a trained or compressed model")
 
-        conversion_tasks = conversion_task_service.get_conversion_tasks(db=db, model_id=model_id, api_key=api_key)
+        unique_conversions = conversion_task_repository.get_unique_completed_tasks(db=db, model_id=model_id)
+        logger.info(f"Found {len(unique_conversions)} unique completed conversions")
+        for conv in unique_conversions:
+            logger.info(f"Conversion: framework={conv.framework}, precision={conv.precision}, device={conv.device_name}")
 
         unique_device_keys = set()
         unique_devices = []
-        checked_frameworks = set()
+        checked_combinations = set()
 
-        for conversion_task in conversion_tasks:
-            framework = conversion_task.framework.name
-
-            if framework not in [Framework.TENSORRT, Framework.DRPAI] and framework in checked_frameworks:
-                continue
-
-            checked_frameworks.add(framework)
-
-            device = conversion_task.device.name
-            software_version = conversion_task.software_version.name if conversion_task.software_version else None
+        for conversion_task in unique_conversions:
+            framework = conversion_task.framework
+            data_type = conversion_task.precision
             input_model_id = conversion_task.model_id
 
+            is_device_specific = framework in [Framework.TENSORRT, Framework.DRPAI]
+            logger.info(f"\nProcessing conversion: framework={framework}, data_type={data_type}")
+            logger.info(f"Is device specific: {is_device_specific}")
+
+            framework_data_type = (framework, data_type)
+            if not is_device_specific and framework_data_type in checked_combinations:
+                logger.info(f"Skipping framework {framework} with data_type {data_type} - already checked")
+                continue
+
+            checked_combinations.add(framework_data_type)
+
+            if is_device_specific:
+                device = conversion_task.device_name
+                software_version = conversion_task.software_version if conversion_task.software_version else None
+                logger.info(f"Using specific device: {device} with sw version: {software_version}")
+            else:
+                device = conversion_task.device_name
+                software_version = None
+                logger.info("Using all available devices")
+
             _supported_options = benchmarker.get_supported_options(
-                framework=framework, device=device, software_version=software_version
+                framework=framework,
+                device=device,
+                software_version=software_version
             )
 
             for option in _supported_options:
+                if option.framework != framework:
+                    logger.info(f"Skipping option with framework {option.framework} - doesn't match {framework}")
+                    continue
+
                 for device_info in option.devices:
-                    device_key = self._create_device_key(device_info)
+                    if is_device_specific and device_info.device_name != device:
+                        logger.info(f"Skipping device {device_info.device_name} - doesn't match {device}")
+                        continue
+
+                    logger.info(f"\nChecking device {device_info.device_name} for {data_type}")
+                    logger.info(f"Device supports: {device_info.data_types}")
+
+                    if data_type not in device_info.data_types:
+                        logger.info(f"Skipping {data_type} for device {device_info.device_name} - not supported")
+                        continue
+
+                    device_key = self._create_device_key(device_info, input_model_id, data_type)
+                    logger.info(f"Device key: {device_key}")
 
                     if device_key not in unique_device_keys:
                         unique_device_keys.add(device_key)
-                        device_payload = self._create_device_payload(input_model_id, device_info)
+                        device_payload = self._create_device_payload(
+                            input_model_id=input_model_id,
+                            device_info=device_info,
+                            data_type=data_type
+                        )
                         unique_devices.append(device_payload)
+                        logger.info(f"Added device: {device_payload}")
+                    else:
+                        logger.info("Device already added - skipping")
 
+        logger.info(f"\nFinal device count: {len(unique_devices)}")
         return unique_devices
 
-    def _create_device_key(self, device_info: DeviceInfo) -> tuple:
+    def _create_device_key(self, device_info: DeviceInfo, input_model_id: str, data_type: str) -> tuple:
+        """디바이스 키에 input_model_id와 data_type을 포함하여 생성"""
         base_key = (
             device_info.device_name,
             tuple(v.software_version for v in device_info.software_versions),
-            tuple(device_info.data_types),
-            tuple(device_info.hardware_types)
+            tuple(device_info.hardware_types),
+            input_model_id,
+            data_type
         )
         return base_key
 
-    def _create_device_payload(self, input_model_id: str, device_info: DeviceInfo) -> SupportedDeviceForBenchmarkPayload:
+    def _create_device_payload(
+        self,
+        input_model_id: str,
+        device_info: DeviceInfo,
+        data_type: str
+    ) -> SupportedDeviceForBenchmarkPayload:
+        """Create device payload with specific data type.
+
+        Args:
+            input_model_id: ID of the converted model
+            device_info: Device information from launcher
+            data_type: Data type to use for this device
+
+        Returns:
+            SupportedDeviceForBenchmarkPayload: Device payload for response
+        """
         return SupportedDeviceForBenchmarkPayload(
             input_model_id=input_model_id,
             name=device_info.device_name,
             software_version=device_info.software_versions[0].software_version if device_info.software_versions else None,
-            data_type=device_info.data_types[0] if device_info.data_types else None,
+            data_type=data_type,
             hardware_type=device_info.hardware_types[0] if device_info.hardware_types else None
         )
 

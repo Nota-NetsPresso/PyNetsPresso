@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import func
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from netspresso.utils.db.models.benchmark import BenchmarkTask
@@ -54,6 +54,23 @@ class BenchmarkTaskRepository(BaseRepository[BenchmarkTask]):
             start=start,
             size=size,
             order=order,
+        )
+
+    def get_all_by_converted_models(self, db: Session, converted_model_ids: List[str]) -> List[BenchmarkTask]:
+        """Get all benchmark tasks for given converted model IDs ordered by updated_at desc.
+
+        Args:
+            db: Database session
+            converted_model_ids: List of converted model IDs
+
+        Returns:
+            List[BenchmarkTask]: List of benchmark tasks ordered by updated_at desc
+        """
+        return (
+            db.query(self.model)
+            .filter(self.model.input_model_id.in_(converted_model_ids))
+            .order_by(desc(self.model.updated_at))
+            .all()
         )
 
 

@@ -30,7 +30,7 @@ def get_supported_benchmark_devices(
         api_key=api_key,
     )
 
-    return SupportedDevicesForBenchmarkResponse(data=supported_devices)
+    return SupportedDevicesForBenchmarkResponse(data=supported_devices, total_count=len(supported_devices))
 
 
 @router.post("/benchmarks", response_model=BenchmarkCreateResponse, status_code=201)
