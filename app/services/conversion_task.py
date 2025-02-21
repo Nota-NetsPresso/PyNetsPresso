@@ -104,7 +104,6 @@ class ConversionTaskService:
         input_model_path = onnx_files[0]  # Use the first .onnx file found
 
         output_dir = input_model_dir / "converted"
-        output_dir.mkdir(exist_ok=True)
 
         task = convert_model_task.delay(
             api_key=api_key,
