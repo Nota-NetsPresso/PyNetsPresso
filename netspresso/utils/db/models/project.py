@@ -34,5 +34,5 @@ class Project(Base, TimestampMixin):
         return [
             model.model_id
             for model in self.models
-            if model.type in [SubFolder.TRAINED_MODELS, SubFolder.COMPRESSED_MODELS]
+            if model.type in [SubFolder.TRAINED_MODELS, SubFolder.COMPRESSED_MODELS] and not model.is_deleted
         ]

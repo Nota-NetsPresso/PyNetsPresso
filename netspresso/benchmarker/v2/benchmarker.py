@@ -123,7 +123,7 @@ class BenchmarkerV2(NetsPressoBase):
 
     def get_input_model(self, input_model_id: str, user_id: str) -> Model:
         with get_db_session() as db:
-            input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id, user_id=user_id)
+            input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id)
             return input_model
 
     def get_conversion_task(self, input_model_id: str) -> ConversionTask:

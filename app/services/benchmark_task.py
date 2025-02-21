@@ -39,7 +39,7 @@ class BenchmarkTaskService:
         netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
         benchmarker = netspresso.benchmarker_v2()
 
-        model = model_repository.get_by_model_id(db=db, model_id=model_id, user_id=netspresso.user_info.user_id)
+        model = model_repository.get_by_model_id(db=db, model_id=model_id)
         if model.type not in [SubFolder.TRAINED_MODELS, SubFolder.COMPRESSED_MODELS]:
             raise ValueError("Model is not a trained or compressed model")
 
@@ -151,12 +151,10 @@ class BenchmarkTaskService:
         )
 
     def create_benchmark_task(self, db: Session, benchmark_in: BenchmarkCreate, api_key: str) -> BenchmarkCreatePayload:
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
 
         # Get model from trained models repository
-        model = model_repository.get_by_model_id(
-            db=db, model_id=benchmark_in.input_model_id, user_id=netspresso.user_info.user_id
-        )
+        model = model_repository.get_by_model_id(db=db, model_id=benchmark_in.input_model_id)
         project = project_service.get_project(db=db, project_id=model.project_id, api_key=api_key)
 
         # Create output directory path as a 'converted' subfolder of input model path

@@ -130,7 +130,7 @@ class ConverterV2(NetsPressoBase):
 
     def get_input_model(self, input_model_id: str, user_id: str) -> Model:
         with get_db_session() as db:
-            input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id, user_id=user_id)
+            input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id)
             return input_model
 
     def save_model(self, model_name, project_id, user_id, object_path) -> Model:
@@ -386,9 +386,7 @@ class ConverterV2(NetsPressoBase):
             if launcher_status.status == TaskStatusForDisplay.FINISHED:
                 conversion_task.status = Status.COMPLETED
                 status_updated = True
-                model = model_repository.get_by_model_id(
-                    db=db, model_id=conversion_task.model_id, user_id=self.user_info.user_id
-                )
+                model = model_repository.get_by_model_id(db=db, model_id=conversion_task.model_id)
                 self._download_converted_model(
                     convert_task=launcher_status,
                     local_path=model.object_path,

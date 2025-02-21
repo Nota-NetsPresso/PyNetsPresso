@@ -83,12 +83,10 @@ class ConversionTaskService:
     def create_conversion_task(
         self, db: Session, conversion_in: ConversionCreate, api_key: str
     ) -> ConversionCreatePayload:
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
 
         # Get model from trained models repository
-        model = model_repository.get_by_model_id(
-            db=db, model_id=conversion_in.input_model_id, user_id=netspresso.user_info.user_id
-        )
+        model = model_repository.get_by_model_id(db=db, model_id=conversion_in.input_model_id)
         project = project_service.get_project(db=db, project_id=model.project_id, api_key=api_key)
 
         # Create output directory path as a 'converted' subfolder of input model path
