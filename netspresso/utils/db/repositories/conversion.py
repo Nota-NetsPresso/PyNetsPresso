@@ -54,7 +54,6 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
             condition=[
                 self.model.input_model_id == model_id,
                 self.model.is_deleted.is_(False),
-                self.model.status == Status.COMPLETED,
             ],
             start=start,
             size=size,
