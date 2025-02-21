@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.api.v1.schemas.model import ModelPayload
 from app.services.user import user_service
 from netspresso.enums.project import SubFolder
+from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
@@ -33,9 +34,19 @@ class ModelService:
             if conversion_tasks:
                 # Set latest experiment status from the most recent conversion task
                 model.latest_experiments.convert = conversion_tasks[0].status
-                # Collect all task IDs
+                # Collect all task IDs and get benchmark tasks for each converted model
                 for conversion_task in conversion_tasks:
                     model.convert_task_ids.append(conversion_task.task_id)
+                    # Get benchmark tasks for this converted model
+                    benchmark_tasks = benchmark_task_repository.get_all_by_model_id(
+                        db=db,
+                        model_id=conversion_task.model_id
+                    )
+                    if benchmark_tasks:
+                        model.latest_experiments.benchmark = benchmark_tasks[0].status
+                        # Collect benchmark task IDs
+                        for benchmark_task in benchmark_tasks:
+                            model.benchmark_task_ids.append(benchmark_task.task_id)
 
             model.status = task_status
             new_models.append(model)
@@ -58,9 +69,19 @@ class ModelService:
         if conversion_tasks:
             # Set latest experiment status from the most recent conversion task
             model.latest_experiments.convert = conversion_tasks[0].status
-            # Collect all task IDs
+            # Collect all task IDs and get benchmark tasks for each converted model
             for conversion_task in conversion_tasks:
                 model.convert_task_ids.append(conversion_task.task_id)
+                # Get benchmark tasks for this converted model
+                benchmark_tasks = benchmark_task_repository.get_all_by_model_id(
+                    db=db,
+                    model_id=conversion_task.model_id
+                )
+                if benchmark_tasks:
+                    model.latest_experiments.benchmark = benchmark_tasks[0].status
+                    # Collect benchmark task IDs
+                    for benchmark_task in benchmark_tasks:
+                        model.benchmark_task_ids.append(benchmark_task.task_id)
 
         model.status = task_status
 
