@@ -146,14 +146,17 @@ class BenchmarkTaskService:
             HardwareTypePayload(name=benchmark_task.hardware_type) if benchmark_task.hardware_type else None
         )
         precision = PrecisionForBenchmarkPayload(name=benchmark_task.precision)
-        result = BenchmarkResultPayload(
-            memory_footprint_gpu=benchmark_task.result.memory_footprint_gpu,
-            memory_footprint_cpu=benchmark_task.result.memory_footprint_cpu,
-            power_consumption=benchmark_task.result.power_consumption,
-            ram_size=benchmark_task.result.ram_size,
-            latency=benchmark_task.result.latency,
-            file_size=benchmark_task.result.file_size,
-        )
+        if benchmark_task.result:
+            result = BenchmarkResultPayload(
+                memory_footprint_gpu=benchmark_task.result.memory_footprint_gpu,
+                memory_footprint_cpu=benchmark_task.result.memory_footprint_cpu,
+                power_consumption=benchmark_task.result.power_consumption,
+                ram_size=benchmark_task.result.ram_size,
+                latency=benchmark_task.result.latency,
+                file_size=benchmark_task.result.file_size,
+            )
+        else:
+            result = BenchmarkResultPayload()
 
         benchmark_payload = BenchmarkPayload(
             task_id=benchmark_task.task_id,
