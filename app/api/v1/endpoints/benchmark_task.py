@@ -3,11 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import api_key_header
 from app.api.v1.schemas.device import SupportedDevicesForBenchmarkResponse
-from app.api.v1.schemas.task.benchmark.benchmark_task import (
-    BenchmarkCreate,
-    BenchmarkCreateResponse,
-    BenchmarkResponse,
-)
+from app.api.v1.schemas.task.benchmark.benchmark_task import BenchmarkCreate, BenchmarkCreateResponse, BenchmarkResponse
 from app.services.benchmark_task import benchmark_task_service
 from netspresso.utils.db.session import get_db
 

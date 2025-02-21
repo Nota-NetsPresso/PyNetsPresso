@@ -42,8 +42,7 @@ class ModelService:
 
                 # Get all benchmark tasks for converted models in single query
                 benchmark_tasks = benchmark_task_repository.get_all_by_converted_models(
-                    db=db,
-                    converted_model_ids=converted_model_ids
+                    db=db, converted_model_ids=converted_model_ids
                 )
 
                 if benchmark_tasks:
@@ -82,8 +81,7 @@ class ModelService:
 
             # Get all benchmark tasks for converted models in single query
             benchmark_tasks = benchmark_task_repository.get_all_by_converted_models(
-                db=db,
-                converted_model_ids=converted_model_ids
+                db=db, converted_model_ids=converted_model_ids
             )
 
             if benchmark_tasks:

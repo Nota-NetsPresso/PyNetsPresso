@@ -387,9 +387,7 @@ class ConverterV2(NetsPressoBase):
                 conversion_task.status = Status.COMPLETED
                 status_updated = True
                 model = model_repository.get_by_model_id(
-                    db=db,
-                    model_id=conversion_task.model_id,
-                    user_id=self.user_info.user_id
+                    db=db, model_id=conversion_task.model_id, user_id=self.user_info.user_id
                 )
                 self._download_converted_model(
                     convert_task=launcher_status,

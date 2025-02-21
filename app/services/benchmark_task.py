@@ -33,7 +33,9 @@ from netspresso.utils.db.repositories.model import model_repository
 
 
 class BenchmarkTaskService:
-    def get_supported_devices(self, db: Session, model_id: str, api_key: str) -> List[SupportedDeviceForBenchmarkPayload]:
+    def get_supported_devices(
+        self, db: Session, model_id: str, api_key: str
+    ) -> List[SupportedDeviceForBenchmarkPayload]:
         netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
         benchmarker = netspresso.benchmarker_v2()
 
@@ -44,7 +46,9 @@ class BenchmarkTaskService:
         unique_conversions = conversion_task_repository.get_unique_completed_tasks(db=db, model_id=model_id)
         logger.info(f"Found {len(unique_conversions)} unique completed conversions")
         for conv in unique_conversions:
-            logger.info(f"Conversion: framework={conv.framework}, precision={conv.precision}, device={conv.device_name}")
+            logger.info(
+                f"Conversion: framework={conv.framework}, precision={conv.precision}, device={conv.device_name}"
+            )
 
         unique_device_keys = set()
         unique_devices = []
@@ -76,9 +80,7 @@ class BenchmarkTaskService:
                 logger.info("Using all available devices")
 
             _supported_options = benchmarker.get_supported_options(
-                framework=framework,
-                device=device,
-                software_version=software_version
+                framework=framework, device=device, software_version=software_version
             )
 
             for option in _supported_options:
@@ -104,9 +106,7 @@ class BenchmarkTaskService:
                     if device_key not in unique_device_keys:
                         unique_device_keys.add(device_key)
                         device_payload = self._create_device_payload(
-                            input_model_id=input_model_id,
-                            device_info=device_info,
-                            data_type=data_type
+                            input_model_id=input_model_id, device_info=device_info, data_type=data_type
                         )
                         unique_devices.append(device_payload)
                         logger.info(f"Added device: {device_payload}")
@@ -123,15 +123,12 @@ class BenchmarkTaskService:
             tuple(v.software_version for v in device_info.software_versions),
             tuple(device_info.hardware_types),
             input_model_id,
-            data_type
+            data_type,
         )
         return base_key
 
     def _create_device_payload(
-        self,
-        input_model_id: str,
-        device_info: DeviceInfo,
-        data_type: str
+        self, input_model_id: str, device_info: DeviceInfo, data_type: str
     ) -> SupportedDeviceForBenchmarkPayload:
         """Create device payload with specific data type.
 
@@ -146,9 +143,11 @@ class BenchmarkTaskService:
         return SupportedDeviceForBenchmarkPayload(
             input_model_id=input_model_id,
             name=device_info.device_name,
-            software_version=device_info.software_versions[0].software_version if device_info.software_versions else None,
+            software_version=(
+                device_info.software_versions[0].software_version if device_info.software_versions else None
+            ),
             data_type=data_type,
-            hardware_type=device_info.hardware_types[0] if device_info.hardware_types else None
+            hardware_type=device_info.hardware_types[0] if device_info.hardware_types else None,
         )
 
     def create_benchmark_task(self, db: Session, benchmark_in: BenchmarkCreate, api_key: str) -> BenchmarkCreatePayload:
@@ -202,9 +201,7 @@ class BenchmarkTaskService:
         software_version = (
             SoftwareVersionPayload(name=benchmark_task.software_version) if benchmark_task.software_version else None
         )
-        hardware_type = (
-            HardwareTypePayload(name=benchmark_task.hardware_type) if benchmark_task.hardware_type else None
-        )
+        hardware_type = HardwareTypePayload(name=benchmark_task.hardware_type) if benchmark_task.hardware_type else None
         precision = PrecisionForBenchmarkPayload(name=benchmark_task.precision)
         if benchmark_task.result:
             result = BenchmarkResultPayload(
@@ -254,9 +251,7 @@ class BenchmarkTaskService:
         software_version = (
             SoftwareVersionPayload(name=benchmark_task.software_version) if benchmark_task.software_version else None
         )
-        hardware_type = (
-            HardwareTypePayload(name=benchmark_task.hardware_type) if benchmark_task.hardware_type else None
-        )
+        hardware_type = HardwareTypePayload(name=benchmark_task.hardware_type) if benchmark_task.hardware_type else None
         precision = PrecisionForBenchmarkPayload(name=benchmark_task.precision)
 
         benchmark_payload = BenchmarkPayload(
@@ -279,4 +274,3 @@ class BenchmarkTaskService:
 
 
 benchmark_task_service = BenchmarkTaskService()
-
