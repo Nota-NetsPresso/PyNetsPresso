@@ -62,9 +62,32 @@ class ModelService:
 
         return latest_status, task_ids
 
+    def _attach_child_task_info(self, db: Session, model: ModelPayload) -> ModelPayload:
+        """Attach child tasks (conversion, benchmark) information to model
+
+        Args:
+            db: Database session
+            model: Model to attach task information to
+
+        Returns:
+            ModelPayload: Model with attached task information
+        """
+        # Get conversion tasks and their benchmark tasks
+        conv_status, conv_task_ids, conv_model_ids = self._get_conversion_info(db, model.model_id)
+        if conv_status:
+            model.latest_experiments.convert = conv_status
+            model.convert_task_ids.extend(conv_task_ids)
+
+            # Get benchmark tasks for converted models
+            bench_status, bench_task_ids = self._get_benchmark_info(db, conv_model_ids)
+            if bench_status:
+                model.latest_experiments.benchmark = bench_status
+                model.benchmark_task_ids.extend(bench_task_ids)
+
+        return model
+
     def get_models(self, db: Session, api_key: str) -> List[ModelPayload]:
         netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
-
         models = model_repository.get_all_by_user_id(db=db, user_id=netspresso.user_info.user_id)
 
         new_models = []
@@ -73,37 +96,11 @@ class ModelService:
                 continue
 
             training_task = training_task_repository.get_by_model_id(db=db, model_id=model.model_id)
-            task_status = training_task.status
-            model.train_task_id = training_task.task_id
-
-            model = ModelPayload.model_validate(model)
-
-            # Get conversion tasks ordered by created_at desc
-            conversion_tasks = conversion_task_repository.get_all_by_model_id(db=db, model_id=model.model_id)
-
-            if conversion_tasks:
-                # Set latest experiment status from the most recent conversion task
-                model.latest_experiments.convert = conversion_tasks[0].status
-                # Collect conversion task IDs
-                converted_model_ids = []
-                for conversion_task in conversion_tasks:
-                    model.convert_task_ids.append(conversion_task.task_id)
-                    converted_model_ids.append(conversion_task.model_id)
-
-                # Get all benchmark tasks for converted models in single query
-                benchmark_tasks = benchmark_task_repository.get_all_by_converted_models(
-                    db=db, converted_model_ids=converted_model_ids
-                )
-
-                if benchmark_tasks:
-                    # First task is most recent due to order_by in query
-                    model.latest_experiments.benchmark = benchmark_tasks[0].status
-                    # Collect all benchmark task IDs
-                    for benchmark_task in benchmark_tasks:
-                        model.benchmark_task_ids.append(benchmark_task.task_id)
-
-            model.status = task_status
-            new_models.append(model)
+            model_payload = ModelPayload.model_validate(model)
+            model_payload.train_task_id = training_task.task_id
+            model_payload.status = training_task.status
+            model_payload = self._attach_child_task_info(db, model_payload)
+            new_models.append(model_payload)
 
         return new_models
 
@@ -112,38 +109,12 @@ class ModelService:
 
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
         training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
-        task_status = training_task.status
-        model.train_task_id = training_task.task_id
 
-        model = ModelPayload.model_validate(model)
+        model_payload = ModelPayload.model_validate(model)
+        model_payload.train_task_id = training_task.task_id
+        model_payload.status = training_task.status
 
-        # Get conversion tasks ordered by created_at desc
-        conversion_tasks = conversion_task_repository.get_all_by_model_id(db=db, model_id=model.model_id)
-
-        if conversion_tasks:
-            # Set latest experiment status from the most recent conversion task
-            model.latest_experiments.convert = conversion_tasks[0].status
-            # Collect conversion task IDs
-            converted_model_ids = []
-            for conversion_task in conversion_tasks:
-                model.convert_task_ids.append(conversion_task.task_id)
-                converted_model_ids.append(conversion_task.model_id)
-
-            # Get all benchmark tasks for converted models in single query
-            benchmark_tasks = benchmark_task_repository.get_all_by_converted_models(
-                db=db, converted_model_ids=converted_model_ids
-            )
-
-            if benchmark_tasks:
-                # First task is most recent due to order_by in query
-                model.latest_experiments.benchmark = benchmark_tasks[0].status
-                # Collect all benchmark task IDs
-                for benchmark_task in benchmark_tasks:
-                    model.benchmark_task_ids.append(benchmark_task.task_id)
-
-        model.status = task_status
-
-        return model
+        return self._attach_child_task_info(db, model_payload)
 
     def delete_model(self, db: Session, model_id: str, api_key: str) -> ModelPayload:
         """Delete model and all related tasks
@@ -161,36 +132,21 @@ class ModelService:
         """
         _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
 
-        # Get model before deletion to return its info
+        # Get model before deletion
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
-        model = model_repository.delete_by_model_id(db=db, model_id=model_id)
-
-        # Deletion is allowed for Trained or Compressed models(Compressed model is not implemented yet)
-        # Deletion is not allowed for Converted or Benchmark models
-        if model.type in [SubFolder.TRAINED_MODELS]:
-            task = train_task_service.delete_training_task_by_model_id(db=db, model_id=model_id)
-
-        elif model.type in [SubFolder.BENCHMARKED_MODELS, SubFolder.CONVERTED_MODELS]:
+        if model.type not in [SubFolder.TRAINED_MODELS]:
             raise ModelCannotBeDeletedException(model_id=model_id)
 
-        # Process and return the model info
-        model = ModelPayload.model_validate(model)
-        model.status = task.status
-        model.train_task_id = task.task_id
+        # Delete model and training task
+        model = model_repository.delete_by_model_id(db=db, model_id=model_id)
+        training_task = train_task_service.delete_training_task_by_model_id(db=db, model_id=model_id)
 
-        # Get conversion tasks and their benchmark tasks
-        conv_status, conv_task_ids, conv_model_ids = self._get_conversion_info(db, model.model_id)
-        if conv_status:
-            model.latest_experiments.convert = conv_status
-            model.convert_task_ids.extend(conv_task_ids)
+        # Process and return model info
+        model_payload = ModelPayload.model_validate(model)
+        model_payload.train_task_id = training_task.task_id
+        model_payload.status = training_task.status
 
-            # Get benchmark tasks for converted models
-            bench_status, bench_task_ids = self._get_benchmark_info(db, conv_model_ids)
-            if bench_status:
-                model.latest_experiments.benchmark = bench_status
-                model.benchmark_task_ids.extend(bench_task_ids)
-
-        return model
+        return self._attach_child_task_info(db, model_payload)
 
 
 model_service = ModelService()

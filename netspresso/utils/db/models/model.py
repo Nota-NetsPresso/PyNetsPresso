@@ -17,7 +17,7 @@ class Model(Base, TimestampMixin):
     type = Column(String(30), nullable=False)
     is_retrainable = Column(Boolean, nullable=False, default=False)
     is_deleted = Column(Boolean, nullable=False, default=False)
-    object_path = Column(String(255), nullable=False)
+    object_path = Column(String(255), nullable=True)
 
     project_id = Column(String(36), ForeignKey("project.project_id", ondelete="CASCADE"), nullable=False)
     user_id = Column(String(36), nullable=False)
