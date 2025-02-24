@@ -60,3 +60,14 @@ def cancel_benchmark_task(
     benchmark_task = benchmark_task_service.cancel_benchmark_task(db=db, task_id=task_id, api_key=api_key)
 
     return BenchmarkResponse(data=benchmark_task)
+
+
+@router.delete("/benchmarks/{task_id}", response_model=BenchmarkResponse)
+def delete_benchmark_task(
+    task_id: str,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> BenchmarkResponse:
+    benchmark_task = benchmark_task_service.delete_benchmark_task(db=db, task_id=task_id, api_key=api_key)
+
+    return BenchmarkResponse(data=benchmark_task)

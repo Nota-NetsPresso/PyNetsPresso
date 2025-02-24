@@ -73,5 +73,11 @@ class BenchmarkTaskRepository(BaseRepository[BenchmarkTask]):
             .all()
         )
 
+    def delete_by_task_id(self, db: Session, task_id: str) -> BenchmarkTask:
+        task = self.get_by_task_id(db, task_id)
+        task.is_deleted = True
+        task = self.update(db, task)
+
+        return task
 
 benchmark_task_repository = BenchmarkTaskRepository(BenchmarkTask)
