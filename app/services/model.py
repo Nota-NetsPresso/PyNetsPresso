@@ -3,8 +3,10 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.model import ModelPayload
+from app.services.training_task import train_task_service
 from app.services.user import user_service
 from netspresso.enums.project import SubFolder
+from netspresso.exceptions.model import ModelCannotBeDeletedException
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
@@ -96,41 +98,49 @@ class ModelService:
         return model
 
     def delete_model(self, db: Session, model_id: str, api_key: str) -> ModelPayload:
+        """Delete model and all related tasks
+
+        Args:
+            db: Database session
+            model_id: Model ID to delete
+            api_key: API key for authentication
+
+        Returns:
+            ModelPayload: Deleted model info
+
+        Raises:
+            HTTPException: If model not found
+        """
         _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
 
-        model = model_repository.delete_by_model_id(db=db, model_id=model_id)
+        # Get model before deletion to return its info
+        model = model_repository.get_by_model_id(db=db, model_id=model_id)
+        model_repository.delete_by_model_id(db=db, model_id=model_id)
 
-        training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
-        task_status = training_task.status
-        model.train_task_id = training_task.task_id
+        # Deletion is allowed for Trained or Compressed models(Compressed model is not implemented yet)
+        # Deletion is not allowed for Converted or Benchmark models
+        if model.type in [SubFolder.TRAINED_MODELS]:
+            task = train_task_service.delete_training_task_by_model_id(db=db, model_id=model_id)
 
+        elif model.type in [SubFolder.BENCHMARKED_MODELS, SubFolder.CONVERTED_MODELS]:
+            raise ModelCannotBeDeletedException(model_id=model_id)
+
+        # Process and return the model info
         model = ModelPayload.model_validate(model)
+        model.status = task.status
+        model.train_task_id = task.task_id
 
-        # Get conversion tasks ordered by created_at desc
-        conversion_tasks = conversion_task_repository.get_all_by_model_id(db=db, model_id=model.model_id)
+        # Get conversion tasks and their benchmark tasks
+        conv_status, conv_task_ids, conv_model_ids = self._get_conversion_info(db, model.model_id)
+        if conv_status:
+            model.latest_experiments.convert = conv_status
+            model.convert_task_ids.extend(conv_task_ids)
 
-        if conversion_tasks:
-            # Set latest experiment status from the most recent conversion task
-            model.latest_experiments.convert = conversion_tasks[0].status
-            # Collect conversion task IDs
-            converted_model_ids = []
-            for conversion_task in conversion_tasks:
-                model.convert_task_ids.append(conversion_task.task_id)
-                converted_model_ids.append(conversion_task.model_id)
-
-            # Get all benchmark tasks for converted models in single query
-            benchmark_tasks = benchmark_task_repository.get_all_by_converted_models(
-                db=db, converted_model_ids=converted_model_ids
-            )
-
-            if benchmark_tasks:
-                # First task is most recent due to order_by in query
-                model.latest_experiments.benchmark = benchmark_tasks[0].status
-                # Collect all benchmark task IDs
-                for benchmark_task in benchmark_tasks:
-                    model.benchmark_task_ids.append(benchmark_task.task_id)
-
-        model.status = task_status
+            # Get benchmark tasks for converted models
+            bench_status, bench_task_ids = self._get_benchmark_info(db, conv_model_ids)
+            if bench_status:
+                model.latest_experiments.benchmark = bench_status
+                model.benchmark_task_ids.extend(bench_task_ids)
 
         return model
 

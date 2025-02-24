@@ -164,5 +164,10 @@ class TrainTaskService:
 
         return self._convert_to_payload_format(training_task)
 
+    def delete_training_task_by_model_id(self, db: Session, model_id: str) -> TrainingPayload:
+        """Delete training task by model ID."""
+        training_task = training_task_repository.delete_by_model_id(db=db, model_id=model_id)
+
+        return self._convert_to_payload_format(training_task)
 
 train_task_service = TrainTaskService()

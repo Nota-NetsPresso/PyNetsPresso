@@ -30,12 +30,11 @@ class TrainingTaskRepository(BaseRepository[TrainingTask]):
 
         return task
 
-    def save(self, db, task):
-        db.add(task)
-        db.commit()
-        db.refresh(task)
+    def delete_by_model_id(self, db: Session, model_id: str) -> TrainingTask:
+        task = self.get_by_model_id(db, model_id)
+        task.is_deleted = True
+        task = self.update(db, task)
 
         return task
-
 
 training_task_repository = TrainingTaskRepository(TrainingTask)

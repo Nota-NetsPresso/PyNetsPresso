@@ -26,3 +26,14 @@ class ModelIsDeletedException(ExceptionBase):
             name=self.__class__.__name__,
             message=message,
         )
+
+class ModelCannotBeDeletedException(ExceptionBase):
+    def __init__(self, model_id: str, origin: Origin = Origin.REPOSITORY):
+        message = f"The model with ID '{model_id}' cannot be deleted."
+        super().__init__(
+            data=AdditionalData(origin=origin),
+            error_code="MODEL40003",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            name=self.__class__.__name__,
+            message=message,
+        )
