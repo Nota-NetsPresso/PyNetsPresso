@@ -224,5 +224,13 @@ class ConversionTaskService:
 
         return [self._create_conversion_payload(task) for task in conversion_tasks]
 
+    def delete_conversion_task(self, db: Session, task_id: str, api_key: str) -> ConversionPayload:
+        conversion_task = conversion_task_repository.delete_by_task_id(db=db, task_id=task_id)
+
+        # Delete converted model from model repository
+        _ = model_repository.delete_by_model_id(db=db, model_id=conversion_task.model_id)
+
+        return self._create_conversion_payload(conversion_task)
+
 
 conversion_task_service = ConversionTaskService()

@@ -163,7 +163,7 @@ class ModelService:
 
         # Get model before deletion to return its info
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
-        model_repository.delete_by_model_id(db=db, model_id=model_id)
+        model = model_repository.delete_by_model_id(db=db, model_id=model_id)
 
         # Deletion is allowed for Trained or Compressed models(Compressed model is not implemented yet)
         # Deletion is not allowed for Converted or Benchmark models

@@ -88,5 +88,11 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
             .all()
         )
 
+    def delete_by_task_id(self, db: Session, task_id: str) -> ConversionTask:
+        task = self.get_by_task_id(db, task_id)
+        task.is_deleted = True
+        task = self.update(db, task)
+
+        return task
 
 conversion_task_repository = ConversionTaskRepository(ConversionTask)
