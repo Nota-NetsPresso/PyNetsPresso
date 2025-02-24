@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,54 @@ from netspresso.utils.db.repositories.training import training_task_repository
 
 
 class ModelService:
+    def _get_conversion_info(self, db: Session, model_id: str) -> tuple[Optional[str], List[str], List[str]]:
+        """Get conversion task information
+
+        Args:
+            db: Database session
+            model_id: Model ID
+
+        Returns:
+            tuple: (latest_status, task_ids, model_ids)
+        """
+        conversion_tasks = conversion_task_repository.get_all_by_model_id(db=db, model_id=model_id)
+        if not conversion_tasks:
+            return None, [], []
+
+        latest_status = conversion_tasks[0].status
+        task_ids = []
+        model_ids = []
+
+        for task in conversion_tasks:
+            task_ids.append(task.task_id)
+            model_ids.append(task.model_id)
+
+        return latest_status, task_ids, model_ids
+
+    def _get_benchmark_info(self, db: Session, converted_model_ids: List[str]) -> tuple[Optional[str], List[str]]:
+        """Get benchmark task information
+
+        Args:
+            db: Database session
+            converted_model_ids: List of converted model IDs
+
+        Returns:
+            tuple: (latest_status, task_ids)
+        """
+        if not converted_model_ids:
+            return None, []
+
+        benchmark_tasks = benchmark_task_repository.get_all_by_converted_models(
+            db=db, converted_model_ids=converted_model_ids
+        )
+        if not benchmark_tasks:
+            return None, []
+
+        latest_status = benchmark_tasks[0].status
+        task_ids = [task.task_id for task in benchmark_tasks]
+
+        return latest_status, task_ids
+
     def get_models(self, db: Session, api_key: str) -> List[ModelPayload]:
         netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
 

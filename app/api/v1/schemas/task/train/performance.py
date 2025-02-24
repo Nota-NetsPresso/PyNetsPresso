@@ -24,5 +24,8 @@ class PerformancePayload(BaseModel):
     @classmethod
     def convert_string_to_int(cls, v: str) -> int:
         if isinstance(v, str):
-            return int(v)
-        return v
+            try:
+                return int(v)
+            except ValueError:
+                # Handle the case where the string is not a valid integer
+                return 0
