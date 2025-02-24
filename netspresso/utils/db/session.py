@@ -6,7 +6,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
 
-DB_URL = "sqlite:///netspresso.db"
+from app.configs.settings import settings
+
+DB_URL = settings.DATABASE_URL
+
 engine = create_engine(
     f"{DB_URL}",
     pool_pre_ping=True,
@@ -41,8 +44,7 @@ def get_db_session():
         logger.error(f"Database session error: {e}")
         raise
     finally:
-        if db:
-            db.close()
+        db.close()
 
 
 def check_database(engine):

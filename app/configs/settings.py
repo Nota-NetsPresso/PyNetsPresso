@@ -10,5 +10,13 @@ class Settings(BaseSettings):
     SERVER_WORKERS: int = int(os.environ.get("SERVER_WORKERS", 1))
     SERVER_URL: str = f"{SERVER_ADDRESS}:{SERVER_PORT}{API_PREFIX}"
 
+    # DB Connection Info
+    DB_USER: str = os.environ.get("DB_USER")
+    DB_PASSWORD: str = os.environ.get("DB_PASSWORD")
+    DB_ADDRESS: str = os.environ.get("DB_ADDRESS")
+    DB_PORT: int = int(os.environ.get("DB_PORT"))
+    DB_NAME: str = os.environ.get("DB_NAME")
+    DATABASE_URL: str = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}"
+
 
 settings = Settings()
