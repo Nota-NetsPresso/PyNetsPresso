@@ -29,7 +29,7 @@ class ModelIsDeletedException(ExceptionBase):
 
 class ModelCannotBeDeletedException(ExceptionBase):
     def __init__(self, model_id: str, origin: Origin = Origin.REPOSITORY):
-        message = f"The model with ID '{model_id}' cannot be deleted."
+        message = f"The model with ID '{model_id}' cannot be deleted. Only trained and compressed models can be deleted."
         super().__init__(
             data=AdditionalData(origin=origin),
             error_code="MODEL40003",
