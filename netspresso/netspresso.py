@@ -65,8 +65,7 @@ class NetsPresso:
             # Compare versions
             if version.parse(current_version) < version.parse(latest_version):
                 logger.warning(
-                    f"You are using PyNetsPresso version {current_version}, "
-                    f"however version {latest_version} is available.\n"
+                    f"Your current version is {current_version}. The latest version {latest_version} is released."
                     f"Please upgrade via 'pip install --upgrade netspresso'"
                 )
                 return False
