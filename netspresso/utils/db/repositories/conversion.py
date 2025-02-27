@@ -83,7 +83,7 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
         """
         return (
             db.query(self.model)
-            .filter(and_(self.model.input_model_id == model_id, self.model.status == Status.COMPLETED))
+            .filter(and_(self.model.input_model_id == model_id, self.model.status == Status.COMPLETED, self.model.is_deleted.is_(False)))
             .group_by(self.model.framework, self.model.device_name, self.model.software_version, self.model.precision)
             .all()
         )
