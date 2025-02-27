@@ -48,11 +48,9 @@ class BenchmarkerV2(NetsPressoBase):
         Returns:
             Optional[DeviceInfo]: Filtered device info or None if no matching version
         """
-        # software_version이 None이고 device가 aws-t4인 경우 그대로 반환
         if target_software_version is None and device.device_name == DeviceName.AWS_T4:
             return device
 
-        # 기존 로직
         filtered_versions = [
             version for version in device.software_versions if version.software_version == target_software_version
         ]
