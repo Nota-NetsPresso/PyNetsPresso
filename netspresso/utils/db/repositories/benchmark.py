@@ -68,7 +68,10 @@ class BenchmarkTaskRepository(BaseRepository[BenchmarkTask]):
         """
         return (
             db.query(self.model)
-            .filter(self.model.input_model_id.in_(converted_model_ids))
+            .filter(
+                self.model.input_model_id.in_(converted_model_ids),
+                self.model.is_deleted.is_(False),
+            )
             .order_by(desc(self.model.updated_at))
             .all()
         )
