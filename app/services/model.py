@@ -1,10 +1,15 @@
+from pathlib import Path
 from typing import List, Optional
 
+from fastapi import HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-from app.api.v1.schemas.model import ModelPayload
+from app.api.v1.schemas.model import ModelPayload, PresignedUrl
+from app.configs.settings import settings
 from app.services.training_task import train_task_service
 from app.services.user import user_service
+from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.enums.project import SubFolder
 from netspresso.exceptions.model import ModelCannotBeDeletedException
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
@@ -14,6 +19,10 @@ from netspresso.utils.db.repositories.training import training_task_repository
 
 
 class ModelService:
+    def __init__(self):
+        self.storage_handler = ObjectStorageHandler()
+        self.BUCKET_NAME = settings.MODEL_BUCKET_NAME
+
     def _get_conversion_info(self, db: Session, model_id: str) -> tuple[Optional[str], List[str], List[str]]:
         """Get conversion task information
 
@@ -147,6 +156,46 @@ class ModelService:
         model_payload.status = training_task.status
 
         return self._attach_child_task_info(db, model_payload)
+
+    def download_model(self, db: Session, model_id: str, api_key: str) -> PresignedUrl:
+        """Download model file from Zenko
+
+        Args:
+            db: Database session
+            model_id: Model ID to download
+            api_key: API key for authentication
+
+        Returns:
+            FileResponse: Model file response
+
+        Raises:
+            HTTPException: If model not found or file not accessible
+        """
+        _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+
+        model = model_repository.get_by_model_id(db=db, model_id=model_id)
+
+        try:
+            # Generate presigned URL for download
+            file_name = Path(model.object_path).name
+            url = self.storage_handler.get_download_presigned_url(
+                bucket_name=self.BUCKET_NAME,
+                object_path=str(model.object_path),
+                download_name=file_name,
+                expires_in=3600  # URL expires in 1 hour
+            )
+
+            return PresignedUrl(
+                model_id=model.model_id,
+                file_name=file_name,
+                presigned_url=url
+            )
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to generate download URL: {str(e)}"
+            )
 
 
 model_service = ModelService()

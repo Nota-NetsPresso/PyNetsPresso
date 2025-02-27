@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 from app.api.v1.schemas.base import ResponseItem, ResponsePaginationItems
 from netspresso.enums import Status
@@ -42,3 +42,13 @@ class ModelDetailResponse(ResponseItem):
 
 class ModelsResponse(ResponsePaginationItems):
     data: List[ModelPayload]
+
+
+class PresignedUrl(BaseModel):
+    model_id: str = Field(..., description="model_id for upload")
+    file_name: str = Field(..., description="file name")
+    presigned_url: HttpUrl = Field(..., description="presigned model url")
+
+
+class ModelUrlResponse(ResponseItem):
+    data: Optional[PresignedUrl] = PresignedUrl
