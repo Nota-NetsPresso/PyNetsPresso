@@ -144,22 +144,6 @@ class BenchmarkTaskService:
     def get_benchmark_task(self, db: Session, task_id: str, api_key: str) -> BenchmarkResponse:
         """Get benchmark task status and details"""
         benchmark_task = benchmark_task_repository.get_by_task_id(db, task_id)
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
-        benchmarker = netspresso.benchmarker_v2()
-
-        if benchmark_task.status in [Status.NOT_STARTED, Status.IN_PROGRESS]:
-            launcher_status = benchmarker.get_benchmark_task(benchmark_task.benchmark_task_id)
-
-            if launcher_status.status == TaskStatusForDisplay.FINISHED:
-                benchmark_task.status = Status.COMPLETED
-                benchmark_task.result = launcher_status.benchmark_result
-            elif launcher_status.status in [TaskStatusForDisplay.ERROR, TaskStatusForDisplay.TIMEOUT]:
-                benchmark_task.status = Status.ERROR
-                benchmark_task.error_detail = launcher_status.error_log
-            elif launcher_status.status == TaskStatusForDisplay.USER_CANCEL:
-                benchmark_task.status = Status.STOPPED
-
-            benchmark_task = benchmark_task_repository.save(db, benchmark_task)
 
         return self._create_benchmark_payload(benchmark_task)
 

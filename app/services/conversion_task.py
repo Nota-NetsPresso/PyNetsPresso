@@ -119,23 +119,6 @@ class ConversionTaskService:
     def get_conversion_task(self, db: Session, task_id: str, api_key: str) -> ConversionPayload:
         conversion_task = conversion_task_repository.get_by_task_id(db, task_id)
 
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
-        converter = netspresso.converter_v2()
-
-        if conversion_task.status == Status.NOT_STARTED or conversion_task.status == Status.IN_PROGRESS:
-            # Check launcher server status
-            launcher_status = converter.get_conversion_task(conversion_task.convert_task_uuid)
-
-            if launcher_status.status in [TaskStatusForDisplay.FINISHED]:
-                conversion_task.status = Status.COMPLETED
-            elif launcher_status.status in [TaskStatusForDisplay.ERROR, TaskStatusForDisplay.TIMEOUT]:
-                conversion_task.status = Status.ERROR
-                conversion_task.error_detail = launcher_status.error_log
-            elif launcher_status.status in [TaskStatusForDisplay.USER_CANCEL]:
-                conversion_task.status = Status.STOPPED
-
-            conversion_task = conversion_task_repository.save(db, conversion_task)
-
         framework = TargetFrameworkPayload(name=conversion_task.framework)
         device = TargetDevicePayload(name=conversion_task.device_name)
         software_version = (
