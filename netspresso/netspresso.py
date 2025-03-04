@@ -1,8 +1,12 @@
 import subprocess
+import sys
 from pathlib import Path
 from typing import Optional, Union
 
+import pkg_resources
+import requests
 from loguru import logger
+from packaging import version
 
 from netspresso.benchmarker import BenchmarkerV2
 from netspresso.clients.auth import TokenHandler, auth_client
@@ -11,6 +15,7 @@ from netspresso.clients.tao import TAOTokenHandler
 from netspresso.compressor import CompressorV2
 from netspresso.converter import ConverterV2
 from netspresso.enums import Task
+from netspresso.exceptions.common import FailedFetchPackageException
 from netspresso.inferencer.inferencer import CustomInferencer, NPInferencer
 from netspresso.np_qai.benchmarker import NPQAIBenchmarker
 from netspresso.np_qai.converter import NPQAIConverter
@@ -22,16 +27,72 @@ from netspresso.utils.file import FileHandler
 
 
 class NetsPresso:
-    def __init__(self, email: str, password: str, verify_ssl: bool = True) -> None:
+    def __init__(self, email: str, password: str, verify_ssl: bool = True, dev_mode: bool = False) -> None:
         """Initialize NetsPresso instance and perform user authentication.
 
         Args:
             email (str): User's email for authentication.
             password (str): User's password for authentication.
             verify_ssl (bool): Flag to indicate whether SSL certificates should be verified. Defaults to True.
+            dev_mode (bool): If True, skip version check for development. Defaults to False.
+
+        Raises:
+            SystemExit: If the installed version is not the latest version and dev_mode is False.
         """
+        self.dev_mode = dev_mode
+        if not self._check_version():
+            sys.exit(1)
         self.token_handler = TokenHandler(email=email, password=password, verify_ssl=verify_ssl)
         self.user_info = self.get_user()
+
+    def _check_version(self) -> bool:
+        """Check if the installed version of PyNetsPresso is the latest available version.
+
+        Returns:
+            bool: True if version check passes or dev_mode is True, False if newer version is available
+        """
+        if self.dev_mode:
+            logger.info("Development mode enabled, skipping version check")
+            return True
+
+        try:
+            # Get installed version
+            current_version = pkg_resources.get_distribution('netspresso').version
+
+            # Get latest version from PyPI
+            latest_version = self.get_latest_version('netspresso')
+
+            # Compare versions
+            if version.parse(current_version) < version.parse(latest_version):
+                logger.warning(
+                    f"Your current version is {current_version}. The latest version {latest_version} is released."
+                    f"Please upgrade via 'pip install --upgrade netspresso'"
+                )
+                return False
+            return True
+        except Exception as e:
+            logger.error(f"Failed to check PyNetsPresso version: {str(e)}")
+            return False
+
+    def get_latest_version(self, package_name):
+        """Get the latest version of a package from PyPI.
+
+        Args:
+            package_name (str): Name of the package to check.
+
+        Returns:
+            str: Latest version number.
+
+        Raises:
+            FailedFetchPackageException: If unable to fetch package information.
+        """
+        url = f"https://pypi.org/pypi/{package_name}/json"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            return data["info"]["version"]
+        else:
+            raise FailedFetchPackageException(package_name=package_name, error_log=response.text)
 
     def get_user(self) -> UserResponse:
         """Get user information using the access token.

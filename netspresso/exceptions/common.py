@@ -48,6 +48,19 @@ class PyNPException(Exception):
         self.detail = detail_dict
 
 
+class FailedFetchPackageException(PyNPException):
+    def __init__(self, package_name: str, error_log: str):
+        message = f"Failed to fetch {package_name} from PyPI"
+        super().__init__(
+            data=AdditionalData(
+                origin="pynp",
+                error_log=error_log,
+            ),
+            error_code="",
+            name=self.__class__.__name__,
+            message=message,
+        )
+
 class NotEnoughCreditException(PyNPException):
     def __init__(self, current_credit: int, service_credit: int, service_task_name: str):
         error_log = (
