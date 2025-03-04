@@ -5,6 +5,7 @@ from urllib import request
 
 from loguru import logger
 
+from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.auth.response_body import UserResponse
@@ -24,6 +25,8 @@ from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.session import get_db_session
 from netspresso.utils.metadata import MetadataHandler
 
+storage_handler = ObjectStorageHandler()
+BUCKET_NAME = "model"
 
 class ConverterV2(NetsPressoBase):
     def __init__(self, token_handler: TokenHandler, user_info: UserResponse):
@@ -210,21 +213,56 @@ class ConverterV2(NetsPressoBase):
             ConverterMetadata: Convert metadata.
         """
 
-        FileHandler.check_input_model_path(input_model_path)
+        # FileHandler.check_input_model_path(input_model_path)
         output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
 
         if input_model_id:
             input_model = self.get_input_model(input_model_id, self.user_info.user_id)
             input_model.user_id = self.user_info.user_id
+            project = self.get_project(project_id=input_model.project_id)
+            input_model_path = Path(input_model.object_path) / "model.onnx"
+            download_dir = Path(output_dir) / "input_model"
+            download_dir.mkdir(parents=True, exist_ok=True)  # 다운로드 폴더 생성
+
+            local_path = download_dir / "model.onnx"
+            input_model_path_str = str(input_model_path)
+
+            logger.info(f"Downloading input model from Zenko: {input_model_path_str}")
+            storage_handler.download_file_from_s3(
+                bucket_name=BUCKET_NAME,
+                local_path=str(local_path),
+                object_path=input_model_path_str
+            )
+            logger.info(f"Downloaded input model from Zenko: {local_path}")
+
+            # input_model_path를 local_path로 업데이트
+            input_model_path = str(local_path)
 
         default_model_path = FileHandler.get_default_model_path(folder_path=output_dir)
         extension = FileHandler.get_extension(framework=target_framework)
-        converted_model_path = default_model_path.with_suffix(extension).as_posix()
+        object_path = f"{project.user_id}/{project.project_id}/{input_model.model_id}/model{extension}"
+
+        # 모델 이름 생성
+        model_name_parts = [
+            input_model.name,
+            target_framework,
+            target_device_name,
+        ]
+
+        if target_software_version:  # None이 아닌 경우에만 추가
+            model_name_parts.append(target_software_version)
+
+        model_name_parts.append(target_data_type)
+        model_name = "_".join(model_name_parts)
+
+        logger.info(f"Model name: {model_name}")
+        logger.info(f"Object path: {object_path}")
+
         model = self.save_model(
-            model_name=f"{input_model.name}_converted",
+            model_name=model_name,
             project_id=input_model.project_id,
             user_id=self.user_info.user_id,
-            object_path=converted_model_path,
+            object_path=object_path,
         )
         conversion_task = self.create_conversion_task(
             framework=target_framework,
@@ -269,6 +307,7 @@ class ConverterV2(NetsPressoBase):
                 software_version=target_software_version,
                 dataset_path=dataset_path,
             )
+            logger.info(f"Convert response: {convert_response.data}")
 
             conversion_task.convert_task_uuid = convert_response.data.convert_task_id
             conversion_task = self._save_conversion_task(conversion_task)
@@ -294,12 +333,18 @@ class ConverterV2(NetsPressoBase):
                 conversion_task.status = Status.IN_PROGRESS
                 logger.info(f"Conversion task was running. Status: {convert_response.data.status}")
             elif convert_response.data.status == TaskStatusForDisplay.FINISHED:
-                default_model_path = FileHandler.get_default_model_path(folder_path=output_dir)
-                extension = FileHandler.get_extension(framework=target_framework)
+                download_dir = Path(model.object_path).parent
+                download_dir.mkdir(parents=True, exist_ok=True)
                 self._download_converted_model(
                     convert_task=convert_response.data,
-                    local_path=str(default_model_path.with_suffix(extension)),
+                    local_path=model.object_path,
                 )
+                storage_handler.upload_file_to_s3(
+                    bucket_name=BUCKET_NAME,
+                    local_path=model.object_path,
+                    object_path=model.object_path
+                )
+                logger.info(f"Uploaded Converted Model file to Zenko: {model.object_path}")
                 self.print_remaining_credit(service_task=ServiceTask.MODEL_CONVERT)
                 conversion_task.status = Status.COMPLETED
                 logger.info("Conversion task was completed successfully.")
@@ -387,11 +432,19 @@ class ConverterV2(NetsPressoBase):
                 conversion_task.status = Status.COMPLETED
                 status_updated = True
                 model = model_repository.get_by_model_id(db=db, model_id=conversion_task.model_id)
+                download_dir = Path(model.object_path).parent
+                download_dir.mkdir(parents=True, exist_ok=True)
                 self._download_converted_model(
                     convert_task=launcher_status,
                     local_path=model.object_path,
                 )
                 logger.info(f"Downloaded model to {model.object_path}")
+                storage_handler.upload_file_to_s3(
+                    bucket_name=BUCKET_NAME,
+                    local_path=model.object_path,
+                    object_path=model.object_path
+                )
+                logger.info(f"Uploaded Converted Model file to Zenko: {model.object_path}")
 
             elif launcher_status.status in [TaskStatusForDisplay.ERROR, TaskStatusForDisplay.TIMEOUT]:
                 conversion_task.status = Status.ERROR

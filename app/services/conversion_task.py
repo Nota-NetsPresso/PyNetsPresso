@@ -93,15 +93,10 @@ class ConversionTaskService:
         project_abs_path = Path(project.project_abs_path)
         input_model_dir = project_abs_path / model.object_path
 
-        print(f"Input model path: {input_model_dir}")
-
-        # Find .onnx file in the directory
-        onnx_files = list(input_model_dir.glob("*.onnx"))
-        if not onnx_files:
-            raise FileNotFoundError(f"No .onnx file found in directory: {input_model_dir}")
-        input_model_path = onnx_files[0]  # Use the first .onnx file found
-
+        input_model_path = input_model_dir / "model.onnx"
         output_dir = input_model_dir / "converted"
+        print(f"Input model path: {input_model_path}")
+        print(f"Output dir: {output_dir}")
 
         task = convert_model_task.delay(
             api_key=api_key,

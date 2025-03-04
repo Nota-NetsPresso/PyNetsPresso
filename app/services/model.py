@@ -172,22 +172,28 @@ class ModelService:
             HTTPException: If model not found or file not accessible
         """
         _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
-
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
+
+        if model.type == SubFolder.TRAINED_MODELS:
+            object_path = f"{model.object_path}/model.onnx"
+            extension = "onnx"
+        else:
+            object_path = model.object_path
+            extension = Path(object_path).suffix.lstrip('.')
 
         try:
             # Generate presigned URL for download
-            file_name = Path(model.object_path).name
+            download_name = f"{model.name}.{extension}"  # 모델 이름으로 파일명 생성
             url = self.storage_handler.get_download_presigned_url(
                 bucket_name=self.BUCKET_NAME,
-                object_path=str(model.object_path),
-                download_name=file_name,
+                object_path=object_path,
+                download_name=download_name,
                 expires_in=3600  # URL expires in 1 hour
             )
 
             return PresignedUrl(
                 model_id=model.model_id,
-                file_name=file_name,
+                file_name=download_name,  # 변경된 파일명 사용
                 presigned_url=url
             )
 

@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 from loguru import logger
 from omegaconf import OmegaConf
 
+from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.launcher import launcher_client_v2
@@ -50,6 +51,9 @@ from netspresso.utils.db.models.training import (
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
 from netspresso.utils.db.session import get_db_session
+
+storage_handler = ObjectStorageHandler()
+BUCKET_NAME = "model"
 
 
 class Trainer(NetsPressoBase):
@@ -554,18 +558,23 @@ class Trainer(NetsPressoBase):
 
     def _save_train_task(self, train_task):
         with get_db_session() as db:
-            train_task = training_task_repository.save(db=db, task=train_task)
+            train_task = training_task_repository.save(db=db, model=train_task)
 
             return train_task
 
-    def save_trained_model(self, model_name, project_id, user_id, object_path) -> Model:
+    def _save_model(self, model) -> Model:
+        with get_db_session() as db:
+            model = model_repository.save(db=db, model=model)
+
+            return model
+
+    def save_trained_model(self, model_name, project_id, user_id) -> Model:
         model = Model(
             name=model_name,
             type=SubFolder.TRAINED_MODELS,
             is_retrainable=True,
             project_id=project_id,
             user_id=user_id,
-            object_path=object_path,
         )
         with get_db_session() as db:
             model = model_repository.save(db=db, model=model)
@@ -619,7 +628,7 @@ class Trainer(NetsPressoBase):
                 environment=environment,
                 model_id=model_id,
             )
-            task = training_task_repository.save(db=db, task=task)
+            task = training_task_repository.save(db=db, model=task)
 
         return task
 
@@ -670,14 +679,15 @@ class Trainer(NetsPressoBase):
 
         destination_folder = Path(project_abs_path) / SubFolder.TRAINED_MODELS.value / model_name
         destination_folder = FileHandler.create_unique_folder(folder_path=destination_folder)
-        object_path = Path(SubFolder.TRAINED_MODELS.value) / model_name
 
         model = self.save_trained_model(
             model_name=model_name,
             project_id=project.project_id,
             user_id=project.user_id,
-            object_path=object_path,
         )
+        object_path = f"{project.user_id}/{project.project_id}/{model.model_id}"
+        model.object_path = object_path
+        model = self._save_model(model=model)
         train_task = self.create_training_task(model_id=model.model_id)
 
         try:
@@ -727,6 +737,35 @@ class Trainer(NetsPressoBase):
 
             train_task = self._save_train_task(train_task=train_task)
 
+            # Zenko에 모델 파일 업로드
+            if train_task.status == Status.COMPLETED:
+                try:
+                    # 모델 파일 찾기
+                    pt_file, onnx_file = self.find_model_files(destination_folder)
+
+                    # PT 파일 업로드
+                    if pt_file:
+                        storage_handler.upload_file_to_s3(
+                            bucket_name=BUCKET_NAME,
+                            local_path=str(pt_file),
+                            object_path=f"{model.object_path}/model.pt"
+                        )
+                        logger.info(f"Uploaded PT file to Zenko: {model.object_path}/model.pt")
+
+                    # ONNX 파일 업로드
+                    if onnx_file:
+                        storage_handler.upload_file_to_s3(
+                            bucket_name=BUCKET_NAME,
+                            local_path=str(onnx_file),
+                            object_path=f"{model.object_path}/model.onnx"
+                        )
+                        logger.info(f"Uploaded ONNX file to Zenko: {model.object_path}/model.onnx")
+
+                except Exception as e:
+                    logger.error(f"Failed to upload model files to Zenko: {e}")
+                    # 업로드 실패해도 학습은 성공으로 처리
+                    pass
+
         return train_task
 
     def get_all_available_models(self) -> Dict[str, List[str]]:
@@ -747,3 +786,31 @@ class Trainer(NetsPressoBase):
 
     def get_all_available_schedulers(self) -> Dict[str, Dict]:
         return get_supported_schedulers()
+
+    def find_model_files(self, folder_path: Union[str, Path]) -> tuple[Optional[Path], Optional[Path]]:
+        """Find one .pt file and one .onnx file in the given folder
+
+        Args:
+            folder_path: Path to search for model files
+
+        Returns:
+            tuple[Optional[Path], Optional[Path]]: Tuple of (pt_file_path, onnx_file_path)
+            Each can be None if not found
+        """
+        folder_path = Path(folder_path)
+        if not folder_path.exists():
+            logger.error(f"Folder not found: {folder_path}")
+            return None, None
+
+        pt_files = list(folder_path.glob('*.pt'))
+        onnx_files = list(folder_path.glob('*.onnx'))
+
+        pt_file = pt_files[0] if pt_files else None
+        onnx_file = onnx_files[0] if onnx_files else None
+
+        if pt_file:
+            logger.info(f"Found PT file: {pt_file.name}")
+        if onnx_file:
+            logger.info(f"Found ONNX file: {onnx_file.name}")
+
+        return pt_file, onnx_file
