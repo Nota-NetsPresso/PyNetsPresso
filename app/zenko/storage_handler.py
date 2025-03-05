@@ -1,5 +1,3 @@
-import json
-import os
 from decimal import Decimal
 from typing import Optional
 
@@ -8,21 +6,23 @@ from botocore.config import Config
 from botocore.exceptions import ClientError, NoCredentialsError
 from fastapi import HTTPException
 
+from app.configs.settings import settings
+
 
 class ObjectStorageHandler:
     def __init__(self) -> None:
         try:
             client_params = {
                 "service_name": "s3",
-                "aws_access_key_id": os.environ.get("SCALITY_ACCESS_KEY_ID", "netspresso"),
-                "aws_secret_access_key": os.environ.get("SCALITY_SECRET_ACCESS_KEY", "netspresso1234"),
+                "aws_access_key_id": settings.SCALITY_ACCESS_KEY_ID,
+                "aws_secret_access_key": settings.SCALITY_SECRET_ACCESS_KEY,
                 "config": Config(
                     region_name="ap-northeast-2",
                     signature_version="s3v4",
                     retries={"max_attempts": 10, "mode": "standard"},
                 ),
             }
-            client_params["endpoint_url"] = os.environ.get("ZENKO_SERVER_URL")
+            client_params["endpoint_url"] = settings.ZENKO_SERVER_URL
             self.s3_client = boto3.client(**client_params)
         except NoCredentialsError:
             raise HTTPException(
