@@ -12,6 +12,7 @@ from app.services.user import user_service
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.enums.project import SubFolder
 from netspresso.exceptions.model import ModelCannotBeDeletedException
+from netspresso.utils.db.repositories.base import Order, TimeSort
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
@@ -33,17 +34,29 @@ class ModelService:
         Returns:
             tuple: (latest_status, task_ids, model_ids)
         """
-        conversion_tasks = conversion_task_repository.get_all_by_model_id(db=db, model_id=model_id)
+        conversion_tasks = conversion_task_repository.get_all_by_model_id(
+            db=db,
+            model_id=model_id,
+            order=Order.DESC,
+            time_sort=TimeSort.CREATED_AT,
+        )
         if not conversion_tasks:
             return None, [], []
 
-        latest_status = conversion_tasks[0].status
         task_ids = []
         model_ids = []
 
         for task in conversion_tasks:
             task_ids.append(task.task_id)
             model_ids.append(task.model_id)
+
+        conversion_task = conversion_task_repository.get_latest_conversion_task(
+            db=db,
+            model_id=model_id,
+            order=Order.DESC,
+            time_sort=TimeSort.UPDATED_AT,
+        )
+        latest_status = conversion_task.status
 
         return latest_status, task_ids, model_ids
 
@@ -61,13 +74,23 @@ class ModelService:
             return None, []
 
         benchmark_tasks = benchmark_task_repository.get_all_by_converted_models(
-            db=db, converted_model_ids=converted_model_ids
+            db=db,
+            converted_model_ids=converted_model_ids,
+            order=Order.DESC,
+            time_sort=TimeSort.CREATED_AT,
         )
         if not benchmark_tasks:
             return None, []
 
-        latest_status = benchmark_tasks[0].status
         task_ids = [task.task_id for task in benchmark_tasks]
+
+        benchmark_task = benchmark_task_repository.get_latest_benchmark_task(
+            db=db,
+            converted_model_ids=converted_model_ids,
+            order=Order.DESC,
+            time_sort=TimeSort.UPDATED_AT,
+        )
+        latest_status = benchmark_task.status
 
         return latest_status, task_ids
 

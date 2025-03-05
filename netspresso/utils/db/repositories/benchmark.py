@@ -47,7 +47,13 @@ class BenchmarkTaskRepository(BaseRepository[BenchmarkTask]):
 
         return tasks
 
-    def get_all_by_converted_models(self, db: Session, converted_model_ids: List[str]) -> List[BenchmarkTask]:
+    def get_all_by_converted_models(
+        self,
+        db: Session,
+        converted_model_ids: List[str],
+        order: Optional[Order] = None,
+        time_sort: Optional[TimeSort] = None,
+    ) -> List[BenchmarkTask]:
         """Get all benchmark tasks for given converted model IDs ordered by updated_at desc.
 
         Args:
@@ -62,11 +68,27 @@ class BenchmarkTaskRepository(BaseRepository[BenchmarkTask]):
         tasks = self.find_all(
             db=db,
             conditions=conditions,
-            order=Order.DESC,
-            time_sort=TimeSort.UPDATED_AT,
+            order=order,
+            time_sort=time_sort,
         )
 
         return tasks
 
+    def get_latest_benchmark_task(
+        self,
+        db: Session,
+        converted_model_ids: List[str],
+        order: Optional[Order] = None,
+        time_sort: Optional[TimeSort] = None,
+    ) -> Optional[BenchmarkTask]:
+        conditions = [self.model.input_model_id.in_(converted_model_ids)]
+        task = self.find_first(
+            db=db,
+            conditions=conditions,
+            order=order,
+            time_sort=time_sort,
+        )
+
+        return task
 
 benchmark_task_repository = BenchmarkTaskRepository(BenchmarkTask)

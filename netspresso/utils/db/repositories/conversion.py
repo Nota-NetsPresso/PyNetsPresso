@@ -77,5 +77,22 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
 
         return tasks
 
+    def get_latest_conversion_task(
+        self,
+        db: Session,
+        model_id: str,
+        order: Optional[Order] = None,
+        time_sort: Optional[TimeSort] = None,
+    ) -> Optional[ConversionTask]:
+        conditions = [self.model.input_model_id == model_id]
+        task = self.find_first(
+            db=db,
+            conditions=conditions,
+            order=order,
+            time_sort=time_sort,
+        )
+
+        return task
+
 
 conversion_task_repository = ConversionTaskRepository(ConversionTask)
