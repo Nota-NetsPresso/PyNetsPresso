@@ -34,7 +34,7 @@ class ModelRepository(BaseRepository[Model]):
         size: Optional[int] = None,
         order: Optional[Order] = None,
         time_sort: Optional[TimeSort] = None,
-    ) -> Optional[List[Model]]:
+    ) -> List[Model]:
         conditions = [self.model.user_id == user_id]
         models = self.find_all(
             db=db,
@@ -55,7 +55,7 @@ class ModelRepository(BaseRepository[Model]):
         size: Optional[int] = None,
         order: Optional[Order] = None,
         time_sort: Optional[TimeSort] = None,
-    ) -> Optional[List[Model]]:
+    ) -> List[Model]:
         conditions = [self.model.project_id == project_id]
         models = self.find_all(
             db=db,

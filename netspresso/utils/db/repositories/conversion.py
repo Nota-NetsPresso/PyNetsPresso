@@ -3,11 +3,21 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from netspresso.enums.metadata import Status
+from netspresso.exceptions.conversion import ConversionTaskIsDeletedException, ConversionTaskNotFoundException
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
 
 
 class ConversionTaskRepository(BaseRepository[ConversionTask]):
+    def __is_available(self, task: Optional[ConversionTask]) -> ConversionTask:
+        if task is None:
+            raise ConversionTaskNotFoundException()
+
+        if task.is_deleted:
+            raise ConversionTaskIsDeletedException(task_id=task.task_id)
+
+        return task
+
     def get_by_task_id(self, db: Session, task_id: str) -> Optional[ConversionTask]:
         conditions = [self.model.task_id == task_id]
         task = self.find_first(
@@ -15,7 +25,7 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
             conditions=conditions,
         )
 
-        return task
+        return self.__is_available(task=task)
 
     def get_all_by_model_id(
         self,
@@ -25,7 +35,7 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
         size: Optional[int] = None,
         order: Optional[Order] = None,
         time_sort: Optional[TimeSort] = None,
-    ) -> Optional[List[ConversionTask]]:
+    ) -> List[ConversionTask]:
         conditions = [self.model.input_model_id == model_id]
         tasks = self.find_all(
             db=db,
@@ -45,7 +55,7 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
             conditions=conditions,
         )
 
-        return task
+        return self.__is_available(task=task)
 
     def get_unique_completed_tasks(self, db: Session, model_id: str) -> List[ConversionTask]:
         """Get unique completed conversion tasks for a model using SQLAlchemy ORM.

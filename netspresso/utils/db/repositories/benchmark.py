@@ -2,11 +2,21 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
+from netspresso.exceptions.benchmark import BenchmarkTaskIsDeletedException, BenchmarkTaskNotFoundException
 from netspresso.utils.db.models.benchmark import BenchmarkTask
 from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
 
 
 class BenchmarkTaskRepository(BaseRepository[BenchmarkTask]):
+    def __is_available(self, task: Optional[BenchmarkTask]) -> BenchmarkTask:
+        if task is None:
+            raise BenchmarkTaskNotFoundException()
+
+        if task.is_deleted:
+            raise BenchmarkTaskIsDeletedException(task_id=task.task_id)
+
+        return task
+
     def get_by_task_id(self, db: Session, task_id: str) -> Optional[BenchmarkTask]:
         conditions = [self.model.task_id == task_id]
         task = self.find_first(
@@ -14,7 +24,7 @@ class BenchmarkTaskRepository(BaseRepository[BenchmarkTask]):
             conditions=conditions,
         )
 
-        return task
+        return self.__is_available(task=task)
 
     def get_all_by_model_id(
         self,
@@ -24,7 +34,7 @@ class BenchmarkTaskRepository(BaseRepository[BenchmarkTask]):
         size: Optional[int] = None,
         order: Optional[Order] = None,
         time_sort: Optional[TimeSort] = None,
-    ) -> Optional[List[BenchmarkTask]]:
+    ) -> List[BenchmarkTask]:
         conditions = [self.model.input_model_id == model_id]
         tasks = self.find_all(
             db=db,

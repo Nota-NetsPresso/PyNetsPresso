@@ -35,8 +35,8 @@ class ProjectSaveException(PyNPException):
 
 
 class ProjectNotFoundException(PyNPException):
-    def __init__(self, project_id: str):
-        message = f"The project with ID '{project_id}' does not exist."
+    def __init__(self):
+        message = "The project does not exist."
         super().__init__(
             data=AdditionalData(origin=Origin.REPOSITORY),
             error_code="PROJECT40401",

@@ -1,39 +1,34 @@
-from fastapi import status
-
-from app.exceptions.base import ExceptionBase
-from app.exceptions.schema import AdditionalData, Origin
+from netspresso.exceptions.common import AdditionalData, Origin, PyNPException
 
 
-class ModelNotFoundException(ExceptionBase):
-    def __init__(self, origin: Origin = Origin.REPOSITORY):
+class ModelNotFoundException(PyNPException):
+    def __init__(self):
         message = "The model does not exist."
         super().__init__(
-            data=AdditionalData(origin=origin),
+            data=AdditionalData(origin=Origin.REPOSITORY),
             error_code="MODEL40401",
-            status_code=status.HTTP_404_NOT_FOUND,
             name=self.__class__.__name__,
             message=message,
         )
 
 
-class ModelIsDeletedException(ExceptionBase):
-    def __init__(self, model_id: str, origin: Origin = Origin.REPOSITORY):
+class ModelIsDeletedException(PyNPException):
+    def __init__(self, model_id: str):
         message = f"The model with ID '{model_id}' has been already deleted."
         super().__init__(
-            data=AdditionalData(origin=origin),
-            error_code="MODEL40002",
-            status_code=status.HTTP_400_BAD_REQUEST,
+            data=AdditionalData(origin=Origin.REPOSITORY),
+            error_code="MODEL40001",
             name=self.__class__.__name__,
             message=message,
         )
 
-class ModelCannotBeDeletedException(ExceptionBase):
-    def __init__(self, model_id: str, origin: Origin = Origin.REPOSITORY):
+
+class ModelCannotBeDeletedException(PyNPException):
+    def __init__(self, model_id: str):
         message = f"The model with ID '{model_id}' cannot be deleted. Only trained and compressed models can be deleted."
         super().__init__(
-            data=AdditionalData(origin=origin),
-            error_code="MODEL40003",
-            status_code=status.HTTP_400_BAD_REQUEST,
+            data=AdditionalData(origin=Origin.REPOSITORY),
+            error_code="MODEL40002",
             name=self.__class__.__name__,
             message=message,
         )

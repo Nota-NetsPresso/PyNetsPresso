@@ -8,9 +8,9 @@ from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSor
 
 
 class ProjectRepository(BaseRepository[Project]):
-    def __is_available(self, project: Optional[Project], project_id: str) -> Project:
+    def __is_available(self, project: Optional[Project]) -> Project:
         if project is None:
-            raise ProjectNotFoundException(project_id=project_id)
+            raise ProjectNotFoundException()
 
         if project.is_deleted:
             raise ProjectIsDeletedException(project_id=project.project_id)
@@ -24,7 +24,7 @@ class ProjectRepository(BaseRepository[Project]):
             conditions=conditions,
         )
 
-        project = self.__is_available(project=project, project_id=project_id)
+        project = self.__is_available(project=project)
 
         return project
 
@@ -36,7 +36,7 @@ class ProjectRepository(BaseRepository[Project]):
         size: Optional[int] = None,
         order: Optional[Order] = None,
         time_sort: Optional[TimeSort] = None,
-    ) -> Optional[List[Project]]:
+    ) -> List[Project]:
         conditions = [self.model.user_id == user_id]
         projects = self.find_all(
             db=db,
