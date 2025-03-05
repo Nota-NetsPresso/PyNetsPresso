@@ -1,9 +1,8 @@
-from sqlalchemy import JSON, Boolean, Column, Float, ForeignKey, Integer, String
+from sqlalchemy import JSON, Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from netspresso.utils.db.generate_uuid import generate_uuid
-from netspresso.utils.db.mixins import TimestampMixin
-from netspresso.utils.db.session import Base
+from netspresso.utils.db.models.base import Base, BaseModel
 
 
 class BenchmarkResult(Base):
@@ -25,7 +24,7 @@ class BenchmarkResult(Base):
     task = relationship("BenchmarkTask", back_populates="result")
 
 
-class BenchmarkTask(Base, TimestampMixin):
+class BenchmarkTask(BaseModel):
     __tablename__ = "benchmark_task"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -42,8 +41,6 @@ class BenchmarkTask(Base, TimestampMixin):
     benchmark_task_id = Column(String(36), nullable=True)
     status = Column(String(30), nullable=False)
     error_detail = Column(JSON, nullable=True)
-
-    is_deleted = Column(Boolean, nullable=False, default=False)
 
     # Relationships
     result = relationship("BenchmarkResult", uselist=False, back_populates="task", cascade="all, delete-orphan")

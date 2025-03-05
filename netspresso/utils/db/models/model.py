@@ -2,11 +2,10 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from netspresso.utils.db.generate_uuid import generate_uuid
-from netspresso.utils.db.mixins import TimestampMixin
-from netspresso.utils.db.session import Base
+from netspresso.utils.db.models.base import BaseModel
 
 
-class Model(Base, TimestampMixin):
+class Model(BaseModel):
     __tablename__ = "model"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -16,7 +15,6 @@ class Model(Base, TimestampMixin):
     name = Column(String(100), nullable=False)
     type = Column(String(30), nullable=False)
     is_retrainable = Column(Boolean, nullable=False, default=False)
-    is_deleted = Column(Boolean, nullable=False, default=False)
     object_path = Column(String(255), nullable=True)
 
     project_id = Column(String(36), ForeignKey("project.project_id", ondelete="CASCADE"), nullable=False)

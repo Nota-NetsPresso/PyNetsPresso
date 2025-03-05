@@ -1,10 +1,9 @@
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Column, Integer, String
 
-from netspresso.utils.db.mixins import TimestampMixin
-from netspresso.utils.db.session import Base
+from netspresso.utils.db.models.base import BaseModel
 
 
-class User(Base, TimestampMixin):
+class User(BaseModel):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -12,4 +11,3 @@ class User(Base, TimestampMixin):
     password = Column(String(36), nullable=False)
     api_key = Column(String(36), nullable=False)
     user_id = Column(String(36), nullable=False)
-    is_deleted = Column(Boolean, nullable=False, default=False)

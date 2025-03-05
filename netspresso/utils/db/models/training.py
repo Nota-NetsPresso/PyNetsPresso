@@ -1,9 +1,8 @@
-from sqlalchemy import JSON, Boolean, Column, Float, ForeignKey, Integer, String
+from sqlalchemy import JSON, Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from netspresso.utils.db.generate_uuid import generate_uuid
-from netspresso.utils.db.mixins import TimestampMixin
-from netspresso.utils.db.session import Base
+from netspresso.utils.db.models.base import Base, BaseModel
 
 
 class Augmentation(Base):
@@ -18,7 +17,7 @@ class Augmentation(Base):
     hyperparameter = relationship("Hyperparameter", back_populates="augmentations", lazy="joined")
 
 
-class TrainingTask(Base, TimestampMixin):
+class TrainingTask(BaseModel):
     __tablename__ = "training_task"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -29,7 +28,6 @@ class TrainingTask(Base, TimestampMixin):
     input_shapes = Column(JSON, nullable=False)
     status = Column(String(30), nullable=False)
     error_detail = Column(JSON, nullable=True)
-    is_deleted = Column(Boolean, nullable=False, default=False)
 
     # Relationships (1:1 Mapping)
     dataset = relationship("Dataset", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy="joined")
@@ -52,7 +50,7 @@ class TrainingTask(Base, TimestampMixin):
     )
 
 
-class Dataset(Base, TimestampMixin):
+class Dataset(BaseModel):
     __tablename__ = "dataset"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -68,7 +66,7 @@ class Dataset(Base, TimestampMixin):
     task = relationship("TrainingTask", back_populates="dataset")
 
 
-class Hyperparameter(Base, TimestampMixin):
+class Hyperparameter(BaseModel):
     __tablename__ = "hyperparameter"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -86,7 +84,7 @@ class Hyperparameter(Base, TimestampMixin):
     task = relationship("TrainingTask", back_populates="hyperparameter")
 
 
-class Environment(Base, TimestampMixin):
+class Environment(BaseModel):
     __tablename__ = "environment"
 
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
@@ -99,7 +97,7 @@ class Environment(Base, TimestampMixin):
     task = relationship("TrainingTask", back_populates="environment")
 
 
-class Performance(Base, TimestampMixin):
+class Performance(BaseModel):
     __tablename__ = "performance"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
