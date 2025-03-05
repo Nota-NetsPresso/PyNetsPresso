@@ -1,11 +1,10 @@
 from typing import List, Optional
 
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from netspresso.exceptions.project import ProjectIsDeletedException, ProjectNotFoundException
 from netspresso.utils.db.models.project import Project
-from netspresso.utils.db.repositories.base import BaseRepository, Order
+from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
 
 
 class ProjectRepository(BaseRepository[Project]):
@@ -19,38 +18,15 @@ class ProjectRepository(BaseRepository[Project]):
         return project
 
     def get_by_project_id(self, db: Session, project_id: str) -> Optional[Project]:
-        project = (
-            db.query(self.model)
-            .filter(
-                self.model.project_id == project_id,
-            )
-            .first()
+        conditions = [self.model.project_id == project_id]
+        project = self.find_first(
+            db=db,
+            conditions=conditions,
         )
 
         project = self.__is_available(project=project, project_id=project_id)
 
         return project
-
-    def _get_projects(
-        self,
-        db: Session,
-        condition,
-        start: Optional[int] = None,
-        size: Optional[int] = None,
-        order: Optional[Order] = None,
-    ) -> Optional[List[Project]]:
-        ordering_func = self.choose_order_func(order)
-        query = db.query(self.model).filter(condition)
-
-        if order:
-            query = query.order_by(ordering_func(self.model.created_at))
-
-        if start is not None and size is not None:
-            query = query.offset(start).limit(size)
-
-        projects = query.all()
-
-        return projects
 
     def get_all_by_user_id(
         self,
@@ -59,14 +35,19 @@ class ProjectRepository(BaseRepository[Project]):
         start: Optional[int] = None,
         size: Optional[int] = None,
         order: Optional[Order] = None,
+        time_sort: Optional[TimeSort] = None,
     ) -> Optional[List[Project]]:
-        return self._get_projects(
+        conditions = [self.model.user_id == user_id]
+        projects = self.find_all(
             db=db,
-            condition=self.model.user_id == user_id,
+            conditions=conditions,
             start=start,
             size=size,
             order=order,
+            time_sort=time_sort,
         )
+
+        return projects
 
     def is_project_name_duplicated(self, db: Session, project_name: str, user_id: str) -> bool:
         """
@@ -80,18 +61,21 @@ class ProjectRepository(BaseRepository[Project]):
         Returns:
             bool: True if the project name exists, False otherwise.
         """
-        return (
-            db.query(self.model)
-            .filter(
-                self.model.project_name == project_name,
-                self.model.user_id == user_id,
-            )
-            .first()
-            is not None
+        conditions = [self.model.project_name == project_name, self.model.user_id == user_id]
+        project = self.find_first(
+            db=db,
+            conditions=conditions,
         )
 
+        return project is not None
+
     def count_by_user_id(self, db: Session, user_id: str) -> int:
-        return db.query(func.count(self.model.user_id)).filter(self.model.user_id == user_id).scalar()
+        count_field = self.model.user_id
+        conditions = [self.model.user_id == user_id]
+
+        count = self.count_by_field(db=db, count_field=count_field, conditions=conditions)
+
+        return count
 
 
 project_repository = ProjectRepository(Project)

@@ -8,17 +8,29 @@ from netspresso.utils.db.repositories.base import BaseRepository
 
 class UserRepository(BaseRepository[User]):
     def get_by_email(self, db: Session, email: str) -> Optional[User]:
-        user = db.query(self.model).filter(self.model.email == email).first()
+        conditions = [self.model.email == email]
+        user = self.find_first(
+            db=db,
+            conditions=conditions,
+        )
 
         return user
 
     def get_by_user_id(self, db: Session, user_id: str) -> Optional[User]:
-        user = db.query(self.model).filter(self.model.user_id == user_id).first()
+        conditions = [self.model.user_id == user_id]
+        user = self.find_first(
+            db=db,
+            conditions=conditions,
+        )
 
         return user
 
     def get_by_api_key(self, db: Session, api_key: str) -> Optional[User]:
-        user = db.query(self.model).filter(self.model.api_key == api_key).first()
+        conditions = [self.model.api_key == api_key]
+        user = self.find_first(
+            db=db,
+            conditions=conditions,
+        )
 
         return user
 

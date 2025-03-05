@@ -1,45 +1,21 @@
 from typing import List, Optional
 
-from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from netspresso.enums.metadata import Status
 from netspresso.utils.db.models.conversion import ConversionTask
-from netspresso.utils.db.repositories.base import BaseRepository, Order
+from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
 
 
 class ConversionTaskRepository(BaseRepository[ConversionTask]):
     def get_by_task_id(self, db: Session, task_id: str) -> Optional[ConversionTask]:
-        task = (
-            db.query(self.model)
-            .filter(
-                self.model.task_id == task_id,
-            )
-            .first()
+        conditions = [self.model.task_id == task_id]
+        task = self.find_first(
+            db=db,
+            conditions=conditions,
         )
 
         return task
-
-    def _get_tasks(
-        self,
-        db: Session,
-        condition,
-        start: Optional[int] = None,
-        size: Optional[int] = None,
-        order: Optional[Order] = Order.DESC,
-    ) -> Optional[List[ConversionTask]]:
-        ordering_func = self.choose_order_func(order)
-        query = db.query(self.model).filter(and_(*condition))
-
-        if order:
-            query = query.order_by(ordering_func(self.model.updated_at))
-
-        if start is not None and size is not None:
-            query = query.offset(start).limit(size)
-
-        models = query.all()
-
-        return models
 
     def get_all_by_model_id(
         self,
@@ -47,26 +23,26 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
         model_id: str,
         start: Optional[int] = None,
         size: Optional[int] = None,
-        order: Optional[Order] = Order.DESC,
+        order: Optional[Order] = None,
+        time_sort: Optional[TimeSort] = None,
     ) -> Optional[List[ConversionTask]]:
-        return self._get_tasks(
+        conditions = [self.model.input_model_id == model_id]
+        tasks = self.find_all(
             db=db,
-            condition=[
-                self.model.input_model_id == model_id,
-                self.model.is_deleted.is_(False),
-            ],
+            conditions=conditions,
             start=start,
             size=size,
             order=order,
+            time_sort=time_sort,
         )
 
+        return tasks
+
     def get_by_model_id(self, db: Session, model_id: str) -> Optional[ConversionTask]:
-        task = (
-            db.query(self.model)
-            .filter(
-                self.model.model_id == model_id,
-            )
-            .first()
+        conditions = [self.model.model_id == model_id]
+        task = self.find_first(
+            db=db,
+            conditions=conditions,
         )
 
         return task
@@ -81,18 +57,15 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
         Returns:
             List[ConversionTask]: List of unique completed conversion tasks
         """
-        return (
-            db.query(self.model)
-            .filter(and_(self.model.input_model_id == model_id, self.model.status == Status.COMPLETED, self.model.is_deleted.is_(False)))
-            .group_by(self.model.framework, self.model.device_name, self.model.software_version, self.model.precision)
-            .all()
+        conditions = [self.model.input_model_id == model_id, self.model.status == Status.COMPLETED]
+        group_fields = [self.model.framework, self.model.device_name, self.model.software_version, self.model.precision]
+        tasks = self.find_all(
+            db=db,
+            conditions=conditions,
+            group_fields=group_fields,
         )
 
-    def delete_by_task_id(self, db: Session, task_id: str) -> ConversionTask:
-        task = self.get_by_task_id(db, task_id)
-        task.is_deleted = True
-        task = self.update(db, task)
+        return tasks
 
-        return task
 
 conversion_task_repository = ConversionTaskRepository(ConversionTask)

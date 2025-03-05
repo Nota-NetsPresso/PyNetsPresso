@@ -1,11 +1,10 @@
 from typing import List, Optional
 
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from netspresso.exceptions.model import ModelIsDeletedException, ModelNotFoundException
 from netspresso.utils.db.models.model import Model
-from netspresso.utils.db.repositories.base import BaseRepository, Order
+from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
 
 
 class ModelRepository(BaseRepository[Model]):
@@ -19,30 +18,13 @@ class ModelRepository(BaseRepository[Model]):
         return model
 
     def get_by_model_id(self, db: Session, model_id: str) -> Optional[Model]:
-        model = db.query(self.model).filter(self.model.model_id == model_id).first()
+        conditions = [self.model.model_id == model_id]
+        model = self.find_first(
+            db=db,
+            conditions=conditions,
+        )
 
         return self.__is_available(model=model)
-
-    def _get_models(
-        self,
-        db: Session,
-        condition,
-        start: Optional[int] = None,
-        size: Optional[int] = None,
-        order: Optional[Order] = None,
-    ) -> Optional[List[Model]]:
-        ordering_func = self.choose_order_func(order)
-        query = db.query(self.model).filter(*condition)
-
-        if order:
-            query = query.order_by(ordering_func(self.model.created_at))
-
-        if start is not None and size is not None:
-            query = query.offset(start).limit(size)
-
-        models = query.all()
-
-        return models
 
     def get_all_by_user_id(
         self,
@@ -51,14 +33,19 @@ class ModelRepository(BaseRepository[Model]):
         start: Optional[int] = None,
         size: Optional[int] = None,
         order: Optional[Order] = None,
+        time_sort: Optional[TimeSort] = None,
     ) -> Optional[List[Model]]:
-        return self._get_models(
+        conditions = [self.model.user_id == user_id]
+        models = self.find_all(
             db=db,
-            condition=[self.model.user_id == user_id, self.model.is_deleted.is_(False)],
+            conditions=conditions,
             start=start,
             size=size,
             order=order,
+            time_sort=time_sort,
         )
+
+        return models
 
     def get_all_by_project_id(
         self,
@@ -66,29 +53,28 @@ class ModelRepository(BaseRepository[Model]):
         project_id: str,
         start: Optional[int] = None,
         size: Optional[int] = None,
-        order: Optional[Order] = Order.DESC,
+        order: Optional[Order] = None,
+        time_sort: Optional[TimeSort] = None,
     ) -> Optional[List[Model]]:
-        return self._get_models(
+        conditions = [self.model.project_id == project_id]
+        models = self.find_all(
             db=db,
-            condition=[self.model.project_id == project_id, self.model.is_deleted.is_(False)],
+            conditions=conditions,
             start=start,
             size=size,
             order=order,
+            time_sort=time_sort,
         )
+
+        return models
 
     def count_by_user_id(self, db: Session, user_id: str) -> int:
-        return (
-            db.query(func.count(self.model.user_id))
-            .filter(self.model.user_id == user_id, self.model.is_deleted.is_(False))
-            .scalar()
-        )
+        count_field = self.model.user_id
+        conditions = [self.model.user_id == user_id]
 
-    def delete_by_model_id(self, db: Session, model_id: str) -> Model:
-        model = self.get_by_model_id(db, model_id)
-        model.is_deleted = True
-        model = self.update(db, model)
+        count = self.count_by_field(db=db, count_field=count_field, conditions=conditions)
 
-        return model
+        return count
 
 
 model_repository = ModelRepository(Model)
