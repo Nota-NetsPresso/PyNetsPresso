@@ -1,8 +1,7 @@
 from sqlalchemy import JSON, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from netspresso.utils.db.generate_uuid import generate_uuid
-from netspresso.utils.db.models.base import BaseModel
+from netspresso.utils.db.models.base import BaseModel, generate_uuid
 
 
 class ConversionTask(BaseModel):
