@@ -165,10 +165,12 @@ class BenchmarkTaskService:
 
     def delete_benchmark_task(self, db: Session, task_id: str, api_key: str) -> BenchmarkPayload:
         """Delete benchmark task"""
-        benchmark_task = benchmark_task_repository.delete_by_task_id(db=db, task_id=task_id)
+        benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=task_id)
+        benchmark_task = benchmark_task_repository.soft_delete(db=db, model=benchmark_task)
 
         # Delete benchmarked model from model repository
-        _ = model_repository.delete_by_model_id(db=db, model_id=benchmark_task.model_id)
+        model = model_repository.get_by_model_id(db=db, model_id=benchmark_task.model_id)
+        model = model_repository.soft_delete(db=db, model=model)
 
         return self._create_benchmark_payload(benchmark_task)
 

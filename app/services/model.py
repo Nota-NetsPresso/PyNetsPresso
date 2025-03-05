@@ -170,7 +170,7 @@ class ModelService:
             raise ModelCannotBeDeletedException(model_id=model_id)
 
         # Delete model and training task
-        model = model_repository.delete_by_model_id(db=db, model_id=model_id)
+        model = model_repository.soft_delete(db=db, model=model)
         training_task = train_task_service.delete_training_task_by_model_id(db=db, model_id=model_id)
 
         # Process and return model info
