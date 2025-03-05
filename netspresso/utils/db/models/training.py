@@ -49,7 +49,7 @@ class TrainingTask(BaseModel):
     )
 
 
-class Dataset(BaseModel):
+class Dataset(Base):
     __tablename__ = "dataset"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -65,7 +65,7 @@ class Dataset(BaseModel):
     task = relationship("TrainingTask", back_populates="dataset")
 
 
-class Hyperparameter(BaseModel):
+class Hyperparameter(Base):
     __tablename__ = "hyperparameter"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -83,7 +83,7 @@ class Hyperparameter(BaseModel):
     task = relationship("TrainingTask", back_populates="hyperparameter")
 
 
-class Environment(BaseModel):
+class Environment(Base):
     __tablename__ = "environment"
 
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
@@ -96,7 +96,7 @@ class Environment(BaseModel):
     task = relationship("TrainingTask", back_populates="environment")
 
 
-class Performance(BaseModel):
+class Performance(Base):
     __tablename__ = "performance"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)

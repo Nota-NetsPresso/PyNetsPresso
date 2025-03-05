@@ -20,8 +20,6 @@ def generate_uuid(entity: str, size: int = 10) -> str:
 
 
 class BaseModel(Base, TimestampMixin):
-    """모든 모델의 기본 모델"""
-
     __abstract__ = True
 
     is_deleted = Column(Boolean, nullable=False, default=False)
