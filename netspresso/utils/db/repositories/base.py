@@ -54,11 +54,19 @@ class BaseRepository(Generic[ModelType]):
         return query
 
     def _apply_sorting(self, query: Query, order: Optional[Order], time_sort: Optional[TimeSort]) -> Query:
-        if order is not None and time_sort is not None:
-            ordering_func = self.choose_order_func(order)
-            choose_time_sort = self.choose_time_sort(time_sort)
-            query = query.order_by(ordering_func(choose_time_sort))
-        return query
+        """Apply sorting to query based on order and time_sort parameters.
+
+        Args:
+            query: The query to modify
+            order: Sort direction (DESC or ASC)
+            time_sort: Field to sort by (CREATED_AT or UPDATED_AT)
+
+        Returns:
+            Modified query with sorting applied
+        """
+        ordering_func = self.choose_order_func(order)
+        time_sort_field = self.choose_time_sort(time_sort)
+        return query.order_by(ordering_func(time_sort_field))
 
     def _build_base_query(self, db: Session, conditions: Optional[List[Any]] = None) -> Query:
         query = db.query(self.model)
