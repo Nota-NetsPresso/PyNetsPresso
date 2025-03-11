@@ -115,7 +115,7 @@ class PretrainedModel(str, Enum):
     YOLOX_M = "yolox_m"
     YOLOX_L = "yolox_l"
     YOLOX_X = "yolox_x"
-    YOLO_FASTEST = "yolo_fastest"
+    YOLO_FASTEST_V2 = "yolo_fastest_v2"
     SEGFORMER_B0 = "segformer_b0"
     PIDNET_S = "pidnet_s"
 
@@ -136,7 +136,7 @@ class PretrainedModelDisplay(str, Enum):
     YOLOX_M = "YOLOX-M"
     YOLOX_L = "YOLOX-L"
     YOLOX_X = "YOLOX-X"
-    YOLO_FASTEST = "YOLO-Fastest"
+    YOLO_FASTEST_V2 = "YOLO-FastestV2"
     SEGFORMER_B0 = "SegFormer-B0"
     PIDNET_S = "PIDNet-S"
 
@@ -170,7 +170,7 @@ MODEL_DISPLAY_MAP = {
     PretrainedModel.YOLOX_M: PretrainedModelDisplay.YOLOX_M,
     PretrainedModel.YOLOX_L: PretrainedModelDisplay.YOLOX_L,
     PretrainedModel.YOLOX_X: PretrainedModelDisplay.YOLOX_X,
-    PretrainedModel.YOLO_FASTEST: PretrainedModelDisplay.YOLO_FASTEST,
+    PretrainedModel.YOLO_FASTEST_V2: PretrainedModelDisplay.YOLO_FASTEST_V2,
     PretrainedModel.SEGFORMER_B0: PretrainedModelDisplay.SEGFORMER_B0,
     PretrainedModel.PIDNET_S: PretrainedModelDisplay.PIDNET_S,
 }
@@ -192,7 +192,7 @@ MODEL_GROUP_MAP = {
     PretrainedModel.YOLOX_M: PretrainedModelGroup.YOLOX,
     PretrainedModel.YOLOX_L: PretrainedModelGroup.YOLOX,
     PretrainedModel.YOLOX_X: PretrainedModelGroup.YOLOX,
-    PretrainedModel.YOLO_FASTEST: PretrainedModelGroup.YOLO,
+    PretrainedModel.YOLO_FASTEST_V2: PretrainedModelGroup.YOLO,
     PretrainedModel.SEGFORMER_B0: PretrainedModelGroup.SEGFORMER,
     PretrainedModel.PIDNET_S: PretrainedModelGroup.PIDNET,
 }
