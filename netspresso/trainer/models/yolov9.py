@@ -145,6 +145,7 @@ class DetectionYoloV9CModelConfig(ModelConfig):
         default_factory=lambda: {
             "params": {
                 # postprocessor - decode
+                "reg_max": 16,
                 "score_thresh": 0.01,
                 # postprocessor - nms
                 "nms_thresh": 0.65,
@@ -156,6 +157,7 @@ class DetectionYoloV9CModelConfig(ModelConfig):
         default_factory=lambda: [
             {
                 "criterion": "yolov9_loss",
+                "reg_max": 16,
                 "weight": None,
                 "l1_activate_epoch": None,
             }
@@ -203,6 +205,7 @@ class DetectionYoloV9MModelConfig(ModelConfig):
         default_factory=lambda: {
             "params": {
                 # postprocessor - decode
+                "reg_max": 16,
                 "score_thresh": 0.01,
                 # postprocessor - nms
                 "nms_thresh": 0.65,
@@ -214,6 +217,7 @@ class DetectionYoloV9MModelConfig(ModelConfig):
         default_factory=lambda: [
             {
                 "criterion": "yolov9_loss",
+                "reg_max": 16,
                 "weight": None,
                 "l1_activate_epoch": None,
             }
@@ -261,6 +265,7 @@ class DetectionYoloV9SModelConfig(ModelConfig):
         default_factory=lambda: {
             "params": {
                 # postprocessor - decode
+                "reg_max": 16,
                 "score_thresh": 0.01,
                 # postprocessor - nms
                 "nms_thresh": 0.65,
@@ -272,6 +277,7 @@ class DetectionYoloV9SModelConfig(ModelConfig):
         default_factory=lambda: [
             {
                 "criterion": "yolov9_loss",
+                "reg_max": 16,
                 "weight": None,
                 "l1_activate_epoch": None,
             }
