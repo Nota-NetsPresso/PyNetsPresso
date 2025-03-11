@@ -118,6 +118,9 @@ class PretrainedModel(str, Enum):
     YOLO_FASTEST_V2 = "yolo_fastest_v2"
     SEGFORMER_B0 = "segformer_b0"
     PIDNET_S = "pidnet_s"
+    YOLOV9_S = "yolov9_s"
+    YOLOV9_M = "yolov9_m"
+    YOLOV9_C = "yolov9_c"
 
 
 class PretrainedModelDisplay(str, Enum):
@@ -139,6 +142,9 @@ class PretrainedModelDisplay(str, Enum):
     YOLO_FASTEST_V2 = "YOLO-FastestV2"
     SEGFORMER_B0 = "SegFormer-B0"
     PIDNET_S = "PIDNet-S"
+    YOLOV9_S = "YOLOv9-S"
+    YOLOV9_M = "YOLOv9-M"
+    YOLOV9_C = "YOLOv9-C"
 
 
 class PretrainedModelGroup(str, Enum):
@@ -152,7 +158,7 @@ class PretrainedModelGroup(str, Enum):
     YOLO = "YOLO"
     SEGFORMER = "SegFormer"
     PIDNET = "PIDNet"
-
+    YOLOV9 = "YOLOv9"
 
 MODEL_DISPLAY_MAP = {
     PretrainedModel.EFFICIENTFORMER_L1: PretrainedModelDisplay.EFFICIENTFORMER_L1,
@@ -173,6 +179,9 @@ MODEL_DISPLAY_MAP = {
     PretrainedModel.YOLO_FASTEST_V2: PretrainedModelDisplay.YOLO_FASTEST_V2,
     PretrainedModel.SEGFORMER_B0: PretrainedModelDisplay.SEGFORMER_B0,
     PretrainedModel.PIDNET_S: PretrainedModelDisplay.PIDNET_S,
+    PretrainedModel.YOLOV9_S: PretrainedModelDisplay.YOLOV9_S,
+    PretrainedModel.YOLOV9_M: PretrainedModelDisplay.YOLOV9_M,
+    PretrainedModel.YOLOV9_C: PretrainedModelDisplay.YOLOV9_C,
 }
 
 
@@ -195,4 +204,7 @@ MODEL_GROUP_MAP = {
     PretrainedModel.YOLO_FASTEST_V2: PretrainedModelGroup.YOLO,
     PretrainedModel.SEGFORMER_B0: PretrainedModelGroup.SEGFORMER,
     PretrainedModel.PIDNET_S: PretrainedModelGroup.PIDNET,
+    PretrainedModel.YOLOV9_S: PretrainedModelGroup.YOLOV9,
+    PretrainedModel.YOLOV9_M: PretrainedModelGroup.YOLOV9,
+    PretrainedModel.YOLOV9_C: PretrainedModelGroup.YOLOV9,
 }
