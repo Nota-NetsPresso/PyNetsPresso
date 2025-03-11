@@ -125,6 +125,14 @@ class RandomResize(Transform):
 
 
 @dataclass
+class RandomResize2(Transform):
+    name: str = "randomresize2"
+    base_size: List = field(default_factory=lambda: [512, 2048])
+    random_range: List = field(default_factory=lambda: [0.5, 1.5])
+    interpolation: str = "bilinear"
+
+
+@dataclass
 class RandomResizedCrop(Transform):
     name: str = "randomresizedcrop"
     size: int = DEFAULT_IMG_SIZE
