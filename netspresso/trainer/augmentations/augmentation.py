@@ -96,6 +96,7 @@ class PoseTopDownAffine(Transform):
 class RandomCrop(Transform):
     name: str = "randomcrop"
     size: int = DEFAULT_IMG_SIZE
+    fill: int = 114
 
 
 @dataclass
