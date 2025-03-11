@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List
 
 
@@ -50,6 +50,13 @@ class CosineAnnealingWarmRestartsWithCustomWarmUp(BaseScheduler):
     iters_per_phase: int = 10
 
 
+@dataclass
+class MultiStepLR(BaseScheduler):
+    name: str = "multi_step"
+    milestones: List[int] = field(default_factory=lambda: [30, 80])
+    gamma: float = 0.1
+
+
 def get_supported_schedulers() -> List[Dict[str, Any]]:
     """Return a list of supported schedulers with their parameters and default values."""
     schedulers = [
@@ -57,5 +64,6 @@ def get_supported_schedulers() -> List[Dict[str, Any]]:
         PolynomialLRWithWarmUp(),
         CosineAnnealingLRWithCustomWarmUp(),
         CosineAnnealingWarmRestartsWithCustomWarmUp(),
+        MultiStepLR(),
     ]
     return [{"name": scheduler.name, "parameters": scheduler.to_parameters()} for scheduler in schedulers]

@@ -69,6 +69,7 @@ class Scheduler(str, Enum):
     STEP_LR = "step"
     POLYNOMIAL_LR = "poly"
     COSINE_ANNEALING_LR = "cosine_no_sgdr"
+    MULTI_STEP_LR = "multi_step"
 
 
 class SchedulerDisplay(str, Enum):
@@ -76,6 +77,7 @@ class SchedulerDisplay(str, Enum):
     STEP_LR = "StepLR"
     POLYNOMIAL_LR = "PolynomialLRWithWarmUp"
     COSINE_ANNEALING_LR = "CosineAnnealingLRWithCustomWarmUp"
+    MULTI_STEP_LR = "MultiStepLR"
 
 
 SCHEDULER_DISPLAY_MAP = {
@@ -83,6 +85,7 @@ SCHEDULER_DISPLAY_MAP = {
     Scheduler.STEP_LR: SchedulerDisplay.STEP_LR,
     Scheduler.POLYNOMIAL_LR: SchedulerDisplay.POLYNOMIAL_LR,
     Scheduler.COSINE_ANNEALING_LR: SchedulerDisplay.COSINE_ANNEALING_LR,
+    Scheduler.MULTI_STEP_LR: SchedulerDisplay.MULTI_STEP_LR,
 }
 
 

@@ -1,6 +1,7 @@
 from .schedulers import (
     CosineAnnealingLRWithCustomWarmUp,
     CosineAnnealingWarmRestartsWithCustomWarmUp,
+    MultiStepLR,
     PolynomialLRWithWarmUp,
     StepLR,
 )
@@ -10,4 +11,5 @@ __all__ = [
     "PolynomialLRWithWarmUp",
     "CosineAnnealingLRWithCustomWarmUp",
     "CosineAnnealingWarmRestartsWithCustomWarmUp",
+    "MultiStepLR",
 ]
