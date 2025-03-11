@@ -10,7 +10,7 @@ class GelanCArchitectureConfig(ArchitectureConfig):
         default_factory=lambda: {
             "name": "gelan",
             "params": {
-                "stem_out_channels": 32,
+                "stem_out_channels": 64,
                 "stem_kernel_size": 3,
                 "stem_stride": 2,
                 "return_stage_idx": [1, 2, 3],
