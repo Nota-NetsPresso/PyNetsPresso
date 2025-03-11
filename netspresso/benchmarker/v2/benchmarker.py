@@ -226,8 +226,6 @@ class BenchmarkerV2(NetsPressoBase):
             BenchmarkerMetadata: Benchmark metadata.
         """
 
-        FileHandler.check_input_model_path(input_model_path)
-
         if input_model_id:
             input_model = self.get_input_model(input_model_id, self.user_info.user_id)
             input_model.user_id = self.user_info.user_id

@@ -11,19 +11,17 @@ from netspresso.clients.auth import TokenHandler
 from netspresso.clients.auth.response_body import UserResponse
 from netspresso.clients.launcher import launcher_client_v2
 from netspresso.clients.launcher.v2.schemas import InputLayer
-from netspresso.clients.launcher.v2.schemas.common import DeviceInfo, ModelOption
+from netspresso.clients.launcher.v2.schemas.common import ModelOption
 from netspresso.clients.launcher.v2.schemas.task.convert.response_body import ConvertTask
 from netspresso.enums import DataType, DeviceName, ServiceTask, SoftwareVersion, Status, TaskStatusForDisplay
 from netspresso.enums.conversion import SourceFramework, TargetFramework
 from netspresso.enums.project import SubFolder
-from netspresso.metadata.converter import ConverterMetadata
 from netspresso.utils import FileHandler
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.session import get_db_session
-from netspresso.utils.metadata import MetadataHandler
 
 storage_handler = ObjectStorageHandler()
 BUCKET_NAME = "model"
@@ -36,75 +34,22 @@ class ConverterV2(NetsPressoBase):
         self.user_info = user_info
 
     def get_supported_options(self, framework: SourceFramework) -> List[ModelOption]:
+        self.token_handler.validate_token()
+
         options_response = launcher_client_v2.converter.read_framework_options(
             access_token=self.token_handler.tokens.access_token,
             framework=framework,
         )
-
         supported_options = options_response.data
 
         # TODO: Will be removed when we support DLC in the future
         supported_options = [
-            supported_option for supported_option in supported_options if supported_option.framework != "dlc"
+            supported_option
+            for supported_option in supported_options
+            if supported_option.framework != "dlc"
         ]
 
         return supported_options
-
-    def create_available_options(self, target_framework, target_device, target_software_version):
-        def filter_device(device: DeviceInfo, target_software_version: SoftwareVersion):
-            filtered_versions = [
-                version for version in device.software_versions if version.software_version == target_software_version
-            ]
-
-            if filtered_versions:
-                device.software_versions = filtered_versions
-                return device
-            return None
-
-        self.token_handler.validate_token()
-
-        available_options = launcher_client_v2.benchmarker.read_framework_options(
-            access_token=self.token_handler.tokens.access_token,
-            framework=target_framework,
-        )
-
-        if target_framework in [TargetFramework.TENSORRT, TargetFramework.DRPAI]:
-            for available_option in available_options.data:
-                if available_option.framework == target_framework:
-                    available_option.devices = [
-                        filter_device(device, target_software_version)
-                        for device in available_option.devices
-                        if device.device_name == target_device
-                    ]
-                available_option.devices = [device for device in available_option.devices if device]
-
-        return available_options
-
-    def initialize_metadata(
-        self, output_dir, input_model_path, target_framework, target_device, target_software_version
-    ):
-        def create_metadata_with_status(status, error_message=None):
-            metadata = ConverterMetadata()
-            metadata.status = status
-            if error_message:
-                logger.error(error_message)
-            return metadata
-
-        try:
-            metadata = ConverterMetadata()
-        except Exception as e:
-            error_message = f"An unexpected error occurred during metadata initialization: {e}"
-            metadata = create_metadata_with_status(Status.ERROR, error_message)
-        except KeyboardInterrupt:
-            warning_message = "Conversion task was interrupted by the user."
-            metadata = create_metadata_with_status(Status.STOPPED, warning_message)
-        finally:
-            metadata.input_model_path = Path(input_model_path).resolve().as_posix()
-            available_options = self.create_available_options(target_framework, target_device, target_software_version)
-            metadata.available_options.extend(option.to() for option in available_options.data)
-            MetadataHandler.save_metadata(data=metadata, folder_path=output_dir)
-
-        return metadata
 
     def _download_converted_model(self, convert_task: ConvertTask, local_path: str) -> None:
         """Download the converted model with given conversion task or conversion task uuid.
