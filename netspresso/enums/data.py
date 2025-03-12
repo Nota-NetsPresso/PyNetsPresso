@@ -1,6 +1,6 @@
-from enum import Enum
+from netspresso.enums.base import StrEnum
 
 
-class Format(Enum):
+class Format(StrEnum):
     Local = "local"
     Hugging_Face = "huggingface"

@@ -1,17 +1,17 @@
 from dataclasses import dataclass, field
-from enum import Enum
 from pathlib import Path
 from typing import List, Optional, Union
 
 from netspresso.clients.utils.system import ENV_STR
 from netspresso.enums import DataType, DisplaySoftwareVersion, Framework, HardwareType, SoftwareVersion
+from netspresso.enums.base import StrEnum
 from netspresso.metadata import common
 from netspresso.metadata.common import AvailableOption, SoftwareVersions
 
 version = (Path(__file__).parent.parent.parent.parent.parent / "VERSION").read_text().strip()
 
 
-class Order(str, Enum):
+class Order(StrEnum):
     """ """
 
     DESC = "desc"

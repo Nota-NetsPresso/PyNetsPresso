@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from enum import Enum
 from typing import Optional
 
 from qai_hub import QuantizeDtype
 
+from netspresso.enums.base import StrEnum
 
-class RangeScheme(str, Enum):
+
+class RangeScheme(StrEnum):
     AUTO = "auto"
     MSE_MINIMIZER = "mse_minimizer"
     MIN_MAX = "min_max"

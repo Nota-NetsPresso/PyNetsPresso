@@ -1,19 +1,19 @@
-from enum import Enum
+from netspresso.enums.base import StrEnum
 
 
-class EncryptionKey(str, Enum):
+class EncryptionKey(StrEnum):
     NVIDIA_TAO = "nvidia_tao"
     NVIDIA_TLT = "nvidia_tlt"
     TLT_ENCODE = "tlt_encode"
 
 
-class CheckpointChooseMethod(str, Enum):
+class CheckpointChooseMethod(StrEnum):
     LATEST_MODEL = "latest_model"
     BEST_MODEL = "best_model"
     FROM_EPOCH_NUMBER = "from_epoch_number"
 
 
-class NetworkArch(str, Enum):
+class NetworkArch(StrEnum):
     CLASSIFICATION_TF1 = "classification_tf1"
     CLASSIFICATION_TF2 = "classification_tf2"
     CLASSIFICATION_PYT = "classification_pyt"

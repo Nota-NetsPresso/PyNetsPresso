@@ -1,13 +1,13 @@
-from enum import Enum
+from netspresso.enums.base import StrEnum
 
 
-class QuantizationPrecision(str, Enum):
+class QuantizationPrecision(StrEnum):
     INT8 = "int8"
     FLOAT16 = "float16"
     FLOAT32 = "float32"
 
 
-class QuantizationMode(str, Enum):
+class QuantizationMode(StrEnum):
     AUTOMATIC_QUANTIZATION = "automatic_quantization"
     UNIFORM_PRECISION_QUANTIZATION = "uniform_precision_quantization"
     CUSTOM_PRECISION_QUANTIZATION = "custom_precision_quantization"
@@ -15,11 +15,11 @@ class QuantizationMode(str, Enum):
     RECOMMEND_QUANTIZATION = "recommend_quantization"
 
 
-class SimilarityMetric(str, Enum):
+class SimilarityMetric(StrEnum):
     SNR = "SNR"
 
 
-class OnnxOperator(str, Enum):
+class OnnxOperator(StrEnum):
     Adagrad = "Adagrad"
     Momentum = "Momentum"
     ZipMap = "ZipMap"

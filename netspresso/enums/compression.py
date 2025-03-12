@@ -1,8 +1,9 @@
-from enum import Enum
 from typing import Literal
 
+from netspresso.enums.base import StrEnum
 
-class CompressionMethod(str, Enum):
+
+class CompressionMethod(StrEnum):
     PR_L2 = "PR_L2"
     PR_GM = "PR_GM"
     PR_NN = "PR_NN"
@@ -17,7 +18,7 @@ class CompressionMethod(str, Enum):
         return Literal["PR_L2", "PR_GM", "PR_NN", "PR_SNP", "PR_ID", "FD_TK", "FD_CP", "FD_SVD"]
 
 
-class RecommendationMethod(str, Enum):
+class RecommendationMethod(StrEnum):
     SLAMP = "slamp"
     VBMF = "vbmf"
 
@@ -26,7 +27,7 @@ class RecommendationMethod(str, Enum):
         return Literal["slamp", "vbmf"]
 
 
-class Policy(str, Enum):
+class Policy(StrEnum):
     SUM = "sum"
     AVERAGE = "average"
 
@@ -35,7 +36,7 @@ class Policy(str, Enum):
         return Literal["sum", "average"]
 
 
-class GroupPolicy(str, Enum):
+class GroupPolicy(StrEnum):
     SUM = "sum"
     AVERAGE = "average"
     COUNT = "count"
@@ -46,7 +47,7 @@ class GroupPolicy(str, Enum):
         return Literal["sum", "average", "count", "none"]
 
 
-class LayerNorm(str, Enum):
+class LayerNorm(StrEnum):
     NONE = "none"
     STANDARD_SCORE = "standard_score"
     TSS_NORM = "tss_norm"
@@ -58,7 +59,7 @@ class LayerNorm(str, Enum):
         return Literal["none", "standard_score", "tss_norm", "linear_scaling", "softmax_norm"]
 
 
-class StepOp(str, Enum):
+class StepOp(StrEnum):
     ROUND_UP = "round_up"
     ROUND_DOWN = "round_down"
     ROUND = "round"

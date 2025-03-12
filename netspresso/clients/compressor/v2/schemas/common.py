@@ -1,14 +1,14 @@
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import List, Optional, Union
 
+from netspresso.enums.base import StrEnum
 from netspresso.enums.device import DisplaySoftwareVersion, HardwareType, SoftwareVersion
 from netspresso.enums.model import DataType, Framework
 from netspresso.metadata import common
 from netspresso.metadata.common import AvailableOption
 
 
-class Order(str, Enum):
+class Order(StrEnum):
     """ """
 
     DESC = "desc"

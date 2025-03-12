@@ -1,8 +1,9 @@
-from enum import Enum
 from typing import Literal
 
+from netspresso.enums.base import StrEnum
 
-class DeviceName(str, Enum):
+
+class DeviceName(StrEnum):
     RASPBERRY_PI_5 = "RaspberryPi5"
     RASPBERRY_PI_4B = "RaspberryPi4B"
     RASPBERRY_PI_3B_PLUS = "RaspberryPi3BPlus"
@@ -55,50 +56,8 @@ class DeviceName(str, Enum):
             "arduino_nicla_vision",
         ]
 
-    JETSON_DEVICES = [
-        JETSON_NANO,
-        JETSON_TX2,
-        JETSON_XAVIER,
-        JETSON_NX,
-        JETSON_AGX_ORIN,
-        JETSON_ORIN_NANO,
-    ]
-    RASPBERRY_PI_DEVICES = [
-        RASPBERRY_PI_5,
-        RASPBERRY_PI_4B,
-        RASPBERRY_PI_3B,
-        RASPBERRY_PI_2B,
-        RASPBERRY_PI_3B_PLUS,
-        RASPBERRY_PI_ZERO_W,
-        RASPBERRY_PI_ZERO_2W,
-    ]
-    RENESAS_DEVICES = [RENESAS_RZ_V2L, RENESAS_RZ_V2M]
-    NVIDIA_GRAPHIC_CARDS = [AWS_T4]
-    INTEL_DEVICES = [INTEL_XEON_W_2233]
-    AVAILABLE_INT8_DEVICES = [
-        ALIF_ENSEMBLE_E7_DEVKIT_GEN2,
-        RENESAS_RA8D1,
-        RASPBERRY_PI_5,
-        RASPBERRY_PI_4B,
-        RASPBERRY_PI_3B_PLUS,
-        RASPBERRY_PI_3B,
-        RASPBERRY_PI_2B,
-        RASPBERRY_PI_ZERO_W,
-        RASPBERRY_PI_ZERO_2W,
-        ARM_ETHOS_U_SERIES,
-        NXP_iMX93,
-        ARDUINO_NICLA_VISION,
-    ]
-    ONLY_INT8_DEVICES = [
-        ALIF_ENSEMBLE_E7_DEVKIT_GEN2,
-        RENESAS_RA8D1,
-        ARM_ETHOS_U_SERIES,
-        NXP_iMX93,
-        ARDUINO_NICLA_VISION,
-    ]
 
-
-class SoftwareVersion(str, Enum):
+class SoftwareVersion(StrEnum):
     JETPACK_4_4_1 = "4.4.1-b50"
     JETPACK_4_6 = "4.6-b199"
     JETPACK_5_0_1 = "5.0.1-b118"
@@ -110,7 +69,7 @@ class SoftwareVersion(str, Enum):
         return Literal["4.4.1-b50", "4.6-b199", "5.0.1-b118", "5.0.2-b231", "6.0-b52"]
 
 
-class DisplaySoftwareVersion(str, Enum):
+class DisplaySoftwareVersion(StrEnum):
     JETPACK_4_4_1 = "Jetpack 4.4.1"
     JETPACK_4_6 = "Jetpack 4.6"
     JETPACK_5_0_1 = "Jetpack 5.0.1"
@@ -118,7 +77,7 @@ class DisplaySoftwareVersion(str, Enum):
     JETPACK_6_0 = "Jetpack 6.0"
 
 
-class HardwareType(str, Enum):
+class HardwareType(StrEnum):
     HELIUM = "helium"
 
     @classmethod
@@ -126,7 +85,7 @@ class HardwareType(str, Enum):
         return Literal["helium"]
 
 
-class TaskStatus(str, Enum):
+class TaskStatus(StrEnum):
     IN_QUEUE = "IN_QUEUE"
     IN_PROGRESS = "IN_PROGRESS"
     FINISHED = "FINISHED"

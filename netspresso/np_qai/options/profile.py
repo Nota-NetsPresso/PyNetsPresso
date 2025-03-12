@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import List, Optional, Union
 
+from netspresso.enums.base import StrEnum
 from netspresso.np_qai.options.common import CommonOptions
 
 
-class TfliteDelegates(str, Enum):
+class TfliteDelegates(StrEnum):
     QNN = "qnn"
     QNN_GPU = "qnn-gpu"
     NNAPI = "nnapi"
@@ -14,19 +14,19 @@ class TfliteDelegates(str, Enum):
     XNNPACK = "xnnpack"
 
 
-class ExecutionMode(str, Enum):
+class ExecutionMode(StrEnum):
     SEQUENTIAL = "SEQUENTIAL"
     PARALLEL = "PARALLEL"
 
 
-class GraphOptimizationLevel(str, Enum):
+class GraphOptimizationLevel(StrEnum):
     DISABLE_ALL = "DISABLE_ALL"
     ENABLE_BASIC = "ENABLE_BASIC"
     ENABLE_EXTENDED = "ENABLE_EXTENDED"
     ENABLE_ALL = "ENABLE_ALL"
 
 
-class OnnxQnnHtpPerformanceMode(str, Enum):
+class OnnxQnnHtpPerformanceMode(StrEnum):
     DEFAULT = "default"
     LOW_POWER_SAVER = "low_power_saver"
     POWER_SAVER = "power_saver"
@@ -38,13 +38,13 @@ class OnnxQnnHtpPerformanceMode(str, Enum):
     BURST = "burst"
 
 
-class OnnxExecutionProviders(str, Enum):
+class OnnxExecutionProviders(StrEnum):
     QNN = "qnn"
     QNN_GPU = "qnn-gpu"
     DIRECTML = "directml"
 
 
-class QnnLogLevel(str, Enum):
+class QnnLogLevel(StrEnum):
     K_LOG_OFF = "kLogOff"
     K_LOG_LEVEL_ERROR = "kLogLevelError"
     K_LOG_LEVEL_WARN = "kLogLevelWarn"
@@ -53,7 +53,7 @@ class QnnLogLevel(str, Enum):
     K_LOG_LEVEL_DEBUG = "kLogLevelDebug"
 
 
-class QnnGraphPriority(str, Enum):
+class QnnGraphPriority(StrEnum):
     K_QNN_PRIORITY_DEFAULT = "kQnnPriorityDefault"
     K_QNN_PRIORITY_LOW = "kQnnPriorityLow"
     K_QNN_PRIORITY_NORMAL = "kQnnPriorityNormal"
@@ -62,21 +62,21 @@ class QnnGraphPriority(str, Enum):
     K_QNN_PRIORITY_UNDEFINED = "kQnnPriorityUndefined"
 
 
-class QnnGpuPrecision(str, Enum):
+class QnnGpuPrecision(StrEnum):
     K_GPU_USER_PROVIDED = "kGpuUserProvided"
     K_GPU_FP32 = "kGpuFp32"
     K_GPU_FP16 = "kGpuFp16"
     K_GPU_HYBRID = "kGpuHybrid"
 
 
-class QnnGpuPerformanceMode(str, Enum):
+class QnnGpuPerformanceMode(StrEnum):
     K_GPU_DEFAULT = "kGpuDefault"
     K_GPU_HIGH = "kGpuHigh"
     K_GPU_NORMAL = "kGpuNormal"
     K_GPU_LOW = "kGpuLow"
 
 
-class QnnDspPerformanceMode(str, Enum):
+class QnnDspPerformanceMode(StrEnum):
     K_DSP_LOW_POWER_SAVER = "kDspLowPowerSaver"
     K_DSP_POWER_SAVER = "kDspPowerSaver"
     K_DSP_HIGH_POWER_SAVER = "kDspHighPowerSaver"
@@ -87,12 +87,12 @@ class QnnDspPerformanceMode(str, Enum):
     K_DSP_BURST = "kDspBurst"
 
 
-class QnnDspEncoding(str, Enum):
+class QnnDspEncoding(StrEnum):
     K_DSP_STATIC = "kDspStatic"
     K_DSP_DYNAMIC = "kDspDynamic"
 
 
-class TfliteQnnHtpPerformanceMode(str, Enum):
+class TfliteQnnHtpPerformanceMode(StrEnum):
     K_HTP_LOW_POWER_SAVER = "kHtpLowPowerSaver"
     K_HTP_POWER_SAVER = "kHtpPowerSaver"
     K_HTP_HIGH_POWER_SAVER = "kHtpHighPowerSaver"
@@ -103,54 +103,54 @@ class TfliteQnnHtpPerformanceMode(str, Enum):
     K_HTP_BURST = "kHtpBurst"
 
 
-class QnnHtpPrecision(str, Enum):
+class QnnHtpPrecision(StrEnum):
     K_HTP_QUANTIZED = "kHtpQuantized"
     K_HTP_FP16 = "kHtpFp16"
 
 
-class QnnHtpOptimizationStrategy(str, Enum):
+class QnnHtpOptimizationStrategy(StrEnum):
     K_HTP_OPTIMIZE_FOR_INFERENCE = "kHtpOptimizeForInference"
     K_HTP_OPTIMIZE_FOR_PREPARE = "kHtpOptimizeForPrepare"
 
 
-class GpuInferencePreference(str, Enum):
+class GpuInferencePreference(StrEnum):
     TFLITE_GPU_INFERENCE_PREFERENCE_FAST_SINGLE_ANSWER = "TFLITE_GPU_INFERENCE_PREFERENCE_FAST_SINGLE_ANSWER"
     TFLITE_GPU_INFERENCE_PREFERENCE_SUSTAINED_SPEED = "TFLITE_GPU_INFERENCE_PREFERENCE_SUSTAINED_SPEED"
     TFLITE_GPU_INFERENCE_PREFERENCE_BALANCED = "TFLITE_GPU_INFERENCE_PREFERENCE_BALANCED"
 
 
-class GpuInferencePriority(str, Enum):
+class GpuInferencePriority(StrEnum):
     TFLITE_GPU_INFERENCE_PREFERENCE_BALANCED = "TFLITE_GPU_INFERENCE_PREFERENCE_BALANCED"
     TFLITE_GPU_INFERENCE_PRIORITY_MAX_PRECISION = "TFLITE_GPU_INFERENCE_PRIORITY_MAX_PRECISION"
     TFLITE_GPU_INFERENCE_PRIORITY_MIN_LATENCY = "TFLITE_GPU_INFERENCE_PRIORITY_MIN_LATENCY"
     TFLITE_GPU_INFERENCE_PRIORITY_MIN_MEMORY_USAGE = "TFLITE_GPU_INFERENCE_PRIORITY_MIN_MEMORY_USAGE"
 
 
-class NnapiExecutionPreference(str, Enum):
+class NnapiExecutionPreference(StrEnum):
     K_LOW_POWER = "kLowPower"
     K_FAST_SINGLE_ANSWER = "kFastSingleAnswer"
     K_SUSTAINED_SPEED = "kSustainedSpeed"
 
 
-class ContextErrorReportingOptionsLevel(str, Enum):
+class ContextErrorReportingOptionsLevel(StrEnum):
     BRIEF = "BRIEF"
     DETAILED = "DETAILED"
 
 
-class Priority(str, Enum):
+class Priority(StrEnum):
     LOW = "LOW"
     NORMAL = "NORMAL"
     NORMAL_HIGH = "NORMAL_HIGH"
     HIGH = "HIGH"
 
 
-class ContextGpuPerformanceHint(str, Enum):
+class ContextGpuPerformanceHint(StrEnum):
     LOW = "LOW"
     NORMAL = "NORMAL"
     HIGH = "HIGH"
 
 
-class ContextHtpPerformanceMode(str, Enum):
+class ContextHtpPerformanceMode(StrEnum):
     EXTREME_POWER_SAVER = "EXTREME_POWER_SAVER"
     LOW_POWER_SAVER = "LOW_POWER_SAVER"
     POWER_SAVER = "POWER_SAVER"
@@ -162,18 +162,18 @@ class ContextHtpPerformanceMode(str, Enum):
     BURST = "BURST"
 
 
-class DefaultGraphGpuPrecision(str, Enum):
+class DefaultGraphGpuPrecision(StrEnum):
     FLOAT32 = "FLOAT32"
     FLOAT16 = "FLOAT16"
     HYBRID = "HYBRID"
     USER_PROVIDED = "USER_PROVIDED"
 
 
-class DefaultGraphHtpOptimizationType(str, Enum):
+class DefaultGraphHtpOptimizationType(StrEnum):
     FINALIZE_OPTIMIZATION_FLAG = "FINALIZE_OPTIMIZATION_FLAG"
 
 
-class DefaultGraphHtpPrecision(str, Enum):
+class DefaultGraphHtpPrecision(StrEnum):
     FLOAT16 = "FLOAT16"
 
 
