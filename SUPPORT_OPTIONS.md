@@ -44,7 +44,7 @@ Software Versions requires only Jetson Device. If you are using a different devi
 | JETPACK_4_6               |     ✔️      |     ✔️     |      ✔️       |    ✔️     |                 |                  |
 | JETPACK_5_0_1             |             |            |               |           |       ✔️        |                  |
 | JETPACK_5_0_2             |             |            |               |    ✔️     |                 |                  |
-| JETPACK_6_1               |             |            |               |           |                 |        ✔️        |
+| JETPACK_6_0               |             |            |               |           |                 |        ✔️        |
 
 The code below is an example of using software version.
 
