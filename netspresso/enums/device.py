@@ -192,11 +192,11 @@ class SoftwareVersion(str, Enum):
     JETPACK_4_6 = "4.6-b199"
     JETPACK_5_0_1 = "5.0.1-b118"
     JETPACK_5_0_2 = "5.0.2-b231"
-    JETPACK_6_0 = "6.0-b52"
+    JETPACK_6_1 = "6.1+b123"
 
     @classmethod
     def create_literal(cls):
-        return Literal["4.4.1-b50", "4.6-b199", "5.0.1-b118", "5.0.2-b231", "6.0-b52"]
+        return Literal["4.4.1-b50", "4.6-b199", "5.0.1-b118", "5.0.2-b231", "6.1+b123"]
 
 
 class SoftwareVersionDisplay(str, Enum):
@@ -204,7 +204,7 @@ class SoftwareVersionDisplay(str, Enum):
     JETPACK_4_6 = "Jetpack 4.6"
     JETPACK_5_0_1 = "Jetpack 5.0.1"
     JETPACK_5_0_2 = "Jetpack 5.0.2"
-    JETPACK_6_0 = "Jetpack 6.0"
+    JETPACK_6_1= "Jetpack 6.1"
 
 
 SOFTWARE_VERSION_DISPLAY_MAP = {
@@ -212,7 +212,7 @@ SOFTWARE_VERSION_DISPLAY_MAP = {
     SoftwareVersion.JETPACK_4_6: SoftwareVersionDisplay.JETPACK_4_6,
     SoftwareVersion.JETPACK_5_0_1: SoftwareVersionDisplay.JETPACK_5_0_1,
     SoftwareVersion.JETPACK_5_0_2: SoftwareVersionDisplay.JETPACK_5_0_2,
-    SoftwareVersion.JETPACK_6_0: SoftwareVersionDisplay.JETPACK_6_0,
+    SoftwareVersion.JETPACK_6_1: SoftwareVersionDisplay.JETPACK_6_1,
 }
 
 
