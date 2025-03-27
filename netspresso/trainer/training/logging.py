@@ -11,6 +11,7 @@ class LoggingConfig:
     image: bool = True
     stdout: bool = True
     save_optimizer_state: bool = True
+    save_best_only: bool = False
     sample_input_size: List = field(default_factory=lambda: [512, 512])
     onnx_export_opset: int = 13  # Recommend in range [13, 17]
     validation_epoch: int = 10
