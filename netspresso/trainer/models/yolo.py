@@ -16,10 +16,9 @@ class ShufflenetV2ArchitectureConfig(ArchitectureConfig):
 
 
 @dataclass
-class DetectionYoloFastestModelConfig(ModelConfig):
+class DetectionYoloFastestV2ModelConfig(ModelConfig):
     task: str = "detection"
-    name: str = "yolofastest"
-    checkpoint: CheckpointConfig = field(default_factory=lambda: CheckpointConfig(use_pretrained=False))
+    name: str = "yolo_fastest_v2"
     architecture: ArchitectureConfig = field(
         default_factory=lambda: ShufflenetV2ArchitectureConfig(
             neck={
@@ -43,12 +42,27 @@ class DetectionYoloFastestModelConfig(ModelConfig):
         default_factory=lambda: {
             "params": {
                 # postprocessor - decode
-                "topk_candidates": 1000,
-                "score_thresh": 0.05,
+                "score_thresh": 0.01,
                 # postprocessor - nms
-                "nms_thresh": 0.45,
+                "nms_thresh": 0.65,
+                "anchors": [
+                    [12, 18, 37, 49, 52, 132],  # P2
+                    [115, 73, 119, 199, 242, 238],  # P3
+                ],
                 "class_agnostic": False,
             },
         }
     )
-    losses: List[Dict[str, Any]] = field(default_factory=lambda: [{"criterion": "retinanet_loss", "weight": None}])
+    losses: List[Dict[str, Any]] = field(
+        default_factory=lambda: [
+            {
+                "criterion": "yolofastest_loss",
+                "anchors": [
+                    [12, 18, 37, 49, 52, 132],  # P2
+                    [115, 73, 119, 199, 242, 238],  # P3
+                ],
+                "l1_activate_epoch": None,
+                "weight": None,
+            }
+        ]
+    )

@@ -69,6 +69,7 @@ class Scheduler(str, Enum):
     STEP_LR = "step"
     POLYNOMIAL_LR = "poly"
     COSINE_ANNEALING_LR = "cosine_no_sgdr"
+    MULTI_STEP_LR = "multi_step"
 
 
 class SchedulerDisplay(str, Enum):
@@ -76,6 +77,7 @@ class SchedulerDisplay(str, Enum):
     STEP_LR = "StepLR"
     POLYNOMIAL_LR = "PolynomialLRWithWarmUp"
     COSINE_ANNEALING_LR = "CosineAnnealingLRWithCustomWarmUp"
+    MULTI_STEP_LR = "MultiStepLR"
 
 
 SCHEDULER_DISPLAY_MAP = {
@@ -83,6 +85,7 @@ SCHEDULER_DISPLAY_MAP = {
     Scheduler.STEP_LR: SchedulerDisplay.STEP_LR,
     Scheduler.POLYNOMIAL_LR: SchedulerDisplay.POLYNOMIAL_LR,
     Scheduler.COSINE_ANNEALING_LR: SchedulerDisplay.COSINE_ANNEALING_LR,
+    Scheduler.MULTI_STEP_LR: SchedulerDisplay.MULTI_STEP_LR,
 }
 
 
@@ -112,9 +115,12 @@ class PretrainedModel(str, Enum):
     YOLOX_M = "yolox_m"
     YOLOX_L = "yolox_l"
     YOLOX_X = "yolox_x"
-    YOLO_FASTEST = "yolo_fastest"
+    YOLO_FASTEST_V2 = "yolo_fastest_v2"
     SEGFORMER_B0 = "segformer_b0"
     PIDNET_S = "pidnet_s"
+    YOLOV9_S = "yolov9_s"
+    YOLOV9_M = "yolov9_m"
+    YOLOV9_C = "yolov9_c"
 
 
 class PretrainedModelDisplay(str, Enum):
@@ -133,9 +139,12 @@ class PretrainedModelDisplay(str, Enum):
     YOLOX_M = "YOLOX-M"
     YOLOX_L = "YOLOX-L"
     YOLOX_X = "YOLOX-X"
-    YOLO_FASTEST = "YOLO-Fastest"
+    YOLO_FASTEST_V2 = "YOLO-FastestV2"
     SEGFORMER_B0 = "SegFormer-B0"
     PIDNET_S = "PIDNet-S"
+    YOLOV9_S = "YOLOv9-S"
+    YOLOV9_M = "YOLOv9-M"
+    YOLOV9_C = "YOLOv9-C"
 
 
 class PretrainedModelGroup(str, Enum):
@@ -149,7 +158,7 @@ class PretrainedModelGroup(str, Enum):
     YOLO = "YOLO"
     SEGFORMER = "SegFormer"
     PIDNET = "PIDNet"
-
+    YOLOV9 = "YOLOv9"
 
 MODEL_DISPLAY_MAP = {
     PretrainedModel.EFFICIENTFORMER_L1: PretrainedModelDisplay.EFFICIENTFORMER_L1,
@@ -167,9 +176,12 @@ MODEL_DISPLAY_MAP = {
     PretrainedModel.YOLOX_M: PretrainedModelDisplay.YOLOX_M,
     PretrainedModel.YOLOX_L: PretrainedModelDisplay.YOLOX_L,
     PretrainedModel.YOLOX_X: PretrainedModelDisplay.YOLOX_X,
-    PretrainedModel.YOLO_FASTEST: PretrainedModelDisplay.YOLO_FASTEST,
+    PretrainedModel.YOLO_FASTEST_V2: PretrainedModelDisplay.YOLO_FASTEST_V2,
     PretrainedModel.SEGFORMER_B0: PretrainedModelDisplay.SEGFORMER_B0,
     PretrainedModel.PIDNET_S: PretrainedModelDisplay.PIDNET_S,
+    PretrainedModel.YOLOV9_S: PretrainedModelDisplay.YOLOV9_S,
+    PretrainedModel.YOLOV9_M: PretrainedModelDisplay.YOLOV9_M,
+    PretrainedModel.YOLOV9_C: PretrainedModelDisplay.YOLOV9_C,
 }
 
 
@@ -189,7 +201,10 @@ MODEL_GROUP_MAP = {
     PretrainedModel.YOLOX_M: PretrainedModelGroup.YOLOX,
     PretrainedModel.YOLOX_L: PretrainedModelGroup.YOLOX,
     PretrainedModel.YOLOX_X: PretrainedModelGroup.YOLOX,
-    PretrainedModel.YOLO_FASTEST: PretrainedModelGroup.YOLO,
+    PretrainedModel.YOLO_FASTEST_V2: PretrainedModelGroup.YOLO,
     PretrainedModel.SEGFORMER_B0: PretrainedModelGroup.SEGFORMER,
     PretrainedModel.PIDNET_S: PretrainedModelGroup.PIDNET,
+    PretrainedModel.YOLOV9_S: PretrainedModelGroup.YOLOV9,
+    PretrainedModel.YOLOV9_M: PretrainedModelGroup.YOLOV9,
+    PretrainedModel.YOLOV9_C: PretrainedModelGroup.YOLOV9,
 }
