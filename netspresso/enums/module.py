@@ -1,8 +1,9 @@
-from enum import Enum
 from typing import Literal
 
+from netspresso.enums.base import StrEnum
 
-class Module(str, Enum):
+
+class Module(StrEnum):
     CONVERT = "CONVERT"
     BENCHMARK = "BENCHMARK"
 

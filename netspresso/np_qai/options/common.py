@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from enum import Enum
 from typing import List, Optional
 
+from netspresso.enums.base import StrEnum
 
-class ComputeUnit(str, Enum):
+
+class ComputeUnit(StrEnum):
     ALL = "all"
     NPU = "npu"
     GPU = "gpu"

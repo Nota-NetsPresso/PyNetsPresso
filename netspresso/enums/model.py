@@ -1,8 +1,9 @@
-from enum import Enum
 from typing import Literal
 
+from netspresso.enums.base import StrEnum
 
-class Framework(str, Enum):
+
+class Framework(StrEnum):
     TENSORFLOW_KERAS = "tensorflow_keras"
     TENSORFLOW = "saved_model"
     PYTORCH = "pytorch"
@@ -29,7 +30,7 @@ class Framework(str, Enum):
         ]
 
 
-class Extension(str, Enum):
+class Extension(StrEnum):
     H5 = "h5"
     ZIP = "zip"
     PT = "pt"
@@ -40,7 +41,7 @@ class Extension(str, Enum):
         return Literal["h5", "zip", "pt", "onnx"]
 
 
-class OriginFrom(str, Enum):
+class OriginFrom(StrEnum):
     CUSTOM = "custom"
     NPMS = "npms"
 
@@ -49,7 +50,7 @@ class OriginFrom(str, Enum):
         return Literal["custom", "npms"]
 
 
-class DataType(str, Enum):
+class DataType(StrEnum):
     FP32 = "FP32"
     FP16 = "FP16"
     INT8 = "INT8"

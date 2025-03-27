@@ -1,9 +1,8 @@
-from enum import Enum
-
+from netspresso.enums.base import StrEnum
 from netspresso.exceptions.inferencer import NotSupportedSuffixException
 
 
-class Runtime(str, Enum):
+class Runtime(StrEnum):
     ONNX = "onnx"
     TFLITE = "tflite"
 

@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from enum import Enum
 from typing import Optional
 
+from netspresso.enums.base import StrEnum
 from netspresso.np_qai.options.common import CommonOptions
 
 
-class Framework(str, Enum):
+class Framework(StrEnum):
     PYTORCH = "pytorch"
     ONNX = "onnx"
     ONNXRUNTIME = "onnxruntime"
@@ -17,14 +17,14 @@ class Framework(str, Enum):
     QNN = "qnn"
 
 
-class Extension(str, Enum):
+class Extension(StrEnum):
     ONNX = ".onnx"
     PT = ".pt"
     AIMET = ".aimet"
     H5 = ".h5"
 
 
-class Runtime(str, Enum):
+class Runtime(StrEnum):
     TFLITE = "tflite"
     QNN_LIB_AARCH64_ANDROID = "qnn_lib_aarch64_android"
     QNN_CONTEXT_BINARY = "qnn_context_binary"
@@ -32,7 +32,7 @@ class Runtime(str, Enum):
     PRECOMPILED_QNN_ONNX = "precompiled_qnn_onnx"
 
 
-class QuantizeFullType(str, Enum):
+class QuantizeFullType(StrEnum):
     INT8 = "int8"
     INT16 = "int16"
     W8A16 = "w8a16"
@@ -40,7 +40,7 @@ class QuantizeFullType(str, Enum):
     W4A16 = "w4a16"
 
 
-class QuantizeWeightType(str, Enum):
+class QuantizeWeightType(StrEnum):
     FP16 = "float16"
 
 

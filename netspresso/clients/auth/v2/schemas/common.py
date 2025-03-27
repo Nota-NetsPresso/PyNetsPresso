@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from enum import Enum
+
+from netspresso.enums.base import StrEnum
 
 
 @dataclass
@@ -13,12 +14,12 @@ class PagingResponse(AbstractResponse):
     result_count: int
 
 
-class MembershipType(str, Enum):
+class MembershipType(StrEnum):
     BASIC = "BASIC"
     PRO = "PRO"
     PREMIUM = "PREMIUM"
 
 
-class CreditType(str, Enum):
+class CreditType(StrEnum):
     FREE = "FREE"
     PAID = "PAID"

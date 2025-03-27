@@ -1,7 +1,7 @@
-from enum import Enum
+from netspresso.enums.base import StrEnum
 
 
-class Optimizer(str, Enum):
+class Optimizer(StrEnum):
     ADADELTA = "Adadelta"
     ADAGRAD = "Adagrad"
     ADAM = "Adam"
@@ -24,7 +24,7 @@ class Optimizer(str, Enum):
         return name_map[name.lower()].value
 
 
-class Scheduler(str, Enum):
+class Scheduler(StrEnum):
     STEPLR = "StepLR"
     POLYNOMIAL_LR_WITH_WARM_UP = "PolynomialLRWithWarmUp"
     COSINE_ANNEALING_LR_WITH_CUSTOM_WARM_UP = "CosineAnnealingLRWithCustomWarmUp"

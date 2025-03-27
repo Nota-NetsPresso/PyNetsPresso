@@ -1,7 +1,7 @@
-from enum import Enum
+from netspresso.enums.base import StrEnum
 
 
-class ServiceTask(str, Enum):
+class ServiceTask(StrEnum):
     TRAINING = "Training"
     ADVANCED_COMPRESSION = "Advanced Compression"
     AUTOMATIC_COMPRESSION = "Automatic Compression"
@@ -24,7 +24,7 @@ class ServiceCredit:
         return ServiceCredit.CREDITS.get(task_id, "Task not found")
 
 
-class MembershipType(str, Enum):
+class MembershipType(StrEnum):
     BASIC = "BASIC"
     PRO = "PRO"
     PREMIUM = "PREMIUM"

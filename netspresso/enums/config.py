@@ -1,7 +1,7 @@
-from enum import Enum
+from netspresso.enums.base import StrEnum
 
 
-class EnvironmentType(str, Enum):
+class EnvironmentType(StrEnum):
     V2_PROD_CLOUD = "v2-prod-cloud"
     V2_PROD_ON_PREM = "v2-prod-on-prem"
     V2_STAGING_CLOUD = "v2-staging-cloud"
@@ -10,19 +10,19 @@ class EnvironmentType(str, Enum):
     V2_DEV_ON_PREM = "v2-dev-on-prem"
 
 
-class ServiceName(str, Enum):
+class ServiceName(StrEnum):
     NP = "NP"
     TAO = "TAO"
 
 
-class ServiceModule(str, Enum):
+class ServiceModule(StrEnum):
     AUTH = "AUTH"
     COMPRESSOR = "COMPRESSOR"
     LAUNCHER = "LAUNCHER"
     TRAINER = "TRAINER"
 
 
-class EndPointProperty(str, Enum):
+class EndPointProperty(StrEnum):
     HOST = "HOST"
     PORT = "PORT"
     URI_PREFIX = "URI_PREFIX"

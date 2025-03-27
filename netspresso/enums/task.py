@@ -1,15 +1,15 @@
-from enum import Enum
-
 from aenum import NamedConstant
 
+from netspresso.enums.base import StrEnum
 
-class Task(str, Enum):
+
+class Task(StrEnum):
     IMAGE_CLASSIFICATION = "classification"
     OBJECT_DETECTION = "detection"
     SEMANTIC_SEGMENTATION = "segmentation"
 
 
-class LauncherTask(str, Enum):
+class LauncherTask(StrEnum):
     CONVERT = "convert"
     BENCHMARK = "benchmark"
     QUANTIZE = "quantize"

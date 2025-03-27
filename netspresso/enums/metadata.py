@@ -1,7 +1,7 @@
-from enum import Enum
+from netspresso.enums.base import StrEnum
 
 
-class TaskType(str, Enum):
+class TaskType(StrEnum):
     TRAIN = "train"
     COMPRESS = "compress"
     CONVERT = "convert"
@@ -9,7 +9,7 @@ class TaskType(str, Enum):
     BENCHMARK = "benchmark"
 
 
-class Status(str, Enum):
+class Status(StrEnum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     STOPPED = "stopped"

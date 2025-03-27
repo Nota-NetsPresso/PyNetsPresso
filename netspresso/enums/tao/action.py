@@ -1,7 +1,7 @@
-from enum import Enum
+from netspresso.enums.base import StrEnum
 
 
-class ExperimentAction(str, Enum):
+class ExperimentAction(StrEnum):
     TRAIN = "train"
     EVALUATE = "evaluate"
     EXPORT = "export"
@@ -11,7 +11,7 @@ class ExperimentAction(str, Enum):
     INFERENCE = "inference"
 
 
-class ConvertAction(str, Enum):
+class ConvertAction(StrEnum):
     DATASET_CONVERT = "dataset_convert"
     CONVERT = "convert"
     CONVERT_AND_INDEX = "convert_and_index"

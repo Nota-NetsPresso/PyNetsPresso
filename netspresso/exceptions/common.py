@@ -1,9 +1,10 @@
 from dataclasses import asdict, dataclass, field
-from enum import Enum
 from typing import List, Optional
 
+from netspresso.enums.base import StrEnum
 
-class LinkType(str, Enum):
+
+class LinkType(StrEnum):
     DOCS = "docs"
     CONTACT = "contact"
 
