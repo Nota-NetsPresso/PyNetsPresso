@@ -19,6 +19,12 @@ class ModelSaveOptions:
 
 
 @dataclass
+class Metrics:
+    classwise_analysis: bool = False
+    metric_names: Optional[List[str]] = None
+
+
+@dataclass
 class LoggingConfig:
     project_id: Optional[str] = None
     output_dir: Union[Path, str] = "./outputs"
@@ -26,3 +32,4 @@ class LoggingConfig:
     image: bool = True
     stdout: bool = True
     model_save_options: ModelSaveOptions = field(default_factory=ModelSaveOptions)
+    metrics: Metrics = field(default_factory=Metrics)
