@@ -142,23 +142,23 @@ class Plotter:
             }
             metric = labels[_metric]
             bars_original = Plotter._plot_single_bar(
-                axs[idx], "Original Model", original_best_metrics[idx], "slategray"
+                axs[idx], "Original Model", original_best_metrics[idx]["mean"], "slategray"
             )
             bars_compressed = Plotter._plot_single_bar(
-                axs[idx], "Compressed Model", compressed_best_metrics[idx], "dodgerblue"
+                axs[idx], "Compressed Model", compressed_best_metrics[idx]["mean"], "dodgerblue"
             )
 
             for bar in bars_original:
-                Plotter._add_value_annotations(axs[idx], bar, original_best_metrics[idx])
+                Plotter._add_value_annotations(axs[idx], bar, original_best_metrics[idx]["mean"])
 
             for bar in bars_compressed:
-                Plotter._add_value_annotations(axs[idx], bar, compressed_best_metrics[idx])
+                Plotter._add_value_annotations(axs[idx], bar, compressed_best_metrics[idx]["mean"])
 
             Plotter._add_difference_annotations(
                 axs[idx],
-                original_best_metrics[idx],
-                compressed_best_metrics[idx],
-                compressed_best_metrics[idx] - original_best_metrics[idx],
+                original_best_metrics[idx]["mean"],
+                compressed_best_metrics[idx]["mean"],
+                compressed_best_metrics[idx]["mean"] - original_best_metrics[idx]["mean"],
             )
 
             Plotter._set_common_plot_settings(axs[idx], metric)
