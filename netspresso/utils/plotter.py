@@ -136,9 +136,9 @@ class Plotter:
 
         for idx, _metric in enumerate(metrics_list):
             labels = {
-                "map50": "mAP@[.50]",
-                "map75": "mAP@[.75]",
-                "map50_95": "mAP@[.50:.95]",
+                "mAP50": "mAP@[.50]",
+                "mAP75": "mAP@[.75]",
+                "mAP50_95": "mAP@[.50:.95]",
             }
             metric = labels[_metric]
             bars_original = Plotter._plot_single_bar(
@@ -172,9 +172,9 @@ class Plotter:
 
         for idx, _metric in enumerate(metric_labels):
             labels = {
-                "map50": "mAP@[.50]",
-                "map75": "mAP@[.75]",
-                "map50_95": "mAP@[.50:.95]",
+                "mAP50": "mAP@[.50]",
+                "mAP75": "mAP@[.75]",
+                "mAP50_95": "mAP@[.50:.95]",
             }
             metric = labels[_metric]
             bars_original = Plotter._plot_single_bar(axs[idx], "Original Model", metric_data1[_metric], "slategray")
@@ -292,9 +292,9 @@ class Plotter:
     @staticmethod
     def _plot_epoch_metrics(train_data, valid_data, title, xlabel, ylabel):
         labels = {
-            "map50": "mAP@[.50]",
-            "map75": "mAP@[.75]",
-            "map50_95": "mAP@[.50:.95]",
+            "mAP50": "mAP@[.50]",
+            "mAP75": "mAP@[.75]",
+            "mAP50_95": "mAP@[.50:.95]",
         }
         metric = labels[ylabel]
 
@@ -323,7 +323,7 @@ class Plotter:
 
     @staticmethod
     def plot_metric_by_epoch(train_data, valid_data, title="Train and Validation metric per epoch", xlabel="Epochs"):
-        for _ylabel in ["map50", "map75", "map50_95"]:
+        for _ylabel in ["mAP50", "mAP75", "mAP50_95"]:
             Plotter._plot_epoch_metrics(train_data, valid_data, title, xlabel, _ylabel)
 
     @staticmethod
