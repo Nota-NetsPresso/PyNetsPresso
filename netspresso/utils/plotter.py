@@ -126,7 +126,7 @@ class Plotter:
     def compare_metric(original_summary: TrainerMetadata, compressed_summary: TrainerMetadata):
         original_training_result = original_summary.training_result
         compressed_training_result = compressed_summary.training_result
-        metrics_list = original_training_result["metrics_list"]
+        metrics_list = ["mAP50", "mAP75", "mAP50_95"]
         original_best_epoch = str(original_training_result["best_epoch"])
         compressed_best_epoch = str(compressed_training_result["best_epoch"])
         original_best_metrics = list(original_training_result["valid_metrics"][original_best_epoch].values())
