@@ -29,6 +29,7 @@ class Scheduler(StrEnum):
     POLYNOMIAL_LR_WITH_WARM_UP = "PolynomialLRWithWarmUp"
     COSINE_ANNEALING_LR_WITH_CUSTOM_WARM_UP = "CosineAnnealingLRWithCustomWarmUp"
     COSINE_ANNEALING_WARM_RESTARTS_WITH_CUSTOM_WARM_UP = "CosineAnnealingWarmRestartsWithCustomWarmUp"
+    MULTI_STEP_LR = "MultiStepLR"
 
     @classmethod
     def to_display_name(cls, name: str) -> str:
@@ -37,5 +38,6 @@ class Scheduler(StrEnum):
             "poly": cls.POLYNOMIAL_LR_WITH_WARM_UP,
             "cosine_no_sgdr": cls.COSINE_ANNEALING_LR_WITH_CUSTOM_WARM_UP,
             "cosine": cls.COSINE_ANNEALING_WARM_RESTARTS_WITH_CUSTOM_WARM_UP,
+            "multi_step": cls.MULTI_STEP_LR,
         }
         return name_map[name.lower()].value

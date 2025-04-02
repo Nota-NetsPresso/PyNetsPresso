@@ -126,7 +126,7 @@ class Plotter:
     def compare_metric(original_summary: TrainerMetadata, compressed_summary: TrainerMetadata):
         original_training_result = original_summary.training_result
         compressed_training_result = compressed_summary.training_result
-        metrics_list = original_training_result["metrics_list"]
+        metrics_list = ["mAP50", "mAP75", "mAP50_95"]
         original_best_epoch = str(original_training_result["best_epoch"])
         compressed_best_epoch = str(compressed_training_result["best_epoch"])
         original_best_metrics = list(original_training_result["valid_metrics"][original_best_epoch].values())
@@ -136,29 +136,29 @@ class Plotter:
 
         for idx, _metric in enumerate(metrics_list):
             labels = {
-                "map50": "mAP@[.50]",
-                "map75": "mAP@[.75]",
-                "map50_95": "mAP@[.50:.95]",
+                "mAP50": "mAP@[.50]",
+                "mAP75": "mAP@[.75]",
+                "mAP50_95": "mAP@[.50:.95]",
             }
             metric = labels[_metric]
             bars_original = Plotter._plot_single_bar(
-                axs[idx], "Original Model", original_best_metrics[idx], "slategray"
+                axs[idx], "Original Model", original_best_metrics[idx]["mean"], "slategray"
             )
             bars_compressed = Plotter._plot_single_bar(
-                axs[idx], "Compressed Model", compressed_best_metrics[idx], "dodgerblue"
+                axs[idx], "Compressed Model", compressed_best_metrics[idx]["mean"], "dodgerblue"
             )
 
             for bar in bars_original:
-                Plotter._add_value_annotations(axs[idx], bar, original_best_metrics[idx])
+                Plotter._add_value_annotations(axs[idx], bar, original_best_metrics[idx]["mean"])
 
             for bar in bars_compressed:
-                Plotter._add_value_annotations(axs[idx], bar, compressed_best_metrics[idx])
+                Plotter._add_value_annotations(axs[idx], bar, compressed_best_metrics[idx]["mean"])
 
             Plotter._add_difference_annotations(
                 axs[idx],
-                original_best_metrics[idx],
-                compressed_best_metrics[idx],
-                compressed_best_metrics[idx] - original_best_metrics[idx],
+                original_best_metrics[idx]["mean"],
+                compressed_best_metrics[idx]["mean"],
+                compressed_best_metrics[idx]["mean"] - original_best_metrics[idx]["mean"],
             )
 
             Plotter._set_common_plot_settings(axs[idx], metric)
@@ -172,9 +172,9 @@ class Plotter:
 
         for idx, _metric in enumerate(metric_labels):
             labels = {
-                "map50": "mAP@[.50]",
-                "map75": "mAP@[.75]",
-                "map50_95": "mAP@[.50:.95]",
+                "mAP50": "mAP@[.50]",
+                "mAP75": "mAP@[.75]",
+                "mAP50_95": "mAP@[.50:.95]",
             }
             metric = labels[_metric]
             bars_original = Plotter._plot_single_bar(axs[idx], "Original Model", metric_data1[_metric], "slategray")
@@ -292,9 +292,9 @@ class Plotter:
     @staticmethod
     def _plot_epoch_metrics(train_data, valid_data, title, xlabel, ylabel):
         labels = {
-            "map50": "mAP@[.50]",
-            "map75": "mAP@[.75]",
-            "map50_95": "mAP@[.50:.95]",
+            "mAP50": "mAP@[.50]",
+            "mAP75": "mAP@[.75]",
+            "mAP50_95": "mAP@[.50:.95]",
         }
         metric = labels[ylabel]
 
@@ -323,7 +323,7 @@ class Plotter:
 
     @staticmethod
     def plot_metric_by_epoch(train_data, valid_data, title="Train and Validation metric per epoch", xlabel="Epochs"):
-        for _ylabel in ["map50", "map75", "map50_95"]:
+        for _ylabel in ["mAP50", "mAP75", "mAP50_95"]:
             Plotter._plot_epoch_metrics(train_data, valid_data, title, xlabel, _ylabel)
 
     @staticmethod

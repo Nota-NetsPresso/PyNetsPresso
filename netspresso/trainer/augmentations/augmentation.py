@@ -64,7 +64,7 @@ class MosaicDetection(Transform):
     mixup_prob: float = 1.0
     mixup_scale: List = field(default_factory=lambda: [0.5, 1.5])
     fill: int = 114
-    mosaic_off_epoch: int = 10
+    mosaic_off_duration: int = 10
 
 
 @dataclass
@@ -90,6 +90,7 @@ class PoseTopDownAffine(Transform):
 class RandomCrop(Transform):
     name: str = "randomcrop"
     size: int = DEFAULT_IMG_SIZE
+    fill: int = 114
 
 
 @dataclass
@@ -114,6 +115,14 @@ class RandomResize(Transform):
     base_size: List = field(default_factory=lambda: [256, 256])
     stride: int = 32
     random_range: int = 4
+    interpolation: str = "bilinear"
+
+
+@dataclass
+class RandomResize2(Transform):
+    name: str = "randomresize2"
+    base_size: List = field(default_factory=lambda: [512, 2048])
+    random_range: List = field(default_factory=lambda: [0.5, 1.5])
     interpolation: str = "bilinear"
 
 
