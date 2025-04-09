@@ -1,6 +1,9 @@
+import os
+import shutil
+import tempfile
 import time
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib import request
 
 from loguru import logger
@@ -29,11 +32,18 @@ BUCKET_NAME = "model"
 class ConverterV2(NetsPressoBase):
     def __init__(self, token_handler: TokenHandler, user_info: UserResponse):
         """Initialize the Converter."""
-
         super().__init__(token_handler)
         self.user_info = user_info
 
     def get_supported_options(self, framework: SourceFramework) -> List[ModelOption]:
+        """Get supported options for the specified framework.
+
+        Args:
+            framework: Source framework to get options for
+
+        Returns:
+            List of supported model options
+        """
         self.token_handler.validate_token()
 
         options_response = launcher_client_v2.converter.read_framework_options(
@@ -42,7 +52,7 @@ class ConverterV2(NetsPressoBase):
         )
         supported_options = options_response.data
 
-        # TODO: Will be removed when we support DLC in the future
+        # Filter out DLC framework (will be removed when DLC is supported)
         supported_options = [
             supported_option
             for supported_option in supported_options
@@ -52,15 +62,15 @@ class ConverterV2(NetsPressoBase):
         return supported_options
 
     def _download_converted_model(self, convert_task: ConvertTask, local_path: str) -> None:
-        """Download the converted model with given conversion task or conversion task uuid.
+        """Download the converted model.
 
         Args:
-            conversion_task (ConvertTask): Launcher Model Object or the uuid of the conversion task.
+            convert_task: Conversion task containing the model
+            local_path: Path to save the downloaded model
 
         Raises:
-            e: If an error occurs while getting the conversion task information.
+            Exception: If download fails
         """
-
         self.token_handler.validate_token()
 
         try:
@@ -77,11 +87,31 @@ class ConverterV2(NetsPressoBase):
             raise e
 
     def get_input_model(self, input_model_id: str, user_id: str) -> Model:
+        """Get model by ID.
+
+        Args:
+            input_model_id: ID of the model to retrieve
+            user_id: User ID for verification
+
+        Returns:
+            Model object
+        """
         with get_db_session() as db:
             input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id)
             return input_model
 
-    def save_model(self, model_name, project_id, user_id, object_path) -> Model:
+    def save_model(self, model_name: str, project_id: str, user_id: str, object_path: str) -> Model:
+        """Create and save a new converted model.
+
+        Args:
+            model_name: Name of the model
+            project_id: Project ID to associate with the model
+            user_id: User ID who owns the model
+            object_path: Path to the model file
+
+        Returns:
+            Saved model object
+        """
         model = Model(
             name=model_name,
             type=SubFolder.CONVERTED_MODELS,
@@ -90,25 +120,56 @@ class ConverterV2(NetsPressoBase):
             user_id=user_id,
             object_path=object_path,
         )
+        return self._save_model(model)
+
+    def _save_model(self, model: Model) -> Model:
+        """Save model to database.
+
+        Args:
+            model: Model object to save
+
+        Returns:
+            Saved model with updated attributes
+        """
         with get_db_session() as db:
             model = model_repository.save(db=db, model=model)
             return model
 
     def _save_conversion_task(self, conversion_task: ConversionTask) -> ConversionTask:
+        """Save conversion task to database.
+
+        Args:
+            conversion_task: Conversion task to save
+
+        Returns:
+            Saved conversion task with updated attributes
+        """
         with get_db_session() as db:
             conversion_task = conversion_task_repository.save(db=db, model=conversion_task)
-
             return conversion_task
 
     def create_conversion_task(
         self,
         framework: Union[str, TargetFramework],
         device_name: Union[str, DeviceName],
-        software_version: Union[str, SoftwareVersion],
+        software_version: Optional[Union[str, SoftwareVersion]],
         data_type: Union[str, DataType],
         input_model_id: Optional[str] = None,
         model_id: Optional[str] = None,
     ) -> ConversionTask:
+        """Create a new conversion task.
+
+        Args:
+            framework: Target framework for conversion
+            device_name: Target device name
+            software_version: Target software version
+            data_type: Target data type (precision)
+            input_model_id: ID of the input model
+            model_id: ID of the output model
+
+        Returns:
+            Created conversion task object
+        """
         with get_db_session() as db:
             conversion_task = ConversionTask(
                 framework=framework,
@@ -122,8 +183,206 @@ class ConverterV2(NetsPressoBase):
             conversion_task = conversion_task_repository.save(db=db, model=conversion_task)
             return conversion_task
 
-    def convert_model(
+    def _get_enum_value(self, enum_obj: Any) -> str:
+        """Safely extract the string value from an enum or string.
+
+        Args:
+            enum_obj: Enum object or string
+
+        Returns:
+            String value of the enum or the original string
+        """
+        if hasattr(enum_obj, 'value'):
+            return enum_obj.value
+        return str(enum_obj)
+
+    def convert_model_from_id(
         self,
+        input_model_id: str,
+        target_framework: Union[str, TargetFramework],
+        target_device_name: Union[str, DeviceName],
+        target_data_type: Union[str, DataType] = DataType.FP16,
+        target_software_version: Optional[Union[str, SoftwareVersion]] = None,
+        input_layer: Optional[InputLayer] = None,
+        dataset_path: Optional[str] = None,
+        wait_until_done: bool = True,
+        sleep_interval: int = 30,
+        output_dir: Optional[str] = None,
+    ) -> str:
+        """Convert a model using its model ID.
+
+        Args:
+            input_model_id: ID of the model to convert
+            target_framework: Target framework name
+            target_device_name: Target device name
+            target_data_type: Data type of the model. Default is DataType.FP16
+            target_software_version: Target software version. Required if target_device_name is one of the Jetson devices
+            input_layer: Target input shape for conversion (e.g., dynamic batch to static batch)
+            dataset_path: Path to the dataset. Useful for certain conversions
+            wait_until_done: If True, wait for the conversion result before returning
+            sleep_interval: Time to wait between task status checks
+            output_dir: Local folder path to save the converted model. If None, a temporary directory will be used
+
+        Returns:
+            str: Conversion task ID
+        """
+        # Initialize temporary directory variable
+        temp_dir = None
+
+        try:
+            # Handle output directory
+            if output_dir is None:
+                temp_dir = tempfile.mkdtemp(prefix="netspresso_convert_")
+                output_dir = temp_dir
+            else:
+                output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
+
+            # Load model object
+            input_model = self.get_input_model(input_model_id, self.user_info.user_id)
+            if not input_model:
+                raise ValueError(f"Model with ID {input_model_id} not found")
+
+            input_model.user_id = self.user_info.user_id
+            project = self.get_project(project_id=input_model.project_id)
+
+            # Download model to temporary directory
+            download_dir = Path(output_dir) / "input_model"
+            download_dir.mkdir(parents=True, exist_ok=True)
+
+            remote_model_path = Path(input_model.object_path) / "model.onnx"
+            local_path = download_dir / "model.onnx"
+
+            logger.info(f"Downloading input model from Zenko: {remote_model_path}")
+            storage_handler.download_file_from_s3(
+                bucket_name=BUCKET_NAME,
+                local_path=str(local_path),
+                object_path=str(remote_model_path)
+            )
+            logger.info(f"Downloaded input model from Zenko: {local_path}")
+
+            # Execute common conversion logic
+            return self._perform_conversion(
+                input_model=input_model,
+                project=project,
+                input_model_path=str(local_path),
+                output_dir=output_dir,
+                target_framework=target_framework,
+                target_device_name=target_device_name,
+                target_data_type=target_data_type,
+                target_software_version=target_software_version,
+                input_layer=input_layer,
+                dataset_path=dataset_path,
+                wait_until_done=wait_until_done,
+                sleep_interval=sleep_interval,
+            )
+        except Exception as e:
+            logger.error(f"Error in convert_model_from_id: {e}")
+            raise e
+        finally:
+            # Clean up temporary directory (if output directory is a temporary directory)
+            if temp_dir and os.path.exists(temp_dir) and output_dir == temp_dir:
+                logger.info(f"Cleaning up temporary files in: {temp_dir}")
+                try:
+                    shutil.rmtree(temp_dir)
+                    logger.info(f"Successfully removed temporary directory: {temp_dir}")
+                except Exception as cleanup_error:
+                    logger.error(f"Error cleaning up temporary files: {cleanup_error}")
+
+    def convert_model_from_path(
+        self,
+        input_model_path: str,
+        project_id: str,
+        target_framework: Union[str, TargetFramework],
+        target_device_name: Union[str, DeviceName],
+        target_data_type: Union[str, DataType] = DataType.FP16,
+        target_software_version: Optional[Union[str, SoftwareVersion]] = None,
+        input_layer: Optional[InputLayer] = None,
+        dataset_path: Optional[str] = None,
+        wait_until_done: bool = True,
+        sleep_interval: int = 30,
+        output_dir: Optional[str] = None,
+    ) -> str:
+        """Convert a model using its file path.
+
+        Args:
+            input_model_path: File path where the model is located
+            target_framework: Target framework name
+            target_device_name: Target device name
+            target_data_type: Data type of the model. Default is DataType.FP16
+            target_software_version: Target software version. Required if target_device_name is one of the Jetson devices
+            input_layer: Target input shape for conversion (e.g., dynamic batch to static batch)
+            dataset_path: Path to the dataset. Useful for certain conversions
+            wait_until_done: If True, wait for the conversion result before returning
+            sleep_interval: Time to wait between task status checks
+            output_dir: Local folder path to save the converted model. If None, a temporary directory will be used
+            project_id: Project ID. If None, the default project will be used
+
+        Returns:
+            str: Conversion task ID
+        """
+        # Initialize temporary directory variable
+        temp_dir = None
+
+        try:
+            # Verify model file exists
+            FileHandler.check_input_model_path(input_model_path)
+
+            # Handle output directory
+            if output_dir is None:
+                temp_dir = tempfile.mkdtemp(prefix="netspresso_convert_")
+                output_dir = temp_dir
+            else:
+                output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
+
+            # Use default project or specified project
+            project = self.get_project(project_id=project_id)
+
+            # Generate model name (extracted from file name)
+            model_name = Path(input_model_path).stem
+
+            # Create temporary model
+            temp_model = Model(
+                name=model_name,
+                type=SubFolder.PRETRAINED_MODELS,
+                is_retrainable=False,
+                project_id=project.project_id,
+                user_id=self.user_info.user_id,
+                object_path=input_model_path,
+            )
+            temp_model = self._save_model(temp_model)
+
+            # Execute common conversion logic
+            return self._perform_conversion(
+                input_model=temp_model,
+                project=project,
+                input_model_path=input_model_path,
+                output_dir=output_dir,
+                target_framework=target_framework,
+                target_device_name=target_device_name,
+                target_data_type=target_data_type,
+                target_software_version=target_software_version,
+                input_layer=input_layer,
+                dataset_path=dataset_path,
+                wait_until_done=wait_until_done,
+                sleep_interval=sleep_interval,
+            )
+        except Exception as e:
+            logger.error(f"Error in convert_model_from_path: {e}")
+            raise e
+        finally:
+            # Clean up temporary directory (if output directory is a temporary directory)
+            if temp_dir and os.path.exists(temp_dir) and output_dir == temp_dir:
+                logger.info(f"Cleaning up temporary files in: {temp_dir}")
+                try:
+                    shutil.rmtree(temp_dir)
+                    logger.info(f"Successfully removed temporary directory: {temp_dir}")
+                except Exception as cleanup_error:
+                    logger.error(f"Error cleaning up temporary files: {cleanup_error}")
+
+    def _perform_conversion(
+        self,
+        input_model: Model,
+        project,
         input_model_path: str,
         output_dir: str,
         target_framework: Union[str, TargetFramework],
@@ -134,87 +393,62 @@ class ConverterV2(NetsPressoBase):
         dataset_path: Optional[str] = None,
         wait_until_done: bool = True,
         sleep_interval: int = 30,
-        input_model_id: Optional[str] = None,
     ) -> str:
-        """Convert a model to the specified framework.
+        """Perform the actual model conversion (common logic)
 
         Args:
-            input_model_path (str): The file path where the model is located.
-            output_dir (str): The local folder path to save the converted model.
-            target_framework (Union[str, Framework]): The target framework name.
-            target_device_name (Union[str, DeviceName]): Target device name. Required if target_device is not specified.
-            target_data_type (Union[str, DataType]): Data type of the model. Default is DataType.FP16.
-            target_software_version (Union[str, SoftwareVersion], optional): Target software version.
-                Required if target_device_name is one of the Jetson devices.
-            input_layer (InputShape, optional): Target input shape for conversion (e.g., dynamic batch to static batch).
-            dataset_path (str, optional): Path to the dataset. Useful for certain conversions.
-            wait_until_done (bool): If True, wait for the conversion result before returning the function.
-                                If False, request the conversion and return  the function immediately.
-
-        Raises:
-            e: If an error occurs during the model conversion.
+            input_model: Model object to convert
+            project: Project associated with the model
+            input_model_path: Local path to the model file
+            output_dir: Directory to save the converted model
+            target_framework: Target framework for conversion
+            target_device_name: Target device name
+            target_data_type: Target data type (precision)
+            target_software_version: Target software version
+            input_layer: Input layer configuration
+            dataset_path: Path to the dataset (if needed)
+            wait_until_done: Whether to wait for conversion to complete
+            sleep_interval: Time between status checks
 
         Returns:
-            ConverterMetadata: Convert metadata.
+            Conversion task ID
         """
-
-        # FileHandler.check_input_model_path(input_model_path)
-        output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
-
-        if input_model_id:
-            input_model = self.get_input_model(input_model_id, self.user_info.user_id)
-            input_model.user_id = self.user_info.user_id
-            project = self.get_project(project_id=input_model.project_id)
-            input_model_path = Path(input_model.object_path) / "model.onnx"
-            download_dir = Path(output_dir) / "input_model"
-            download_dir.mkdir(parents=True, exist_ok=True)  # 다운로드 폴더 생성
-
-            local_path = download_dir / "model.onnx"
-            input_model_path_str = str(input_model_path)
-
-            logger.info(f"Downloading input model from Zenko: {input_model_path_str}")
-            storage_handler.download_file_from_s3(
-                bucket_name=BUCKET_NAME,
-                local_path=str(local_path),
-                object_path=input_model_path_str
-            )
-            logger.info(f"Downloaded input model from Zenko: {local_path}")
-
-            # input_model_path를 local_path로 업데이트
-            input_model_path = str(local_path)
-
+        # Set output model path
         default_model_path = FileHandler.get_default_model_path(folder_path=output_dir)
         extension = FileHandler.get_extension(framework=target_framework)
         object_path = f"{project.user_id}/{project.project_id}/{input_model.model_id}/model{extension}"
 
-        # 모델 이름 생성
+        # Generate model name with safe enum value handling
         model_name_parts = [
             input_model.name,
-            target_framework,
-            target_device_name,
+            self._get_enum_value(target_framework),
+            self._get_enum_value(target_device_name),
         ]
 
-        if target_software_version:  # None이 아닌 경우에만 추가
-            model_name_parts.append(target_software_version)
+        if target_software_version:  # Add only if not None
+            model_name_parts.append(self._get_enum_value(target_software_version))
 
-        model_name_parts.append(target_data_type)
-        model_name = "_".join(model_name_parts)
+        model_name_parts.append(self._get_enum_value(target_data_type))
+        model_name = "_".join(map(str, model_name_parts))
 
         logger.info(f"Model name: {model_name}")
         logger.info(f"Object path: {object_path}")
 
+        # Save converted model
         model = self.save_model(
             model_name=model_name,
             project_id=input_model.project_id,
             user_id=self.user_info.user_id,
             object_path=object_path,
         )
+
+        # Create conversion task
         conversion_task = self.create_conversion_task(
             framework=target_framework,
             device_name=target_device_name,
             software_version=target_software_version,
             data_type=target_data_type,
-            input_model_id=input_model_id,
+            input_model_id=input_model.model_id,
             model_id=model.model_id,
         )
 
@@ -241,6 +475,11 @@ class ConverterV2(NetsPressoBase):
                 ai_model_id=presigned_url_response.data.ai_model_id,
             )
 
+            # Get input layer information
+            actual_input_layer = input_layer
+            if not actual_input_layer and validate_model_response.data.detail.input_layers:
+                actual_input_layer = validate_model_response.data.detail.input_layers[0]
+
             # Start convert task
             convert_response = launcher_client_v2.converter.start_task(
                 access_token=self.token_handler.tokens.access_token,
@@ -248,7 +487,7 @@ class ConverterV2(NetsPressoBase):
                 target_device_name=target_device_name,
                 target_framework=target_framework,
                 data_type=target_data_type,
-                input_layer=input_layer if input_layer else validate_model_response.data.detail.input_layers[0],
+                input_layer=actual_input_layer,
                 software_version=target_software_version,
                 dataset_path=dataset_path,
             )
@@ -276,7 +515,7 @@ class ConverterV2(NetsPressoBase):
 
             if convert_response.data.status in [TaskStatusForDisplay.IN_PROGRESS, TaskStatusForDisplay.IN_QUEUE]:
                 conversion_task.status = Status.IN_PROGRESS
-                logger.info(f"Conversion task was running. Status: {convert_response.data.status}")
+                logger.info(f"Conversion task running. Status: {convert_response.data.status}")
             elif convert_response.data.status == TaskStatusForDisplay.FINISHED:
                 download_dir = Path(model.object_path).parent
                 download_dir.mkdir(parents=True, exist_ok=True)
@@ -292,7 +531,7 @@ class ConverterV2(NetsPressoBase):
                 logger.info(f"Uploaded Converted Model file to Zenko: {model.object_path}")
                 self.print_remaining_credit(service_task=ServiceTask.MODEL_CONVERT)
                 conversion_task.status = Status.COMPLETED
-                logger.info("Conversion task was completed successfully.")
+                logger.info("Conversion task completed successfully.")
             elif convert_response.data.status in [
                 TaskStatusForDisplay.ERROR,
                 TaskStatusForDisplay.USER_CANCEL,
@@ -301,31 +540,104 @@ class ConverterV2(NetsPressoBase):
                 conversion_task.status = Status.ERROR
                 conversion_task.error_detail = convert_response.data.error_log
                 conversion_task = self._save_conversion_task(conversion_task)
-                logger.error(f"Conversion task was failed. Error: {convert_response.data.error_log}")
+                logger.error(f"Conversion task failed. Error: {convert_response.data.error_log}")
 
         except Exception as e:
             conversion_task.status = Status.ERROR
-            conversion_task.error_detail = e.args[0]
+            conversion_task.error_detail = str(e) if e.args else "Unknown error"
+            logger.error(f"Exception during conversion: {e}")
         except KeyboardInterrupt:
             conversion_task.status = Status.STOPPED
+            logger.info("Conversion task stopped by user")
         finally:
             conversion_task = self._save_conversion_task(conversion_task)
 
         return conversion_task.task_id
 
+    def convert_model(
+        self,
+        input_model_path: str,
+        output_dir: str,
+        target_framework: Union[str, TargetFramework],
+        target_device_name: Union[str, DeviceName],
+        target_data_type: Union[str, DataType] = DataType.FP16,
+        target_software_version: Optional[Union[str, SoftwareVersion]] = None,
+        input_layer: Optional[InputLayer] = None,
+        dataset_path: Optional[str] = None,
+        wait_until_done: bool = True,
+        sleep_interval: int = 30,
+        input_model_id: Optional[str] = None,
+        project_id: Optional[str] = None,
+    ) -> str:
+        """Convert a model to the specified framework.
+
+        Args:
+            input_model_path: The file path where the model is located.
+            output_dir: The local folder path to save the converted model.
+            target_framework: The target framework name.
+            target_device_name: Target device name.
+            target_data_type: Data type of the model. Default is DataType.FP16.
+            target_software_version: Target software version.
+                Required if target_device_name is one of the Jetson devices.
+            input_layer: Target input shape for conversion (e.g., dynamic batch to static batch).
+            dataset_path: Path to the dataset. Useful for certain conversions.
+            wait_until_done: If True, wait for the conversion result before returning.
+                If False, request the conversion and return the function immediately.
+            input_model_id: Model ID to convert (alternative to input_model_path)
+            project_id: Project ID for the model (required when using input_model_path)
+
+        Raises:
+            ValueError: If neither input_model_id nor input_model_path is provided, or if
+                       input_model_path is provided without project_id
+
+        Returns:
+            str: Conversion task ID.
+        """
+        # Maintain backward compatibility with original convert_model function
+        # Redirect to new functions
+
+        if input_model_id:
+            return self.convert_model_from_id(
+                input_model_id=input_model_id,
+                target_framework=target_framework,
+                target_device_name=target_device_name,
+                target_data_type=target_data_type,
+                target_software_version=target_software_version,
+                input_layer=input_layer,
+                dataset_path=dataset_path,
+                wait_until_done=wait_until_done,
+                sleep_interval=sleep_interval,
+                output_dir=output_dir,
+            )
+        elif input_model_path:
+            return self.convert_model_from_path(
+                input_model_path=input_model_path,
+                target_framework=target_framework,
+                target_device_name=target_device_name,
+                target_data_type=target_data_type,
+                target_software_version=target_software_version,
+                input_layer=input_layer,
+                dataset_path=dataset_path,
+                wait_until_done=wait_until_done,
+                sleep_interval=sleep_interval,
+                output_dir=output_dir,
+                project_id=project_id,
+            )
+        else:
+            raise ValueError("Either input_model_id or input_model_path must be provided")
+
     def get_conversion_task(self, conversion_task_id: str) -> ConvertTask:
         """Get the conversion task information with given conversion task uuid.
 
         Args:
-            conversion_task_id (str): Convert task UUID of the convert task.
+            conversion_task_id: Convert task UUID of the convert task.
 
         Raises:
-            e: If an error occurs during the model conversion.
+            Exception: If an error occurs during retrieval.
 
         Returns:
-            ConversionTask: Model conversion task dictionary.
+            ConversionTask: Model conversion task data.
         """
-
         self.token_handler.validate_token()
 
         response = launcher_client_v2.converter.read_task(
@@ -338,15 +650,14 @@ class ConverterV2(NetsPressoBase):
         """Cancel the conversion task with given conversion task uuid.
 
         Args:
-            conversion_task_id (str): Convert task UUID of the convert task.
+            conversion_task_id: Convert task UUID of the convert task.
 
         Raises:
-            e: If an error occurs during the task cancel.
+            Exception: If an error occurs during task cancellation.
 
         Returns:
-            ConversionTask: Model conversion task dictionary.
+            ConversionTask: Model conversion task data.
         """
-
         self.token_handler.validate_token()
 
         response = launcher_client_v2.converter.cancel_task(
