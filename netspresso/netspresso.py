@@ -34,9 +34,7 @@ class NetsPresso:
             password (str): User's password for authentication.
             verify_ssl (bool): Flag to indicate whether SSL certificates should be verified. Defaults to True.
         """
-        self.token_handler = TokenHandler(
-            email=email, password=password, verify_ssl=verify_ssl
-        )
+        self.token_handler = TokenHandler(email=email, password=password, verify_ssl=verify_ssl)
         self.user_info = self.get_user()
 
     def get_user(self) -> UserResponse:
@@ -45,9 +43,7 @@ class NetsPresso:
         Returns:
             UserInfo: User information.
         """
-        user_info = auth_client.get_user_info(
-            self.token_handler.tokens.access_token, self.token_handler.verify_ssl
-        )
+        user_info = auth_client.get_user_info(self.token_handler.tokens.access_token, self.token_handler.verify_ssl)
         return user_info
 
     def create_project(self, project_name: str, project_path: str = "./projects") -> Project:
@@ -86,8 +82,7 @@ class NetsPresso:
         if project_folder_path.exists():
             logger.warning(f"Project '{project_name}' already exists at {project_folder_path.resolve()}.")
             raise ProjectAlreadyExistsException(
-                project_name=project_name,
-                project_path=project_folder_path.resolve().as_posix()
+                project_name=project_name, project_path=project_folder_path.resolve().as_posix()
             )
         else:
             project_folder_path.mkdir(parents=True, exist_ok=True)
@@ -143,9 +138,33 @@ class NetsPresso:
         finally:
             db and db.close()
 
-    def trainer(
-        self, task: Optional[Union[str, Task]] = None, yaml_path: Optional[str] = None
-    ) -> Trainer:
+    def get_project(self, project_id: str) -> Project:
+        """
+        Retrieve all projects associated with the current user.
+
+        This method fetches project information from the database for
+        the user identified by `self.user_info.user_id`.
+
+        Returns:
+            List[Project]: A list of projects associated with the current user.
+
+        Raises:
+            Exception: If an error occurs while querying the database.
+        """
+        db = None
+        try:
+            db = SessionLocal()
+            project = project_repository.get_by_project_id(db=db, project_id=project_id)
+
+            return project
+
+        except Exception as e:
+            logger.error(f"Failed to get project list from the database: {e}")
+            raise
+        finally:
+            db and db.close()
+
+    def trainer(self, task: Optional[Union[str, Task]] = None, yaml_path: Optional[str] = None) -> Trainer:
         """Initialize and return a Trainer instance.
 
         Args:

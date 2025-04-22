@@ -21,6 +21,4 @@ class TokenResponse(AbstractResponse):
         self.data = TokenPayload(**self.data)
 
     def to(self) -> response_body.TokenResponse:
-        return response_body.TokenResponse(
-            access_token=self.data.access_token, refresh_token=self.data.refresh_token
-        )
+        return response_body.TokenResponse(access_token=self.data.access_token, refresh_token=self.data.refresh_token)

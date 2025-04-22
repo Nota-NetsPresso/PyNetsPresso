@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional, Union
 
-from netspresso.enums.device import DisplaySoftwareVersion, HardwareType, SoftwareVersion
+from netspresso.enums.device import HardwareType, SoftwareVersion, SoftwareVersionDisplay
 from netspresso.enums.model import DataType, Framework
 from netspresso.metadata import common
 from netspresso.metadata.common import AvailableOption
@@ -69,7 +69,7 @@ class SoftwareVersionInfo:
     """ """
 
     software_version: Optional[Union[None, SoftwareVersion]] = None
-    display_software_version: Optional[Union[None, DisplaySoftwareVersion]] = None
+    display_software_version: Optional[Union[None, SoftwareVersionDisplay]] = None
 
 
 @dataclass

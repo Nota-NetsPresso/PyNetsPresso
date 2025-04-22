@@ -1,1 +1,1 @@
-SUB_FOLDERS = ["Trained models", "Compressed models", "Pretrained models"]
+SUB_FOLDERS = ["trained_models", "compressed_models", "pretrained_models"]

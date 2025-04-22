@@ -7,10 +7,7 @@ from netspresso.clients.launcher.v2.schemas.common import (
     ResponseItems,
     ResponsePaginationItems,
 )
-from netspresso.clients.launcher.v2.schemas.model import (
-    ModelBase,
-    ModelStatus,
-)
+from netspresso.clients.launcher.v2.schemas.model import ModelBase, ModelStatus
 
 
 @dataclass

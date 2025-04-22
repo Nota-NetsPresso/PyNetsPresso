@@ -6,9 +6,7 @@ from netspresso.clients.launcher.v2.schemas import ResponseItem, ResponseItems
 
 class TaskInterface(ABC):
     @abstractmethod
-    def start(
-        self, request_body: dataclasses, headers: dataclasses, file: dataclasses
-    ) -> ResponseItem:
+    def start(self, request_body: dataclasses, headers: dataclasses, file: dataclasses) -> ResponseItem:
         """
 
         :return:
@@ -62,4 +60,3 @@ class TaskInterface(ABC):
         :return:
         """
         raise NotImplementedError
-

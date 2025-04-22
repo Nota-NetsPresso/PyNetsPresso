@@ -1,7 +1,7 @@
 from .compression import CompressionMethod, GroupPolicy, LayerNorm, Policy, RecommendationMethod, StepOp
 from .config import EndPointProperty, EnvironmentType, ServiceModule, ServiceName
 from .credit import MembershipType, ServiceCredit, ServiceTask
-from .device import DeviceName, DisplaySoftwareVersion, HardwareType, SoftwareVersion, TaskStatus
+from .device import DeviceName, HardwareType, SoftwareVersion, SoftwareVersionDisplay, TaskStatus
 from .inference import Runtime
 from .metadata import Status, TaskType
 from .model import DataType, Extension, Framework, OriginFrom
@@ -29,7 +29,6 @@ __all__ = [
     "DataType",
     "DeviceName",
     "SoftwareVersion",
-    "DisplaySoftwareVersion",
     "HardwareType",
     "TaskStatus",
     "Module",
@@ -37,7 +36,7 @@ __all__ = [
     "ExperimentAction",
     "StepOp",
     "MembershipType",
-    "DisplaySoftwareVersion",
+    "SoftwareVersionDisplay",
     "LauncherTask",
     "TaskStatusForDisplay",
     "EnvironmentType",

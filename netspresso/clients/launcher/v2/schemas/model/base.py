@@ -40,7 +40,6 @@ class ModelDetail:
             self.input_layers = [InputLayer(**input_layer) for input_layer in self.input_layers]
 
 
-
 @dataclass
 class ModelStatus:
     is_deleted: Optional[bool] = False
@@ -75,10 +74,7 @@ class ModelBase:
         model_info.data_type = self.detail.data_type
         model_info.framework = self.detail.framework
         model_info.input_shapes = [
-            InputShape(
-                batch=input_layer.batch,
-                channel=input_layer.channel,
-                dimension=input_layer.dimension
-            ) for input_layer in self.detail.input_layers
+            InputShape(batch=input_layer.batch, channel=input_layer.channel, dimension=input_layer.dimension)
+            for input_layer in self.detail.input_layers
         ]
         return model_info

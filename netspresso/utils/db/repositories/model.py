@@ -1,41 +1,30 @@
 from typing import List, Optional
 
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from netspresso.utils.db.models.model import TrainedModel
-from netspresso.utils.db.repositories.base import BaseRepository, Order
+from netspresso.exceptions.model import ModelIsDeletedException, ModelNotFoundException
+from netspresso.utils.db.models.model import Model
+from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
 
 
-class TrainedModelRepository(BaseRepository[TrainedModel]):
-    def get_by_model_id(self, db: Session, model_id: str, user_id: str) -> Optional[TrainedModel]:
-        model = db.query(self.model).filter(
-            self.model.model_id == model_id,
-            self.model.user_id == user_id,
-        ).first()
+class ModelRepository(BaseRepository[Model]):
+    def __is_available(self, model: Optional[Model]) -> Model:
+        if model is None:
+            raise ModelNotFoundException()
+
+        if model.is_deleted:
+            raise ModelIsDeletedException(model_id=model.model_id)
 
         return model
 
-    def _get_models(
-        self,
-        db: Session,
-        condition,
-        start: Optional[int] = None,
-        size: Optional[int] = None,
-        order: Optional[Order] = None,
-    ) -> Optional[List[TrainedModel]]:
-        ordering_func = self.choose_order_func(order)
-        query = db.query(self.model).filter(condition)
+    def get_by_model_id(self, db: Session, model_id: str) -> Optional[Model]:
+        conditions = [self.model.model_id == model_id]
+        model = self.find_first(
+            db=db,
+            conditions=conditions,
+        )
 
-        if order:
-            query = query.order_by(ordering_func(self.model.created_at))
-
-        if start is not None and size is not None:
-            query = query.offset(start).limit(size)
-
-        models = query.all()
-
-        return models
+        return self.__is_available(model=model)
 
     def get_all_by_user_id(
         self,
@@ -44,14 +33,19 @@ class TrainedModelRepository(BaseRepository[TrainedModel]):
         start: Optional[int] = None,
         size: Optional[int] = None,
         order: Optional[Order] = None,
-    ) -> Optional[List[TrainedModel]]:
-        return self._get_models(
+        time_sort: Optional[TimeSort] = None,
+    ) -> List[Model]:
+        conditions = [self.model.user_id == user_id]
+        models = self.find_all(
             db=db,
-            condition=self.model.user_id == user_id,
+            conditions=conditions,
             start=start,
             size=size,
             order=order,
+            time_sort=time_sort,
         )
+
+        return models
 
     def get_all_by_project_id(
         self,
@@ -59,22 +53,28 @@ class TrainedModelRepository(BaseRepository[TrainedModel]):
         project_id: str,
         start: Optional[int] = None,
         size: Optional[int] = None,
-        order: Optional[Order] = Order.DESC,
-    ) -> Optional[List[TrainedModel]]:
-        return self._get_models(
+        order: Optional[Order] = None,
+        time_sort: Optional[TimeSort] = None,
+    ) -> List[Model]:
+        conditions = [self.model.project_id == project_id]
+        models = self.find_all(
             db=db,
-            condition=self.model.project_id == project_id,
+            conditions=conditions,
             start=start,
             size=size,
             order=order,
+            time_sort=time_sort,
         )
+
+        return models
 
     def count_by_user_id(self, db: Session, user_id: str) -> int:
-        return (
-            db.query(func.count(self.model.user_id))
-            .filter(self.model.user_id == user_id)
-            .scalar()
-        )
+        count_field = self.model.user_id
+        conditions = [self.model.user_id == user_id]
+
+        count = self.count_by_field(db=db, count_field=count_field, conditions=conditions)
+
+        return count
 
 
-trained_model_repository = TrainedModelRepository(TrainedModel)
+model_repository = ModelRepository(Model)

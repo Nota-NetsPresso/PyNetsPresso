@@ -2,7 +2,14 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from netspresso.enums.train import OPTIMIZER_DISPLAY_MAP, SCHEDULER_DISPLAY_MAP, Optimizer, OptimizerDisplay, Scheduler, SchedulerDisplay
+from netspresso.enums.train import (
+    OPTIMIZER_DISPLAY_MAP,
+    SCHEDULER_DISPLAY_MAP,
+    Optimizer,
+    OptimizerDisplay,
+    Scheduler,
+    SchedulerDisplay,
+)
 
 
 class TrainerModel(BaseModel):

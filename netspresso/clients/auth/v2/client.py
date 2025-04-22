@@ -26,15 +26,11 @@ class AuthClientV2:
         self.prefix = self.config.URI_PREFIX
         self.base_url = f"{self.host}:{self.port}{self.prefix}"
 
-    def login(
-        self, email, password, verify_ssl: bool = True
-    ) -> response_body.TokenResponse:
+    def login(self, email, password, verify_ssl: bool = True) -> response_body.TokenResponse:
         try:
             url = f"{self.base_url}/auth/login"
             request_body = LoginRequest(username=email, password=password)
-            response = Requester.post_as_form(
-                url=url, request_body=asdict(request_body)
-            )
+            response = Requester.post_as_form(url=url, request_body=asdict(request_body))
             token_response = TokenResponse(**response.json())
             logger.info("Login successfully")
             return token_response.to()
@@ -42,15 +38,9 @@ class AuthClientV2:
             logger.error(f"Login failed. Error: {e}")
             raise e
 
-    def get_user_info(
-        self, access_token, verify_ssl: bool = True
-    ) -> response_body.UserResponse:
-        user_response = self.__get_user_info(
-            access_token=access_token, verify_ssl=verify_ssl
-        )
-        summarized_credit_response = self.__get_credit(
-            access_token=access_token, verify_ssl=verify_ssl
-        )
+    def get_user_info(self, access_token, verify_ssl: bool = True) -> response_body.UserResponse:
+        user_response = self.__get_user_info(access_token=access_token, verify_ssl=verify_ssl)
+        summarized_credit_response = self.__get_credit(access_token=access_token, verify_ssl=verify_ssl)
         logger.info("Successfully got user information")
         return user_response.to(summarized_credit_response=summarized_credit_response)
 
@@ -66,20 +56,14 @@ class AuthClientV2:
             raise e
 
     def get_credit(self, access_token, verify_ssl: bool = True) -> int:
-        summarized_credit_response = self.__get_credit(
-            access_token=access_token, verify_ssl=verify_ssl
-        )
+        summarized_credit_response = self.__get_credit(access_token=access_token, verify_ssl=verify_ssl)
         logger.info("Successfully got user credit")
         return summarized_credit_response.data.total_credit
 
-    def __get_credit(
-        self, access_token, user_id: str = None, verify_ssl: bool = True
-    ) -> SummarizedCreditResponse:
+    def __get_credit(self, access_token, user_id: str = None, verify_ssl: bool = True) -> SummarizedCreditResponse:
         try:
             if user_id is None:
-                user_response = self.__get_user_info(
-                    access_token=access_token, verify_ssl=verify_ssl
-                )
+                user_response = self.__get_user_info(access_token=access_token, verify_ssl=verify_ssl)
                 user_id = user_response.data.user_id
 
             url = f"{self.base_url}/users/{user_id}/credit/summarized"
@@ -91,15 +75,11 @@ class AuthClientV2:
             logger.error(f"Failed to get user credit. Error: {e}")
             raise e
 
-    def reissue_token(
-        self, access_token, refresh_token, verify_ssl: bool = True
-    ) -> response_body.TokenResponse:
+    def reissue_token(self, access_token, refresh_token, verify_ssl: bool = True) -> response_body.TokenResponse:
         try:
             request_body = TokenRefreshRequest(**{"refresh_token": refresh_token})
             url = f"{self.base_url}/auth/login_by_refresh_token"
-            response = Requester.post_as_json(
-                url=url, request_body=asdict(request_body)
-            )
+            response = Requester.post_as_json(url=url, request_body=asdict(request_body))
             logger.info("Successfully reissued token")
             return TokenResponse(**response.json()).to()
         except Exception as e:

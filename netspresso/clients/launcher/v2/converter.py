@@ -22,13 +22,7 @@ from netspresso.clients.launcher.v2.schemas import (
     UploadFile,
 )
 from netspresso.clients.utils.common import read_file_bytes
-from netspresso.enums import (
-    DataType,
-    DeviceName,
-    Framework,
-    LauncherTask,
-    SoftwareVersion,
-)
+from netspresso.enums import DataType, DeviceName, Framework, LauncherTask, SoftwareVersion
 
 
 class Converter:

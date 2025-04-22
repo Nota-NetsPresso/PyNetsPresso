@@ -5,19 +5,17 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.api.v1.schemas.base import ResponseItem
 from netspresso.enums.train import (
-    Framework, 
-    FrameworkDisplay, 
-    Task, 
-    TaskDisplay,
-    PretrainedModel,
-    PretrainedModelDisplay,
-    PretrainedModelGroup,
-    TASK_DISPLAY_MAP,
     FRAMEWORK_DISPLAY_MAP,
     MODEL_DISPLAY_MAP,
     MODEL_GROUP_MAP,
     TASK_DISPLAY_MAP,
-    FRAMEWORK_DISPLAY_MAP,
+    Framework,
+    FrameworkDisplay,
+    PretrainedModel,
+    PretrainedModelDisplay,
+    PretrainedModelGroup,
+    Task,
+    TaskDisplay,
 )
 
 from .dataset import DatasetCreate, DatasetPayload

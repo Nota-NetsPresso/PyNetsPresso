@@ -2,6 +2,7 @@ from netspresso.enums.train import Scheduler
 from netspresso.trainer.schedulers.schedulers import (
     CosineAnnealingLRWithCustomWarmUp,
     CosineAnnealingWarmRestartsWithCustomWarmUp,
+    MultiStepLR,
     PolynomialLRWithWarmUp,
     StepLR,
 )
@@ -11,10 +12,11 @@ class SchedulerManager:
     @staticmethod
     def get_scheduler(name: str):
         scheduler_map = {
-            Scheduler.STEPLR: StepLR,
-            Scheduler.POLYNOMIAL_LR_WITH_WARM_UP: PolynomialLRWithWarmUp,
-            Scheduler.COSINE_ANNEALING_LR_WITH_CUSTOM_WARM_UP: CosineAnnealingLRWithCustomWarmUp,
-            Scheduler.COSINE_ANNEALING_WARM_RESTARTS_WITH_CUSTOM_WARM_UP: CosineAnnealingWarmRestartsWithCustomWarmUp,
+            Scheduler.STEP_LR: StepLR,
+            Scheduler.POLYNOMIAL_LR: PolynomialLRWithWarmUp,
+            Scheduler.COSINE_ANNEALING_LR: CosineAnnealingLRWithCustomWarmUp,
+            Scheduler.COSINE_ANNEALING_WARM_RESTARTS: CosineAnnealingWarmRestartsWithCustomWarmUp,
+            Scheduler.MULTI_STEP_LR: MultiStepLR,
         }
 
         scheduler_class = scheduler_map.get(name.lower())

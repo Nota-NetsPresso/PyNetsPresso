@@ -239,7 +239,7 @@ class SegmentationResNet50ModelConfig(ModelConfig):
                     "intermediate_channels": 256,
                     "classifier_dropout_prob": 0.0,
                 },
-            }
+            },
         )
     )
     postprocessor: Optional[Dict[str, Any]] = None

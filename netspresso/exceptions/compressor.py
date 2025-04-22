@@ -25,7 +25,7 @@ class EmptyCompressionParamsException(PyNPException):
 
 class NotValidSlampRatioException(PyNPException):
     def __init__(self, ratio: float):
-        message = f"The ratio range for SLAMP is 0 < ratio < 1, but got `{ratio}`.",
+        message = (f"The ratio range for SLAMP is 0 < ratio < 1, but got `{ratio}`.",)
         super().__init__(
             data=AdditionalData(origin="pynp"),
             error_code="",

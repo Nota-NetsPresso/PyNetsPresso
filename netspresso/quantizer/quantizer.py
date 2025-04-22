@@ -74,7 +74,9 @@ class Quantizer(NetsPressoBase):
 
         return metadata
 
-    def _download_quantized_model(self, quantize_task: QuantizeTask, output_dir: str, metadata: QuantizerMetadata) -> None:
+    def _download_quantized_model(
+        self, quantize_task: QuantizeTask, output_dir: str, metadata: QuantizerMetadata
+    ) -> None:
         """Download the quantizeed model with given quantization task or quantization task uuid.
 
         Args:
@@ -121,7 +123,9 @@ class Quantizer(NetsPressoBase):
             logger.error(f"Download quantized model failed. Error: {e}")
             raise e
 
-    def _download_recommendation_result(self, quantize_task: QuantizeTask, output_dir: str, metadata: QuantizerMetadata) -> None:
+    def _download_recommendation_result(
+        self, quantize_task: QuantizeTask, output_dir: str, metadata: QuantizerMetadata
+    ) -> None:
         self.token_handler.validate_token()
 
         try:
@@ -250,7 +254,11 @@ class Quantizer(NetsPressoBase):
                     time.sleep(sleep_interval)
 
             if quantize_response.data.status == TaskStatusForDisplay.FINISHED:
-                if quantize_response.data.quantization_mode in ["plain_quantization", "custom_quantization", "automatic_quantization"]:
+                if quantize_response.data.quantization_mode in [
+                    "plain_quantization",
+                    "custom_quantization",
+                    "automatic_quantization",
+                ]:
                     metadata = self._download_quantized_model(quantize_response.data, output_dir, metadata)
                 elif quantize_response.data.quantization_mode in [QuantizationMode.RECOMMEND_QUANTIZATION]:
                     metadata = self._download_recommendation_result(quantize_response.data, output_dir, metadata)
@@ -460,10 +468,7 @@ class Quantizer(NetsPressoBase):
         Returns:
             QuantizerMetadata: Quantize metadata.
         """
-        layers = {
-            layer.name: layer.precision
-            for layer in precision_by_layer_name
-        }
+        layers = {layer.name: layer.precision for layer in precision_by_layer_name}
 
         custom_quantization_dictionary = {"layers": layers, "operators": {}}
 
@@ -482,7 +487,7 @@ class Quantizer(NetsPressoBase):
 
         logger.info("Custom quantization by layer name task was completed successfully.")
 
-        return  metadata
+        return metadata
 
     def custom_precision_quantization_by_operator_type(
         self,
@@ -530,10 +535,7 @@ class Quantizer(NetsPressoBase):
         Returns:
             QuantizerMetadata: Quantize metadata.
         """
-        operators = {
-            layer.type: layer.precision
-            for layer in precision_by_operator_type
-        }
+        operators = {layer.type: layer.precision for layer in precision_by_operator_type}
 
         custom_quantization_dictionary = {"layers": {}, "operators": operators}
 

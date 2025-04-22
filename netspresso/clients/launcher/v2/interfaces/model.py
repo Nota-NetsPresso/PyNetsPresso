@@ -6,9 +6,7 @@ from netspresso.clients.launcher.v2.schemas import ResponseItem, ResponseItems
 
 class ModelInterface(ABC):
     @abstractmethod
-    def get_upload_url(
-        self, request_params: dataclasses, headers: dataclasses
-    ) -> ResponseItem:
+    def get_upload_url(self, request_params: dataclasses, headers: dataclasses) -> ResponseItem:
         """
         :param request_params:
         :param headers:
@@ -26,9 +24,7 @@ class ModelInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def upload(
-        self, request_body: dataclasses, file: dataclasses, headers: dataclasses
-    ) -> str:
+    def upload(self, request_body: dataclasses, file: dataclasses, headers: dataclasses) -> str:
         """
         :param request_body:
         :param file:
@@ -38,9 +34,7 @@ class ModelInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def read(
-        self, request_params: dataclasses, headers: dataclasses, ai_model_id: str
-    ) -> ResponseItem:
+    def read(self, request_params: dataclasses, headers: dataclasses, ai_model_id: str) -> ResponseItem:
         """
         :param request_params:
         :param headers:
@@ -50,9 +44,7 @@ class ModelInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def read_all(
-        self, request_params: dataclasses, headers: dataclasses
-    ) -> ResponseItems:
+    def read_all(self, request_params: dataclasses, headers: dataclasses) -> ResponseItems:
         """
         :param request_params:
         :param headers:

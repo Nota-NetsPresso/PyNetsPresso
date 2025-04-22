@@ -15,7 +15,7 @@ class BaseOptimizer:
         """
         Extract all fields except 'name' as parameters.
         """
-        return {k: v for k, v in asdict(self).items() if k != 'name'}
+        return {k: v for k, v in asdict(self).items() if k != "name"}
 
 
 @dataclass

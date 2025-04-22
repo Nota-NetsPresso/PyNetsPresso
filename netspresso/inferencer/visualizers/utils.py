@@ -3,9 +3,9 @@ import numpy as np
 
 def voc_color_map(N=256, normalized=False, brightness_factor=1.5):
     def bitget(byteval, idx):
-        return ((byteval & (1 << idx)) != 0)
+        return (byteval & (1 << idx)) != 0
 
-    dtype = 'float32' if normalized else 'uint8'
+    dtype = "float32" if normalized else "uint8"
     cmap = np.zeros((N, 3), dtype=dtype)
     for i in range(N):
         r = g = b = 0

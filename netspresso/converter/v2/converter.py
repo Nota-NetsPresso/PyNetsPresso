@@ -1,30 +1,30 @@
 import time
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Optional, Union
 from urllib import request
 
 from loguru import logger
 
+from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.auth.response_body import UserResponse
 from netspresso.clients.launcher import launcher_client_v2
 from netspresso.clients.launcher.v2.schemas import InputLayer
-from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
+from netspresso.clients.launcher.v2.schemas.common import ModelOption
 from netspresso.clients.launcher.v2.schemas.task.convert.response_body import ConvertTask
-from netspresso.enums import (
-    DataType,
-    DeviceName,
-    Framework,
-    ServiceTask,
-    SoftwareVersion,
-    Status,
-    TaskStatusForDisplay,
-)
-from netspresso.metadata.converter import ConverterMetadata
+from netspresso.enums import DataType, DeviceName, ServiceTask, SoftwareVersion, Status, TaskStatusForDisplay
+from netspresso.enums.conversion import SourceFramework, TargetFramework
+from netspresso.enums.project import SubFolder
 from netspresso.utils import FileHandler
-from netspresso.utils.metadata import MetadataHandler
+from netspresso.utils.db.models.conversion import ConversionTask
+from netspresso.utils.db.models.model import Model
+from netspresso.utils.db.repositories.conversion import conversion_task_repository
+from netspresso.utils.db.repositories.model import model_repository
+from netspresso.utils.db.session import get_db_session
 
+storage_handler = ObjectStorageHandler()
+BUCKET_NAME = "model"
 
 class ConverterV2(NetsPressoBase):
     def __init__(self, token_handler: TokenHandler, user_info: UserResponse):
@@ -33,64 +33,25 @@ class ConverterV2(NetsPressoBase):
         super().__init__(token_handler)
         self.user_info = user_info
 
-    def create_available_options(self, target_framework, target_device, target_software_version):
-        def filter_device(device: DeviceInfo, target_software_version: SoftwareVersion):
-            filtered_versions = [
-                version for version in device.software_versions
-                if version.software_version == target_software_version
-            ]
-
-            if filtered_versions:
-                device.software_versions = filtered_versions
-                return device
-            return None
-
+    def get_supported_options(self, framework: SourceFramework) -> List[ModelOption]:
         self.token_handler.validate_token()
 
-        available_options = launcher_client_v2.benchmarker.read_framework_options(
+        options_response = launcher_client_v2.converter.read_framework_options(
             access_token=self.token_handler.tokens.access_token,
-            framework=target_framework,
+            framework=framework,
         )
+        supported_options = options_response.data
 
-        if target_framework in [Framework.TENSORRT, Framework.DRPAI]:
-            for available_option in available_options.data:
-                if available_option.framework == target_framework:
-                    available_option.devices = [
-                        filter_device(device, target_software_version)
-                        for device in available_option.devices
-                        if device.device_name == target_device
-                    ]
-                available_option.devices = [device for device in available_option.devices if device]
+        # TODO: Will be removed when we support DLC in the future
+        supported_options = [
+            supported_option
+            for supported_option in supported_options
+            if supported_option.framework != "dlc"
+        ]
 
-        return available_options
+        return supported_options
 
-    def initialize_metadata(self, output_dir, input_model_path, target_framework, target_device, target_software_version):
-        def create_metadata_with_status(status, error_message=None):
-            metadata = ConverterMetadata()
-            metadata.status = status
-            if error_message:
-                logger.error(error_message)
-            return metadata
-
-        try:
-            metadata = ConverterMetadata()
-        except Exception as e:
-            error_message = f"An unexpected error occurred during metadata initialization: {e}"
-            metadata = create_metadata_with_status(Status.ERROR, error_message)
-        except KeyboardInterrupt:
-            warning_message = "Conversion task was interrupted by the user."
-            metadata = create_metadata_with_status(Status.STOPPED, warning_message)
-        finally:
-            metadata.input_model_path = Path(input_model_path).resolve().as_posix()
-            available_options = self.create_available_options(target_framework, target_device, target_software_version)
-            metadata.available_options.extend(option.to() for option in available_options.data)
-            MetadataHandler.save_metadata(data=metadata, folder_path=output_dir)
-
-        return metadata
-
-    def _download_converted_model(
-        self, convert_task: ConvertTask, local_path: str
-    ) -> None:
+    def _download_converted_model(self, convert_task: ConvertTask, local_path: str) -> None:
         """Download the converted model with given conversion task or conversion task uuid.
 
         Args:
@@ -115,11 +76,57 @@ class ConverterV2(NetsPressoBase):
             logger.error(f"Download converted model failed. Error: {e}")
             raise e
 
+    def get_input_model(self, input_model_id: str, user_id: str) -> Model:
+        with get_db_session() as db:
+            input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id)
+            return input_model
+
+    def save_model(self, model_name, project_id, user_id, object_path) -> Model:
+        model = Model(
+            name=model_name,
+            type=SubFolder.CONVERTED_MODELS,
+            is_retrainable=False,
+            project_id=project_id,
+            user_id=user_id,
+            object_path=object_path,
+        )
+        with get_db_session() as db:
+            model = model_repository.save(db=db, model=model)
+            return model
+
+    def _save_conversion_task(self, conversion_task: ConversionTask) -> ConversionTask:
+        with get_db_session() as db:
+            conversion_task = conversion_task_repository.save(db=db, model=conversion_task)
+
+            return conversion_task
+
+    def create_conversion_task(
+        self,
+        framework: Union[str, TargetFramework],
+        device_name: Union[str, DeviceName],
+        software_version: Union[str, SoftwareVersion],
+        data_type: Union[str, DataType],
+        input_model_id: Optional[str] = None,
+        model_id: Optional[str] = None,
+    ) -> ConversionTask:
+        with get_db_session() as db:
+            conversion_task = ConversionTask(
+                framework=framework,
+                device_name=device_name,
+                software_version=software_version,
+                precision=data_type,
+                status=Status.NOT_STARTED,
+                input_model_id=input_model_id,
+                model_id=model_id,
+            )
+            conversion_task = conversion_task_repository.save(db=db, model=conversion_task)
+            return conversion_task
+
     def convert_model(
         self,
         input_model_path: str,
         output_dir: str,
-        target_framework: Union[str, Framework],
+        target_framework: Union[str, TargetFramework],
         target_device_name: Union[str, DeviceName],
         target_data_type: Union[str, DataType] = DataType.FP16,
         target_software_version: Optional[Union[str, SoftwareVersion]] = None,
@@ -127,7 +134,8 @@ class ConverterV2(NetsPressoBase):
         dataset_path: Optional[str] = None,
         wait_until_done: bool = True,
         sleep_interval: int = 30,
-    ) -> ConverterMetadata:
+        input_model_id: Optional[str] = None,
+    ) -> str:
         """Convert a model to the specified framework.
 
         Args:
@@ -150,20 +158,67 @@ class ConverterV2(NetsPressoBase):
             ConverterMetadata: Convert metadata.
         """
 
-        FileHandler.check_input_model_path(input_model_path)
+        # FileHandler.check_input_model_path(input_model_path)
         output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
-        metadata = self.initialize_metadata(
-            output_dir=output_dir,
-            input_model_path=input_model_path,
-            target_framework=target_framework,
-            target_device=target_device_name,
-            target_software_version=target_software_version,
+
+        if input_model_id:
+            input_model = self.get_input_model(input_model_id, self.user_info.user_id)
+            input_model.user_id = self.user_info.user_id
+            project = self.get_project(project_id=input_model.project_id)
+            input_model_path = Path(input_model.object_path) / "model.onnx"
+            download_dir = Path(output_dir) / "input_model"
+            download_dir.mkdir(parents=True, exist_ok=True)  # 다운로드 폴더 생성
+
+            local_path = download_dir / "model.onnx"
+            input_model_path_str = str(input_model_path)
+
+            logger.info(f"Downloading input model from Zenko: {input_model_path_str}")
+            storage_handler.download_file_from_s3(
+                bucket_name=BUCKET_NAME,
+                local_path=str(local_path),
+                object_path=input_model_path_str
+            )
+            logger.info(f"Downloaded input model from Zenko: {local_path}")
+
+            # input_model_path를 local_path로 업데이트
+            input_model_path = str(local_path)
+
+        default_model_path = FileHandler.get_default_model_path(folder_path=output_dir)
+        extension = FileHandler.get_extension(framework=target_framework)
+        object_path = f"{project.user_id}/{project.project_id}/{input_model.model_id}/model{extension}"
+
+        # 모델 이름 생성
+        model_name_parts = [
+            input_model.name,
+            target_framework,
+            target_device_name,
+        ]
+
+        if target_software_version:  # None이 아닌 경우에만 추가
+            model_name_parts.append(target_software_version)
+
+        model_name_parts.append(target_data_type)
+        model_name = "_".join(model_name_parts)
+
+        logger.info(f"Model name: {model_name}")
+        logger.info(f"Object path: {object_path}")
+
+        model = self.save_model(
+            model_name=model_name,
+            project_id=input_model.project_id,
+            user_id=self.user_info.user_id,
+            object_path=object_path,
+        )
+        conversion_task = self.create_conversion_task(
+            framework=target_framework,
+            device_name=target_device_name,
+            software_version=target_software_version,
+            data_type=target_data_type,
+            input_model_id=input_model_id,
+            model_id=model.model_id,
         )
 
         try:
-            if metadata.status in [Status.ERROR, Status.STOPPED]:
-                return metadata
-
             self.validate_token_and_check_credit(service_task=ServiceTask.MODEL_CONVERT)
 
             # Get presigned_model_upload_url
@@ -197,10 +252,10 @@ class ConverterV2(NetsPressoBase):
                 software_version=target_software_version,
                 dataset_path=dataset_path,
             )
+            logger.info(f"Convert response: {convert_response.data}")
 
-            metadata.model_info = validate_model_response.data.to()
-            metadata.convert_task_info = convert_response.data.to(validate_model_response.data.uploaded_file_name)
-            MetadataHandler.save_metadata(data=metadata, folder_path=output_dir)
+            conversion_task.convert_task_uuid = convert_response.data.convert_task_id
+            conversion_task = self._save_conversion_task(conversion_task)
 
             if wait_until_done:
                 while True:
@@ -213,33 +268,50 @@ class ConverterV2(NetsPressoBase):
                         TaskStatusForDisplay.FINISHED,
                         TaskStatusForDisplay.ERROR,
                         TaskStatusForDisplay.TIMEOUT,
+                        TaskStatusForDisplay.USER_CANCEL,
                     ]:
                         break
 
                     time.sleep(sleep_interval)
 
-            if convert_response.data.status == TaskStatusForDisplay.FINISHED:
-                default_model_path = FileHandler.get_default_model_path(folder_path=output_dir)
-                extension = FileHandler.get_extension(framework=target_framework)
+            if convert_response.data.status in [TaskStatusForDisplay.IN_PROGRESS, TaskStatusForDisplay.IN_QUEUE]:
+                conversion_task.status = Status.IN_PROGRESS
+                logger.info(f"Conversion task was running. Status: {convert_response.data.status}")
+            elif convert_response.data.status == TaskStatusForDisplay.FINISHED:
+                download_dir = Path(model.object_path).parent
+                download_dir.mkdir(parents=True, exist_ok=True)
                 self._download_converted_model(
                     convert_task=convert_response.data,
-                    local_path=str(default_model_path.with_suffix(extension)),
+                    local_path=model.object_path,
                 )
+                storage_handler.upload_file_to_s3(
+                    bucket_name=BUCKET_NAME,
+                    local_path=model.object_path,
+                    object_path=model.object_path
+                )
+                logger.info(f"Uploaded Converted Model file to Zenko: {model.object_path}")
                 self.print_remaining_credit(service_task=ServiceTask.MODEL_CONVERT)
-                metadata.status = Status.COMPLETED
-                metadata.converted_model_path = default_model_path.with_suffix(extension).as_posix()
+                conversion_task.status = Status.COMPLETED
                 logger.info("Conversion task was completed successfully.")
-            else:
-                metadata = self.handle_error(metadata, ServiceTask.MODEL_CONVERT, convert_response.data.error_log)
+            elif convert_response.data.status in [
+                TaskStatusForDisplay.ERROR,
+                TaskStatusForDisplay.USER_CANCEL,
+                TaskStatusForDisplay.TIMEOUT,
+            ]:
+                conversion_task.status = Status.ERROR
+                conversion_task.error_detail = convert_response.data.error_log
+                conversion_task = self._save_conversion_task(conversion_task)
+                logger.error(f"Conversion task was failed. Error: {convert_response.data.error_log}")
 
         except Exception as e:
-            metadata = self.handle_error(metadata, ServiceTask.MODEL_CONVERT, e.args[0])
+            conversion_task.status = Status.ERROR
+            conversion_task.error_detail = e.args[0]
         except KeyboardInterrupt:
-            metadata = self.handle_stop(metadata, ServiceTask.MODEL_CONVERT)
+            conversion_task.status = Status.STOPPED
         finally:
-            MetadataHandler.save_metadata(data=metadata, folder_path=output_dir)
+            conversion_task = self._save_conversion_task(conversion_task)
 
-        return metadata
+        return conversion_task.task_id
 
     def get_conversion_task(self, conversion_task_id: str) -> ConvertTask:
         """Get the conversion task information with given conversion task uuid.
@@ -282,3 +354,54 @@ class ConverterV2(NetsPressoBase):
             task_id=conversion_task_id,
         )
         return response.data
+
+    def update_conversion_task_status(self, task_id: str) -> bool:
+        """Update conversion task status in DB based on launcher status.
+
+        Args:
+            task_id (str): Conversion task ID to update
+
+        Returns:
+            bool: True if status was updated, False if task is still in progress
+        """
+        with get_db_session() as db:
+            conversion_task = conversion_task_repository.get_by_task_id(db=db, task_id=task_id)
+            if not conversion_task:
+                logger.error(f"Conversion task {task_id} not found")
+                return True
+
+            launcher_status = self.get_conversion_task(conversion_task.convert_task_uuid)
+            status_updated = False
+
+            if launcher_status.status == TaskStatusForDisplay.FINISHED:
+                conversion_task.status = Status.COMPLETED
+                status_updated = True
+                model = model_repository.get_by_model_id(db=db, model_id=conversion_task.model_id)
+                download_dir = Path(model.object_path).parent
+                download_dir.mkdir(parents=True, exist_ok=True)
+                self._download_converted_model(
+                    convert_task=launcher_status,
+                    local_path=model.object_path,
+                )
+                logger.info(f"Downloaded model to {model.object_path}")
+                storage_handler.upload_file_to_s3(
+                    bucket_name=BUCKET_NAME,
+                    local_path=model.object_path,
+                    object_path=model.object_path
+                )
+                logger.info(f"Uploaded Converted Model file to Zenko: {model.object_path}")
+
+            elif launcher_status.status in [TaskStatusForDisplay.ERROR, TaskStatusForDisplay.TIMEOUT]:
+                conversion_task.status = Status.ERROR
+                conversion_task.error_detail = launcher_status.error_log
+                status_updated = True
+
+            elif launcher_status.status == TaskStatusForDisplay.USER_CANCEL:
+                conversion_task.status = Status.STOPPED
+                status_updated = True
+
+            if status_updated:
+                conversion_task_repository.save(db, conversion_task)
+                logger.info(f"Conversion task {task_id} status updated to {conversion_task.status}")
+
+            return status_updated

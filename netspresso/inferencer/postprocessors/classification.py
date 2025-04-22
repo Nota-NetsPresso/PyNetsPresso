@@ -8,7 +8,7 @@ class ClassificationPostprocessor:
         self.top_k_max = top_k_max
 
     def __call__(self, outputs, k: Optional[int] = None):
-        pred = outputs['pred']
+        pred = outputs["pred"]
 
         maxk = min(self.top_k_max, pred.shape[1])
         if k:

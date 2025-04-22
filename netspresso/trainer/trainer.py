@@ -5,10 +5,11 @@ from typing import Any, Dict, List, Optional, Union
 from loguru import logger
 from omegaconf import OmegaConf
 
+from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.launcher import launcher_client_v2
-from netspresso.enums import Framework, Optimizer, Scheduler, ServiceTask, Status, Task
+from netspresso.enums import Framework, ServiceTask, Status, Task
 from netspresso.enums.project import SubFolder
 from netspresso.enums.train import StorageLocation
 from netspresso.exceptions.trainer import (
@@ -38,12 +39,21 @@ from netspresso.trainer.schedulers.schedulers import get_supported_schedulers
 from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.trainer.training import TRAINING_CONFIG_TYPE, EnvironmentConfig, LoggingConfig, ScheduleConfig
 from netspresso.utils import FileHandler
-from netspresso.utils.db.models.model import TrainedModel
-from netspresso.utils.db.models.train import Augmentation, Dataset, Environment, Hyperparameter, Performance, TrainTask
-from netspresso.utils.db.repositories.model import trained_model_repository
-from netspresso.utils.db.repositories.task import train_task_repository
+from netspresso.utils.db.models.model import Model
+from netspresso.utils.db.models.training import (
+    Augmentation,
+    Dataset,
+    Environment,
+    Hyperparameter,
+    Performance,
+    TrainingTask,
+)
+from netspresso.utils.db.repositories.model import model_repository
+from netspresso.utils.db.repositories.training import training_task_repository
 from netspresso.utils.db.session import get_db_session
-from netspresso.utils.metadata import MetadataHandler
+
+storage_handler = ObjectStorageHandler()
+BUCKET_NAME = "model"
 
 
 class Trainer(NetsPressoBase):
@@ -164,9 +174,7 @@ class Trainer(NetsPressoBase):
 
         # Filter out deprecated names
         filtered_models = {
-            name: config
-            for name, config in available_models.items()
-            if name not in self.deprecated_names
+            name: config for name, config in available_models.items() if name not in self.deprecated_names
         }
 
         return filtered_models
@@ -216,7 +224,7 @@ class Trainer(NetsPressoBase):
                 root=root_path,
                 train=ImageLabelPathConfig(image=train_image, label=train_label),
                 valid=ImageLabelPathConfig(image=valid_image, label=valid_label),
-                test=ImageLabelPathConfig(image=test_image, label=test_label)
+                test=ImageLabelPathConfig(image=test_image, label=test_label),
             ),
             "id_mapping": id_mapping,
         }
@@ -315,7 +323,11 @@ class Trainer(NetsPressoBase):
         self.logging.sample_input_size = [img_size, img_size]
 
         if model is None:
-            raise NotSupportedModelException()
+            raise NotSupportedModelException(
+                available_models=self._get_available_models_w_deprecated_names(),
+                model_name=model_name,
+                task=self.task,
+            )
 
         self.model = model(
             checkpoint=CheckpointConfig(
@@ -480,9 +492,7 @@ class Trainer(NetsPressoBase):
 
         # TODO: Will be removed when we support DLC in the future
         available_options = [
-            available_option
-            for available_option in available_options
-            if available_option.framework != "dlc"
+            available_option for available_option in available_options if available_option.framework != "dlc"
         ]
 
         return available_options
@@ -492,7 +502,7 @@ class Trainer(NetsPressoBase):
             "success": Status.COMPLETED,
             "stop": Status.STOPPED,
             "error": Status.ERROR,
-            "": Status.IN_PROGRESS
+            "": Status.IN_PROGRESS,
         }
         return status_mapping.get(status, Status.IN_PROGRESS)
 
@@ -512,7 +522,7 @@ class Trainer(NetsPressoBase):
 
         preprocess = hparams.augmentation.inference
         for _preprocess in preprocess:
-            if hasattr(_preprocess, 'size') and _preprocess.size:
+            if hasattr(_preprocess, "size") and _preprocess.size:
                 _preprocess.size = _preprocess.size[0]
             if _preprocess.name == "resize":
                 _preprocess.resize_criteria = "long"
@@ -520,9 +530,18 @@ class Trainer(NetsPressoBase):
         if hparams.model.task == Task.IMAGE_CLASSIFICATION:
             visualize = {"params": {"class_map": hparams.data.id_mapping, "pallete": None}}
         elif hparams.model.task == Task.OBJECT_DETECTION:
-            visualize = {"params": {"class_map": hparams.data.id_mapping, "normalized": False, "brightness_factor": 1.5}}
+            visualize = {
+                "params": {"class_map": hparams.data.id_mapping, "normalized": False, "brightness_factor": 1.5}
+            }
         elif hparams.model.task == Task.SEMANTIC_SEGMENTATION:
-            visualize = {"params": {"class_map": hparams.data.id_mapping, "pallete": None, "normalized": False, "brightness_factor": 1.5}}
+            visualize = {
+                "params": {
+                    "class_map": hparams.data.id_mapping,
+                    "pallete": None,
+                    "normalized": False,
+                    "brightness_factor": 1.5,
+                }
+            }
 
         _config = {
             "task": hparams.model.task,
@@ -539,24 +558,29 @@ class Trainer(NetsPressoBase):
 
     def _save_train_task(self, train_task):
         with get_db_session() as db:
-            train_task = train_task_repository.save(db=db, task=train_task)
+            train_task = training_task_repository.save(db=db, model=train_task)
 
             return train_task
 
-    def save_trained_model(self, model_name, train_task, project_id, user_id):
-        trained_model = TrainedModel(
+    def _save_model(self, model) -> Model:
+        with get_db_session() as db:
+            model = model_repository.save(db=db, model=model)
+
+            return model
+
+    def save_trained_model(self, model_name, project_id, user_id) -> Model:
+        model = Model(
             name=model_name,
             type=SubFolder.TRAINED_MODELS,
             is_retrainable=True,
             project_id=project_id,
             user_id=user_id,
-            train_task=train_task,
         )
         with get_db_session() as db:
-            model = trained_model_repository.save(db=db, model=trained_model)
+            model = model_repository.save(db=db, model=model)
             return model
 
-    def create_training_task(self):
+    def create_training_task(self, model_id) -> TrainingTask:
         with get_db_session() as db:
             dataset = Dataset(
                 train_path="train",
@@ -593,7 +617,7 @@ class Trainer(NetsPressoBase):
                 num_workers=self.environment.num_workers,
                 gpus=self.environment.gpus,
             )
-            task = TrainTask(
+            task = TrainingTask(
                 pretrained_model=self.model_name,
                 task=self.task,
                 framework=Framework.PYTORCH,
@@ -602,12 +626,13 @@ class Trainer(NetsPressoBase):
                 dataset=dataset,
                 hyperparameter=hyperparameter,
                 environment=environment,
+                model_id=model_id,
             )
-            task = train_task_repository.save(db=db, task=task)
+            task = training_task_repository.save(db=db, model=task)
 
         return task
 
-    def create_performance(self, task: TrainTask, training_summary):
+    def create_performance(self, task: TrainingTask, training_summary):
         performance = Performance(
             train_losses=training_summary["train_losses"],
             valid_losses=training_summary["valid_losses"],
@@ -630,7 +655,9 @@ class Trainer(NetsPressoBase):
 
         return task
 
-    def train(self, gpus: str, model_name: str, project_id: str, output_dir: Optional[str] = "./outputs") -> TrainTask:
+    def train(
+        self, gpus: str, model_name: str, project_id: str, output_dir: Optional[str] = "./outputs"
+    ) -> TrainingTask:
         """Train the model with the specified configuration.
 
         Args:
@@ -653,8 +680,15 @@ class Trainer(NetsPressoBase):
         destination_folder = Path(project_abs_path) / SubFolder.TRAINED_MODELS.value / model_name
         destination_folder = FileHandler.create_unique_folder(folder_path=destination_folder)
 
-        train_task = self.create_training_task()
-        trained_model = self.save_trained_model(model_name=model_name, train_task=train_task, project_id=project.project_id, user_id=project.user_id)
+        model = self.save_trained_model(
+            model_name=model_name,
+            project_id=project.project_id,
+            user_id=project.user_id,
+        )
+        object_path = f"{project.user_id}/{project.project_id}/{model.model_id}"
+        model.object_path = object_path
+        model = self._save_model(model=model)
+        train_task = self.create_training_task(model_id=model.model_id)
 
         try:
             self.logging.output_dir = output_dir
@@ -703,6 +737,35 @@ class Trainer(NetsPressoBase):
 
             train_task = self._save_train_task(train_task=train_task)
 
+            # Zenko에 모델 파일 업로드
+            if train_task.status == Status.COMPLETED:
+                try:
+                    # 모델 파일 찾기
+                    pt_file, onnx_file = self.find_model_files(destination_folder)
+
+                    # PT 파일 업로드
+                    if pt_file:
+                        storage_handler.upload_file_to_s3(
+                            bucket_name=BUCKET_NAME,
+                            local_path=str(pt_file),
+                            object_path=f"{model.object_path}/model.pt"
+                        )
+                        logger.info(f"Uploaded PT file to Zenko: {model.object_path}/model.pt")
+
+                    # ONNX 파일 업로드
+                    if onnx_file:
+                        storage_handler.upload_file_to_s3(
+                            bucket_name=BUCKET_NAME,
+                            local_path=str(onnx_file),
+                            object_path=f"{model.object_path}/model.onnx"
+                        )
+                        logger.info(f"Uploaded ONNX file to Zenko: {model.object_path}/model.onnx")
+
+                except Exception as e:
+                    logger.error(f"Failed to upload model files to Zenko: {e}")
+                    # 업로드 실패해도 학습은 성공으로 처리
+                    pass
+
         return train_task
 
     def get_all_available_models(self) -> Dict[str, List[str]]:
@@ -712,15 +775,9 @@ class Trainer(NetsPressoBase):
             Dict[str, List[str]]: A dictionary mapping each task to its available models.
         """
         all_models = {
-            "classification": [
-                model for model in CLASSIFICATION_MODELS if model not in self.deprecated_names
-            ],
-            "detection": [
-                model for model in DETECTION_MODELS if model not in self.deprecated_names
-            ],
-            "segmentation": [
-                model for model in SEGMENTATION_MODELS if model not in self.deprecated_names
-            ],
+            "classification": [model for model in CLASSIFICATION_MODELS if model not in self.deprecated_names],
+            "detection": [model for model in DETECTION_MODELS if model not in self.deprecated_names],
+            "segmentation": [model for model in SEGMENTATION_MODELS if model not in self.deprecated_names],
         }
         return all_models
 
@@ -729,3 +786,31 @@ class Trainer(NetsPressoBase):
 
     def get_all_available_schedulers(self) -> Dict[str, Dict]:
         return get_supported_schedulers()
+
+    def find_model_files(self, folder_path: Union[str, Path]) -> tuple[Optional[Path], Optional[Path]]:
+        """Find one .pt file and one .onnx file in the given folder
+
+        Args:
+            folder_path: Path to search for model files
+
+        Returns:
+            tuple[Optional[Path], Optional[Path]]: Tuple of (pt_file_path, onnx_file_path)
+            Each can be None if not found
+        """
+        folder_path = Path(folder_path)
+        if not folder_path.exists():
+            logger.error(f"Folder not found: {folder_path}")
+            return None, None
+
+        pt_files = list(folder_path.glob('*.pt'))
+        onnx_files = list(folder_path.glob('*.onnx'))
+
+        pt_file = pt_files[0] if pt_files else None
+        onnx_file = onnx_files[0] if onnx_files else None
+
+        if pt_file:
+            logger.info(f"Found PT file: {pt_file.name}")
+        if onnx_file:
+            logger.info(f"Found ONNX file: {onnx_file.name}")
+
+        return pt_file, onnx_file

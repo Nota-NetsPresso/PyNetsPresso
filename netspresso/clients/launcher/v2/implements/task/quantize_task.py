@@ -46,28 +46,36 @@ class QuantizeTaskAPI(TaskInterface):
 
         return ResponseQuantizeTaskItem(**response.json())
 
-    def start_plain_quantization(self, request_body: RequestQuantizeTask, headers: AuthorizationHeader, file: UploadDataset = None) -> ResponseQuantizeTaskItem:
+    def start_plain_quantization(
+        self, request_body: RequestQuantizeTask, headers: AuthorizationHeader, file: UploadDataset = None
+    ) -> ResponseQuantizeTaskItem:
         endpoint = f"{self.task_base_url}"
 
         response = self._request_to_quantizer(request_body, endpoint, headers, file)
 
         return response
 
-    def start_recommendation_precision(self, request_body: RequestQuantizeTask, headers: AuthorizationHeader, file: UploadDataset = None) -> ResponseQuantizeTaskItem:
+    def start_recommendation_precision(
+        self, request_body: RequestQuantizeTask, headers: AuthorizationHeader, file: UploadDataset = None
+    ) -> ResponseQuantizeTaskItem:
         endpoint = f"{self.task_base_url}/recommendation"
 
         response = self._request_to_quantizer(request_body, endpoint, headers, file)
 
         return response
 
-    def start_custom_quantization(self, request_body: RequestQuantizeTask, headers: AuthorizationHeader, file: UploadDataset = None) -> ResponseQuantizeTaskItem:
+    def start_custom_quantization(
+        self, request_body: RequestQuantizeTask, headers: AuthorizationHeader, file: UploadDataset = None
+    ) -> ResponseQuantizeTaskItem:
         endpoint = f"{self.task_base_url}/custom"
 
         response = self._request_to_quantizer(request_body, endpoint, headers, file)
 
         return response
 
-    def start_auto_quantization(self, request_body: RequestQuantizeTask, headers: AuthorizationHeader, file: UploadDataset = None) -> ResponseQuantizeTaskItem:
+    def start_auto_quantization(
+        self, request_body: RequestQuantizeTask, headers: AuthorizationHeader, file: UploadDataset = None
+    ) -> ResponseQuantizeTaskItem:
         endpoint = f"{self.task_base_url}/auto"
 
         response = self._request_to_quantizer(request_body, endpoint, headers, file)

@@ -2,11 +2,7 @@ import dataclasses
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
 
-from netspresso.clients.launcher.v2.schemas import (
-    InputLayer,
-    ResponseItem,
-    ResponseItems,
-)
+from netspresso.clients.launcher.v2.schemas import InputLayer, ResponseItem, ResponseItems
 from netspresso.clients.launcher.v2.schemas.task.common import TaskStatusInfo
 from netspresso.enums import QuantizationMode, QuantizationPrecision, SimilarityMetric, TaskStatusForDisplay
 from netspresso.metadata.quantizer import QuantizeInfo

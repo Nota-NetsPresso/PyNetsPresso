@@ -46,4 +46,8 @@ class Config:
             Config._printed = True
 
     def is_cloud(self) -> bool:
-        return self.ENVIRONMENT_TYPE in [EnvironmentType.V2_PROD_CLOUD, EnvironmentType.V2_STAGING_CLOUD, EnvironmentType.V2_DEV_CLOUD]
+        return self.ENVIRONMENT_TYPE in [
+            EnvironmentType.V2_PROD_CLOUD,
+            EnvironmentType.V2_STAGING_CLOUD,
+            EnvironmentType.V2_DEV_CLOUD,
+        ]

@@ -32,7 +32,7 @@ class Plotter:
         )
 
     @staticmethod
-    def _add_difference_annotations(ax, original_value, compressed_value, difference, scatter_names = None):
+    def _add_difference_annotations(ax, original_value, compressed_value, difference, scatter_names=None):
         if scatter_names is None:
             scatter_names = ["Original Model", "Compressed Model"]
         ax.scatter(
@@ -110,9 +110,9 @@ class Plotter:
 
     @staticmethod
     def compare_flops(original_flops, flops_per_model):
-        original_flops = round(original_flops/1e9, 2)
+        original_flops = round(original_flops / 1e9, 2)
         for key, value in flops_per_model.items():
-            flops_per_model[key] = round(value/1e9, 2)
+            flops_per_model[key] = round(value / 1e9, 2)
         Plotter._plot_comparison(
             original_flops,
             flops_per_model,
@@ -177,12 +177,8 @@ class Plotter:
                 "map50_95": "mAP@[.50:.95]",
             }
             metric = labels[_metric]
-            bars_original = Plotter._plot_single_bar(
-                axs[idx], "Original Model", metric_data1[_metric], "slategray"
-            )
-            bars_compressed = Plotter._plot_single_bar(
-                axs[idx], "Quantized Model", metric_data2[_metric], "dodgerblue"
-            )
+            bars_original = Plotter._plot_single_bar(axs[idx], "Original Model", metric_data1[_metric], "slategray")
+            bars_compressed = Plotter._plot_single_bar(axs[idx], "Quantized Model", metric_data2[_metric], "dodgerblue")
 
             for bar in bars_original:
                 Plotter._add_value_annotations(axs[idx], bar, metric_data1[_metric])
@@ -211,14 +207,14 @@ class Plotter:
         compressed_model = profile_result.results.compressed_model
 
         original_values = [
-            round(original_model.flops/1e9, 2),
-            round(original_model.number_of_parameters/1e6, 2),
-            original_model.size
+            round(original_model.flops / 1e9, 2),
+            round(original_model.number_of_parameters / 1e6, 2),
+            original_model.size,
         ]
         compressed_values = [
-            round(compressed_model.flops/1e9, 2),
-            round(compressed_model.number_of_parameters/1e6, 2),
-            compressed_model.size
+            round(compressed_model.flops / 1e9, 2),
+            round(compressed_model.number_of_parameters / 1e6, 2),
+            compressed_model.size,
         ]
 
         difference_values = np.array(original_values) / np.array(compressed_values)

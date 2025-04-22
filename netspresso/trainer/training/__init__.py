@@ -15,4 +15,3 @@ TRAINING_CONFIG_TYPE = {
 
 
 __all__ = ["ScheduleConfig", "TRAINING_CONFIG_TYPE", "EnvironmentConfig", "LoggingConfig"]
-

@@ -15,8 +15,7 @@ class NetsPressoBase:
 
     def check_credit_balance(self, service_task: ServiceTask):
         current_credit = self.auth_client.get_credit(
-            access_token=self.token_handler.tokens.access_token,
-            verify_ssl=self.token_handler.verify_ssl
+            access_token=self.token_handler.tokens.access_token, verify_ssl=self.token_handler.verify_ssl
         )
         service_credit = ServiceCredit.get_credit(service_task)
         service_task_name = service_task.name.replace("_", " ").lower()

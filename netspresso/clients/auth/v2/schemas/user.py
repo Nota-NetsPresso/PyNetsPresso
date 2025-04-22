@@ -4,10 +4,7 @@ from typing import Optional
 
 from netspresso.clients.auth import response_body
 from netspresso.clients.auth.response_body import UserDetailResponse
-from netspresso.clients.auth.v2.schemas.common import (
-    AbstractResponse,
-    MembershipType,
-)
+from netspresso.clients.auth.v2.schemas.common import AbstractResponse, MembershipType
 from netspresso.clients.auth.v2.schemas.credit import SummarizedCreditResponse
 from netspresso.clients.auth.v2.schemas.user_agreement import UserAgreementBase
 
@@ -45,9 +42,7 @@ class UserResponse(AbstractResponse):
     def __post_init__(self):
         self.data = UserPayload(**self.data)
 
-    def to(
-        self, summarized_credit_response: SummarizedCreditResponse
-    ) -> response_body.UserResponse:
+    def to(self, summarized_credit_response: SummarizedCreditResponse) -> response_body.UserResponse:
         return response_body.UserResponse(
             **{
                 "user_id": self.data.user_id,

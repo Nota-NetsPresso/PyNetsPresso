@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.user import ApiKeyPayload, CreditInfo, DetailData, UserPayload
 from netspresso.netspresso import NetsPresso
-from netspresso.utils.db.generate_uuid import generate_uuid
+from netspresso.utils.db.models.base import generate_uuid
 from netspresso.utils.db.models.user import User
 from netspresso.utils.db.repositories.user import user_repository
 

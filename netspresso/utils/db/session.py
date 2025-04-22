@@ -2,11 +2,14 @@ from contextlib import contextmanager
 from typing import Generator
 
 from loguru import logger
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
 
-DB_URL = "sqlite:///netspresso.db"
+from app.configs.settings import settings
+
+DB_URL = settings.DATABASE_URL
+
 engine = create_engine(
     f"{DB_URL}",
     pool_pre_ping=True,
@@ -39,17 +42,17 @@ def get_db_session():
         yield db
     except Exception as e:
         logger.error(f"Database session error: {e}")
-        raise
+        raise e
     finally:
-        if db:
-            db.close()
+        db.close()
 
 
-def check_database(engine):
+def check_database(engine: Engine):
     if not database_exists(engine.url):
         logger.info("The database did not exist, so it has been created.")
         create_database(engine.url)
     else:
         logger.info("The database has already been created.")
+
 
 check_database(engine=engine)

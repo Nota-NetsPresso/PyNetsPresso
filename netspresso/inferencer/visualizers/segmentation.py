@@ -25,13 +25,13 @@ class SegmentationVisualizer:
         color_image = np.zeros((3, size[0], size[1]), dtype=np.uint8)
 
         for label in range(0, len(self.cmap)):
-            mask = (label == gray_image)
+            mask = label == gray_image
             color_image[0][mask] = self.cmap[label][0]
             color_image[1][mask] = self.cmap[label][1]
             color_image[2][mask] = self.cmap[label][2]
 
         # handle void
-        mask = (gray_image == 255)
+        mask = gray_image == 255
         color_image[0][mask] = color_image[1][mask] = color_image[2][mask] = 255
 
         return color_image

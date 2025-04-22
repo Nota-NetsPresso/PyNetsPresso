@@ -1,13 +1,5 @@
 from netspresso.enums.train import Optimizer
-from netspresso.trainer.optimizers.optimizers import (
-    SGD,
-    Adadelta,
-    Adagrad,
-    Adam,
-    Adamax,
-    AdamW,
-    RMSprop,
-)
+from netspresso.trainer.optimizers.optimizers import SGD, Adadelta, Adagrad, Adam, Adamax, AdamW, RMSprop
 
 
 class OptimizerManager:

@@ -60,6 +60,20 @@ class DataType(str, Enum):
         return Literal["FP32", "FP16", "INT8", ""]
 
 
+class DataTypeDisplay(str, Enum):
+    FP32 = "FP32"
+    FP16 = "FP16"
+    INT8 = "INT8"
+    NONE = ""
+
+
+DATA_TYPE_DISPLAY_MAP = {
+    DataType.FP32: DataTypeDisplay.FP32,
+    DataType.FP16: DataTypeDisplay.FP16,
+    DataType.INT8: DataTypeDisplay.INT8,
+    DataType.NONE: DataTypeDisplay.NONE,
+}
+
 compressor_framework_literal = Framework.create_compressor_literal()
 launcher_framework_literal = Framework.create_launcher_literal()
 extension_literal = Extension.create_literal()

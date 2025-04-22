@@ -20,15 +20,9 @@ from netspresso.clients.launcher.v2.schemas import (
     UploadDataset,
     UploadFile,
 )
-from netspresso.clients.launcher.v2.schemas.task.quantize.request_body import (
-    QuantizationOptions,
-    RequestQuantizeTask,
-)
+from netspresso.clients.launcher.v2.schemas.task.quantize.request_body import QuantizationOptions, RequestQuantizeTask
 from netspresso.clients.utils.common import read_file_bytes
-from netspresso.enums import (
-    LauncherTask,
-    QuantizationMode,
-)
+from netspresso.enums import LauncherTask, QuantizationMode
 
 
 class Quantizer:

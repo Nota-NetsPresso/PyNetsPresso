@@ -6,7 +6,7 @@ class SegmentationPostprocessor:
         pass
 
     def __call__(self, outputs, original_shape):
-        pred = outputs['pred']
+        pred = outputs["pred"]
         H, W = original_shape[-2:]
 
         # Upsample logits to the images' original size using bilinear interpolation

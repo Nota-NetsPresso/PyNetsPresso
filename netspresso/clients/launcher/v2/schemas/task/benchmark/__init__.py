@@ -11,5 +11,5 @@ __all__ = [
     ResponseBenchmarkTaskItem,
     ResponseBenchmarkOptionItems,
     ResponseBenchmarkStatusItem,
-    ResponseBenchmarkFrameworkOptionItems
+    ResponseBenchmarkFrameworkOptionItems,
 ]

@@ -1,14 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from netspresso.enums import (
-    DataType,
-    DeviceName,
-    Framework,
-    HardwareType,
-    SoftwareVersion,
-    TaskType,
-)
+from netspresso.enums import DataType, DeviceName, Framework, HardwareType, SoftwareVersion, TaskType
 from netspresso.metadata.common import BaseMetadata
 
 

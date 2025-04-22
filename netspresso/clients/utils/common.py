@@ -41,11 +41,11 @@ def create_multipart_data(url, file_info):
     file_name = file_info[0]
     file_content = file_info[1]
     multipart_data = MultipartEncoder(
-            fields={
-                "url": (None, url, "application/json"),
-                "file": (file_name, file_content, "application/octet-stream"),
-            }
-        )
+        fields={
+            "url": (None, url, "application/json"),
+            "file": (file_name, file_content, "application/octet-stream"),
+        }
+    )
 
     return multipart_data
 

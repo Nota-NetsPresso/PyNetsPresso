@@ -28,6 +28,7 @@ class ProjectPayload(ProjectCreate):
     project_id: str = Field(..., description="The unique identifier for the project.")
     model_ids: List[str] = Field(default_factory=list, description="The list of models associated with the project.")
     user_id: str = Field(..., description="The unique identifier for the user associated with the project.")
+    project_abs_path: str = Field(..., description="The absolute path of the project.")
     created_at: datetime = Field(..., description="The timestamp when the project was created.")
     updated_at: datetime = Field(..., description="The timestamp when the project was last updated.")
 

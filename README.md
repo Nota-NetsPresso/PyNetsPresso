@@ -467,7 +467,7 @@ print(f"model cpu memory footprint: {benchmark_result.benchmark_result.memory_fo
   | JETPACK_4_6               |     ✔️      |     ✔️     |      ✔️       |    ✔️     |                 |                  |
   | JETPACK_5_0_1             |             |            |               |           |       ✔️        |                  |
   | JETPACK_5_0_2             |             |            |               |    ✔️     |                 |                  |
-  | JETPACK_6_0               |             |            |               |           |                 |        ✔️        |
+  | JETPACK_6_1               |             |            |               |           |                 |        ✔️        |
 
   The code below is an example of using software version.
 

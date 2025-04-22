@@ -1,9 +1,7 @@
-from sqlalchemy import JSON, Boolean, Column, Float, ForeignKey, Integer, String, BigInteger
+from sqlalchemy import JSON, Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from netspresso.utils.db.generate_uuid import generate_uuid
-from netspresso.utils.db.mixins import TimestampMixin
-from netspresso.utils.db.session import Base
+from netspresso.utils.db.models.base import Base, BaseModel, generate_uuid
 
 
 class Augmentation(Base):
@@ -12,14 +10,14 @@ class Augmentation(Base):
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
     name = Column(String(50), nullable=False)
     parameters = Column(JSON, nullable=False)
-    phase = Column(String(30), nullable=False) # train, inference
+    phase = Column(String(30), nullable=False)  # train, inference
 
     hyperparameter_id = Column(Integer, ForeignKey("hyperparameter.id"), nullable=False)
-    hyperparameter = relationship("Hyperparameter", back_populates="augmentations", lazy='joined')
+    hyperparameter = relationship("Hyperparameter", back_populates="augmentations", lazy="joined")
 
 
-class TrainTask(Base, TimestampMixin):
-    __tablename__ = "train_task"
+class TrainingTask(BaseModel):
+    __tablename__ = "training_task"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
     task_id = Column(String(36), index=True, unique=True, nullable=False, default=lambda: generate_uuid(entity="task"))
@@ -29,24 +27,29 @@ class TrainTask(Base, TimestampMixin):
     input_shapes = Column(JSON, nullable=False)
     status = Column(String(30), nullable=False)
     error_detail = Column(JSON, nullable=True)
-    is_deleted = Column(Boolean, nullable=False, default=False)
 
     # Relationships (1:1 Mapping)
-    dataset = relationship("Dataset", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy='joined')
-    hyperparameter = relationship("Hyperparameter", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy='joined')
-    environment = relationship("Environment", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy='joined')
-    performance = relationship("Performance", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy='joined')
+    dataset = relationship("Dataset", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy="joined")
+    hyperparameter = relationship(
+        "Hyperparameter", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy="joined"
+    )
+    environment = relationship(
+        "Environment", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy="joined"
+    )
+    performance = relationship(
+        "Performance", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy="joined"
+    )
 
-    # Relationship to TrainedModel
+    # Relationship to Model
+    model_id = Column(String(36), ForeignKey("model.model_id"), nullable=True)
     model = relationship(
-        "TrainedModel",
-        back_populates="train_task",
+        "Model",
         uselist=False,
-        lazy='joined',
+        lazy="joined",
     )
 
 
-class Dataset(Base, TimestampMixin):
+class Dataset(Base):
     __tablename__ = "dataset"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -57,12 +60,12 @@ class Dataset(Base, TimestampMixin):
     id_mapping = Column(JSON, nullable=True)
     palette = Column(JSON, nullable=True)
 
-    # Relationship to TrainTask
-    task_id = Column(String(36), ForeignKey("train_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
-    task = relationship("TrainTask", back_populates="dataset")
+    # Relationship to TrainingTask
+    task_id = Column(String(36), ForeignKey("training_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
+    task = relationship("TrainingTask", back_populates="dataset")
 
 
-class Hyperparameter(Base, TimestampMixin):
+class Hyperparameter(Base):
     __tablename__ = "hyperparameter"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -71,14 +74,16 @@ class Hyperparameter(Base, TimestampMixin):
     optimizer = Column(JSON, nullable=True)
     scheduler = Column(JSON, nullable=True)
 
-    augmentations = relationship("Augmentation", back_populates="hyperparameter", cascade="all, delete-orphan", lazy='joined')
+    augmentations = relationship(
+        "Augmentation", back_populates="hyperparameter", cascade="all, delete-orphan", lazy="joined"
+    )
 
-    # Relationship to TrainTask
-    task_id = Column(String(36), ForeignKey("train_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
-    task = relationship("TrainTask", back_populates="hyperparameter")
+    # Relationship to TrainingTask
+    task_id = Column(String(36), ForeignKey("training_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
+    task = relationship("TrainingTask", back_populates="hyperparameter")
 
 
-class Environment(Base, TimestampMixin):
+class Environment(Base):
     __tablename__ = "environment"
 
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
@@ -86,12 +91,12 @@ class Environment(Base, TimestampMixin):
     num_workers = Column(Integer, nullable=False)
     gpus = Column(String(30), nullable=False)  # GPUs (예: "1, 0")
 
-    # Relationship to TrainTask
-    task_id = Column(String(36), ForeignKey("train_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
-    task = relationship("TrainTask", back_populates="environment")
+    # Relationship to TrainingTask
+    task_id = Column(String(36), ForeignKey("training_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
+    task = relationship("TrainingTask", back_populates="environment")
 
 
-class Performance(Base, TimestampMixin):
+class Performance(Base):
     __tablename__ = "performance"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
@@ -110,5 +115,5 @@ class Performance(Base, TimestampMixin):
     status = Column(String(36), nullable=True)
 
     # Relationship to TrainTask
-    task_id = Column(String(36), ForeignKey("train_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
-    task = relationship("TrainTask", back_populates="performance")
+    task_id = Column(String(36), ForeignKey("training_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
+    task = relationship("TrainingTask", back_populates="performance")

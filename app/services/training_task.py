@@ -1,31 +1,28 @@
-from typing import Dict, List
 from pathlib import Path
+from typing import Dict, List
 
 from sqlalchemy.orm import Session
 
-from app.api.v1.schemas.task.train.hyperparameter import (
-    TrainerModel, 
-    OptimizerPayload, 
-    SchedulerPayload
-)
+from app.api.v1.schemas.task.train.hyperparameter import OptimizerPayload, SchedulerPayload, TrainerModel
 from app.api.v1.schemas.task.train.train_task import (
-    TrainingCreate, 
-    TrainingPayload, 
-    PretrainedModelPayload, 
-    TaskPayload, 
-    FrameworkPayload
+    FrameworkPayload,
+    PretrainedModelPayload,
+    TaskPayload,
+    TrainingCreate,
+    TrainingPayload,
 )
 from app.services.user import user_service
+from netspresso.enums.train import MODEL_DISPLAY_MAP, MODEL_GROUP_MAP
 from netspresso.trainer.augmentations.augmentation import Normalize, Resize, ToTensor
 from netspresso.trainer.models import get_all_available_models
-from netspresso.enums.train import MODEL_DISPLAY_MAP, MODEL_GROUP_MAP
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.optimizers.optimizers import get_supported_optimizers
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
 from netspresso.trainer.schedulers.schedulers import get_supported_schedulers
 from netspresso.trainer.trainer import Trainer
-from netspresso.utils.db.models.train import TrainTask
-from netspresso.utils.db.repositories.task import train_task_repository
+from netspresso.utils.db.models.training import TrainingTask
+from netspresso.utils.db.repositories.model import model_repository
+from netspresso.utils.db.repositories.training import training_task_repository
 
 
 class TrainTaskService:
@@ -38,8 +35,10 @@ class TrainTaskService:
                     name=model,
                     display_name=MODEL_DISPLAY_MAP.get(model),
                     group_name=MODEL_GROUP_MAP.get(model),
-                ) for model in models
-            ] for task, models in available_models.items()
+                )
+                for model in models
+            ]
+            for task, models in available_models.items()
         }
 
         return supported_models
@@ -47,19 +46,13 @@ class TrainTaskService:
     def get_supported_optimizers(self) -> List[OptimizerPayload]:
         """Get all supported optimizers."""
         supported_optimizers = get_supported_optimizers()
-        optimizers = [
-            OptimizerPayload(name=optimizer.get("name"))
-            for optimizer in supported_optimizers
-        ]
+        optimizers = [OptimizerPayload(name=optimizer.get("name")) for optimizer in supported_optimizers]
         return optimizers
 
     def get_supported_schedulers(self) -> List[SchedulerPayload]:
         """Get all supported schedulers."""
         supported_schedulers = get_supported_schedulers()
-        schedulers = [
-            SchedulerPayload(name=scheduler.get("name"))
-            for scheduler in supported_schedulers
-        ]
+        schedulers = [SchedulerPayload(name=scheduler.get("name")) for scheduler in supported_schedulers]
         return schedulers
 
     def _setup_trainer(self, trainer, training_in: TrainingCreate) -> Trainer:
@@ -75,10 +68,7 @@ class TrainTaskService:
         )
 
         img_size = training_in.input_shapes[0].dimension[0]
-        trainer.set_model_config(
-            model_name=training_in.pretrained_model,
-            img_size=img_size
-        )
+        trainer.set_model_config(model_name=training_in.pretrained_model, img_size=img_size)
 
         trainer.set_augmentation_config(
             train_transforms=[Resize(), ToTensor(), Normalize()],
@@ -89,9 +79,7 @@ class TrainTaskService:
             name=training_in.hyperparameter.optimizer,
             lr=training_in.hyperparameter.learning_rate,
         )
-        scheduler = SchedulerManager.get_scheduler(
-            name=training_in.hyperparameter.scheduler
-        )
+        scheduler = SchedulerManager.get_scheduler(name=training_in.hyperparameter.scheduler)
 
         trainer.set_training_config(
             epochs=training_in.hyperparameter.epochs,
@@ -102,7 +90,7 @@ class TrainTaskService:
 
         return trainer
 
-    def _convert_to_payload_format(self, training_task: TrainTask) -> TrainingPayload:
+    def _convert_to_payload_format(self, training_task: TrainingTask) -> TrainingPayload:
         """Convert training task to payload format."""
         # Set task information
         training_task.task = TaskPayload(name=training_task.task)
@@ -121,46 +109,46 @@ class TrainTaskService:
 
     def _generate_unique_model_name(self, db: Session, project_id: str, name: str, api_key: str) -> str:
         """Generate a unique model name by adding numbering if necessary.
-        
+
         Args:
+            db (Session): Database session
             project_id (str): Project ID to check existing models
-            base_name (str): Original model name
-            
+            name (str): Original model name
+            api_key (str): API key for authentication
+
         Returns:
             str: Unique model name with numbering if needed
         """
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
-        project = netspresso.get_project(project_id=project_id)
-        models_dir = Path(project.project_abs_path) / "trained_models"
-        
-        if not models_dir.exists():
+        # Get existing model names from the database for the same project
+        models = model_repository.get_all_by_project_id(
+            db=db,
+            project_id=project_id,
+        )
+
+        # Extract existing names from models and count occurrences of base name
+        base_name_count = sum(1 for model in models if model.type == "trained_models" and model.name.startswith(name))
+
+        # If no models with this name exist, return original name
+        if base_name_count == 0:
             return name
-            
-        existing_names = [d.name for d in models_dir.iterdir() if d.is_dir()]
-        
-        if name not in existing_names:
-            return name
-            
-        counter = 1
-        while f"{name} ({counter})" in existing_names:
-            counter += 1
-            
-        return f"{name} ({counter})"
+
+        # If models exist, return name with count
+        return f"{name} ({base_name_count})"
 
     def create_training_task(self, db: Session, training_in: TrainingCreate, api_key: str) -> TrainingPayload:
         """Create and execute a new training task."""
         netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
         trainer = netspresso.trainer(task=training_in.task)
-        
+
         trainer = self._setup_trainer(trainer, training_in)
-        
+
         unique_model_name = self._generate_unique_model_name(
             db=db,
             project_id=training_in.project_id,
             name=training_in.name,
             api_key=api_key,
         )
-        
+
         training_task = trainer.train(
             gpus=training_in.environment.gpus,
             model_name=unique_model_name,
@@ -171,10 +159,16 @@ class TrainTaskService:
 
     def get_training_task(self, db: Session, task_id: str, api_key: str) -> TrainingPayload:
         """Get training task by task ID."""
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
-        training_task = train_task_repository.get_by_task_id(db=db, task_id=task_id)
+        # netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        training_task = training_task_repository.get_by_task_id(db=db, task_id=task_id)
 
         return self._convert_to_payload_format(training_task)
 
+    def delete_training_task_by_model_id(self, db: Session, model_id: str) -> TrainingPayload:
+        """Delete training task by model ID."""
+        training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
+        training_task_repository.soft_delete(db=db, model=training_task)
+
+        return self._convert_to_payload_format(training_task)
 
 train_task_service = TrainTaskService()

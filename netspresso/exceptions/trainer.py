@@ -35,6 +35,7 @@ class NotSetModelException(PyNPException):
             message=message,
         )
 
+
 class TaskOrYamlPathException(PyNPException):
     def __init__(self):
         message = "Either 'task' or 'yaml_path' must be provided, but not both."
@@ -61,56 +62,52 @@ class RetrainingFunctionException(PyNPException):
     def __init__(self):
         message = "This function is intended for retraining. Please use 'set_model_config' for model setup."
         super().__init__(
-                data=AdditionalData(origin="pynp"),
-                error_code="",
-                name=self.__class__.__name__,
-                message=message,
-            )
+            data=AdditionalData(origin="pynp"),
+            error_code="",
+            name=self.__class__.__name__,
+            message=message,
+        )
 
 
 class FileNotFoundErrorException(PyNPException):
     def __init__(self, relative_path: str):
         message = f"The required file '{relative_path}' does not exist. Please check and make sure it is in the correct location."
         super().__init__(
-                data=AdditionalData(origin="pynp"),
-                error_code="",
-                name=self.__class__.__name__,
-                message=message,
-            )
+            data=AdditionalData(origin="pynp"),
+            error_code="",
+            name=self.__class__.__name__,
+            message=message,
+        )
 
 
 class DirectoryNotFoundException(PyNPException):
     def __init__(self, relative_path: str):
         message = f"The required directory '{relative_path}' does not exist. Please check and make sure it is in the correct location."
         super().__init__(
-                data=AdditionalData(origin="pynp"),
-                error_code="",
-                name=self.__class__.__name__,
-                message=message,
-            )
+            data=AdditionalData(origin="pynp"),
+            error_code="",
+            name=self.__class__.__name__,
+            message=message,
+        )
 
 
 class BaseDirectoryNotFoundException(PyNPException):
     def __init__(self, base_path: str):
         message = f"The directory '{base_path}' does not exist."
         super().__init__(
-                data=AdditionalData(origin="pynp"),
-                error_code="",
-                name=self.__class__.__name__,
-                message=message,
-            )
+            data=AdditionalData(origin="pynp"),
+            error_code="",
+            name=self.__class__.__name__,
+            message=message,
+        )
 
 
 class FailedTrainingException(PyNPException):
     def __init__(self, error_log: str):
         message = "An error occurred during the training process."
         super().__init__(
-                data=AdditionalData(
-                    origin="pynp",
-                    error_log=error_log
-                ),
-                error_code="",
-                name=self.__class__.__name__,
-                message=message,
-            )
-
+            data=AdditionalData(origin="pynp", error_log=error_log),
+            error_code="",
+            name=self.__class__.__name__,
+            message=message,
+        )

@@ -101,9 +101,7 @@ class CompressorV2(NetsPressoBase):
 
         # TODO: Will be removed when we support DLC in the future
         available_options = [
-            available_option
-            for available_option in available_options
-            if available_option.framework != "dlc"
+            available_option for available_option in available_options if available_option.framework != "dlc"
         ]
 
         return available_options
@@ -135,7 +133,7 @@ class CompressorV2(NetsPressoBase):
         metadata: CompressorMetadata,
         model_info: ModelBase,
         compression_info: ResponseCompression,
-        output_dir: str
+        output_dir: str,
     ):
         default_model_path = FileHandler.get_default_model_path(folder_path=output_dir)
         extension = FileHandler.get_extension(framework=model_info.detail.framework)
@@ -381,7 +379,7 @@ class CompressorV2(NetsPressoBase):
             create_compression_response = compressor_client_v2.create_compression(
                 request_data=create_compression_request,
                 access_token=self.token_handler.tokens.access_token,
-                verify_ssl=self.token_handler.verify_ssl
+                verify_ssl=self.token_handler.verify_ssl,
             )
 
             for available_layers in compression.available_layers:
@@ -399,7 +397,7 @@ class CompressorV2(NetsPressoBase):
                 compression_id=create_compression_response.data.compression_id,
                 request_data=update_compression_request,
                 access_token=self.token_handler.tokens.access_token,
-                verify_ssl=self.token_handler.verify_ssl
+                verify_ssl=self.token_handler.verify_ssl,
             )
             compression_info = update_compression_response.data
             model_info = self.get_model(model_id=compression.input_model_id)
@@ -476,7 +474,7 @@ class CompressorV2(NetsPressoBase):
             create_compression_response = compressor_client_v2.create_compression(
                 request_data=create_compression_request,
                 access_token=self.token_handler.tokens.access_token,
-                verify_ssl=self.token_handler.verify_ssl
+                verify_ssl=self.token_handler.verify_ssl,
             )
 
             if dataset_path and compression_method in [CompressionMethod.PR_NN, CompressionMethod.PR_SNP]:
@@ -504,14 +502,16 @@ class CompressorV2(NetsPressoBase):
                 compression_id=create_compression_response.data.compression_id,
                 request_data=update_compression_request,
                 access_token=self.token_handler.tokens.access_token,
-                verify_ssl=self.token_handler.verify_ssl
+                verify_ssl=self.token_handler.verify_ssl,
             )
             compression_info = update_compression_response.data
             metadata = self.finalize_compression_process(metadata, model_info, compression_info, output_dir)
 
             self.print_remaining_credit(service_task=ServiceTask.ADVANCED_COMPRESSION)
 
-            logger.info(f"Recommendation compression successfully. Compressed Model ID: {compression_info.input_model_id}")
+            logger.info(
+                f"Recommendation compression successfully. Compressed Model ID: {compression_info.input_model_id}"
+            )
 
         except Exception as e:
             metadata = self.handle_error(metadata, ServiceTask.ADVANCED_COMPRESSION, e.args[0])

@@ -1,12 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, Union
 
-from netspresso.enums import (
-    QuantizationMode,
-    QuantizationPrecision,
-    SimilarityMetric,
-    TaskType,
-)
+from netspresso.enums import QuantizationMode, QuantizationPrecision, SimilarityMetric, TaskType
 from netspresso.metadata.common import BaseMetadata, ModelInfo
 
 
