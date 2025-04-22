@@ -1,3 +1,6 @@
+import json
+import random
+import shutil
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -27,6 +30,7 @@ from netspresso.exceptions.trainer import (
 from netspresso.metadata.common import InputShape
 from netspresso.trainer.augmentations import AUGMENTATION_CONFIG_TYPE, AugmentationConfig, Transform
 from netspresso.trainer.data import DATA_CONFIG_TYPE, ImageLabelPathConfig, PathConfig
+from netspresso.trainer.dataforge.dataforget import Split, dataforge
 from netspresso.trainer.models import (
     CLASSIFICATION_MODELS,
     DETECTION_MODELS,
@@ -814,3 +818,160 @@ class Trainer(NetsPressoBase):
             logger.info(f"Found ONNX file: {onnx_file.name}")
 
         return pt_file, onnx_file
+
+    def download_dataset_from_storage(self, dataset_uuid: str, output_dir: str = "./datasets", valid_split: float = 0.2, random_seed: int = 0) -> str:
+        """
+        Download dataset from DataForge and set up dataset configuration for training
+
+        Args:
+            dataset_uuid: The UUID of the dataset to download
+            output_dir: Directory to save downloaded files
+            valid_split: Ratio of validation data to split from train data (0.0-1.0)
+            random_seed: Random seed for reproducible splitting
+
+        Returns:
+            str: Path to the configured dataset
+        """
+        try:
+            # Create base output directory
+            dataset_dir = Path(output_dir) / dataset_uuid
+            dataset_dir.mkdir(parents=True, exist_ok=True)
+
+            logger.info(f"Downloading dataset with UUID: {dataset_uuid}")
+
+            # Get the latest dataset version
+            try:
+                dataset_version = dataforge.get_latest_dataset_version(dataset_uuid=dataset_uuid, split=Split.TRAIN)
+                if not dataset_version or not dataset_version.data:
+                    logger.error(f"Could not get dataset info for UUID: {dataset_uuid}")
+                    return ""
+            except Exception as e:
+                logger.error(f"Error getting dataset version: {str(e)}")
+                return ""
+
+            # Create temporary directory for downloads
+            temp_dir = dataset_dir / "temp_download"
+            temp_dir.mkdir(parents=True, exist_ok=True)
+
+            # Download train data
+            split = Split.TRAIN
+            logger.info(f"Downloading {split} split data")
+
+            try:
+                # Download data for this split
+                result = dataforge.download_dataset(dataset_version=dataset_version, output_dir=str(temp_dir))
+
+                if not result:
+                    logger.error(f"Failed to download {split} split")
+                    return ""
+
+                logger.success(f"Successfully downloaded {split} split")
+            except Exception as e:
+                logger.error(f"Error downloading dataset: {str(e)}")
+                return ""
+
+            # Prepare directory structure for trainer
+            # The trainer expects:
+            # - images/train/ and images/valid/ for images
+            # - labels/train/ and labels/valid/ for labels
+            images_dir = dataset_dir / "images"
+            labels_dir = dataset_dir / "labels"
+
+            # Create train/valid directories
+            train_images_dir = images_dir / "train"
+            train_labels_dir = labels_dir / "train"
+            valid_images_dir = images_dir / "valid"
+            valid_labels_dir = labels_dir / "valid"
+
+            for dir_path in [train_images_dir, train_labels_dir, valid_images_dir, valid_labels_dir]:
+                dir_path.mkdir(parents=True, exist_ok=True)
+
+            # Save id_mapping
+            try:
+                id_mapping = dataset_version.data.dataset_metadata.id_mapping
+                with open(dataset_dir / "id_mapping.json", "w") as f:
+                    json.dump(id_mapping, f)
+                logger.info(f"Saved id_mapping.json with {len(id_mapping)} classes")
+            except Exception as e:
+                logger.warning(f"Error saving id_mapping.json: {str(e)}")
+                # Create a default mapping if necessary
+                with open(dataset_dir / "id_mapping.json", "w") as f:
+                    json.dump({"0": "background", "1": "object"}, f)
+
+            # Get source file paths
+            source_images_dir = temp_dir / dataset_uuid / "images"
+            source_annotations_dir = temp_dir / dataset_uuid / "annotations"
+
+            if not source_images_dir.exists() or not source_annotations_dir.exists():
+                logger.error("Required source directories not found after download")
+                return ""
+
+            # Get list of all images and corresponding annotations
+            image_files = [f for f in source_images_dir.iterdir() if f.is_file()]
+
+            if not image_files:
+                logger.error("No image files found in downloaded dataset")
+                return ""
+
+            logger.info(f"Found {len(image_files)} image files")
+
+            # Get corresponding annotation files (maintain image-annotation pairing)
+            file_pairs = []
+            for img_file in image_files:
+                # Find matching annotation file (assuming same name, different extension)
+                ann_candidates = list(source_annotations_dir.glob(f"{img_file.stem}.*"))
+                if ann_candidates:
+                    file_pairs.append((img_file, ann_candidates[0]))
+                else:
+                    logger.warning(f"No matching annotation found for {img_file.name}")
+
+            logger.info(f"Found {len(file_pairs)} valid image-annotation pairs")
+
+            # Randomize and split the dataset
+            random.seed(random_seed)
+            random.shuffle(file_pairs)
+
+            # Calculate split point
+            valid_count = max(1, int(len(file_pairs) * valid_split))
+            valid_pairs = file_pairs[:valid_count]
+            train_pairs = file_pairs[valid_count:]
+
+            logger.info(f"Splitting into {len(train_pairs)} training and {len(valid_pairs)} validation samples")
+
+            # Copy training files
+            for img_file, ann_file in train_pairs:
+                try:
+                    shutil.copy2(img_file, train_images_dir / img_file.name)
+                    shutil.copy2(ann_file, train_labels_dir / ann_file.name)
+                except Exception as e:
+                    logger.warning(f"Error copying training file {img_file.name}: {str(e)}")
+
+            # Copy validation files
+            for img_file, ann_file in valid_pairs:
+                try:
+                    shutil.copy2(img_file, valid_images_dir / img_file.name)
+                    shutil.copy2(ann_file, valid_labels_dir / ann_file.name)
+                except Exception as e:
+                    logger.warning(f"Error copying validation file {img_file.name}: {str(e)}")
+
+            # Set up dataset configuration
+            try:
+                self.set_dataset(dataset_dir.as_posix())
+            except Exception as e:
+                logger.error(f"Error configuring dataset: {str(e)}")
+                return ""
+
+            # Clean up temporary files
+            try:
+                logger.info("Cleaning up temporary files")
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            except Exception as e:
+                logger.warning(f"Error cleaning up temporary files: {str(e)}")
+
+            logger.success(f"Dataset downloaded, split and configured at: {dataset_dir}")
+            logger.info(f"Train samples: {len(train_pairs)}, Validation samples: {len(valid_pairs)}")
+            return dataset_dir.as_posix()
+
+        except Exception as e:
+            logger.exception(f"Unexpected error in download_dataset_from_storage: {str(e)}")
+            return ""
