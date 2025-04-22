@@ -1,5 +1,6 @@
 import csv
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -13,6 +14,11 @@ from netspresso.clients.dataforge.schemas.response_body import (
     DatasetVersionsResponse,
 )
 from netspresso.clients.dataforge.storage import S3Provider
+
+
+class Split(str, Enum):
+    TRAIN = "train"
+    TEST = "test"
 
 
 class DataForge:
@@ -188,37 +194,26 @@ class DataForge:
 
         return data_success, annotation_success
 
-    def download_dataset(self, dataset_uuid: str, split: str, output_dir: str, latest: bool = True) -> bool:
+    def download_dataset(self, dataset_version: DatasetVersionResponse, output_dir: str) -> bool:
         """
         Download a dataset based on CSV information
 
         Args:
-            dataset_uuid: Dataset UUID
-            split: Dataset split (train, val, test, etc.)
+            dataset_version: Dataset version
             output_dir: Directory to save downloaded files
-            latest: Whether to use the latest version (currently only True is supported)
 
         Returns:
             bool: Whether the download was successful
         """
         try:
-            # Currently only latest=True is supported
-            if not latest:
-                logger.warning("Currently only the latest version download is supported")
-                return False
+            dataset_version_data = dataset_version.data
 
             # Create dataset directory path
-            dataset_dir = Path(output_dir) / dataset_uuid
+            dataset_dir = Path(output_dir) / dataset_version_data.dataset_uuid
             dataset_dir.mkdir(parents=True, exist_ok=True)
 
-            # Get the latest dataset version info
-            dataset_version = self.get_latest_dataset_version(dataset_uuid, split)
-            if not dataset_version or not dataset_version.data:
-                logger.error(f"Could not get latest dataset info: {dataset_uuid}, {split}")
-                return False
-
             # Extract CSV path from metadata
-            csv_path = dataset_version.data.dataset_metadata.csv_s3_path
+            csv_path = dataset_version_data.dataset_metadata.csv_s3_path
 
             # Download CSV file
             if not self._download_csv_file(csv_path, dataset_dir):
@@ -273,3 +268,6 @@ class DataForge:
         except Exception as e:
             logger.exception(f"Error during dataset download: {e}")
             return False
+
+
+dataforge = DataForge()
