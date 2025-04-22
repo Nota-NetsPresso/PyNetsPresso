@@ -822,6 +822,7 @@ class Trainer(NetsPressoBase):
     def download_dataset_from_storage(self, dataset_uuid: str, output_dir: str = "./datasets", valid_split: float = 0.2, random_seed: int = 0) -> str:
         """
         Download dataset from DataForge and set up dataset configuration for training
+        If the dataset is already downloaded, it will use the existing files.
 
         Args:
             dataset_uuid: The UUID of the dataset to download
@@ -835,8 +836,29 @@ class Trainer(NetsPressoBase):
         try:
             # Create base output directory
             dataset_dir = Path(output_dir) / dataset_uuid
-            dataset_dir.mkdir(parents=True, exist_ok=True)
 
+            # Check if dataset already exists
+            if dataset_dir.exists() and (dataset_dir / "id_mapping.json").exists() and \
+               (dataset_dir / "images" / "train").exists() and (dataset_dir / "labels" / "train").exists() and \
+               (dataset_dir / "images" / "valid").exists() and (dataset_dir / "labels" / "valid").exists():
+                logger.info(f"Dataset already exists at {dataset_dir}, using existing files")
+
+                # Count existing files for logging
+                train_images = list((dataset_dir / "images" / "train").glob("*"))
+                valid_images = list((dataset_dir / "images" / "valid").glob("*"))
+                logger.info(f"Found {len(train_images)} training and {len(valid_images)} validation samples")
+
+                # Set up dataset configuration using existing data
+                try:
+                    self.set_dataset(dataset_dir.as_posix())
+                    logger.success(f"Dataset configured successfully from existing files at: {dataset_dir}")
+                    return dataset_dir.as_posix()
+                except Exception as e:
+                    logger.error(f"Error configuring existing dataset: {str(e)}")
+                    return ""
+
+            # Dataset doesn't exist or is incomplete, proceed with download
+            dataset_dir.mkdir(parents=True, exist_ok=True)
             logger.info(f"Downloading dataset with UUID: {dataset_uuid}")
 
             # Get the latest dataset version
