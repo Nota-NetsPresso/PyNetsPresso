@@ -29,6 +29,10 @@ class Config:
             self.HOST = config_parser[ServiceName.TAO][EndPointProperty.HOST]
             self.PORT = int(config_parser[ServiceName.TAO][EndPointProperty.PORT])
             self.URI_PREFIX = config_parser[f"TAO.{self.MODULE}"][EndPointProperty.URI_PREFIX]
+        elif self.SERVICE_NAME == ServiceName.DATAFORGE:
+            self.HOST = os.environ.get("DATAFORGE_HOST")
+            self.PORT = int(os.environ.get("DATAFORGE_PORT"))
+            self.URI_PREFIX = os.environ.get("DATAFORGE_URI_PREFIX")
         else:
             self.HOST = os.environ.get("HOST", config_parser[ServiceName.NP][EndPointProperty.HOST])
             self.PORT = int(os.environ.get("PORT", config_parser[ServiceName.NP][EndPointProperty.PORT]))

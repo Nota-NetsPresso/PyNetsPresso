@@ -1,137 +1,61 @@
 import os
-from enum import Enum
-from typing import Any, Dict, Final, Optional
-from urllib.parse import urljoin
 
-import requests
-
+from netspresso.clients.config import Config, ServiceModule, ServiceName
 from netspresso.clients.dataforge.schemas.response_body import (
-    DatasetPayload,
     DatasetResponse,
-    DatasetsPayload,
     DatasetsResponse,
+    DatasetVersionResponse,
+    DatasetVersionsResponse,
 )
-
-BASE_URL: Final[str] = os.getenv("DATAFORGE_BASE_URL")
-
-# API 버전을 상수로 관리
-API_VERSION: Final[str] = "v1"
-BASE_PATH: Final[str] = f"/api/{API_VERSION}"
-
-class DataForgeEndpoint:
-    """Class for managing DataForge API endpoints"""
-
-    @staticmethod
-    def get_path(endpoint_value: str, **kwargs) -> str:
-        """
-        Returns the endpoint path with actual values filled in.
-
-        Args:
-            endpoint_value (str): The endpoint path template
-            **kwargs: Parameters to fill in the path (project_id, dataset_uuid, etc.)
-
-        Returns:
-            str: The endpoint path with actual values
-        """
-        return endpoint_value.format(**kwargs)
-
-    class Dataset(str, Enum):
-        """
-        API endpoints for dataset operations
-
-        Attributes:
-            GET: Endpoint for retrieving details of a specific dataset
-            LIST: Endpoint for retrieving all datasets in a project
-        """
-        GET = f"{BASE_PATH}/dataset/{{project_id}}/{{dataset_uuid}}"
-        LIST = f"{BASE_PATH}/dataset/{{project_id}}"
+from netspresso.clients.utils.requester import Requester
 
 
-class HTTPMethod(str, Enum):
-    """HTTP Methods"""
-    GET = "GET"
-    POST = "POST"
-    PATCH = "PATCH"
-    DELETE = "DELETE"
+def get_headers(api_key=None, json_type=False):
+    headers = {}
+    if api_key:
+        headers["api_key"] = f"{api_key}"
+    if json_type:
+        headers["Content-Type"] = "application/json"
+    return headers
 
 
 class DataForgeClient:
-    """
-    Client class for communicating with DataForge API
+    def __init__(self):
+        self.config = Config(ServiceName.DATAFORGE, ServiceModule.DATAFORGE)
+        self.host = self.config.HOST
+        self.port = self.config.PORT
+        self.prefix = self.config.URI_PREFIX
+        self.url = f"{self.host}:{self.port}{self.prefix}"
+        self.api_key = os.getenv("DATAFORGE_API_KEY")
 
-    This class handles all requests to the DataForge API endpoints.
-    """
+    def get_datasets(self, project_id: str) -> DatasetsResponse:
+        url = f"{self.url}/dataset/{project_id}"
 
-    def __init__(self, base_url: str = BASE_URL):
-        """
-        Initialize the DataForge client.
+        # TODO: Remove verify=False in production. This is only for testing purposes.
+        response = Requester.get(url=url, headers=get_headers(self.api_key), verify=False)
 
-        Args:
-            base_url (str): Base URL for the DataForge API
-        """
-        self.base_url = base_url.rstrip('/')
+        return DatasetsResponse(**response.json())
 
-    def _make_request(
-        self,
-        method: HTTPMethod,
-        endpoint: str,
-        params: Optional[Dict[str, Any]] = None,
-        json_data: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
-        """
-        Make HTTP request to the API.
+    def get_dataset(self, project_id: str, dataset_uuid: str) -> DatasetResponse:
+        url = f"{self.url}/dataset/{project_id}/{dataset_uuid}"
 
-        Args:
-            method (HTTPMethod): HTTP method to use for the request
-            endpoint (str): API endpoint path
-            params (Optional[Dict[str, Any]]): Query parameters for the request
-            json_data (Optional[Dict[str, Any]]): JSON data to send in request body
+        # TODO: Remove verify=False in production. This is only for testing purposes.
+        response = Requester.get(url=url, headers=get_headers(self.api_key), verify=False)
 
-        Returns:
-            Dict[str, Any]: Raw JSON response from the API
-        """
-        url = urljoin(self.base_url, endpoint)
-        response = requests.request(
-            method=method.value,
-            url=url,
-            params=params,
-            json=json_data
-        )
-        response.raise_for_status()
-        return response.json()
+        return DatasetResponse(**response.json())
 
-    def get_dataset(self, project_id: str, dataset_uuid: str) -> DatasetPayload:
-        """
-        Retrieve information about a specific dataset.
+    def get_dataset_versions(self, dataset_uuid: str, split: str) -> DatasetVersionsResponse:
+        url = f"{self.url}/dataset/version/{dataset_uuid}/{split}/all"
 
-        Args:
-            project_id (str): Project ID
-            dataset_uuid (str): Dataset UUID
+        # TODO: Remove verify=False in production. This is only for testing purposes.
+        response = Requester.get(url=url, headers=get_headers(self.api_key), verify=False)
 
-        Returns:
-            DatasetPayload: Validated dataset information extracted from response
-        """
-        endpoint = DataForgeEndpoint.get_path(
-            DataForgeEndpoint.Dataset.GET,
-            project_id=project_id,
-            dataset_uuid=dataset_uuid
-        )
-        response = self._make_request(HTTPMethod.GET, endpoint)
-        return DatasetResponse(**response).data
+        return DatasetVersionsResponse(**response.json())
 
-    def get_datasets(self, project_id: str) -> DatasetsPayload:
-        """
-        Retrieve all datasets for a project.
+    def get_latest_dataset_version(self, dataset_uuid: str, split: str) -> DatasetVersionResponse:
+        url = f"{self.url}/dataset/version/{dataset_uuid}/{split}/latest"
 
-        Args:
-            project_id (str): Project ID
+        # TODO: Remove verify=False in production. This is only for testing purposes.
+        response = Requester.get(url=url, headers=get_headers(self.api_key), verify=False)
 
-        Returns:
-            DatasetsPayload: Validated list of datasets extracted from response
-        """
-        endpoint = DataForgeEndpoint.get_path(
-            DataForgeEndpoint.Dataset.LIST,
-            project_id=project_id
-        )
-        response = self._make_request(HTTPMethod.GET, endpoint)
-        return DatasetsResponse(**response).data
+        return DatasetVersionResponse(**response.json())
