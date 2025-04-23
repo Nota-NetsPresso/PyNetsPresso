@@ -1,6 +1,3 @@
-import json
-import random
-import shutil
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -30,7 +27,6 @@ from netspresso.exceptions.trainer import (
 from netspresso.metadata.common import InputShape
 from netspresso.trainer.augmentations import AUGMENTATION_CONFIG_TYPE, AugmentationConfig, Transform
 from netspresso.trainer.data import DATA_CONFIG_TYPE, ImageLabelPathConfig, PathConfig
-from netspresso.trainer.dataforge.dataforget import Split, dataforge
 from netspresso.trainer.models import (
     CLASSIFICATION_MODELS,
     DETECTION_MODELS,
@@ -40,6 +36,8 @@ from netspresso.trainer.models import (
 )
 from netspresso.trainer.optimizers.optimizers import get_supported_optimizers
 from netspresso.trainer.schedulers.schedulers import get_supported_schedulers
+from netspresso.trainer.storage import DatasetManager
+from netspresso.trainer.storage.dataforge import Split
 from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.trainer.training import TRAINING_CONFIG_TYPE, EnvironmentConfig, LoggingConfig, ScheduleConfig
 from netspresso.utils import FileHandler
@@ -61,6 +59,10 @@ BUCKET_NAME = "model"
 
 
 class Trainer(NetsPressoBase):
+    """
+    NetsPresso Trainer Class: Base class for training models.
+    """
+
     def __init__(
         self, token_handler: TokenHandler, task: Optional[Union[str, Task]] = None, yaml_path: Optional[str] = None
     ) -> None:
@@ -70,17 +72,41 @@ class Trainer(NetsPressoBase):
             task (Union[str, Task]], optional): The type of task (classification, detection, segmentation). Either 'task' or 'yaml_path' must be provided, but not both.
             yaml_path (str, optional): Path to the YAML configuration file. Either 'task' or 'yaml_path' must be provided, but not both.
         """
+        super().__init__(token_handler=token_handler)
 
         self.token_handler = token_handler
-        self.deprecated_names = {
-            "efficientformer": "efficientformer_l1",
-            "mobilenetv3_small": "mobilenet_v3_small",
-            "mobilenetv3_large": "mobilenet_v3_large",
-            "vit_tiny": "vit_tiny",
-            "mixnet_small": "mixnet_s",
-            "mixnet_medium": "mixnet_m",
-            "mixnet_large": "mixnet_l",
-            "pidnet": "pidnet_s",
+        self.detector = None
+        self.train_dataloader = None
+        self.valid_dataloader = None
+        self.class_name_to_idx = None
+        self.idx_to_class_name = None
+        self.save_dir = None
+        self.transforms = None
+        self.optimizer = None
+        self.scheduler = None
+        self.train_datasets = None
+        self.valid_datasets = None
+        self.training_tasks = {}
+        self.global_epoch = -1
+        self.is_interrupted = False
+
+        # 특성 추출기/백본 관리
+        self.feature_extractor = None
+        self.backbone = None
+        self.backbone_weights = None
+
+        # 설정 관리
+        self.configs = {
+            "optimizer": {},
+            "scheduler": {},
+            "detector": {},
+            "detector.backbone": {},
+            "augmentations": {},
+            "save_dir": "./results",
+            "checkpoint": None,
+            "task": None,
+            "train": {},
+            "eval": {},
         }
 
         if (task is not None) == (yaml_path is not None):
@@ -90,6 +116,9 @@ class Trainer(NetsPressoBase):
             self._initialize_from_task(task)
         elif yaml_path is not None:
             self._initialize_from_yaml(yaml_path)
+
+        # 데이터셋 관리를 위한 DatasetManager 인스턴스 생성
+        self.dataset_manager = DatasetManager(token_handler=token_handler)
 
     def _initialize_from_task(self, task: Union[str, Task]) -> None:
         """Initialize the Trainer object based on the provided task.
@@ -752,7 +781,7 @@ class Trainer(NetsPressoBase):
                         storage_handler.upload_file_to_s3(
                             bucket_name=BUCKET_NAME,
                             local_path=str(pt_file),
-                            object_path=f"{model.object_path}/model.pt"
+                            object_path=f"{model.object_path}/model.pt",
                         )
                         logger.info(f"Uploaded PT file to Zenko: {model.object_path}/model.pt")
 
@@ -761,7 +790,7 @@ class Trainer(NetsPressoBase):
                         storage_handler.upload_file_to_s3(
                             bucket_name=BUCKET_NAME,
                             local_path=str(onnx_file),
-                            object_path=f"{model.object_path}/model.onnx"
+                            object_path=f"{model.object_path}/model.onnx",
                         )
                         logger.info(f"Uploaded ONNX file to Zenko: {model.object_path}/model.onnx")
 
@@ -806,8 +835,8 @@ class Trainer(NetsPressoBase):
             logger.error(f"Folder not found: {folder_path}")
             return None, None
 
-        pt_files = list(folder_path.glob('*.pt'))
-        onnx_files = list(folder_path.glob('*.onnx'))
+        pt_files = list(folder_path.glob("*.pt"))
+        onnx_files = list(folder_path.glob("*.onnx"))
 
         pt_file = pt_files[0] if pt_files else None
         onnx_file = onnx_files[0] if onnx_files else None
@@ -819,9 +848,18 @@ class Trainer(NetsPressoBase):
 
         return pt_file, onnx_file
 
-    def download_dataset_from_storage(self, dataset_uuid: str, output_dir: str = "./datasets", valid_split: float = 0.2, random_seed: int = 0, max_retries: int = 3, retry_delay: int = 5) -> str:
+    def download_dataset_from_storage(
+        self,
+        dataset_uuid: str,
+        output_dir: str = "./datasets",
+        valid_split: float = 0.2,
+        random_seed: int = 0,
+        max_retries: int = 3,
+        retry_delay: int = 5,
+        verbose: bool = False,
+    ) -> str:
         """
-        Download dataset from DataForge and set up dataset configuration for training
+        Download dataset from DataForge and set up dataset configuration for training.
         If the dataset is already downloaded, it will use the existing files.
 
         Args:
@@ -831,226 +869,59 @@ class Trainer(NetsPressoBase):
             random_seed: Random seed for reproducible splitting
             max_retries: Maximum number of retry attempts for network/storage errors
             retry_delay: Delay in seconds between retry attempts (will increase with each retry)
+            verbose: Whether to log detailed progress for each file (default: False)
 
         Returns:
             str: Path to the configured dataset
         """
-        try:
-            # Create base output directory
-            dataset_dir = Path(output_dir) / dataset_uuid
+        dataset_path = self.dataset_manager.download_dataset_from_storage(
+            dataset_uuid=dataset_uuid,
+            output_dir=output_dir,
+            valid_split=valid_split,
+            random_seed=random_seed,
+            max_retries=max_retries,
+            retry_delay=retry_delay,
+            verbose=verbose,
+        )
 
-            # Check if dataset already exists
-            if dataset_dir.exists() and (dataset_dir / "id_mapping.json").exists() and \
-               (dataset_dir / "images" / "train").exists() and (dataset_dir / "labels" / "train").exists() and \
-               (dataset_dir / "images" / "valid").exists() and (dataset_dir / "labels" / "valid").exists():
-                logger.info(f"Dataset already exists at {dataset_dir}, using existing files")
-
-                # Count existing files for logging
-                train_images = list((dataset_dir / "images" / "train").glob("*"))
-                valid_images = list((dataset_dir / "images" / "valid").glob("*"))
-                logger.info(f"Found {len(train_images)} training and {len(valid_images)} validation samples")
-
-                # Set up dataset configuration using existing data
-                try:
-                    self.set_dataset(dataset_dir.as_posix())
-                    logger.success(f"Dataset configured successfully from existing files at: {dataset_dir}")
-                    return dataset_dir.as_posix()
-                except Exception as e:
-                    logger.error(f"Error configuring existing dataset: {str(e)}")
-                    return ""
-
-            # Dataset doesn't exist or is incomplete, proceed with download
-            dataset_dir.mkdir(parents=True, exist_ok=True)
-            logger.info(f"Downloading dataset with UUID: {dataset_uuid}")
-
-            # Get the latest dataset version with retry logic
-            dataset_version = None
-            permanent_error = False
-
-            for attempt in range(max_retries):
-                try:
-                    dataset_version = dataforge.get_latest_dataset_version(dataset_uuid=dataset_uuid, split=Split.TRAIN)
-                    if not dataset_version or not dataset_version.data:
-                        logger.error(f"Could not get dataset info for UUID: {dataset_uuid}")
-                        permanent_error = True
-                        break
-                    # Success, break the retry loop
-                    break
-                except FileNotFoundError as e:
-                    # Permanent error - don't retry
-                    logger.error(f"Dataset not found (UUID: {dataset_uuid}): {str(e)}")
-                    permanent_error = True
-                    break
-                except Exception as e:
-                    # Potentially temporary error - retry
-                    current_delay = retry_delay * (attempt + 1)
-                    if attempt < max_retries - 1:
-                        logger.warning(f"Error getting dataset version (attempt {attempt+1}/{max_retries}): {str(e)}")
-                        logger.info(f"Retrying in {current_delay} seconds...")
-                        import time
-                        time.sleep(current_delay)
-                    else:
-                        logger.error(f"Failed to get dataset version after {max_retries} attempts: {str(e)}")
-
-            if permanent_error or dataset_version is None:
-                return ""
-
-            # Create temporary directory for downloads
-            temp_dir = dataset_dir / "temp_download"
-            temp_dir.mkdir(parents=True, exist_ok=True)
-
-            # Download train data with retry logic
-            split = Split.TRAIN
-            logger.info(f"Downloading {split} split data")
-
-            download_success = False
-            permanent_download_error = False
-
-            for attempt in range(max_retries):
-                try:
-                    # Download data for this split
-                    result = dataforge.download_dataset(dataset_version=dataset_version, output_dir=str(temp_dir))
-
-                    if not result:
-                        logger.error(f"Failed to download {split} split")
-                        permanent_download_error = True
-                        break
-
-                    download_success = True
-                    logger.success(f"Successfully downloaded {split} split")
-                    break
-                except FileNotFoundError as e:
-                    # Permanent error - don't retry
-                    logger.error(f"Dataset files not found: {str(e)}")
-                    permanent_download_error = True
-                    break
-                except Exception as e:
-                    # Potentially temporary error - retry
-                    current_delay = retry_delay * (attempt + 1)
-                    if attempt < max_retries - 1:
-                        logger.warning(f"Error downloading dataset (attempt {attempt+1}/{max_retries}): {str(e)}")
-                        logger.info(f"Retrying in {current_delay} seconds...")
-                        import time
-                        time.sleep(current_delay)
-                    else:
-                        logger.error(f"Failed to download dataset after {max_retries} attempts: {str(e)}")
-
-            if permanent_download_error or not download_success:
-                return ""
-
-            # Prepare directory structure for trainer
-            # The trainer expects:
-            # - images/train/ and images/valid/ for images
-            # - labels/train/ and labels/valid/ for labels
-            images_dir = dataset_dir / "images"
-            labels_dir = dataset_dir / "labels"
-
-            # Create train/valid directories
-            train_images_dir = images_dir / "train"
-            train_labels_dir = labels_dir / "train"
-            valid_images_dir = images_dir / "valid"
-            valid_labels_dir = labels_dir / "valid"
-
-            for dir_path in [train_images_dir, train_labels_dir, valid_images_dir, valid_labels_dir]:
-                dir_path.mkdir(parents=True, exist_ok=True)
-
-            # Save id_mapping
+        if dataset_path:
+            # 데이터셋 설정
             try:
-                id_mapping = dataset_version.data.dataset_metadata.id_mapping
-                with open(dataset_dir / "id_mapping.json", "w") as f:
-                    json.dump(id_mapping, f)
-                logger.info(f"Saved id_mapping.json with {len(id_mapping)} classes")
-            except Exception as e:
-                logger.warning(f"Error saving id_mapping.json: {str(e)}")
-                # Create a default mapping if necessary
-                with open(dataset_dir / "id_mapping.json", "w") as f:
-                    json.dump({"0": "background", "1": "object"}, f)
-
-            # Get source file paths
-            source_images_dir = temp_dir / dataset_uuid / "images"
-            source_annotations_dir = temp_dir / dataset_uuid / "annotations"
-
-            if not source_images_dir.exists() or not source_annotations_dir.exists():
-                logger.error("Required source directories not found after download")
-                return ""
-
-            # Get list of all images and corresponding annotations
-            image_files = [f for f in source_images_dir.iterdir() if f.is_file()]
-
-            if not image_files:
-                logger.error("No image files found in downloaded dataset")
-                return ""
-
-            logger.info(f"Found {len(image_files)} image files")
-
-            # Get corresponding annotation files (maintain image-annotation pairing)
-            file_pairs = []
-            for img_file in image_files:
-                # Find matching annotation file (assuming same name, different extension)
-                ann_candidates = list(source_annotations_dir.glob(f"{img_file.stem}.*"))
-                if ann_candidates:
-                    file_pairs.append((img_file, ann_candidates[0]))
-                else:
-                    logger.warning(f"No matching annotation found for {img_file.name}")
-
-            logger.info(f"Found {len(file_pairs)} valid image-annotation pairs")
-
-            # Randomize and split the dataset
-            random.seed(random_seed)
-            random.shuffle(file_pairs)
-
-            # Calculate split point
-            valid_count = max(1, int(len(file_pairs) * valid_split))
-            valid_pairs = file_pairs[:valid_count]
-            train_pairs = file_pairs[valid_count:]
-
-            logger.info(f"Splitting into {len(train_pairs)} training and {len(valid_pairs)} validation samples")
-
-            # Copy files with better error handling
-            copy_success_count = 0
-            copy_error_count = 0
-
-            # Copy training files
-            for img_file, ann_file in train_pairs:
-                try:
-                    shutil.copy2(img_file, train_images_dir / img_file.name)
-                    shutil.copy2(ann_file, train_labels_dir / ann_file.name)
-                    copy_success_count += 1
-                except Exception as e:
-                    copy_error_count += 1
-                    logger.warning(f"Error copying training file {img_file.name}: {str(e)}")
-
-            # Copy validation files
-            for img_file, ann_file in valid_pairs:
-                try:
-                    shutil.copy2(img_file, valid_images_dir / img_file.name)
-                    shutil.copy2(ann_file, valid_labels_dir / ann_file.name)
-                    copy_success_count += 1
-                except Exception as e:
-                    copy_error_count += 1
-                    logger.warning(f"Error copying validation file {img_file.name}: {str(e)}")
-
-            if copy_error_count > 0:
-                logger.warning(f"Encountered {copy_error_count} errors while copying files (successfully copied {copy_success_count} files)")
-
-            # Set up dataset configuration
-            try:
-                self.set_dataset(dataset_dir.as_posix())
+                self.set_dataset(dataset_path)
+                return dataset_path
             except Exception as e:
                 logger.error(f"Error configuring dataset: {str(e)}")
                 return ""
+        return ""
 
-            # Clean up temporary files
-            try:
-                logger.info("Cleaning up temporary files")
-                shutil.rmtree(temp_dir, ignore_errors=True)
-            except Exception as e:
-                logger.warning(f"Error cleaning up temporary files: {str(e)}")
+    def download_dataset_for_evaluation(
+        self,
+        dataset_uuid: str,
+        output_dir: str = "./datasets",
+        split: str = Split.TEST,
+        max_retries: int = 3,
+        retry_delay: int = 5,
+        verbose: bool = False,
+    ) -> str:
+        """
+        Download dataset from DataForge for evaluation purposes
 
-            logger.success(f"Dataset downloaded, split and configured at: {dataset_dir}")
-            logger.info(f"Train samples: {len(train_pairs)}, Validation samples: {len(valid_pairs)}")
-            return dataset_dir.as_posix()
+        Args:
+            dataset_uuid: The UUID of the dataset to download
+            output_dir: Directory to save downloaded files
+            split: Dataset split to download (default: TEST)
+            max_retries: Maximum number of retry attempts for network/storage errors
+            retry_delay: Delay in seconds between retry attempts (will increase with each retry)
+            verbose: Whether to log detailed progress for each file (default: False)
 
-        except Exception as e:
-            logger.exception(f"Unexpected error in download_dataset_from_storage: {str(e)}")
-            return ""
+        Returns:
+            str: Path to the configured evaluation dataset
+        """
+        return self.dataset_manager.download_dataset_for_evaluation(
+            dataset_uuid=dataset_uuid,
+            output_dir=output_dir,
+            split=split,
+            max_retries=max_retries,
+            retry_delay=retry_delay,
+            verbose=verbose,
+        )
