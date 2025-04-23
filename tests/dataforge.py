@@ -5,7 +5,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from netspresso.trainer.dataforge.dataforget import DataForge
+from netspresso.trainer.storage.dataforge import DataForge
 
 
 def download_dataset_by_split(dataset_uuid: str, splits: list, output_dir: str):
