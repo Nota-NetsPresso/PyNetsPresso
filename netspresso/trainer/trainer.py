@@ -819,7 +819,7 @@ class Trainer(NetsPressoBase):
 
         return pt_file, onnx_file
 
-    def download_dataset_from_storage(self, dataset_uuid: str, output_dir: str = "./datasets", valid_split: float = 0.2, random_seed: int = 0) -> str:
+    def download_dataset_from_storage(self, dataset_uuid: str, output_dir: str = "./datasets", valid_split: float = 0.2, random_seed: int = 0, max_retries: int = 3, retry_delay: int = 5) -> str:
         """
         Download dataset from DataForge and set up dataset configuration for training
         If the dataset is already downloaded, it will use the existing files.
@@ -829,6 +829,8 @@ class Trainer(NetsPressoBase):
             output_dir: Directory to save downloaded files
             valid_split: Ratio of validation data to split from train data (0.0-1.0)
             random_seed: Random seed for reproducible splitting
+            max_retries: Maximum number of retry attempts for network/storage errors
+            retry_delay: Delay in seconds between retry attempts (will increase with each retry)
 
         Returns:
             str: Path to the configured dataset
@@ -861,35 +863,79 @@ class Trainer(NetsPressoBase):
             dataset_dir.mkdir(parents=True, exist_ok=True)
             logger.info(f"Downloading dataset with UUID: {dataset_uuid}")
 
-            # Get the latest dataset version
-            try:
-                dataset_version = dataforge.get_latest_dataset_version(dataset_uuid=dataset_uuid, split=Split.TRAIN)
-                if not dataset_version or not dataset_version.data:
-                    logger.error(f"Could not get dataset info for UUID: {dataset_uuid}")
-                    return ""
-            except Exception as e:
-                logger.error(f"Error getting dataset version: {str(e)}")
+            # Get the latest dataset version with retry logic
+            dataset_version = None
+            permanent_error = False
+
+            for attempt in range(max_retries):
+                try:
+                    dataset_version = dataforge.get_latest_dataset_version(dataset_uuid=dataset_uuid, split=Split.TRAIN)
+                    if not dataset_version or not dataset_version.data:
+                        logger.error(f"Could not get dataset info for UUID: {dataset_uuid}")
+                        permanent_error = True
+                        break
+                    # Success, break the retry loop
+                    break
+                except FileNotFoundError as e:
+                    # Permanent error - don't retry
+                    logger.error(f"Dataset not found (UUID: {dataset_uuid}): {str(e)}")
+                    permanent_error = True
+                    break
+                except Exception as e:
+                    # Potentially temporary error - retry
+                    current_delay = retry_delay * (attempt + 1)
+                    if attempt < max_retries - 1:
+                        logger.warning(f"Error getting dataset version (attempt {attempt+1}/{max_retries}): {str(e)}")
+                        logger.info(f"Retrying in {current_delay} seconds...")
+                        import time
+                        time.sleep(current_delay)
+                    else:
+                        logger.error(f"Failed to get dataset version after {max_retries} attempts: {str(e)}")
+
+            if permanent_error or dataset_version is None:
                 return ""
 
             # Create temporary directory for downloads
             temp_dir = dataset_dir / "temp_download"
             temp_dir.mkdir(parents=True, exist_ok=True)
 
-            # Download train data
+            # Download train data with retry logic
             split = Split.TRAIN
             logger.info(f"Downloading {split} split data")
 
-            try:
-                # Download data for this split
-                result = dataforge.download_dataset(dataset_version=dataset_version, output_dir=str(temp_dir))
+            download_success = False
+            permanent_download_error = False
 
-                if not result:
-                    logger.error(f"Failed to download {split} split")
-                    return ""
+            for attempt in range(max_retries):
+                try:
+                    # Download data for this split
+                    result = dataforge.download_dataset(dataset_version=dataset_version, output_dir=str(temp_dir))
 
-                logger.success(f"Successfully downloaded {split} split")
-            except Exception as e:
-                logger.error(f"Error downloading dataset: {str(e)}")
+                    if not result:
+                        logger.error(f"Failed to download {split} split")
+                        permanent_download_error = True
+                        break
+
+                    download_success = True
+                    logger.success(f"Successfully downloaded {split} split")
+                    break
+                except FileNotFoundError as e:
+                    # Permanent error - don't retry
+                    logger.error(f"Dataset files not found: {str(e)}")
+                    permanent_download_error = True
+                    break
+                except Exception as e:
+                    # Potentially temporary error - retry
+                    current_delay = retry_delay * (attempt + 1)
+                    if attempt < max_retries - 1:
+                        logger.warning(f"Error downloading dataset (attempt {attempt+1}/{max_retries}): {str(e)}")
+                        logger.info(f"Retrying in {current_delay} seconds...")
+                        import time
+                        time.sleep(current_delay)
+                    else:
+                        logger.error(f"Failed to download dataset after {max_retries} attempts: {str(e)}")
+
+            if permanent_download_error or not download_success:
                 return ""
 
             # Prepare directory structure for trainer
@@ -960,12 +1006,18 @@ class Trainer(NetsPressoBase):
 
             logger.info(f"Splitting into {len(train_pairs)} training and {len(valid_pairs)} validation samples")
 
+            # Copy files with better error handling
+            copy_success_count = 0
+            copy_error_count = 0
+
             # Copy training files
             for img_file, ann_file in train_pairs:
                 try:
                     shutil.copy2(img_file, train_images_dir / img_file.name)
                     shutil.copy2(ann_file, train_labels_dir / ann_file.name)
+                    copy_success_count += 1
                 except Exception as e:
+                    copy_error_count += 1
                     logger.warning(f"Error copying training file {img_file.name}: {str(e)}")
 
             # Copy validation files
@@ -973,8 +1025,13 @@ class Trainer(NetsPressoBase):
                 try:
                     shutil.copy2(img_file, valid_images_dir / img_file.name)
                     shutil.copy2(ann_file, valid_labels_dir / ann_file.name)
+                    copy_success_count += 1
                 except Exception as e:
+                    copy_error_count += 1
                     logger.warning(f"Error copying validation file {img_file.name}: {str(e)}")
+
+            if copy_error_count > 0:
+                logger.warning(f"Encountered {copy_error_count} errors while copying files (successfully copied {copy_success_count} files)")
 
             # Set up dataset configuration
             try:
