@@ -75,38 +75,15 @@ class Trainer(NetsPressoBase):
         super().__init__(token_handler=token_handler)
 
         self.token_handler = token_handler
-        self.detector = None
-        self.train_dataloader = None
-        self.valid_dataloader = None
-        self.class_name_to_idx = None
-        self.idx_to_class_name = None
-        self.save_dir = None
-        self.transforms = None
-        self.optimizer = None
-        self.scheduler = None
-        self.train_datasets = None
-        self.valid_datasets = None
-        self.training_tasks = {}
-        self.global_epoch = -1
-        self.is_interrupted = False
-
-        # 특성 추출기/백본 관리
-        self.feature_extractor = None
-        self.backbone = None
-        self.backbone_weights = None
-
-        # 설정 관리
-        self.configs = {
-            "optimizer": {},
-            "scheduler": {},
-            "detector": {},
-            "detector.backbone": {},
-            "augmentations": {},
-            "save_dir": "./results",
-            "checkpoint": None,
-            "task": None,
-            "train": {},
-            "eval": {},
+        self.deprecated_names = {
+            "efficientformer": "efficientformer_l1",
+            "mobilenetv3_small": "mobilenet_v3_small",
+            "mobilenetv3_large": "mobilenet_v3_large",
+            "vit_tiny": "vit_tiny",
+            "mixnet_small": "mixnet_s",
+            "mixnet_medium": "mixnet_m",
+            "mixnet_large": "mixnet_l",
+            "pidnet": "pidnet_s",
         }
 
         if (task is not None) == (yaml_path is not None):
@@ -117,7 +94,6 @@ class Trainer(NetsPressoBase):
         elif yaml_path is not None:
             self._initialize_from_yaml(yaml_path)
 
-        # 데이터셋 관리를 위한 DatasetManager 인스턴스 생성
         self.dataset_manager = DatasetManager(token_handler=token_handler)
 
     def _initialize_from_task(self, task: Union[str, Task]) -> None:
@@ -613,7 +589,7 @@ class Trainer(NetsPressoBase):
             model = model_repository.save(db=db, model=model)
             return model
 
-    def create_training_task(self, model_id) -> TrainingTask:
+    def create_training_task(self, model_id, task_id) -> TrainingTask:
         with get_db_session() as db:
             dataset = Dataset(
                 train_path="train",
@@ -650,17 +626,31 @@ class Trainer(NetsPressoBase):
                 num_workers=self.environment.num_workers,
                 gpus=self.environment.gpus,
             )
-            task = TrainingTask(
-                pretrained_model=self.model_name,
-                task=self.task,
-                framework=Framework.PYTORCH,
-                input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size]).__dict__],
-                status=Status.IN_PROGRESS,
-                dataset=dataset,
-                hyperparameter=hyperparameter,
-                environment=environment,
-                model_id=model_id,
-            )
+            if task_id:
+                task = TrainingTask(
+                    task_id=task_id,
+                    pretrained_model=self.model_name,
+                    task=self.task,
+                    framework=Framework.PYTORCH,
+                    input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size]).__dict__],
+                    status=Status.IN_PROGRESS,
+                    dataset=dataset,
+                    hyperparameter=hyperparameter,
+                    environment=environment,
+                    model_id=model_id,
+                )
+            else:
+                task = TrainingTask(
+                    pretrained_model=self.model_name,
+                    task=self.task,
+                    framework=Framework.PYTORCH,
+                    input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size]).__dict__],
+                    status=Status.IN_PROGRESS,
+                    dataset=dataset,
+                    hyperparameter=hyperparameter,
+                    environment=environment,
+                    model_id=model_id,
+                )
             task = training_task_repository.save(db=db, model=task)
 
         return task
@@ -689,7 +679,12 @@ class Trainer(NetsPressoBase):
         return task
 
     def train(
-        self, gpus: str, model_name: str, project_id: str, output_dir: Optional[str] = "./outputs"
+        self,
+        gpus: str,
+        model_name: str,
+        project_id: str,
+        output_dir: Optional[str] = "./outputs",
+        task_id: Optional[str] = None,
     ) -> TrainingTask:
         """Train the model with the specified configuration.
 
@@ -721,7 +716,7 @@ class Trainer(NetsPressoBase):
         object_path = f"{project.user_id}/{project.project_id}/{model.model_id}"
         model.object_path = object_path
         model = self._save_model(model=model)
-        train_task = self.create_training_task(model_id=model.model_id)
+        train_task = self.create_training_task(model_id=model.model_id, task_id=task_id)
 
         try:
             self.logging.output_dir = output_dir
@@ -799,7 +794,7 @@ class Trainer(NetsPressoBase):
                     # 업로드 실패해도 학습은 성공으로 처리
                     pass
 
-        return train_task
+        return train_task.task_id
 
     def get_all_available_models(self) -> Dict[str, List[str]]:
         """Get all available models for each task, excluding deprecated names.
