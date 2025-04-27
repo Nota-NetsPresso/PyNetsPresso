@@ -33,6 +33,15 @@ class ProjectPayload(ProjectCreate):
     updated_at: datetime = Field(..., description="The timestamp when the project was last updated.")
 
 
+class ProjectSimplePayload(ProjectCreate):
+    model_config = ConfigDict(from_attributes=True)
+
+    project_id: str = Field(..., description="The unique identifier for the project.")
+    project_abs_path: str = Field(..., description="The absolute path of the project.")
+    created_at: datetime = Field(..., description="The timestamp when the project was created.")
+    updated_at: datetime = Field(..., description="The timestamp when the project was last updated.")
+
+
 class ProjectDuplicationCheckResponse(ResponseItem):
     data: ProjectDuplicationStatus
 
