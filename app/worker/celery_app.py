@@ -42,7 +42,11 @@ celery_app.conf.update(
     task_acks_late=True,  # 작업 시작 시 ack 보내도록 변경
     broker_heartbeat=None,
     task_track_started=True,
-    include=["app.worker.training_task"],
+    include=[
+        "app.worker.training_task",
+        "app.worker.conversion_task",
+        "app.worker.benchmark_task",
+    ],
     result_expires=86400,  # one day,
 )
 
