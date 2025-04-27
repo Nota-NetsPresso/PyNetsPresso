@@ -47,7 +47,7 @@ def get_supported_schedulers() -> SupportedSchedulersResponse:
     return SupportedSchedulersResponse(data=supported_schedulers)
 
 
-@router.post("/trainings", response_model=TrainingCreateResponse)
+@router.post("/trainings", response_model=TrainingCreateResponse, status_code=201)
 def create_training_task(
     request_body: TrainingCreate,
     db: Session = Depends(get_db),
