@@ -1,9 +1,13 @@
+import os
+import shutil
+import tempfile
 import time
 from pathlib import Path
 from typing import List, Optional, Union
 
 from loguru import logger
 
+from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.auth.response_body import UserResponse
@@ -18,7 +22,6 @@ from netspresso.enums.device import DeviceName, HardwareType, SoftwareVersion
 from netspresso.enums.model import DataType
 from netspresso.enums.project import SubFolder
 from netspresso.metadata.benchmarker import BenchmarkerMetadata
-from netspresso.utils import FileHandler
 from netspresso.utils.db.models.benchmark import BenchmarkResult, BenchmarkTask
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.models.model import Model
@@ -28,6 +31,8 @@ from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.session import get_db_session
 from netspresso.utils.metadata import MetadataHandler
 
+storage_handler = ObjectStorageHandler()
+BUCKET_NAME = "model"
 
 class BenchmarkerV2(NetsPressoBase):
     def __init__(self, token_handler: TokenHandler, user_info: UserResponse) -> None:
@@ -225,6 +230,8 @@ class BenchmarkerV2(NetsPressoBase):
         Returns:
             BenchmarkerMetadata: Benchmark metadata.
         """
+        # 임시 디렉토리 생성을 위한 변수 초기화
+        temp_dir = None
 
         if input_model_id:
             input_model = self.get_input_model(input_model_id, self.user_info.user_id)
@@ -233,6 +240,25 @@ class BenchmarkerV2(NetsPressoBase):
             conversion_task = self.get_conversion_task(input_model_id)
             framework = conversion_task.framework
             data_type = conversion_task.precision
+
+            # 임시 디렉토리 생성 - output_dir 오류 수정
+            temp_dir = tempfile.mkdtemp(prefix="netspresso_benchmark_")
+            download_dir = Path(temp_dir) / "input_model"
+            download_dir.mkdir(parents=True, exist_ok=True)  # 다운로드 폴더 생성
+
+            local_path = download_dir / input_model_path.name
+            input_model_path_str = str(input_model_path)
+
+            logger.info(f"Downloading input model from Zenko to temp directory: {temp_dir}")
+            storage_handler.download_file_from_s3(
+                bucket_name=BUCKET_NAME,
+                local_path=str(local_path),
+                object_path=input_model_path_str
+            )
+            logger.info(f"Downloaded input model from Zenko: {local_path}")
+
+            # input_model_path를 local_path로 업데이트
+            input_model_path = str(local_path)
 
         model = self.save_model(
             model_name=f"{input_model.name}_benchmarked",
@@ -334,6 +360,15 @@ class BenchmarkerV2(NetsPressoBase):
             benchmark_task.status = Status.STOPPED
         finally:
             benchmark_task = self._save_benchmark_task(benchmark_task)
+
+            # 임시 파일 및 디렉토리 정리
+            if temp_dir and os.path.exists(temp_dir):
+                logger.info(f"Cleaning up temporary files in: {temp_dir}")
+                try:
+                    shutil.rmtree(temp_dir)
+                    logger.info(f"Successfully removed temporary directory: {temp_dir}")
+                except Exception as cleanup_error:
+                    logger.error(f"Error cleaning up temporary files: {cleanup_error}")
 
         return benchmark_task.task_id
 

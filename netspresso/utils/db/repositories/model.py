@@ -17,7 +17,7 @@ class ModelRepository(BaseRepository[Model]):
 
         return model
 
-    def get_by_model_id(self, db: Session, model_id: str) -> Optional[Model]:
+    def get_by_model_id(self, db: Session, model_id: str) -> Model:
         conditions = [self.model.model_id == model_id]
         model = self.find_first(
             db=db,
