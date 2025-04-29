@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from netspresso.utils.db.models.base import BaseModel, generate_uuid
 
 
-class Evaluation(BaseModel):
+class EvaluationTask(BaseModel):
     __tablename__ = "evaluation_task"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)

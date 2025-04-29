@@ -28,6 +28,7 @@ class ModelPayload(BaseModel):
     compress_task_ids: Optional[List] = []
     convert_task_ids: Optional[List] = []
     benchmark_task_ids: Optional[List] = []
+    evaluation_task_ids: Optional[List] = ["task_uFUOSIObHX", "task_4NFjgwIb-M"]
     is_deleted: bool
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
