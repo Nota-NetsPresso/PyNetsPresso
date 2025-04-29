@@ -16,3 +16,8 @@ sqlalchemy
 sqlalchemy_utils
 nanoid
 pydantic_settings
+celery
+pymysql
+boto3
+gpustat
+pika

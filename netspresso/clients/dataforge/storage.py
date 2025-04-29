@@ -1,29 +1,36 @@
-import logging
 import os
+from typing import List, Set
 
 import boto3
 from botocore.exceptions import ClientError
+from loguru import logger
 
-from .utils.singleton import SingletonInstance
+from netspresso.clients.dataforge.utils.singleton import SingletonInstance
 
 
 class S3Provider(SingletonInstance):
-    def __init__(self) -> None:
-        minio_host = os.getenv("STORAGE_URL")
-        self.client = self._create_client(minio_host)
+    VALID_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff", ".bmp"}
+
+    def __init__(self, host: str = "localhost", port: int = 9000) -> None:
+        minio_host = os.getenv("MINIO_HOST", host)
+        minio_port = os.getenv("MINIO_PORT", port)
+        url = f"http://{minio_host}:{minio_port}"
+        self.client = self._create_client(url)
+        self.logger = logger
+
         if self.client:
-            logging.info("S3 client created successfully")
+            self.logger.info("S3 client created successfully")
 
     def _create_client(self, url):
-        aws_access_key_id = os.getenv("STORAGE_ACCESS_KEY")
-        aws_secret_access_key = os.getenv("STORAGE_SECRET_KEY")
+        aws_access_key_id = os.getenv("MINIO_ACCESS_KEY_ID")
+        aws_secret_access_key = os.getenv("MINIO_SECRET_ACCESS_KEY")
         session = boto3.Session(
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
             aws_session_token=None,
             region_name="ap-northeast-2",
         )
-        s3client = session.client("s3", endpoint_url=f"http://{url}")
+        s3client = session.client("s3", endpoint_url=url)
         return s3client
 
     def upload_file(self, file_name, bucket, object_name=None):
@@ -32,7 +39,7 @@ class S3Provider(SingletonInstance):
         try:
             self.client.upload_file(file_name, bucket, object_name)
         except Exception as e:
-            logging.error(e)
+            self.logger.error(e)
             return False
         return True
 
@@ -40,7 +47,7 @@ class S3Provider(SingletonInstance):
         try:
             self.client.upload_fileobj(fileobj, bucket, object_name)
         except Exception as e:
-            logging.error(e)
+            self.logger.error(e)
             return False
         return True
 
@@ -50,7 +57,7 @@ class S3Provider(SingletonInstance):
         try:
             self.client.download_file(bucket, object_name, dest_path)
         except Exception as e:
-            logging.error(e)
+            self.logger.error(e)
             return False
         return True
 
@@ -66,23 +73,27 @@ class S3Provider(SingletonInstance):
             response = self.client.get_object(Bucket=bucket, Key=key)
             return response
         except Exception as e:
-            logging.error(e)
+            self.logger.error(e)
             return None
 
     def delete_file(self, bucket, key):
         try:
             self.client.delete_object(Bucket=bucket, Key=key)
         except Exception as e:
-            logging.error(e)
+            self.logger.error(e)
             return False
         return True
 
     def move_file(self, src_bucket, dest_bucket, old_key, new_key):
         try:
-            self.client.copy_object(Bucket=dest_bucket, CopySource={"Bucket": src_bucket, "Key": old_key}, Key=new_key)
+            self.client.copy_object(
+                Bucket=dest_bucket,
+                CopySource={"Bucket": src_bucket, "Key": old_key},
+                Key=new_key,
+            )
             self.client.delete_object(Bucket=src_bucket, Key=old_key)
         except Exception as e:
-            logging.error(e)
+            self.logger.error(e)
             return False
         return True
 
@@ -116,7 +127,7 @@ class S3Provider(SingletonInstance):
                         print(f"Downloading {s3_path} to {local_path}")
                         self.client.download_file(bucket, s3_path, local_path)
         except Exception as e:
-            logging.error(e)
+            self.logger.error(e)
             return False
         return True
 
@@ -163,25 +174,29 @@ class S3Provider(SingletonInstance):
                         },
                     )
 
-                    logging.info(f"Deleted {len(objects_to_delete)} objects from {bucket}/{folder_path}")
+                    self.logger.info(
+                        f"Deleted {len(objects_to_delete)} objects from {bucket}/{folder_path}"
+                    )
 
             # Delete the empty folder marker itself
             try:
                 self.client.delete_object(Bucket=bucket, Key=folder_path)
-                logging.info(f"Deleted empty folder marker {bucket}/{folder_path}")
+                self.logger.info(f"Deleted empty folder marker {bucket}/{folder_path}")
             except ClientError as e:
                 # Ignore error if the folder marker doesn't exist
                 if e.response["Error"]["Code"] != "NoSuchKey":
-                    logging.error(f"Error deleting empty folder marker {bucket}/{folder_path}: {str(e)}")
+                    self.logger.error(
+                        f"Error deleting empty folder marker {bucket}/{folder_path}: {str(e)}"
+                    )
                     return False
 
             if not folder_exists:
-                logging.info(f"Folder {bucket}/{folder_path} was already empty or didn't exist")
+                self.logger.info(f"Folder {bucket}/{folder_path} was already empty or didn't exist")
 
             return True
 
         except Exception as e:
-            logging.error(f"Error deleting folder {folder_path} from bucket {bucket}: {str(e)}")
+            self.logger.error(f"Error deleting folder {folder_path} from bucket {bucket}: {str(e)}")
             return False
 
     def rename_folder(self, bucket: str, old_folder_path: str, new_folder_path: str) -> bool:
@@ -227,14 +242,14 @@ class S3Provider(SingletonInstance):
                     self.move_file(bucket, bucket, old_key, new_key)
 
             if not folder_exists:
-                logging.warning(f"Folder {bucket}/{old_folder_path} was empty or didn't exist")
+                self.logger.warning(f"Folder {bucket}/{old_folder_path} was empty or didn't exist")
                 return False
 
             # Create new empty folder marker
             try:
                 self.client.put_object(Bucket=bucket, Key=new_folder_path, Body="")
             except Exception as e:
-                logging.error(f"Error creating new folder marker: {str(e)}")
+                self.logger.error(f"Error creating new folder marker: {str(e)}")
 
             # Delete old empty folder marker
             try:
@@ -242,13 +257,90 @@ class S3Provider(SingletonInstance):
             except ClientError as e:
                 # Ignore error if the folder marker doesn't exist
                 if e.response["Error"]["Code"] != "NoSuchKey":
-                    logging.error(f"Error deleting old folder marker {bucket}/{old_folder_path}: {str(e)}")
+                    self.logger.error(
+                        f"Error deleting old folder marker {bucket}/{old_folder_path}: {str(e)}"
+                    )
                     return False
 
-            logging.info(f"Successfully renamed folder {old_folder_path} to {new_folder_path}")
+            self.logger.info(f"Successfully renamed folder {old_folder_path} to {new_folder_path}")
             return True
 
         except Exception as e:
             error_msg = f"Error renaming folder {old_folder_path} to {new_folder_path} in bucket {bucket}: {str(e)}"
-            logging.error(error_msg)
+            self.logger.error(error_msg)
             return False
+
+    def file_exists(self, bucket: str, file_path: str) -> bool:
+        try:
+            self.client.head_object(Bucket=bucket, Key=file_path)
+            return True
+        except ClientError as e:
+            # If the error code is 404, the file does not exist
+            if e.response["Error"]["Code"] == "404":
+                return False
+            else:
+                self.logger.error(f"Error checking file existence: {str(e)}")
+                return False
+
+    def _is_folder_path(self, path: str) -> bool:
+        """
+        Check if the given path is a folder path (i.e., ends with a forward slash)
+
+        Args:
+            path (str): The path to check
+
+        Returns:
+            bool: True if the path is a folder path, False otherwise
+        """
+        return path.endswith("/")
+
+    def _is_image_file(self, filename: str) -> bool:
+        """
+        Check if the given filename has a valid image file extension
+
+        Args:
+            filename (str): The filename to check
+
+        Returns:
+            bool: True if the filename has a valid image file extension, False otherwise
+        """
+        _, ext = os.path.splitext(filename)
+        return ext.lower() in self.VALID_IMAGE_EXTENSIONS
+
+    def _get_folder_contents(self, bucket_name: str, folder_path: str) -> List[str]:
+        files = []
+        folders = []
+        try:
+            if not folder_path.endswith("/"):
+                folder_path += "/"
+            paginator = self.client.get_paginator("list_objects_v2")
+            pages = paginator.paginate(Bucket=bucket_name, Prefix=folder_path, Delimiter="/")
+
+            for page in pages:
+                if "CommonPrefixes" in page:
+                    for prefix in page["CommonPrefixes"]:
+                        if "videos" not in prefix["Prefix"]:
+                            folders.append(prefix["Prefix"])
+                if "Contents" in page:
+                    for obj in page["Contents"]:
+                        key = obj["Key"]
+                        if key != folder_path:
+                            files.append(key)
+            return files, folders
+        except Exception as e:
+            self.logger.error(e)
+            return None
+
+    def get_folder_images(
+        self, bucket_name: str, folder_path: str, collected_paths: Set[str] = None
+    ) -> List[str]:
+        if collected_paths is None:
+            collected_paths = set()
+        files, subfolders = self._get_folder_contents(bucket_name, folder_path)
+        for file in files:
+            if self._is_image_file(file):
+                collected_paths.add(file)
+        for subfolder in subfolders:
+            self.get_folder_images(bucket_name, subfolder, collected_paths)
+
+        return collected_paths

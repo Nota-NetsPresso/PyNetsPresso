@@ -36,6 +36,8 @@ from netspresso.trainer.models import (
 )
 from netspresso.trainer.optimizers.optimizers import get_supported_optimizers
 from netspresso.trainer.schedulers.schedulers import get_supported_schedulers
+from netspresso.trainer.storage import DatasetManager
+from netspresso.trainer.storage.dataforge import Split
 from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.trainer.training import TRAINING_CONFIG_TYPE, EnvironmentConfig, LoggingConfig, ScheduleConfig
 from netspresso.utils import FileHandler
@@ -57,6 +59,10 @@ BUCKET_NAME = "model"
 
 
 class Trainer(NetsPressoBase):
+    """
+    NetsPresso Trainer Class: Base class for training models.
+    """
+
     def __init__(
         self, token_handler: TokenHandler, task: Optional[Union[str, Task]] = None, yaml_path: Optional[str] = None
     ) -> None:
@@ -66,6 +72,7 @@ class Trainer(NetsPressoBase):
             task (Union[str, Task]], optional): The type of task (classification, detection, segmentation). Either 'task' or 'yaml_path' must be provided, but not both.
             yaml_path (str, optional): Path to the YAML configuration file. Either 'task' or 'yaml_path' must be provided, but not both.
         """
+        super().__init__(token_handler=token_handler)
 
         self.token_handler = token_handler
         self.deprecated_names = {
@@ -86,6 +93,8 @@ class Trainer(NetsPressoBase):
             self._initialize_from_task(task)
         elif yaml_path is not None:
             self._initialize_from_yaml(yaml_path)
+
+        self.dataset_manager = DatasetManager(token_handler=token_handler)
 
     def _initialize_from_task(self, task: Union[str, Task]) -> None:
         """Initialize the Trainer object based on the provided task.
@@ -580,7 +589,7 @@ class Trainer(NetsPressoBase):
             model = model_repository.save(db=db, model=model)
             return model
 
-    def create_training_task(self, model_id) -> TrainingTask:
+    def create_training_task(self, model_id, task_id) -> TrainingTask:
         with get_db_session() as db:
             dataset = Dataset(
                 train_path="train",
@@ -617,17 +626,31 @@ class Trainer(NetsPressoBase):
                 num_workers=self.environment.num_workers,
                 gpus=self.environment.gpus,
             )
-            task = TrainingTask(
-                pretrained_model=self.model_name,
-                task=self.task,
-                framework=Framework.PYTORCH,
-                input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size]).__dict__],
-                status=Status.IN_PROGRESS,
-                dataset=dataset,
-                hyperparameter=hyperparameter,
-                environment=environment,
-                model_id=model_id,
-            )
+            if task_id:
+                task = TrainingTask(
+                    task_id=task_id,
+                    pretrained_model=self.model_name,
+                    task=self.task,
+                    framework=Framework.PYTORCH,
+                    input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size]).__dict__],
+                    status=Status.IN_PROGRESS,
+                    dataset=dataset,
+                    hyperparameter=hyperparameter,
+                    environment=environment,
+                    model_id=model_id,
+                )
+            else:
+                task = TrainingTask(
+                    pretrained_model=self.model_name,
+                    task=self.task,
+                    framework=Framework.PYTORCH,
+                    input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size]).__dict__],
+                    status=Status.IN_PROGRESS,
+                    dataset=dataset,
+                    hyperparameter=hyperparameter,
+                    environment=environment,
+                    model_id=model_id,
+                )
             task = training_task_repository.save(db=db, model=task)
 
         return task
@@ -656,7 +679,12 @@ class Trainer(NetsPressoBase):
         return task
 
     def train(
-        self, gpus: str, model_name: str, project_id: str, output_dir: Optional[str] = "./outputs"
+        self,
+        gpus: str,
+        model_name: str,
+        project_id: str,
+        output_dir: Optional[str] = "./outputs",
+        task_id: Optional[str] = None,
     ) -> TrainingTask:
         """Train the model with the specified configuration.
 
@@ -688,7 +716,7 @@ class Trainer(NetsPressoBase):
         object_path = f"{project.user_id}/{project.project_id}/{model.model_id}"
         model.object_path = object_path
         model = self._save_model(model=model)
-        train_task = self.create_training_task(model_id=model.model_id)
+        train_task = self.create_training_task(model_id=model.model_id, task_id=task_id)
 
         try:
             self.logging.output_dir = output_dir
@@ -748,7 +776,7 @@ class Trainer(NetsPressoBase):
                         storage_handler.upload_file_to_s3(
                             bucket_name=BUCKET_NAME,
                             local_path=str(pt_file),
-                            object_path=f"{model.object_path}/model.pt"
+                            object_path=f"{model.object_path}/model.pt",
                         )
                         logger.info(f"Uploaded PT file to Zenko: {model.object_path}/model.pt")
 
@@ -757,7 +785,7 @@ class Trainer(NetsPressoBase):
                         storage_handler.upload_file_to_s3(
                             bucket_name=BUCKET_NAME,
                             local_path=str(onnx_file),
-                            object_path=f"{model.object_path}/model.onnx"
+                            object_path=f"{model.object_path}/model.onnx",
                         )
                         logger.info(f"Uploaded ONNX file to Zenko: {model.object_path}/model.onnx")
 
@@ -766,7 +794,7 @@ class Trainer(NetsPressoBase):
                     # 업로드 실패해도 학습은 성공으로 처리
                     pass
 
-        return train_task
+        return train_task.task_id
 
     def get_all_available_models(self) -> Dict[str, List[str]]:
         """Get all available models for each task, excluding deprecated names.
@@ -802,8 +830,8 @@ class Trainer(NetsPressoBase):
             logger.error(f"Folder not found: {folder_path}")
             return None, None
 
-        pt_files = list(folder_path.glob('*.pt'))
-        onnx_files = list(folder_path.glob('*.onnx'))
+        pt_files = list(folder_path.glob("*.pt"))
+        onnx_files = list(folder_path.glob("*.onnx"))
 
         pt_file = pt_files[0] if pt_files else None
         onnx_file = onnx_files[0] if onnx_files else None
@@ -814,3 +842,81 @@ class Trainer(NetsPressoBase):
             logger.info(f"Found ONNX file: {onnx_file.name}")
 
         return pt_file, onnx_file
+
+    def download_dataset_from_storage(
+        self,
+        dataset_uuid: str,
+        output_dir: str = "./datasets",
+        valid_split: float = 0.2,
+        random_seed: int = 0,
+        max_retries: int = 3,
+        retry_delay: int = 5,
+        verbose: bool = False,
+    ) -> str:
+        """
+        Download dataset from DataForge and set up dataset configuration for training.
+        If the dataset is already downloaded, it will use the existing files.
+
+        Args:
+            dataset_uuid: The UUID of the dataset to download
+            output_dir: Directory to save downloaded files
+            valid_split: Ratio of validation data to split from train data (0.0-1.0)
+            random_seed: Random seed for reproducible splitting
+            max_retries: Maximum number of retry attempts for network/storage errors
+            retry_delay: Delay in seconds between retry attempts (will increase with each retry)
+            verbose: Whether to log detailed progress for each file (default: False)
+
+        Returns:
+            str: Path to the configured dataset
+        """
+        dataset_path = self.dataset_manager.download_dataset_from_storage(
+            dataset_uuid=dataset_uuid,
+            output_dir=output_dir,
+            valid_split=valid_split,
+            random_seed=random_seed,
+            max_retries=max_retries,
+            retry_delay=retry_delay,
+            verbose=verbose,
+        )
+
+        if dataset_path:
+            # 데이터셋 설정
+            try:
+                self.set_dataset(dataset_path)
+                return dataset_path
+            except Exception as e:
+                logger.error(f"Error configuring dataset: {str(e)}")
+                return ""
+        return ""
+
+    def download_dataset_for_evaluation(
+        self,
+        dataset_uuid: str,
+        output_dir: str = "./datasets",
+        split: str = Split.TEST,
+        max_retries: int = 3,
+        retry_delay: int = 5,
+        verbose: bool = False,
+    ) -> str:
+        """
+        Download dataset from DataForge for evaluation purposes
+
+        Args:
+            dataset_uuid: The UUID of the dataset to download
+            output_dir: Directory to save downloaded files
+            split: Dataset split to download (default: TEST)
+            max_retries: Maximum number of retry attempts for network/storage errors
+            retry_delay: Delay in seconds between retry attempts (will increase with each retry)
+            verbose: Whether to log detailed progress for each file (default: False)
+
+        Returns:
+            str: Path to the configured evaluation dataset
+        """
+        return self.dataset_manager.download_dataset_for_evaluation(
+            dataset_uuid=dataset_uuid,
+            output_dir=output_dir,
+            split=split,
+            max_retries=max_retries,
+            retry_delay=retry_delay,
+            verbose=verbose,
+        )

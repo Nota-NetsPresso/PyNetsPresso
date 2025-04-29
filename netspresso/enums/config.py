@@ -13,6 +13,7 @@ class EnvironmentType(str, Enum):
 class ServiceName(str, Enum):
     NP = "NP"
     TAO = "TAO"
+    DATAFORGE = "DATAFORGE"
 
 
 class ServiceModule(str, Enum):
@@ -20,6 +21,7 @@ class ServiceModule(str, Enum):
     COMPRESSOR = "COMPRESSOR"
     LAUNCHER = "LAUNCHER"
     TRAINER = "TRAINER"
+    DATAFORGE = "DATAFORGE"
 
 
 class EndPointProperty(str, Enum):

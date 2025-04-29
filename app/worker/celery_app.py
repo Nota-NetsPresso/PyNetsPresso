@@ -1,108 +1,57 @@
-from celery import Celery, chain
+import os
+import threading
+import time
 
-from app.services.user import user_service
-from netspresso.utils.db.session import SessionLocal
+import pika
+from celery import Celery
+from celery.signals import worker_process_init
+from loguru import logger
 
-REDIS_URL = "localhost:6379"
-REDIS_PASSWORD = ""
-POLLING_INTERVAL = 30  # seconds
+# 로그 디렉토리
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOGS_DIR, exist_ok=True)
 
-connection_url = f"redis://:{REDIS_PASSWORD}@{REDIS_URL}" if REDIS_PASSWORD else f"redis://{REDIS_URL}"
+# loguru 로깅 설정
+logger.remove()  # 기본 핸들러 제거
+logger.add(
+    os.path.join(LOGS_DIR, 'celery.log'),
+    rotation="10 MB",
+    level="INFO",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}"
+)
 
-app = Celery("netspresso_converter", broker=f"{connection_url}/0", backend=f"{connection_url}/0")
+# 환경 변수에서 설정 값 가져오기
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'amqp://guest:guest@rabbitmq:5672//')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'rpc://')
+CELERY_WORKER_PREFETCH_MULTIPLIER = int(os.environ.get('CELERY_WORKER_PREFETCH_MULTIPLIER', '1'))
+CELERY_WORKER_MAX_TASKS_PER_CHILD = int(os.environ.get('CELERY_WORKER_MAX_TASKS_PER_CHILD', '1'))
 
+# Celery 설정
+celery_app = Celery("netspresso")
+celery_app.conf.update(
+    broker_url=CELERY_BROKER_URL,
+    result_backend=CELERY_RESULT_BACKEND,
+    task_serializer="json",
+    result_serializer="json",
+    accept_content=["json"],
+    enable_utc=True,
+    worker_prefetch_multiplier=CELERY_WORKER_PREFETCH_MULTIPLIER,
+    worker_max_tasks_per_child=CELERY_WORKER_MAX_TASKS_PER_CHILD,
+    broker_pool_limit=None,
+    task_acks_late=True,  # 작업 시작 시 ack 보내도록 변경
+    broker_heartbeat=None,
+    task_track_started=True,
+    include=[
+        "app.worker.training_task",
+        "app.worker.conversion_task",
+        "app.worker.benchmark_task",
+    ],
+    result_expires=86400,  # one day,
+)
 
-@app.task
-def convert_model_task(
-    api_key: str,
-    input_model_path: str,
-    output_dir: str,
-    target_framework: str,
-    target_device_name: str,
-    target_data_type: str,
-    target_software_version: str = None,
-    input_layer=None,
-    dataset_path: str = None,
-    input_model_id: str = None,
-):
-    session = SessionLocal()
-    try:
-        netspresso = user_service.build_netspresso_with_api_key(db=session, api_key=api_key)
-    finally:
-        session.close()
-
-    converter = netspresso.converter_v2()
-    task_id = converter.convert_model(
-        input_model_path=input_model_path,
-        output_dir=output_dir,
-        target_framework=target_framework,
-        target_device_name=target_device_name,
-        target_data_type=target_data_type,
-        target_software_version=target_software_version,
-        input_layer=input_layer,
-        dataset_path=dataset_path,
-        input_model_id=input_model_id,
-        wait_until_done=False,
-    )
-
-    chain(poll_conversion_status.s(api_key, task_id).set(countdown=POLLING_INTERVAL))()
-    return task_id
-
-
-@app.task
-def poll_conversion_status(api_key: str, task_id: str):
-    session = SessionLocal()
-    try:
-        netspresso = user_service.build_netspresso_with_api_key(db=session, api_key=api_key)
-    finally:
-        session.close()
-
-    converter = netspresso.converter_v2()
-    status_updated = converter.update_conversion_task_status(task_id)
-
-    if not status_updated:
-        poll_conversion_status.apply_async(args=[api_key, task_id], countdown=POLLING_INTERVAL)
-
-
-@app.task
-def benchmark_model_task(
-    api_key: str,
-    input_model_path: str,
-    target_device_name: str,
-    target_software_version: str = None,
-    target_hardware_type: str = None,
-    input_model_id: str = None,
-):
-    session = SessionLocal()
-    try:
-        netspresso = user_service.build_netspresso_with_api_key(db=session, api_key=api_key)
-    finally:
-        session.close()
-
-    benchmarker = netspresso.benchmarker_v2()
-    task_id = benchmarker.benchmark_model(
-        input_model_path=input_model_path,
-        target_device_name=target_device_name,
-        target_software_version=target_software_version,
-        target_hardware_type=target_hardware_type,
-        input_model_id=input_model_id,
-        wait_until_done=False,
-    )
-
-    chain(poll_benchmark_status.s(api_key, task_id).set(countdown=POLLING_INTERVAL))()
-    return task_id
-
-
-@app.task
-def poll_benchmark_status(api_key: str, task_id: str):
-    session = SessionLocal()
-    try:
-        netspresso = user_service.build_netspresso_with_api_key(db=session, api_key=api_key)
-    finally:
-        session.close()
-
-    benchmarker = netspresso.benchmarker_v2()
-    status_updated = benchmarker.update_benchmark_task_status(task_id)
-
-    if not status_updated:
-        poll_benchmark_status.apply_async(args=[api_key, task_id], countdown=POLLING_INTERVAL)
+# worker_process_init 함수 내에 추가
+@worker_process_init.connect
+def setup_worker(sender=None, **kwargs):
+    """워커 프로세스 초기화 시 호출됨"""
+    logger.info("Initializing worker process")

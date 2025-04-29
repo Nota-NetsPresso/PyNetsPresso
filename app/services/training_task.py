@@ -9,9 +9,11 @@ from app.api.v1.schemas.task.train.train_task import (
     PretrainedModelPayload,
     TaskPayload,
     TrainingCreate,
+    TrainingCreatePayload,
     TrainingPayload,
 )
 from app.services.user import user_service
+from app.worker.training_task import train_model
 from netspresso.enums.train import MODEL_DISPLAY_MAP, MODEL_GROUP_MAP
 from netspresso.trainer.augmentations.augmentation import Normalize, Resize, ToTensor
 from netspresso.trainer.models import get_all_available_models
@@ -20,6 +22,7 @@ from netspresso.trainer.optimizers.optimizers import get_supported_optimizers
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
 from netspresso.trainer.schedulers.schedulers import get_supported_schedulers
 from netspresso.trainer.trainer import Trainer
+from netspresso.utils.db.models.base import generate_uuid
 from netspresso.utils.db.models.training import TrainingTask
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
@@ -135,12 +138,10 @@ class TrainTaskService:
         # If models exist, return name with count
         return f"{name} ({base_name_count})"
 
-    def create_training_task(self, db: Session, training_in: TrainingCreate, api_key: str) -> TrainingPayload:
+    def create_training_task(self, db: Session, training_in: TrainingCreate, api_key: str) -> TrainingCreatePayload:
         """Create and execute a new training task."""
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
-        trainer = netspresso.trainer(task=training_in.task)
 
-        trainer = self._setup_trainer(trainer, training_in)
+        user = user_service.get_user_by_api_key(db=db, api_key=api_key)
 
         unique_model_name = self._generate_unique_model_name(
             db=db,
@@ -149,13 +150,19 @@ class TrainTaskService:
             api_key=api_key,
         )
 
-        training_task = trainer.train(
-            gpus=training_in.environment.gpus,
-            model_name=unique_model_name,
-            project_id=training_in.project_id,
+        training_task_id = generate_uuid(entity="task")
+        _ = train_model.apply_async(
+            kwargs={
+                "task_id": training_task_id,
+                "email": user.email,  # TODO: after change api key
+                "password": user.password,  # TODO: after change api key
+                "training_in": training_in.model_dump(),
+                "unique_model_name": unique_model_name,
+            },
+            task_id=training_task_id,
         )
 
-        return self._convert_to_payload_format(training_task)
+        return TrainingCreatePayload(task_id=training_task_id)
 
     def get_training_task(self, db: Session, task_id: str, api_key: str) -> TrainingPayload:
         """Get training task by task ID."""

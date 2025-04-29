@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import List, Optional
 
 from fastapi import HTTPException
-from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.model import ModelPayload, PresignedUrl
@@ -124,7 +123,7 @@ class ModelService:
 
         new_models = []
         for model in models:
-            if model.type in [SubFolder.CONVERTED_MODELS, SubFolder.BENCHMARKED_MODELS]:
+            if model.type != SubFolder.TRAINED_MODELS:
                 continue
 
             training_task = training_task_repository.get_by_model_id(db=db, model_id=model.model_id)
