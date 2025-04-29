@@ -4,6 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 from app.api.v1.schemas.base import ResponseItem, ResponsePaginationItems
+from app.api.v1.schemas.project import ProjectSimplePayload
 from netspresso.enums import Status
 
 
@@ -22,6 +23,7 @@ class ModelPayload(BaseModel):
     status: Status = Field(default=Status.NOT_STARTED, description="The current status of the model.")
     train_task_id: Optional[str] = None
     project_id: str
+    project: ProjectSimplePayload
     user_id: str
     compress_task_ids: Optional[List] = []
     convert_task_ids: Optional[List] = []

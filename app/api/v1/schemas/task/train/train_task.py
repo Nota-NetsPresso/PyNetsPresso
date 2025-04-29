@@ -101,3 +101,11 @@ class TrainingPayload(BaseModel):
 
 class TrainingResponse(ResponseItem):
     data: TrainingPayload
+
+
+class TrainingCreatePayload(BaseModel):
+    task_id: str
+
+
+class TrainingCreateResponse(ResponseItem):
+    data: TrainingCreatePayload

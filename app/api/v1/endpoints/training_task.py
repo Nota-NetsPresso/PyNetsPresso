@@ -7,7 +7,7 @@ from app.api.v1.schemas.task.train.hyperparameter import (
     SupportedOptimizersResponse,
     SupportedSchedulersResponse,
 )
-from app.api.v1.schemas.task.train.train_task import TrainingCreate, TrainingResponse
+from app.api.v1.schemas.task.train.train_task import TrainingCreate, TrainingCreateResponse, TrainingResponse
 from app.services.training_task import train_task_service
 from netspresso.utils.db.session import get_db
 
@@ -47,15 +47,15 @@ def get_supported_schedulers() -> SupportedSchedulersResponse:
     return SupportedSchedulersResponse(data=supported_schedulers)
 
 
-@router.post("/trainings", response_model=TrainingResponse)
+@router.post("/trainings", response_model=TrainingCreateResponse, status_code=201)
 def create_training_task(
     request_body: TrainingCreate,
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
-) -> TrainingResponse:
+) -> TrainingCreateResponse:
     training_task = train_task_service.create_training_task(db=db, training_in=request_body, api_key=api_key)
 
-    return TrainingResponse(data=training_task)
+    return TrainingCreateResponse(data=training_task)
 
 
 @router.get("/trainings/{task_id}", response_model=TrainingResponse)

@@ -21,7 +21,7 @@ from app.api.v1.schemas.task.benchmark.benchmark_task import (
 )
 from app.services.project import project_service
 from app.services.user import user_service
-from app.worker.celery_app import benchmark_model_task
+from app.worker.benchmark_task import benchmark_model
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums.metadata import Status
 from netspresso.enums.model import Framework
@@ -122,7 +122,7 @@ class BenchmarkTaskService:
 
     def create_benchmark_task(self, db: Session, benchmark_in: BenchmarkCreate, api_key: str) -> BenchmarkCreatePayload:
         """Create new benchmark task"""
-        _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        user = user_service.get_user_by_api_key(db=db, api_key=api_key)
 
         model = model_repository.get_by_model_id(db=db, model_id=benchmark_in.input_model_id)
         project = project_service.get_project(db=db, project_id=model.project_id, api_key=api_key)
@@ -130,13 +130,16 @@ class BenchmarkTaskService:
         input_model_path = Path(project.project_abs_path) / model.object_path
         logger.info(f"Input model path: {input_model_path}")
 
-        task = benchmark_model_task.delay(
-            api_key=api_key,
-            input_model_path=input_model_path.as_posix(),
-            target_device_name=benchmark_in.device_name,
-            target_software_version=benchmark_in.software_version,
-            target_hardware_type=benchmark_in.hardware_type,
-            input_model_id=benchmark_in.input_model_id,
+        task = benchmark_model.apply_async(
+            kwargs={
+                "email": user.email,  # TODO: after change api key
+                "password": user.password,  # TODO: after change api key
+                "input_model_path": input_model_path.as_posix(),
+                "target_device_name": benchmark_in.device_name,
+                "target_software_version": benchmark_in.software_version,
+                "target_hardware_type": benchmark_in.hardware_type,
+                "input_model_id": benchmark_in.input_model_id,
+            },
         )
 
         return BenchmarkCreatePayload(task_id=task.get())

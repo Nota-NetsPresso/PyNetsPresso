@@ -19,7 +19,7 @@ from app.api.v1.schemas.task.conversion.conversion_task import (
 )
 from app.services.project import project_service
 from app.services.user import user_service
-from app.worker.celery_app import convert_model_task
+from app.worker.conversion_task import convert_model
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums import Status, TaskStatusForDisplay
 from netspresso.enums.conversion import SourceFramework
@@ -83,7 +83,7 @@ class ConversionTaskService:
     def create_conversion_task(
         self, db: Session, conversion_in: ConversionCreate, api_key: str
     ) -> ConversionCreatePayload:
-        _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        user = user_service.get_user_by_api_key(db=db, api_key=api_key)
 
         # Get model from trained models repository
         model = model_repository.get_by_model_id(db=db, model_id=conversion_in.input_model_id)
@@ -98,15 +98,18 @@ class ConversionTaskService:
         print(f"Input model path: {input_model_path}")
         print(f"Output dir: {output_dir}")
 
-        task = convert_model_task.delay(
-            api_key=api_key,
-            input_model_path=input_model_path.as_posix(),
-            output_dir=output_dir.as_posix(),
-            target_framework=conversion_in.framework,
-            target_device_name=conversion_in.device_name,
-            target_data_type=conversion_in.precision,
-            target_software_version=conversion_in.software_version,
-            input_model_id=conversion_in.input_model_id,
+        task = convert_model.apply_async(
+            kwargs={
+                "email": user.email,  # TODO: after change api key
+                "password": user.password,  # TODO: after change api key
+                "input_model_path": input_model_path.as_posix(),
+                "output_dir": output_dir.as_posix(),
+                "target_framework": conversion_in.framework,
+                "target_device_name": conversion_in.device_name,
+                "target_data_type": conversion_in.precision,
+                "target_software_version": conversion_in.software_version,
+                "input_model_id": conversion_in.input_model_id,
+            },
         )
         task_id = task.get()
         return ConversionCreatePayload(task_id=task_id)

@@ -153,21 +153,25 @@ class BenchmarkerV2(NetsPressoBase):
 
             return benchmark_task
 
-    def save_benchmark_result(self, benchmark_task: BenchmarkTask, benchmark_result) -> BenchmarkTask:
-        benchmark_result = BenchmarkResult(
-            processor=benchmark_result.processor,
-            memory_footprint_gpu=benchmark_result.memory_footprint_gpu,
-            memory_footprint_cpu=benchmark_result.memory_footprint_cpu,
-            power_consumption=benchmark_result.power_consumption,
-            ram_size=benchmark_result.ram_size,
-            latency=benchmark_result.latency,
-        )
-
+    def save_benchmark_result(self, benchmark_task_id: str, benchmark_result: BenchmarkResult) -> BenchmarkTask:
+        """결과를 객체 공유 없이 태스크 ID로 저장"""
         with get_db_session() as db:
-            benchmark_task.result = benchmark_result
-            benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
+            benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=benchmark_task_id)
+            if not benchmark_task:
+                return
 
-            return benchmark_task
+            result = BenchmarkResult(
+                processor=benchmark_result.processor,
+                memory_footprint_gpu=benchmark_result.memory_footprint_gpu,
+                memory_footprint_cpu=benchmark_result.memory_footprint_cpu,
+                power_consumption=benchmark_result.power_consumption,
+                ram_size=benchmark_result.ram_size,
+                latency=benchmark_result.latency,
+                task_id=benchmark_task_id
+            )
+            benchmark_task.result = result
+            db.add(benchmark_task)
+            db.commit()
 
     def create_benchmark_result(self, benchmark_task: BenchmarkTask, file_size: float) -> BenchmarkTask:
         benchmark_result = BenchmarkResult(file_size=file_size, task_id=benchmark_task.task_id)
@@ -388,31 +392,51 @@ class BenchmarkerV2(NetsPressoBase):
         Returns:
             bool: True if status was updated, False if task is still in progress
         """
-        with get_db_session() as db:
-            benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=task_id)
-            if not benchmark_task:
-                logger.error(f"Benchmark task {task_id} not found")
-                return True
+        try:
+            with get_db_session() as db:
+                # 매번 새 세션에서 객체를 가져옴
+                benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=task_id)
+                if not benchmark_task:
+                    logger.error(f"Benchmark task {task_id} not found")
+                    return True
 
-            launcher_status = self.get_benchmark_task(benchmark_task.benchmark_task_id)
-            status_updated = False
+                launcher_status = self.get_benchmark_task(benchmark_task.benchmark_task_id)
+                status_updated = False
 
-            if launcher_status.status == TaskStatusForDisplay.FINISHED:
-                benchmark_task.status = Status.COMPLETED
-                status_updated = True
-                benchmark_task = self.save_benchmark_result(benchmark_task, launcher_status.benchmark_result)
+                if launcher_status.status == TaskStatusForDisplay.FINISHED:
+                    benchmark_task.status = Status.COMPLETED
+                    status_updated = True
 
-            elif launcher_status.status in [TaskStatusForDisplay.ERROR, TaskStatusForDisplay.TIMEOUT]:
-                benchmark_task.status = Status.ERROR
-                benchmark_task.error_detail = launcher_status.error_log
-                status_updated = True
+                    # 결과 저장을 별도 객체로 처리
+                    if launcher_status.benchmark_result:
+                        result = BenchmarkResult(
+                            processor=launcher_status.benchmark_result.processor,
+                            memory_footprint_gpu=launcher_status.benchmark_result.memory_footprint_gpu,
+                            memory_footprint_cpu=launcher_status.benchmark_result.memory_footprint_cpu,
+                            power_consumption=launcher_status.benchmark_result.power_consumption,
+                            ram_size=launcher_status.benchmark_result.ram_size,
+                            latency=launcher_status.benchmark_result.latency,
+                            task_id=task_id
+                        )
+                        benchmark_task.result = result
 
-            elif launcher_status.status == TaskStatusForDisplay.USER_CANCEL:
-                benchmark_task.status = Status.STOPPED
-                status_updated = True
+                elif launcher_status.status in [TaskStatusForDisplay.ERROR, TaskStatusForDisplay.TIMEOUT]:
+                    benchmark_task.status = Status.ERROR
+                    benchmark_task.error_detail = launcher_status.error_log
+                    status_updated = True
 
-            if status_updated:
-                benchmark_task_repository.save(db, benchmark_task)
-                logger.info(f"Benchmark task {task_id} status updated to {benchmark_task.status}")
+                elif launcher_status.status == TaskStatusForDisplay.USER_CANCEL:
+                    benchmark_task.status = Status.STOPPED
+                    status_updated = True
 
-            return status_updated
+                if status_updated:
+                    # 현재 세션에서 변경사항 저장
+                    db.add(benchmark_task)
+                    db.commit()
+                    logger.info(f"Benchmark task {task_id} status updated to {benchmark_task.status}")
+
+                return status_updated
+        except Exception as e:
+            logger.error(f"Error updating benchmark task status: {e}")
+            # 오류가 발생해도 태스크가 계속 재시도되지 않도록 True 반환
+            return True
