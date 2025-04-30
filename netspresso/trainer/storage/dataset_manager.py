@@ -512,7 +512,7 @@ class DatasetManager:
             test_labels_dir.mkdir(parents=True, exist_ok=True)
 
             # Save id_mapping
-            id_mapping: Dict[str, str] = self._save_id_mapping(dataset_version, dataset_dir / "id_mapping.json")
+            _: Dict[str, str] = self._save_id_mapping(dataset_version, dataset_dir / "id_mapping.json")
 
             # Get source file paths
             source_images_dir: Path = temp_dir / dataset_uuid / "images"

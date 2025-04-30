@@ -183,7 +183,7 @@ class ConverterV2(NetsPressoBase):
             # input_model_path를 local_path로 업데이트
             input_model_path = str(local_path)
 
-        default_model_path = FileHandler.get_default_model_path(folder_path=output_dir)
+        _ = FileHandler.get_default_model_path(folder_path=output_dir)
         extension = FileHandler.get_extension(framework=target_framework)
         object_path = f"{project.user_id}/{project.project_id}/{input_model.model_id}/model{extension}"
 
