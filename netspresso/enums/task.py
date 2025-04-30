@@ -23,3 +23,9 @@ class TaskStatusForDisplay(NamedConstant):
     ERROR = "ERROR"
     USER_CANCEL = "USER_CANCEL"
     TIMEOUT = "TIMEOUT"
+
+
+class TaskType(str, Enum):
+    CONVERT = "convert"
+    BENCHMARK = "benchmark"
+    EVALUATE = "evaluate"

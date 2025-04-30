@@ -10,6 +10,7 @@ from app.services.training_task import train_task_service
 from app.services.user import user_service
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.enums.project import SubFolder
+from netspresso.enums.task import TaskType
 from netspresso.exceptions.model import ModelCannotBeDeletedException
 from netspresso.utils.db.repositories.base import Order, TimeSort
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
@@ -117,17 +118,37 @@ class ModelService:
 
         return model
 
-    def get_models(self, db: Session, api_key: str) -> List[ModelPayload]:
+    def get_models(
+        self,
+        db: Session,
+        api_key: str,
+        task_type: Optional[TaskType] = None,
+        project_id: Optional[str] = None
+    ) -> List[ModelPayload]:
         netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
-        models = model_repository.get_all_by_user_id(db=db, user_id=netspresso.user_info.user_id)
+
+        # Base query by user ID
+        user_id = netspresso.user_info.user_id
+
+        # If project_id is provided, filter by project
+        if project_id:
+            models = model_repository.get_all_by_project_id(db=db, project_id=project_id)
+            # Filter models that belong to the user for security
+            models = [model for model in models if model.user_id == user_id]
+        else:
+            models = model_repository.get_all_by_user_id(db=db, user_id=user_id)
 
         new_models = []
         for model in models:
-            if model.type != SubFolder.TRAINED_MODELS:
-                continue
+            if task_type and task_type in [TaskType.BENCHMARK, TaskType.EVALUATE, TaskType.CONVERT]:
+                if model.type != SubFolder.TRAINED_MODELS:
+                    continue
+            else:
+                if model.type in [SubFolder.CONVERTED_MODELS, SubFolder.BENCHMARKED_MODELS]:
+                    continue
 
-            training_task = training_task_repository.get_by_model_id(db=db, model_id=model.model_id)
             model_payload = ModelPayload.model_validate(model)
+            training_task = training_task_repository.get_by_model_id(db=db, model_id=model.model_id)
             model_payload.train_task_id = training_task.task_id
             model_payload.status = training_task.status
             model_payload = self._attach_child_task_info(db, model_payload)
