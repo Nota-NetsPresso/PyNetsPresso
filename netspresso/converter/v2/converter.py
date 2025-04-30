@@ -414,7 +414,7 @@ class ConverterV2(NetsPressoBase):
             Conversion task ID
         """
         # Set output model path
-        default_model_path = FileHandler.get_default_model_path(folder_path=output_dir)
+        _ = FileHandler.get_default_model_path(folder_path=output_dir)
         extension = FileHandler.get_extension(framework=target_framework)
         object_path = f"{project.user_id}/{project.project_id}/{input_model.model_id}/model{extension}"
 

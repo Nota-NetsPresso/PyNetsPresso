@@ -15,7 +15,7 @@ trainer = netspresso.trainer(task=Task.OBJECT_DETECTION)
 # 2. Set config for training
 # 2-1. Data
 dataset_uuid = "project_PxS20YEZJN"
-trainer.download_dataset_from_storage(dataset_uuid=dataset_uuid)
+trainer.download_dataset_for_training(dataset_uuid=dataset_uuid)
 
 # 2-2. Model
 print(trainer.available_models)  # ['EfficientFormer', 'YOLOX-S']

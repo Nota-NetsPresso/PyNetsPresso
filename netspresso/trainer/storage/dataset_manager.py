@@ -258,7 +258,7 @@ class DatasetManager:
             logger.warning(f"Error copying file {src_file.name}: {str(e)}")
             return False
 
-    def download_dataset_from_storage(
+    def download_dataset_for_training(
         self,
         dataset_uuid: str,
         output_dir: str = "./datasets",
@@ -440,7 +440,7 @@ class DatasetManager:
             return dataset_dir.as_posix()
 
         except Exception as e:
-            logger.exception(f"Unexpected error in download_dataset_from_storage: {str(e)}")
+            logger.exception(f"Unexpected error in download_dataset_for_training: {str(e)}")
             return ""
 
     def download_dataset_for_evaluation(
@@ -512,7 +512,7 @@ class DatasetManager:
             test_labels_dir.mkdir(parents=True, exist_ok=True)
 
             # Save id_mapping
-            id_mapping: Dict[str, str] = self._save_id_mapping(dataset_version, dataset_dir / "id_mapping.json")
+            _: Dict[str, str] = self._save_id_mapping(dataset_version, dataset_dir / "id_mapping.json")
 
             # Get source file paths
             source_images_dir: Path = temp_dir / dataset_uuid / "images"

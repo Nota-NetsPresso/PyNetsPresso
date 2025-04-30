@@ -1,4 +1,4 @@
-FROM python:3.8.16
+FROM pytorch/pytorch:1.13.1-cuda11.6-cudnn8-devel
 
 ARG TENSORFLOW_VERSION="2.8.0"
 ARG PROTOBUF_VERSION="3.20.2"

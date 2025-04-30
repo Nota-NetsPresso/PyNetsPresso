@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: netspresso-api
+    ports:
+      - "58100:80"
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
+    command:
+      - bash
+
+  # Celery 워커
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: netspresso-worker
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://
+    command: python -m app.worker.worker
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # RabbitMQ 메시지 브로커
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: netspresso-rabbitmq
+    ports:
+      - "5672:5672"   # AMQP 프로토콜
+      - "15672:15672" # 관리 UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_ERLANG_COOKIE=WXYZABCDEFGHIJKLMNOPQRST1234567890  # 충분히 긴 쿠키 (최소 20자)
+      - RABBITMQ_HEARTBEAT=600  # 10분으로 설정 (매우 길게)
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  rabbitmq_data: 

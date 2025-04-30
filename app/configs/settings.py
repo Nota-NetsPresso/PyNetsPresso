@@ -1,6 +1,9 @@
 import os
 
+import dotenv
 from pydantic_settings import BaseSettings
+
+dotenv.load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -17,6 +20,12 @@ class Settings(BaseSettings):
     DB_PORT: int = int(os.environ.get("DB_PORT"))
     DB_NAME: str = os.environ.get("DB_NAME")
     DATABASE_URL: str = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}"
+
+    # Zenko Storage Info
+    ZENKO_SERVER_URL: str = os.environ.get("ZENKO_SERVER_URL")
+    MODEL_BUCKET_NAME: str = os.environ.get("MODEL_BUCKET_NAME")
+    SCALITY_ACCESS_KEY_ID: str = os.environ.get("SCALITY_ACCESS_KEY_ID")
+    SCALITY_SECRET_ACCESS_KEY: str = os.environ.get("SCALITY_SECRET_ACCESS_KEY")
 
 
 settings = Settings()

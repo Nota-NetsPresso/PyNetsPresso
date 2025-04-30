@@ -843,7 +843,7 @@ class Trainer(NetsPressoBase):
 
         return pt_file, onnx_file
 
-    def download_dataset_from_storage(
+    def download_dataset_for_training(
         self,
         dataset_uuid: str,
         output_dir: str = "./datasets",
@@ -869,7 +869,7 @@ class Trainer(NetsPressoBase):
         Returns:
             str: Path to the configured dataset
         """
-        dataset_path = self.dataset_manager.download_dataset_from_storage(
+        dataset_path = self.dataset_manager.download_dataset_for_training(
             dataset_uuid=dataset_uuid,
             output_dir=output_dir,
             valid_split=valid_split,
