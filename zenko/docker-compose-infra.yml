@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  zenko-cloudserver-on-prem:
+    image: zenko/cloudserver
+    container_name: zenko-cloudserver-for-gui
+    ports:
+      - 58000:8000
+    env_file:
+      - zenko.env
+    volumes:
+      - ./storage/zenko-data:/usr/src/app/localData
+      - ./storage/zenko-metadata:/usr/src/app/localMetadata
+    restart: always
