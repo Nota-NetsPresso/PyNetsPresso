@@ -22,3 +22,8 @@ class MembershipType(str, Enum):
 class CreditType(str, Enum):
     FREE = "FREE"
     PAID = "PAID"
+
+
+class ApiKeyStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    DEACTIVATED = "DEACTIVATED"
