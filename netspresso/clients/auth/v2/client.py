@@ -38,6 +38,18 @@ class AuthClientV2:
             logger.error(f"Login failed. Error: {e}")
             raise e
 
+    def login_by_api_key(self, api_key: str, verify_ssl: bool = True) -> response_body.TokenResponse:
+        try:
+            url = f"{self.base_url}/auth/login_by_api_key"
+            headers = self.__make_api_key_header(api_key=api_key)
+            response = Requester.post_as_json(url=url, headers=headers)
+            token_response = TokenResponse(**response.json())
+            logger.info("Login successfully")
+            return token_response.to()
+        except Exception as e:
+            logger.error(f"Login failed. Error: {e}")
+            raise e
+
     def get_user_info(self, access_token, verify_ssl: bool = True) -> response_body.UserResponse:
         user_response = self.__get_user_info(access_token=access_token, verify_ssl=verify_ssl)
         summarized_credit_response = self.__get_credit(access_token=access_token, verify_ssl=verify_ssl)
@@ -88,3 +100,6 @@ class AuthClientV2:
 
     def __make_bearer_header(self, token: str):
         return {"Authorization": f"Bearer {token}"}
+
+    def __make_api_key_header(self, api_key: str):
+        return {"api-key": api_key}

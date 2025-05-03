@@ -26,15 +26,14 @@ from netspresso.utils.db.session import SessionLocal
 
 
 class NetsPresso:
-    def __init__(self, email: str, password: str, verify_ssl: bool = True) -> None:
+    def __init__(self, api_key: str, verify_ssl: bool = True) -> None:
         """Initialize NetsPresso instance and perform user authentication.
 
         Args:
-            email (str): User's email for authentication.
-            password (str): User's password for authentication.
+            api_key (str): User's api_key for authentication.
             verify_ssl (bool): Flag to indicate whether SSL certificates should be verified. Defaults to True.
         """
-        self.token_handler = TokenHandler(email=email, password=password, verify_ssl=verify_ssl)
+        self.token_handler = TokenHandler(api_key=api_key, verify_ssl=verify_ssl)
         self.user_info = self.get_user()
 
     def get_user(self) -> UserResponse:
