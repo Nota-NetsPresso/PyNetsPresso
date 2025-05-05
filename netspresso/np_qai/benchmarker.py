@@ -7,6 +7,7 @@ from qai_hub import JobStatus
 from qai_hub.client import Dataset, Device, InferenceJob, ProfileJob, ProfileJobResult
 from qai_hub.public_rest_api import DatasetEntries
 
+from netspresso.analytics import netspresso_analytics
 from netspresso.enums import Status
 from netspresso.metadata.benchmarker import BenchmarkerMetadata
 from netspresso.np_qai.base import NPQAIBase
@@ -160,6 +161,12 @@ class NPQAIBenchmarker(NPQAIBase):
 
             cli_string = options.to_cli_string() if isinstance(options, ProfileOptions) else options
 
+            netspresso_analytics.send_event(
+                event_name="benchmark_model",
+                event_params={
+                    "target_device_name": target_device_name.name,
+                },
+            )
             job: ProfileJob = hub.submit_profile_job(
                 model=input_model_path,
                 device=target_device_name,

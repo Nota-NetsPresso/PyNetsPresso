@@ -7,6 +7,7 @@ from qai_hub import JobStatus, QuantizeDtype
 from qai_hub.client import Dataset, QuantizeJob
 from qai_hub.public_rest_api import DatasetEntries
 
+from netspresso.analytics import netspresso_analytics
 from netspresso.enums import Status
 from netspresso.metadata.quantizer import NPQAIQuantizerMetadata
 from netspresso.np_qai.base import NPQAIBase
@@ -104,6 +105,13 @@ class NPQAIQuantizer(NPQAIBase):
 
             cli_string = options.to_cli_string() if isinstance(options, QuantizeOptions) else options
 
+            netspresso_analytics.send_event(
+                event_name="quantize_model",
+                event_params={
+                    "weights_dtype": weights_dtype.name,
+                    "activations_dtype": activations_dtype.name,
+                },
+            )
             job = hub.submit_quantize_job(
                 model=input_model_path,
                 calibration_data=calibration_data,

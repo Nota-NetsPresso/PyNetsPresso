@@ -4,6 +4,7 @@ from urllib import request
 
 from loguru import logger
 
+from netspresso.analytics import netspresso_analytics
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.compressor import compressor_client_v2
@@ -578,6 +579,14 @@ class CompressorV2(NetsPressoBase):
             self.print_remaining_credit(service_task=ServiceTask.AUTOMATIC_COMPRESSION)
 
             logger.info(f"Automatic compression successfully. Compressed Model ID: {compression_info.input_model_id}")
+
+            netspresso_analytics.send_event(
+                event_name="automatic_compression",
+                event_params={
+                    "compression_ratio": compression_ratio,
+                    "framework": framework.name,
+                },
+            )
 
         except Exception as e:
             metadata = self.handle_error(metadata, ServiceTask.AUTOMATIC_COMPRESSION, e.args[0])
