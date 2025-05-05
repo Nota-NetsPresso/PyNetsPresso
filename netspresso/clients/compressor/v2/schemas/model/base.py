@@ -53,6 +53,7 @@ class ModelStatus:
     is_compressible: Optional[bool] = False
     is_benchmarkable: Optional[bool] = False
     is_uploaded: Optional[bool] = False
+    is_optimizable: Optional[bool] = False
 
 
 @dataclass
