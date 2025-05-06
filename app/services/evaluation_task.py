@@ -1,5 +1,6 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.device import (
@@ -12,28 +13,23 @@ from app.api.v1.schemas.device import (
 from app.api.v1.schemas.task.conversion.conversion_task import (
     TargetFrameworkPayload,
 )
-from app.api.v1.schemas.task.evaluation.evaluation_task import EvaluationCreate, EvaluationCreateResponse
-from app.api.v1.schemas.task.train.dataset import DatasetCreate
-from app.api.v1.schemas.task.train.environment import EnvironmentCreate
-from app.api.v1.schemas.task.train.hyperparameter import HyperparameterCreate
-from app.api.v1.schemas.task.train.train_task import TrainingCreate
-from app.services.conversion_task import conversion_task_service
+from app.api.v1.schemas.task.evaluation.evaluation_task import EvaluationCreate
 from app.services.training_task import train_task_service
-from app.services.user import user_service
-
-# from app.worker.celery_app import evaluate_model_task
+from app.worker.evaluation_task import poll_evaluation_status, run_multiple_evaluations
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums import DataType, DeviceName, SoftwareVersion, Status
 from netspresso.enums.conversion import SourceFramework, TargetFramework
-from netspresso.evaluator.evaluator import Evaluator
 from netspresso.exceptions.trainer import NotCompletedTrainingException
+from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
+from netspresso.utils.db.repositories.evaluation import evaluation_result_repository, evaluation_task_repository
 from netspresso.utils.db.session import get_db_session
 
 storage_handler = ObjectStorageHandler()
 BUCKET_NAME = "model"
+POLLING_INTERVAL = 30  # seconds
 
 
 class EvaluationTaskService:
@@ -50,7 +46,7 @@ class EvaluationTaskService:
         Returns:
             List[SupportedDeviceResponse]: List of supported devices grouped by framework
         """
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        netspresso = NetsPresso(api_key=api_key)
         converter = netspresso.converter_v2()
         supported_options = converter.get_supported_options(framework=framework)
 
@@ -128,69 +124,123 @@ class EvaluationTaskService:
 
         return None
 
-    # def create_evaluation_task(
-    #     self,
-    #     db: Session,
-    #     evaluation_in: EvaluationCreate,
-    #     api_key: str,
-    # ) -> EvaluationCreateResponse:
-    #     """Create an evaluation task.
+    def create_evaluation_task(
+        self,
+        db: Session,
+        evaluation_in: EvaluationCreate,
+        api_key: str,
+    ) -> str:
+        # 1. 학습 태스크가 완료되었는지 확인
+        training_task = train_task_service.get_training_task(db=db, task_id=evaluation_in.training_task_id, api_key=api_key)
+        if training_task.status != Status.COMPLETED:
+            raise NotCompletedTrainingException(training_task_id=evaluation_in.training_task_id)
 
-    #     Args:
-    #         db (Session): Database session
-    #         evaluation_in (EvaluationCreate): Evaluation creation request
-    #         api_key (str): API key for authentication
-    #         target_framework (TargetFramework): Target framework for conversion if needed
-    #         target_device_name (DeviceName): Target device for conversion if needed
-    #         target_software_version (SoftwareVersion, optional): Target software version
-    #         target_data_type (DataType): Target data type/precision
+        # 2. 변환 태스크가 이미 존재하는지 확인
+        conversion_task = self._find_existing_conversion_task(
+            input_model_id=evaluation_in.input_model_id,
+            target_framework=evaluation_in.framework,
+            target_device_name=evaluation_in.device_name,
+            target_software_version=evaluation_in.software_version,
+            target_data_type=evaluation_in.precision
+        )
 
-    #     Returns:
-    #         EvaluationCreateResponse: Response containing evaluation task
-    #     """
-    #     training_task = train_task_service.get_training_task(db=db, task_id=evaluation_in.training_task_id, api_key=api_key)
+        # 3. 변환 태스크가 없으면 새로 생성
+        if conversion_task is None:
+            # 변환기 인스턴스 가져오기
+            netspresso = NetsPresso(api_key=api_key)
+            converter = netspresso.converter_v2()
 
-    #     if training_task.status != Status.COMPLETED:
-    #         raise NotCompletedTrainingException(training_task_id=evaluation_in.training_task_id)
+            # 변환 프로세스 시작
+            conversion_task_id = converter.convert_model_from_id(
+                input_model_id=evaluation_in.input_model_id,
+                target_framework=evaluation_in.framework,
+                target_device_name=evaluation_in.device_name,
+                target_software_version=evaluation_in.software_version,
+                target_data_type=evaluation_in.precision,
+                wait_until_done=True  # 변환이 완료될 때까지 대기
+            )
 
-    #     netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+            # 변환 태스크 결과 가져오기
+            conversion_task = conversion_task_repository.get_by_task_id(db=db, task_id=conversion_task_id)
 
-    #     # 1. Check if a matching conversion task already exists
-    #     conversion_task = self._find_existing_conversion_task(
-    #         input_model_id=evaluation_in.input_model_id,
-    #         target_framework=evaluation_in.framework,
-    #         target_device_name=evaluation_in.device_name,
-    #         target_software_version=evaluation_in.software_version,
-    #         target_data_type=evaluation_in.precision
-    #     )
+        # 4. Celery 태스크를 시작하여 여러 신뢰도 점수에 대한 평가 수행
+        task_result = run_multiple_evaluations.delay(
+            api_key=api_key,
+            model_id=conversion_task.model_id,
+            dataset_id=evaluation_in.dataset_id,
+            training_task_id=evaluation_in.training_task_id,
+            conversion_task_id=conversion_task.task_id,
+        )
 
-    #     # 2. If no matching conversion task exists, create a new one
-    #     if conversion_task is None:
-    #         # Get converter instance
-    #         converter = netspresso.converter_v2()
+        # 5. 평가 태스크 상태 폴링 시작
+        evaluation_task_id = task_result.get(timeout=5)  # 평가 태스크 ID 가져오기 (5초 타임아웃)
+        poll_evaluation_status.apply_async(
+            args=[api_key, evaluation_task_id],
+            countdown=POLLING_INTERVAL
+        )
 
-    #         # Start conversion process
-    #         conversion_task_id = converter.convert_model_from_id(
-    #             input_model_id=evaluation_in.input_model_id,
-    #             target_framework=evaluation_in.framework,
-    #             target_device_name=evaluation_in.device_name,
-    #             target_software_version=evaluation_in.software_version,
-    #             target_data_type=evaluation_in.precision,
-    #             wait_until_done=True  # Wait for conversion to complete
-    #         )
+        # 평가 태스크 ID 반환
+        return evaluation_task_id
 
-    #     confidence_score: float = 0.3
+    def get_evaluation_task_with_results(
+        self,
+        db: Session,
+        task_id: str,
+        api_key: str = None
+    ) -> Dict[str, Any]:
+        """
+        평가 태스크와 연관된 모든 confidence_score별 결과를 조회합니다.
 
-    #     task = evaluate_model_task.delay(
-    #         api_key=api_key,
-    #         model_id=conversion_task.model_id,
-    #         dataset_id=evaluation_in.dataset_id,
-    #         training_task_id=evaluation_in.training_task_id,
-    #         conversion_task_id=conversion_task.task_id,
-    #         confidence_score=confidence_score,
-    #     )
-    #     task_id = task.get()
-    #     return EvaluationCreateResponse(task_id=task_id)
+        Args:
+            db: 데이터베이스 세션
+            task_id: 평가 태스크 ID
+            api_key: 인증에 사용할 API 키 (선택적)
+
+        Returns:
+            평가 태스크와 결과 정보가 포함된 응답
+        """
+        # 평가 태스크 조회
+        task = evaluation_task_repository.get_by_task_id(db=db, task_id=task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail=f"평가 태스크 ID {task_id}를 찾을 수 없습니다.")
+
+        # 연관된 평가 결과 조회
+        results = evaluation_result_repository.get_by_evaluation_task_id(db=db, evaluation_task_id=task_id)
+
+        # 결과 데이터 변환
+        result_data = []
+        for result in results:
+            result_data.append({
+                "result_id": result.result_id,
+                "confidence_score": result.confidence_score,
+                "metric_unit": result.metric_unit,
+                "metric_value": result.metric_value,
+                "results_path": result.results_path,
+                "status": result.status,
+                "error_detail": result.error_detail
+            })
+
+        # 데이터셋 정보 가져오기
+        dataset_name = ""
+        is_dataset_deleted = False
+
+        # TODO: 필요시 데이터셋 정보 조회 로직 추가
+
+        # 응답 데이터 구성
+        return {
+            "task_id": task.task_id,
+            "dataset_id": task.dataset_id,
+            "dataset_name": dataset_name,
+            "is_dataset_deleted": is_dataset_deleted,
+            "input_model_id": task.input_model_id,
+            "training_task_id": task.training_task_id,
+            "conversion_task_id": task.conversion_task_id,
+            "status": task.status,
+            "error_detail": task.error_detail,
+            "created_at": task.created_at,
+            "updated_at": task.updated_at,
+            "results": result_data
+        }
 
 
 evaluation_task_service = EvaluationTaskService()
