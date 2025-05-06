@@ -18,11 +18,11 @@ from app.api.v1.schemas.task.conversion.conversion_task import (
     TargetFrameworkPayload,
 )
 from app.services.project import project_service
-from app.services.user import user_service
 from app.worker.conversion_task import convert_model
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums import Status, TaskStatusForDisplay
 from netspresso.enums.conversion import SourceFramework
+from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
@@ -42,7 +42,7 @@ class ConversionTaskService:
         Returns:
             List[SupportedDeviceResponse]: List of supported devices grouped by framework
         """
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        netspresso = NetsPresso(api_key=api_key)
         converter = netspresso.converter_v2()
         supported_options = converter.get_supported_options(framework=framework)
 
@@ -83,8 +83,6 @@ class ConversionTaskService:
     def create_conversion_task(
         self, db: Session, conversion_in: ConversionCreate, api_key: str
     ) -> ConversionCreatePayload:
-        user = user_service.get_user_by_api_key(db=db, api_key=api_key)
-
         # Get model from trained models repository
         model = model_repository.get_by_model_id(db=db, model_id=conversion_in.input_model_id)
         project = project_service.get_project(db=db, project_id=model.project_id, api_key=api_key)
@@ -100,8 +98,7 @@ class ConversionTaskService:
 
         task = convert_model.apply_async(
             kwargs={
-                "email": user.email,  # TODO: after change api key
-                "password": user.password,  # TODO: after change api key
+                "api_key": api_key,
                 "input_model_path": input_model_path.as_posix(),
                 "output_dir": output_dir.as_posix(),
                 "target_framework": conversion_in.framework,
@@ -142,7 +139,7 @@ class ConversionTaskService:
         return conversion_payload
 
     def cancel_conversion_task(self, db: Session, task_id: str, api_key: str):
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        netspresso = NetsPresso(api_key=api_key)
         converter = netspresso.converter_v2()
         conversion_task = conversion_task_repository.get_by_task_id(db, task_id)
         convert_task = converter.cancel_conversion_task(conversion_task.convert_task_uuid)

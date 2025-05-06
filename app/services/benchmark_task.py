@@ -20,13 +20,13 @@ from app.api.v1.schemas.task.benchmark.benchmark_task import (
     TargetFrameworkPayload,
 )
 from app.services.project import project_service
-from app.services.user import user_service
 from app.worker.benchmark_task import benchmark_model
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums.metadata import Status
 from netspresso.enums.model import Framework
 from netspresso.enums.project import SubFolder
 from netspresso.enums.task import TaskStatusForDisplay
+from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.models.benchmark import BenchmarkTask
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
@@ -69,7 +69,7 @@ class BenchmarkTaskService:
         self, db: Session, model_id: str, api_key: str
     ) -> List[SupportedDeviceForBenchmarkPayload]:
         """Get list of supported devices for benchmark"""
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        netspresso = NetsPresso(api_key=api_key)
         benchmarker = netspresso.benchmarker_v2()
 
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
@@ -122,8 +122,6 @@ class BenchmarkTaskService:
 
     def create_benchmark_task(self, db: Session, benchmark_in: BenchmarkCreate, api_key: str) -> BenchmarkCreatePayload:
         """Create new benchmark task"""
-        user = user_service.get_user_by_api_key(db=db, api_key=api_key)
-
         model = model_repository.get_by_model_id(db=db, model_id=benchmark_in.input_model_id)
         project = project_service.get_project(db=db, project_id=model.project_id, api_key=api_key)
 
@@ -132,8 +130,7 @@ class BenchmarkTaskService:
 
         task = benchmark_model.apply_async(
             kwargs={
-                "email": user.email,  # TODO: after change api key
-                "password": user.password,  # TODO: after change api key
+                "api_key": api_key,
                 "input_model_path": input_model_path.as_posix(),
                 "target_device_name": benchmark_in.device_name,
                 "target_software_version": benchmark_in.software_version,
@@ -152,7 +149,7 @@ class BenchmarkTaskService:
 
     def cancel_benchmark_task(self, db: Session, task_id: str, api_key: str) -> BenchmarkPayload:
         """Cancel benchmark task"""
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        netspresso = NetsPresso(api_key=api_key)
         benchmarker = netspresso.benchmarker_v2()
         benchmark_task = benchmark_task_repository.get_by_task_id(db, task_id)
 

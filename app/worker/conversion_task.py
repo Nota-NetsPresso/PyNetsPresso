@@ -9,8 +9,7 @@ POLLING_INTERVAL = 30  # seconds
 @celery_app.task(bind=True, name='convert_model')
 def convert_model(
     self,
-    email: str,
-    password: str,
+    api_key: str,
     input_model_path: str,
     output_dir: str,
     target_framework: str,
@@ -21,7 +20,7 @@ def convert_model(
     dataset_path: str = None,
     input_model_id: str = None,
 ):
-    netspresso = NetsPresso(email=email, password=password)
+    netspresso = NetsPresso(api_key=api_key)
 
     converter = netspresso.converter_v2()
     task_id = converter.convert_model(
@@ -37,16 +36,16 @@ def convert_model(
         wait_until_done=False,
     )
 
-    chain(poll_conversion_status.s(email, password, task_id).set(countdown=POLLING_INTERVAL))()
+    chain(poll_conversion_status.s(api_key, task_id).set(countdown=POLLING_INTERVAL))()
     return task_id
 
 
 @celery_app.task
-def poll_conversion_status(email: str, password: str, task_id: str):
-    netspresso = NetsPresso(email=email, password=password)
+def poll_conversion_status(api_key: str, task_id: str):
+    netspresso = NetsPresso(api_key=api_key)
 
     converter = netspresso.converter_v2()
     status_updated = converter.update_conversion_task_status(task_id)
 
     if not status_updated:
-        poll_conversion_status.apply_async(args=[email, password, task_id], countdown=POLLING_INTERVAL)
+        poll_conversion_status.apply_async(args=[api_key, task_id], countdown=POLLING_INTERVAL)

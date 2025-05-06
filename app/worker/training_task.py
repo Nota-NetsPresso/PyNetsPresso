@@ -13,8 +13,7 @@ from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
 def train_model(
     self,
     task_id: str,
-    email: str,
-    password: str,
+    api_key: str,
     training_in: Dict,
     unique_model_name: str,
 ):
@@ -23,7 +22,7 @@ def train_model(
 
         os.environ['CUDA_VISIBLE_DEVICES'] = training_in.environment.gpus
 
-        netspresso = NetsPresso(email=email, password=password)
+        netspresso = NetsPresso(api_key=api_key)
         trainer = netspresso.trainer(task=training_in.task)
 
         # Download dataset from dataforage
