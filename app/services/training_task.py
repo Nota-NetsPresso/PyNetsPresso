@@ -1,3 +1,4 @@
+import copy
 from pathlib import Path
 from typing import Dict, List
 
@@ -94,20 +95,30 @@ class TrainTaskService:
 
     def _convert_to_payload_format(self, training_task: TrainingTask) -> TrainingPayload:
         """Convert training task to payload format."""
-        # Set task information
-        training_task.task = TaskPayload(name=training_task.task)
-        training_task.framework = FrameworkPayload(name=training_task.framework)
-        training_task.pretrained_model = PretrainedModelPayload(name=training_task.pretrained_model)
+        # 원본 데이터를 변경하지 않기 위해 깊은 복사 수행
+        task_data = copy.deepcopy(training_task.__dict__)
 
-        # Set hyperparameter information
-        training_task.hyperparameter.learning_rate = training_task.hyperparameter.optimizer["lr"]
-        training_task.hyperparameter.optimizer = OptimizerPayload(name=training_task.hyperparameter.optimizer["name"])
-        training_task.hyperparameter.scheduler = SchedulerPayload(name=training_task.hyperparameter.scheduler["name"])
+        # 필요한 필드들을 Payload 객체로 변환
+        task_data['task'] = TaskPayload(name=training_task.task)
+        task_data['framework'] = FrameworkPayload(name=training_task.framework)
+        task_data['pretrained_model'] = PretrainedModelPayload(name=training_task.pretrained_model)
 
-        # Set model ID
-        training_task.model_id = training_task.model.model_id
+        # 하이퍼파라미터 정보 변환
+        hyperparameter_data = copy.deepcopy(training_task.hyperparameter.__dict__)
+        hyperparameter_data['learning_rate'] = training_task.hyperparameter.optimizer["lr"]
+        hyperparameter_data['optimizer'] = OptimizerPayload(name=training_task.hyperparameter.optimizer["name"])
+        hyperparameter_data['scheduler'] = SchedulerPayload(name=training_task.hyperparameter.scheduler["name"])
+        task_data['hyperparameter'] = hyperparameter_data
 
-        return TrainingPayload.model_validate(training_task)
+        # 모델 ID 설정
+        task_data['model_id'] = training_task.model.model_id if training_task.model else None
+
+        # SQLAlchemy 내부 상태 속성 제거
+        if '_sa_instance_state' in task_data:
+            del task_data['_sa_instance_state']
+
+        # Pydantic 모델로 변환하여 반환
+        return TrainingPayload.model_validate(task_data)
 
     def _generate_unique_model_name(self, db: Session, project_id: str, name: str, api_key: str) -> str:
         """Generate a unique model name by adding numbering if necessary.

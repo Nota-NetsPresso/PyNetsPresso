@@ -20,13 +20,17 @@ def get_headers(api_key=None, json_type=False):
 
 
 class DataForgeClient:
-    def __init__(self):
+    def __init__(self, https: bool = False):
         self.config = Config(ServiceName.DATAFORGE, ServiceModule.DATAFORGE)
         self.host = self.config.HOST
         self.port = self.config.PORT
         self.prefix = self.config.URI_PREFIX
-        self.url = f"{self.host}:{self.port}{self.prefix}"
         self.api_key = os.getenv("DATAFORGE_API_KEY")
+
+        if https:
+            self.url = f"https://{self.host}:{self.port}{self.prefix}"
+        else:
+            self.url = f"http://{self.host}:{self.port}{self.prefix}"
 
     def get_datasets(self, project_id: str) -> DatasetsResponse:
         url = f"{self.url}/dataset/{project_id}"
