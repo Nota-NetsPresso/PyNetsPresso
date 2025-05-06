@@ -22,10 +22,9 @@ router = APIRouter()
 def create_project(
     *,
     request_body: ProjectCreate,
-    db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> ProjectResponse:
-    project = project_service.create_project(db=db, project_name=request_body.project_name, api_key=api_key)
+    project = project_service.create_project(project_name=request_body.project_name, api_key=api_key)
 
     return ProjectResponse(data=project)
 

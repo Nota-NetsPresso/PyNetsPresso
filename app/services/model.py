@@ -7,11 +7,11 @@ from sqlalchemy.orm import Session
 from app.api.v1.schemas.model import ModelPayload, PresignedUrl
 from app.configs.settings import settings
 from app.services.training_task import train_task_service
-from app.services.user import user_service
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.enums.project import SubFolder
 from netspresso.enums.task import TaskType
 from netspresso.exceptions.model import ModelCannotBeDeletedException
+from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.repositories.base import Order, TimeSort
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
@@ -125,7 +125,7 @@ class ModelService:
         task_type: Optional[TaskType] = None,
         project_id: Optional[str] = None
     ) -> List[ModelPayload]:
-        netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
+        netspresso = NetsPresso(api_key=api_key)
 
         # Base query by user ID
         user_id = netspresso.user_info.user_id
@@ -157,8 +157,6 @@ class ModelService:
         return new_models
 
     def get_model(self, db: Session, model_id: str, api_key: str) -> ModelPayload:
-        _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
-
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
         training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
 
@@ -182,8 +180,6 @@ class ModelService:
         Raises:
             HTTPException: If model not found
         """
-        _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
-
         # Get model before deletion
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
         if model.type not in [SubFolder.TRAINED_MODELS]:
@@ -214,7 +210,6 @@ class ModelService:
         Raises:
             HTTPException: If model not found or file not accessible
         """
-        _ = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
 
         if model.type == SubFolder.TRAINED_MODELS:

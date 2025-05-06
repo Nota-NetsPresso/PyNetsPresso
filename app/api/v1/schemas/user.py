@@ -3,19 +3,6 @@ from pydantic import BaseModel, Field
 from app.api.v1.schemas.base import ResponseItem
 
 
-class ApiKeyCreate(BaseModel):
-    email: str = Field(..., description="Email of the user.")
-    password: str = Field(..., description="Password of the user.")
-
-
-class ApiKeyPayload(BaseModel):
-    api_key: str = Field(..., description="API key of the user.")
-
-
-class ApiKeyResponse(ResponseItem):
-    data: ApiKeyPayload
-
-
 class CreditInfo(BaseModel):
     free: int = Field(default=0, description="Free credits available.")
     reward: int = Field(default=0, description="Reward credits available.")

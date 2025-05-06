@@ -12,7 +12,6 @@ from app.api.v1.schemas.task.train.train_task import (
     TrainingCreatePayload,
     TrainingPayload,
 )
-from app.services.user import user_service
 from app.worker.training_task import train_model
 from netspresso.enums.train import MODEL_DISPLAY_MAP, MODEL_GROUP_MAP
 from netspresso.trainer.augmentations.augmentation import Normalize, Resize, ToTensor
@@ -140,9 +139,6 @@ class TrainTaskService:
 
     def create_training_task(self, db: Session, training_in: TrainingCreate, api_key: str) -> TrainingCreatePayload:
         """Create and execute a new training task."""
-
-        user = user_service.get_user_by_api_key(db=db, api_key=api_key)
-
         unique_model_name = self._generate_unique_model_name(
             db=db,
             project_id=training_in.project_id,
@@ -154,8 +150,7 @@ class TrainTaskService:
         _ = train_model.apply_async(
             kwargs={
                 "task_id": training_task_id,
-                "email": user.email,  # TODO: after change api key
-                "password": user.password,  # TODO: after change api key
+                "api_key": api_key,
                 "training_in": training_in.model_dump(),
                 "unique_model_name": unique_model_name,
             },
@@ -166,7 +161,6 @@ class TrainTaskService:
 
     def get_training_task(self, db: Session, task_id: str, api_key: str) -> TrainingPayload:
         """Get training task by task ID."""
-        # netspresso = user_service.build_netspresso_with_api_key(db=db, api_key=api_key)
         training_task = training_task_repository.get_by_task_id(db=db, task_id=task_id)
 
         return self._convert_to_payload_format(training_task)
