@@ -1,11 +1,22 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.v1.schemas.base import ResponseItem, ResponsePaginationItems
 from netspresso.enums.conversion import PrecisionForConversion, TargetFramework
 from netspresso.enums.device import DeviceName, SoftwareVersion
+
+
+class EvaluationResultResponse(BaseModel):
+    """평가 결과 응답 스키마"""
+    result_id: str
+    confidence_score: float
+    metric_unit: Optional[str] = None
+    metric_value: Optional[float] = None
+    results_path: Optional[str] = None
+    status: str
+    error_detail: Optional[Dict[str, Any]] = None
 
 
 class EvaluationCreate(BaseModel):
@@ -44,6 +55,7 @@ class EvaluationPayload(BaseModel):
     is_deleted: bool
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    results: Optional[List[EvaluationResultResponse]] = None
 
 
 class BoundingBoxCoordinates(BaseModel):
@@ -66,14 +78,14 @@ class BoundingBox(BaseModel):
 
 class PredictionForThreshold(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     threshold: float
     bboxes: List[BoundingBox]
 
 
 class ImagePrediction(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     image_id: str  # 이미지 식별자 (파일명 또는 고유 ID)
     image_url: str  # 이미지의 URL
     predictions: List[PredictionForThreshold]  # 여러 threshold에 대한 예측 결과

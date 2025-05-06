@@ -2,9 +2,9 @@ import copy
 import json
 import os
 import re
-import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -17,6 +17,7 @@ from app.api.v1.schemas.task.evaluation.evaluation_task import (
     EvaluationCreateResponse,
     EvaluationPayload,
     EvaluationResponse,
+    EvaluationResultResponse,
     EvaluationResultsPayload,
     EvaluationResultsResponse,
 )
@@ -51,10 +52,10 @@ def create_evaluations_task(
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> EvaluationCreateResponse:
-    # evaluation_task = evaluation_task_service.create_evaluation_task(db=db, evaluation_in=request_body, api_key=api_key)
-    evaluation_task = EvaluationCreatePayload(task_id="task_uFUOSIObHX")
+    evaluation_task_id = evaluation_task_service.create_evaluation_task(db=db, evaluation_in=request_body, api_key=api_key)
 
-    return EvaluationCreateResponse(data=evaluation_task)
+    response_data = EvaluationCreatePayload(task_id=evaluation_task_id)
+    return EvaluationCreateResponse(data=response_data)
 
 
 @router.get("/evaluations/{task_id}", response_model=EvaluationResponse, status_code=200)
@@ -63,34 +64,72 @@ def get_evaluation_task(
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> EvaluationResponse:
-    # evaluation_task = evaluation_task_service.get_evaluation_task(db=db, task_id=task_id, api_key=api_key)
-    evaluation_task = EvaluationPayload(
-        task_id="task_uFUOSIObHX",
-        dataset_id="dataset_uFUOSIObHX",
-        dataset_name="project1_traffic-sign (#1000)",
-        is_dataset_deleted=False,
-        metric_unit="mAP@[.50]",
-        metric_value=0.6,
-        results_path="",
-        input_model_id="model_ZrvXDmbFjq",
-        training_task_id="task_VpbB5OiQmL",
-        conversion_task_id="task_bH_MroNkjO",
-        status="completed",
-        is_deleted=False,
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
+    """
+    평가 태스크와 연관된 모든 confidence_score 결과를 조회합니다.
+    """
+    evaluation_data = evaluation_task_service.get_evaluation_task_with_results(db=db, task_id=task_id, api_key=api_key)
+
+    # 기본 태스크 정보
+    evaluation_payload = EvaluationPayload(
+        task_id=evaluation_data.get("task_id"),
+        dataset_id=evaluation_data.get("dataset_id"),
+        dataset_name=evaluation_data.get("dataset_name", ""),
+        is_dataset_deleted=evaluation_data.get("is_dataset_deleted", False),
+        metric_unit=evaluation_data.get("results", [])[0].get("metric_unit") if evaluation_data.get("results") else None,
+        metric_value=evaluation_data.get("results", [])[0].get("metric_value") if evaluation_data.get("results") else None,
+        results_path=evaluation_data.get("results", [])[0].get("results_path") if evaluation_data.get("results") else None,
+        input_model_id=evaluation_data.get("input_model_id"),
+        training_task_id=evaluation_data.get("training_task_id"),
+        conversion_task_id=evaluation_data.get("conversion_task_id"),
+        status=evaluation_data.get("status"),
+        is_deleted=evaluation_data.get("is_deleted", False),
+        created_at=evaluation_data.get("created_at", datetime.now()),
+        updated_at=evaluation_data.get("updated_at", datetime.now()),
+        results=[
+            EvaluationResultResponse(
+                result_id=result.get("result_id"),
+                confidence_score=result.get("confidence_score"),
+                metric_unit=result.get("metric_unit"),
+                metric_value=result.get("metric_value"),
+                results_path=result.get("results_path"),
+                status=result.get("status"),
+                error_detail=result.get("error_detail")
+            )
+            for result in evaluation_data.get("results", [])
+        ]
     )
 
-    return EvaluationResponse(data=evaluation_task)
+    return EvaluationResponse(data=evaluation_payload)
 
 
 @router.get("/evaluations/{task_id}/results", response_model=EvaluationResultsResponse, status_code=200)
 def get_evaluation_results(
     task_id: str,
+    confidence_score: Optional[float] = Query(0.5, description="조회할 confidence score 값 (기본값: 0.5)"),
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> EvaluationResultsResponse:
+    """
+    특정 confidence score에 대한 평가 결과의 상세 정보를 조회합니다.
+    confidence_score 값을 지정하지 않으면 기본값 0.5를 사용합니다.
+    """
     try:
+        # 평가 태스크 정보 가져오기
+        evaluation_data = evaluation_task_service.get_evaluation_task_with_results(db=db, task_id=task_id, api_key=api_key)
+
+        # 특정 confidence score에 대한 결과 찾기
+        target_result = None
+        for result in evaluation_data.get("results", []):
+            if result.get("confidence_score") == confidence_score:
+                target_result = result
+                break
+
+        if not target_result:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Confidence score {confidence_score}에 대한 결과를 찾을 수 없습니다."
+            )
+
         # 1. 이미지 파일을 숫자 순서대로 정렬
         image_dir = "assets/images"
 
@@ -150,13 +189,11 @@ def get_evaluation_results(
                 # 이미지 ID 추출 (파일명 또는 인덱스 기반)
                 image_id = image_files[i] if i < len(image_files) else f"dummy_{i}"
 
-                # 여러 threshold에 대한 빈 예측 생성
-                predictions = []
-                for threshold in [0.3, 0.5, 0.6]:
-                    predictions.append({
-                        "threshold": threshold,
-                        "bboxes": []
-                    })
+                # 선택된 threshold에 대한 빈 예측 생성
+                predictions = {
+                    "threshold": confidence_score,
+                    "bboxes": []
+                }
 
                 # 이미지 예측 결과 추가
                 results.append({
@@ -183,20 +220,18 @@ def get_evaluation_results(
                 # 이미지 ID 추출 (파일명 또는 인덱스 기반)
                 image_id = image_files[i] if i < len(image_files) else f"dummy_{i}"
 
-                # 여러 threshold에 대한 예측 결과 생성
-                predictions = []
-                for threshold in [0.3, 0.5, 0.6]:
-                    # 각 이미지의 예측 결과에서 confidence threshold 이상인 bboxes만 필터링
-                    filtered_bboxes = [
-                        bbox for bbox in pred.get("bboxes", [])
-                        if bbox.get("confidence_score", 0) >= threshold
-                    ]
+                # 특정 threshold에 대한 예측 결과 생성
+                # 각 이미지의 예측 결과에서 confidence threshold 이상인 bboxes만 필터링
+                filtered_bboxes = [
+                    bbox for bbox in pred.get("bboxes", [])
+                    if bbox.get("confidence_score", 0) >= confidence_score
+                ]
 
-                    # 해당 threshold의 예측 결과 추가
-                    predictions.append({
-                        "threshold": threshold,
-                        "bboxes": filtered_bboxes
-                    })
+                # 해당 threshold의 예측 결과 추가
+                predictions = {
+                    "threshold": confidence_score,
+                    "bboxes": filtered_bboxes
+                }
 
                 # 이미지 예측 결과 추가
                 results.append({
@@ -208,7 +243,7 @@ def get_evaluation_results(
         # 4. 응답 구성
         evaluation_results = EvaluationResultsPayload(
             task_id=task_id,
-            dataset_id="dataset_uFUOSIObHX",  # 실제 구현에서는 DB에서 가져온 dataset_id 사용
+            dataset_id=evaluation_data.get("dataset_id"),
             results=results,
         )
 

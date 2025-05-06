@@ -46,6 +46,7 @@ celery_app.conf.update(
         "app.worker.training_task",
         "app.worker.conversion_task",
         "app.worker.benchmark_task",
+        "app.worker.evaluation_task",
     ],
     result_expires=86400,  # one day,
 )

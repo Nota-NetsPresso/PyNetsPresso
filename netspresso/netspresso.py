@@ -11,6 +11,7 @@ from netspresso.compressor import CompressorV2
 from netspresso.constant.project import SUB_FOLDERS
 from netspresso.converter import ConverterV2
 from netspresso.enums import Task
+from netspresso.evaluator.evaluator import Evaluator
 from netspresso.exceptions.project import (
     ProjectAlreadyExistsException,
     ProjectNameTooLongException,
@@ -174,6 +175,14 @@ class NetsPresso:
             Trainer: Initialized Trainer instance.
         """
         return Trainer(token_handler=self.token_handler, task=task, yaml_path=yaml_path)
+
+    def evaluator(self, trainer: Trainer) -> Evaluator:
+        """Initialize and return a Evaluator instance.
+
+        Returns:
+            Evaluator: Initialized Evaluator instance.
+        """
+        return Evaluator(trainer=trainer)
 
     def compressor_v2(self) -> CompressorV2:
         """Initialize and return a Compressor instance.
