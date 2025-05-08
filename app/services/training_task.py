@@ -58,41 +58,6 @@ class TrainTaskService:
         schedulers = [SchedulerPayload(name=scheduler.get("name")) for scheduler in supported_schedulers]
         return schedulers
 
-    def _setup_trainer(self, trainer, training_in: TrainingCreate) -> Trainer:
-        """Configure trainer with the given training parameters."""
-        trainer.set_dataset_config(
-            name="test",
-            root_path="/root/projects/traffic-sign",
-            train_image="train/images",
-            train_label="train/labels",
-            valid_image="valid/images",
-            valid_label="valid/labels",
-            id_mapping=["prohibitory", "danger", "mandatory", "other"],
-        )
-
-        img_size = training_in.input_shapes[0].dimension[0]
-        trainer.set_model_config(model_name=training_in.pretrained_model, img_size=img_size)
-
-        trainer.set_augmentation_config(
-            train_transforms=[Resize(), ToTensor(), Normalize()],
-            inference_transforms=[Resize(), ToTensor(), Normalize()],
-        )
-
-        optimizer = OptimizerManager.get_optimizer(
-            name=training_in.hyperparameter.optimizer,
-            lr=training_in.hyperparameter.learning_rate,
-        )
-        scheduler = SchedulerManager.get_scheduler(name=training_in.hyperparameter.scheduler)
-
-        trainer.set_training_config(
-            epochs=training_in.hyperparameter.epochs,
-            batch_size=training_in.hyperparameter.batch_size,
-            optimizer=optimizer,
-            scheduler=scheduler,
-        )
-
-        return trainer
-
     def _convert_to_payload_format(self, training_task: TrainingTask) -> TrainingPayload:
         """Convert training task to payload format."""
         # 원본 데이터를 변경하지 않기 위해 깊은 복사 수행
