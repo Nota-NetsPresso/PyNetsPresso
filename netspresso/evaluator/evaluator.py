@@ -1,38 +1,39 @@
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 from loguru import logger
 from netspresso_trainer.evaluator_main import evaluation_with_yaml_impl
+from sqlalchemy.orm import Session
 
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.enums import Status
+from netspresso.enums.conversion import TargetFramework
+from netspresso.exceptions.evaluation import (
+    EvaluationDownloadURLGenerationException,
+    EvaluationResultFileNotFoundException,
+    EvaluationTaskAlreadyExistsException,
+    UnsupportedEvaluationFrameworkException,
+)
+from netspresso.exceptions.trainer import NotCompletedTrainingException
 from netspresso.trainer.trainer import Trainer
 from netspresso.trainer.trainer_configs import TrainerConfigs
-from netspresso.utils.db.models.evaluation import EvaluationResult, EvaluationTask
+from netspresso.utils.db.models.evaluation import EvaluationTask
 from netspresso.utils.db.models.model import Model
-from netspresso.utils.db.repositories.evaluation import evaluation_result_repository, evaluation_task_repository
+from netspresso.utils.db.repositories.conversion import conversion_task_repository
+from netspresso.utils.db.repositories.evaluation import evaluation_task_repository
 from netspresso.utils.db.repositories.model import model_repository
+from netspresso.utils.db.repositories.training import training_task_repository
 from netspresso.utils.db.session import get_db_session
 
 storage_handler = ObjectStorageHandler()
 BUCKET_NAME = "model"
+EVALUATION_BUCKET_NAME = "evaluation"
+
 
 class Evaluator:
     def __init__(self, trainer: Trainer):
         self.trainer = trainer
-
-    def get_input_model(self, input_model_id: str) -> Model:
-        """Get model by ID.
-
-        Args:
-            input_model_id: ID of the model to retrieve
-
-        Returns:
-            Model object
-        """
-        with get_db_session() as db:
-            input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id)
-            return input_model
 
     def evaluate(self, model_path: str, confidence_score: float, gpus: int = 0):
         try:
@@ -63,53 +64,155 @@ class Evaluator:
         except Exception as e:
             raise e
 
-    def create_evaluate_task(
-        self,
-        dataset_id: str,
-        input_model_id: str,
-        training_task_id: str,
-        conversion_task_id: str,
-    ) -> EvaluationTask:
-        with get_db_session() as db:
-            evaluation_task = EvaluationTask(
-                dataset_id=dataset_id,
-                input_model_id=input_model_id,
-                training_task_id=training_task_id,
-                conversion_task_id=conversion_task_id,
-                status=Status.NOT_STARTED,
-            )
-            evaluation_task = evaluation_task_repository.save(db=db, model=evaluation_task)
-            return evaluation_task
-
-    def create_evaluation_result(
-        self,
-        evaluation_task_id: str,
-        confidence_score: float,
-        status: Status
-    ) -> EvaluationResult:
-        with get_db_session() as db:
-            evaluation_result = EvaluationResult(
-                evaluation_task_id=evaluation_task_id,
-                confidence_score=confidence_score,
-                status=status
-            )
-            evaluation_result = evaluation_result_repository.save(db=db, model=evaluation_result)
-            return evaluation_result
-
     def evaluate_from_id(
         self,
         model_id: str,
         dataset_id: str,
-        training_task_id: str,
-        conversion_task_id: str,
         confidence_score: float,
-        gpus: int = 0
-    ) -> EvaluationTask:
-        output_dir = tempfile.mkdtemp(prefix="netspresso_convert_")
+        gpus: int = 0,
+        db: Optional[Session] = None,
+    ) -> str:
+        logger.info(f"Starting evaluation for model {model_id} with confidence score {confidence_score}")
 
-        input_model: Model = self.get_input_model(input_model_id=model_id)
+        # Session management
+        external_session = db is not None  # Check if a session was provided externally
 
-        # Download model to temporary directory
+        # Use with block for internal session management if no external session is provided
+        if external_session:
+            return self._evaluate_with_session(
+                db=db,
+                model_id=model_id,
+                dataset_id=dataset_id,
+                confidence_score=confidence_score,
+                gpus=gpus
+            )
+        else:
+            with get_db_session() as db:
+                return self._evaluate_with_session(
+                    db=db,
+                    model_id=model_id,
+                    dataset_id=dataset_id,
+                    confidence_score=confidence_score,
+                    gpus=gpus
+                )
+
+    def _evaluate_with_session(
+        self,
+        db: Session,
+        model_id: str,
+        dataset_id: str,
+        confidence_score: float,
+        gpus: int = 0,
+    ) -> str:
+        evaluation_task = None  # Initialize so it can be safely referenced in except block
+
+        try:
+            output_dir = tempfile.mkdtemp(prefix="netspresso_evaluate_")
+
+            # 1. Get conversion task
+            conversion_task = conversion_task_repository.get_by_model_id(db=db, model_id=model_id)
+
+            # 2. Get training task
+            training_task = training_task_repository.get_by_model_id(db=db, model_id=conversion_task.input_model_id)
+
+            # 3. Check training task is completed
+            if training_task.status != Status.COMPLETED:
+                raise NotCompletedTrainingException(training_task_id=training_task.task_id)
+
+            # 4. Check conversion framework is supported
+            if conversion_task.framework != TargetFramework.TENSORFLOW_LITE:
+                raise UnsupportedEvaluationFrameworkException(framework=conversion_task.framework)
+
+            # 5. Get evaluation task with confidence score - Pass DB session
+            evaluation_task = evaluation_task_repository.get_by_model_dataset_and_confidence(
+                db=db,
+                model_id=model_id,
+                dataset_id=dataset_id,
+                confidence_score=confidence_score
+            )
+
+            if evaluation_task:
+                if evaluation_task.status == Status.COMPLETED:
+                    logger.warning(f"Evaluation task already completed: {evaluation_task.task_id}")
+                    raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, status=Status.COMPLETED)
+                elif evaluation_task.status == Status.IN_PROGRESS:
+                    logger.warning(f"Evaluation task already in progress: {evaluation_task.task_id}")
+                    raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, status=Status.IN_PROGRESS)
+                elif evaluation_task.status == Status.ERROR:
+                    logger.info(f"Retrying failed evaluation task: {evaluation_task.task_id}")
+                else:
+                    # Other status (NOT_STARTED, STOPPED, etc.)
+                    logger.info(f"Using existing evaluation task with ID: {evaluation_task.task_id}")
+            else:
+                # Create task with DB session
+                evaluation_task = EvaluationTask(
+                    dataset_id=dataset_id,
+                    input_model_id=model_id,
+                    training_task_id=training_task.task_id,
+                    conversion_task_id=conversion_task.task_id,
+                    confidence_score=confidence_score,
+                    status=Status.NOT_STARTED,
+                )
+                evaluation_task = evaluation_task_repository.save(db=db, model=evaluation_task)
+                logger.info(f"Created new evaluation task with ID: {evaluation_task.task_id}")
+
+            # Query model info - Pass DB session
+            input_model = model_repository.get_by_model_id(db=db, model_id=model_id)
+            local_path = self._download_model(input_model, output_dir)
+
+            # Update status - Pass DB session
+            evaluation_task.status = Status.IN_PROGRESS
+            evaluation_task = evaluation_task_repository.save(db=db, model=evaluation_task)
+
+            logger.info(f"Running evaluation with confidence score: {confidence_score}")
+            evaluation_logging_dir = self.evaluate(
+                model_path=str(local_path),
+                confidence_score=confidence_score,
+                gpus=gpus
+            )
+            logger.info(f"Evaluation completed. Logging directory: {evaluation_logging_dir}")
+
+            # predictions.json file path
+            predictions_file = evaluation_logging_dir / "predictions.json"
+            logger.info(f"Predictions file: {predictions_file}")
+
+            # Raise error if predictions.json file doesn't exist
+            if not predictions_file.exists():
+                error_msg = f"Predictions file not found: {predictions_file}"
+                logger.error(error_msg)
+                raise FileNotFoundError(error_msg)
+
+            # Upload predictions.json file to evaluation bucket
+            object_path = f"{input_model.user_id}/{evaluation_task.task_id}/predictions.json"
+
+            logger.info(f"Uploading predictions.json to storage: {object_path}")
+            storage_handler.upload_file_to_s3(
+                bucket_name=EVALUATION_BUCKET_NAME,
+                local_path=str(predictions_file),
+                object_path=object_path
+            )
+
+            # Update status after evaluation complete - Use the same DB session
+            evaluation_task.status = Status.COMPLETED
+            evaluation_task.results_path = object_path  # Save storage path
+            evaluation_task_repository.save(db=db, model=evaluation_task)
+
+            return evaluation_task.task_id
+
+        except Exception as e:
+            logger.error(f"Evaluation failed: {str(e)}")
+
+            # Use the same session for error handling
+            if evaluation_task is not None:
+                try:
+                    evaluation_task.status = Status.ERROR
+                    evaluation_task.error_detail = {"error": str(e)}
+                    evaluation_task_repository.save(db=db, model=evaluation_task)
+                except Exception as inner_e:
+                    logger.error(f"Failed to update task status: {str(inner_e)}")
+            raise e
+
+    def _download_model(self, input_model: Model, output_dir: str) -> str:
         download_dir = Path(output_dir) / "input_model"
         download_dir.mkdir(parents=True, exist_ok=True)
 
@@ -124,54 +227,49 @@ class Evaluator:
         )
         logger.info(f"Downloaded input model from Zenko: {local_path}")
 
-        # 모델 ID와 데이터셋 ID로 기존 태스크 조회
-        evaluation_task = None
+        return local_path.as_posix()
+
+    def get_predictions_download_url(
+        self,
+        evaluation_task_id: str,
+        expires_in: int = 3600  # Valid for 1 hour
+    ) -> str:
+        """Creates a presigned URL for downloading the predictions.json file from the evaluation results.
+
+        Args:
+            evaluation_task_id: Evaluation task ID
+            expires_in: URL expiration time in seconds
+
+        Returns:
+            str: Download URL
+
+        Raises:
+            EvaluationTaskNotFoundException: When evaluation task is not found
+            EvaluationResultFileNotFoundException: When evaluation result file is not found
+        """
         with get_db_session() as db:
-            evaluation_task = evaluation_task_repository.get_by_model_and_dataset(
-                db=db,
-                model_id=model_id,
-                dataset_id=dataset_id
-            )
+            # Query evaluation task
+            evaluation_task = evaluation_task_repository.get_by_task_id(db=db, task_id=evaluation_task_id)
 
-        # 기존 태스크가 없으면 새로 생성
-        if not evaluation_task:
-            evaluation_task = self.create_evaluate_task(
-                dataset_id=dataset_id,
-                input_model_id=model_id,
-                training_task_id=training_task_id,
-                conversion_task_id=conversion_task_id,
-            )
+            # Check if results path exists
+            if not evaluation_task.results_path:
+                raise EvaluationResultFileNotFoundException(task_id=evaluation_task_id)
 
-        # 현재 신뢰도 점수에 대한 결과 조회 또는 생성
-        evaluation_result = None
-        with get_db_session() as db:
-            evaluation_result = evaluation_result_repository.get_by_task_id_and_confidence_score(
-                db=db,
-                evaluation_task_id=evaluation_task.task_id,
-                confidence_score=confidence_score
-            )
+            # Set download filename
+            download_filename = f"predictions_{evaluation_task_id}.json"
 
-            if not evaluation_result:
-                # 결과가 없으면 생성
-                evaluation_result = self.create_evaluation_result(
-                    evaluation_task_id=evaluation_task.task_id,
-                    confidence_score=confidence_score,
-                    status=Status.NOT_STARTED
+            # Generate presigned URL
+            logger.info(f"Generating download URL for evaluation result file: {evaluation_task.results_path}")
+            try:
+                download_url = storage_handler.get_download_presigned_url(
+                    bucket_name=EVALUATION_BUCKET_NAME,
+                    object_path=evaluation_task.results_path,
+                    download_name=download_filename,
+                    expires_in=expires_in
                 )
-
-        # 평가 수행
-        evaluation_logging_dir = self.evaluate(model_path=str(local_path), confidence_score=confidence_score, gpus=gpus)
-
-        print(evaluation_logging_dir)
-
-        # # 결과 업데이트
-        # with get_db_session() as db:
-        #     result = evaluation_result_repository.get_by_result_id(db=db, result_id=evaluation_result.result_id)
-        #     if result:
-        #         result.metric_unit = evaluation_output.get("metric_unit")
-        #         result.metric_value = evaluation_output.get("metric_value")
-        #         result.results_path = evaluation_output.get("results_path")
-        #         result.status = Status.COMPLETED
-        #         db.commit()
-
-        return evaluation_task
+                logger.info(f"Download URL generated successfully: {download_url[:100]}...")
+                return download_url
+            except Exception as e:
+                error_msg = f"Failed to generate download URL: {str(e)}"
+                logger.error(error_msg)
+                raise EvaluationDownloadURLGenerationException(task_id=evaluation_task_id, error_details=str(e)) from e
