@@ -59,7 +59,7 @@ class DatasetManager:
 
         return dataset_dir.as_posix()
 
-    def _check_evaluation_dataset_exists(self, dataset_dir: Path, split: str) -> bool:
+    def _check_evaluation_dataset_exists(self, dataset_dir: Path) -> bool:
         """
         Check if evaluation dataset already exists with all required directories and files.
 
@@ -73,11 +73,11 @@ class DatasetManager:
         return (
             dataset_dir.exists()
             and (dataset_dir / "id_mapping.json").exists()
-            and (dataset_dir / "images" / split.lower()).exists()
-            and (dataset_dir / "labels" / split.lower()).exists()
+            and (dataset_dir / "images" / "test").exists()
+            and (dataset_dir / "labels" / "test").exists()
         )
 
-    def _use_existing_evaluation_dataset(self, dataset_dir: Path, split: str) -> str:
+    def _use_existing_evaluation_dataset(self, dataset_dir: Path) -> str:
         """
         Use existing evaluation dataset.
 
@@ -91,7 +91,7 @@ class DatasetManager:
         logger.info(f"Evaluation dataset already exists at {dataset_dir}, using existing files")
 
         # Count existing files for logging
-        image_files: List[Path] = list((dataset_dir / "images" / split.lower()).glob("*"))
+        image_files: List[Path] = list((dataset_dir / "images" / "test").glob("*"))
         logger.info(f"Found {len(image_files)} evaluation samples")
 
         return dataset_dir.as_posix()
@@ -437,6 +437,7 @@ class DatasetManager:
 
             logger.success(f"Dataset downloaded, split and configured at: {dataset_dir}")
             logger.info(f"Train samples: {len(train_pairs)}, Validation samples: {len(valid_pairs)}")
+
             return dataset_dir.as_posix()
 
         except Exception as e:
@@ -454,7 +455,6 @@ class DatasetManager:
     ) -> str:
         """
         Download dataset from DataForge for evaluation purposes
-
         Args:
             dataset_uuid: The UUID of the dataset to download
             output_dir: Directory to save downloaded files
@@ -462,17 +462,16 @@ class DatasetManager:
             max_retries: Maximum number of retry attempts for network/storage errors
             retry_delay: Delay in seconds between retry attempts (will increase with each retry)
             verbose: Whether to log detailed progress for each file (default: False)
-
         Returns:
             str: Path to the configured evaluation dataset
         """
         try:
             # Create base output directory
-            dataset_dir: Path = Path(output_dir) / f"{dataset_uuid}_{split}"
+            dataset_dir: Path = Path(output_dir) / dataset_uuid
 
             # Check if dataset already exists
-            if self._check_evaluation_dataset_exists(dataset_dir, split):
-                return self._use_existing_evaluation_dataset(dataset_dir, split)
+            if self._check_evaluation_dataset_exists(dataset_dir):
+                return self._use_existing_evaluation_dataset(dataset_dir)
 
             # Dataset doesn't exist or is incomplete, proceed with download
             dataset_dir.mkdir(parents=True, exist_ok=True)
@@ -512,7 +511,7 @@ class DatasetManager:
             test_labels_dir.mkdir(parents=True, exist_ok=True)
 
             # Save id_mapping
-            _: Dict[str, str] = self._save_id_mapping(dataset_version, dataset_dir / "id_mapping.json")
+            self._save_id_mapping(dataset_version, dataset_dir / "id_mapping.json")
 
             # Get source file paths
             source_images_dir: Path = temp_dir / dataset_uuid / "images"
