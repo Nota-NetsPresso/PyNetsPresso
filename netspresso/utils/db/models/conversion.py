@@ -21,6 +21,8 @@ class ConversionTask(BaseModel):
     status = Column(String(30), nullable=False)
     error_detail = Column(JSON, nullable=True)
 
+    user_id = Column(String(36), nullable=False)
+
     # Relationship to Model (source model)
     input_model_id = Column(String(36), ForeignKey("model.model_id"), nullable=True)
     input_model = relationship(
