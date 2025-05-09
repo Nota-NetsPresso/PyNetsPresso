@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Boolean, Column, Float, ForeignKey, Integer, String
+from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 
 from netspresso.utils.db.models.base import BaseModel, generate_uuid
@@ -14,9 +14,10 @@ class EvaluationTask(BaseModel):
     is_dataset_deleted = Column(Boolean, nullable=False, default=False)
 
     # 평가 설정
-    confidence_score = Column(Float, nullable=True)
-    metric_unit = Column(String(30), nullable=True)
-    metric_value = Column(Float, nullable=True)
+    confidence_score = Column(Numeric(precision=2, scale=1), nullable=True)
+    metrics = Column(JSON, nullable=True)
+    metrics_names = Column(JSON, nullable=True)
+    primary_metric = Column(String(30), nullable=True)
     results_path = Column(String(255), nullable=True)
 
     status = Column(String(30), nullable=False)
