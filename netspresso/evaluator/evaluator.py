@@ -25,6 +25,7 @@ from netspresso.utils.db.repositories.evaluation import evaluation_task_reposito
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
 from netspresso.utils.db.session import get_db_session
+from netspresso.utils.file import FileHandler
 
 storage_handler = ObjectStorageHandler()
 BUCKET_NAME = "model"
@@ -132,6 +133,11 @@ class Evaluator:
         evaluation_task = None  # Initialize so it can be safely referenced in except block
 
         try:
+            self._check_evaluation_task_status(db=db, model_id=model_id, dataset_id=dataset_id, confidence_score=confidence_score)
+        except EvaluationTaskAlreadyExistsException as e:
+            raise e
+
+        try:
             output_dir = tempfile.mkdtemp(prefix="netspresso_evaluate_")
 
             # 1. Get conversion task
@@ -147,9 +153,6 @@ class Evaluator:
             # 4. Check conversion framework is supported
             if conversion_task.framework != TargetFramework.TENSORFLOW_LITE:
                 raise UnsupportedEvaluationFrameworkException(framework=conversion_task.framework)
-
-            # 5. Check evaluation task status
-            self._check_evaluation_task_status(db=db, model_id=model_id, dataset_id=dataset_id, confidence_score=confidence_score)
 
             # Create task with DB session
             if evaluation_task_id:
@@ -210,7 +213,13 @@ class Evaluator:
                 object_path=object_path
             )
 
+            evaluation_summary_path = Path(evaluation_logging_dir) / "evaluation_summary.json"
+            evaluation_summary = FileHandler.load_json(evaluation_summary_path)
+
             # Update status after evaluation complete - Use the same DB session
+            evaluation_task.metrics = evaluation_summary["metrics"]
+            evaluation_task.metrics_names = evaluation_summary["metrics_list"]
+            evaluation_task.primary_metric = evaluation_summary["primary_metric"]
             evaluation_task.status = Status.COMPLETED
             evaluation_task.results_path = object_path  # Save storage path
             evaluation_task_repository.save(db=db, model=evaluation_task)
