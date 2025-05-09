@@ -309,8 +309,16 @@ class Evaluator:
                 logger.error(error_msg)
                 raise EvaluationDownloadURLGenerationException(task_id=evaluation_task_id, error_details=str(e)) from e
 
-    def get_evaluation_tasks(self, db: Session, user_id: str) -> List[EvaluationTask]:
-        return evaluation_task_repository.get_all_by_user_id(db=db, user_id=user_id)
+    def get_evaluation_tasks(self, db: Session, user_id: str, model_id: str) -> List[EvaluationTask]:
+        return evaluation_task_repository.get_all_by_user_id_and_model_id(
+            db=db,
+            user_id=user_id,
+            model_id=model_id
+        )
 
-    def count_evaluation_task_by_user_id(self, db: Session, user_id: str) -> int:
-        return evaluation_task_repository.count_by_user_id(db=db, user_id=user_id)
+    def count_evaluation_task_by_user_id(self, db: Session, user_id: str, model_id: str) -> int:
+        return evaluation_task_repository.count_by_user_id_and_model_id(
+            db=db,
+            user_id=user_id,
+            model_id=model_id
+        )

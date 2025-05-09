@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import api_key_header
@@ -45,10 +45,15 @@ def create_evaluations_task(
 
 @router.get("/evaluations", response_model=EvaluationsResponse, status_code=200)
 def get_evaluation_tasks(
+    model_id: str = Query(..., description="Filter evaluation tasks by model ID"),
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> EvaluationsResponse:
-    evaluation_tasks = evaluation_task_service.get_evaluation_tasks(db=db, api_key=api_key)
-    total_count = evaluation_task_service.count_evaluation_task_by_user_id(db=db, api_key=api_key)
+    evaluation_tasks = evaluation_task_service.get_evaluation_tasks(
+        db=db,
+        api_key=api_key,
+        model_id=model_id
+    )
+    total_count = evaluation_task_service.count_evaluation_task_by_user_id(db=db, api_key=api_key, model_id=model_id)
 
     return EvaluationsResponse(data=evaluation_tasks, result_count=len(evaluation_tasks), total_count=total_count)

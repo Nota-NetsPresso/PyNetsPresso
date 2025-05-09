@@ -83,13 +83,26 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
             conditions=conditions,
         )
 
-    def count_by_user_id(self, db: Session, user_id: str) -> int:
-        count_field = self.model.user_id
-        conditions = [self.model.user_id == user_id]
+    def count_by_user_id_and_model_id(self, db: Session, user_id: str, model_id: str) -> int:
+        count_field = self.model.task_id
+        conditions = [
+            self.model.user_id == user_id,
+            self.model.input_model_id == model_id
+        ]
 
         count = self.count_by_field(db=db, count_field=count_field, conditions=conditions)
 
         return count
+
+    def get_all_by_user_id_and_model_id(self, db: Session, user_id: str, model_id: str) -> List[EvaluationTask]:
+        conditions = [
+            self.model.user_id == user_id,
+            self.model.input_model_id == model_id
+        ]
+        return self.find_all(
+            db=db,
+            conditions=conditions,
+        )
 
 
 evaluation_task_repository = EvaluationTaskRepository(EvaluationTask)

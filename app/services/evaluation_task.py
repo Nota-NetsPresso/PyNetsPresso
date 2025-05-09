@@ -153,10 +153,15 @@ class EvaluationTaskService:
         self,
         db: Session,
         api_key: str,
+        model_id: str,
     ) -> List[EvaluationPayload]:
         netspresso = NetsPresso(api_key=api_key)
         evaluator = netspresso.evaluator()
-        evaluation_tasks = evaluator.get_evaluation_tasks(db=db, user_id=netspresso.user_info.user_id)
+        evaluation_tasks = evaluator.get_evaluation_tasks(
+            db=db,
+            user_id=netspresso.user_info.user_id,
+            model_id=model_id
+        )
 
         return [EvaluationPayload.model_validate(evaluation_task) for evaluation_task in evaluation_tasks]
 
@@ -164,10 +169,15 @@ class EvaluationTaskService:
         self,
         db: Session,
         api_key: str,
+        model_id: str,
     ) -> int:
         netspresso = NetsPresso(api_key=api_key)
         evaluator = netspresso.evaluator()
 
-        return evaluator.count_evaluation_task_by_user_id(db=db, user_id=netspresso.user_info.user_id)
+        return evaluator.count_evaluation_task_by_user_id(
+            db=db,
+            user_id=netspresso.user_info.user_id,
+            model_id=model_id
+        )
 
 evaluation_task_service = EvaluationTaskService()
