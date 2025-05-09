@@ -70,6 +70,7 @@ class Evaluator:
         dataset_id: str,
         confidence_score: float,
         gpus: int = 0,
+        evaluation_task_id: Optional[str] = None,
         db: Optional[Session] = None,
     ) -> str:
         logger.info(f"Starting evaluation for model {model_id} with confidence score {confidence_score}")
@@ -84,7 +85,8 @@ class Evaluator:
                 model_id=model_id,
                 dataset_id=dataset_id,
                 confidence_score=confidence_score,
-                gpus=gpus
+                gpus=gpus,
+                evaluation_task_id=evaluation_task_id,
             )
         else:
             with get_db_session() as db:
@@ -93,8 +95,30 @@ class Evaluator:
                     model_id=model_id,
                     dataset_id=dataset_id,
                     confidence_score=confidence_score,
-                    gpus=gpus
+                    gpus=gpus,
+                    evaluation_task_id=evaluation_task_id,
                 )
+
+    def _check_evaluation_task_status(self, db: Session, model_id: str, dataset_id: str, confidence_score: float):
+        evaluation_task = evaluation_task_repository.get_by_model_dataset_and_confidence(
+            db=db,
+            model_id=model_id,
+            dataset_id=dataset_id,
+            confidence_score=confidence_score
+        )
+
+        if evaluation_task:
+            if evaluation_task.status == Status.COMPLETED:
+                logger.warning(f"Evaluation task already completed: {evaluation_task.task_id}")
+                raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, status=Status.COMPLETED)
+            elif evaluation_task.status == Status.IN_PROGRESS:
+                logger.warning(f"Evaluation task already in progress: {evaluation_task.task_id}")
+                raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, status=Status.IN_PROGRESS)
+            elif evaluation_task.status == Status.ERROR:
+                logger.info(f"Retrying failed evaluation task: {evaluation_task.task_id}")
+            else:
+                # Other status (NOT_STARTED, STOPPED, etc.)
+                logger.info(f"Using existing evaluation task with ID: {evaluation_task.task_id}")
 
     def _evaluate_with_session(
         self,
@@ -103,6 +127,7 @@ class Evaluator:
         dataset_id: str,
         confidence_score: float,
         gpus: int = 0,
+        evaluation_task_id: Optional[str] = None,
     ) -> str:
         evaluation_task = None  # Initialize so it can be safely referenced in except block
 
@@ -123,28 +148,21 @@ class Evaluator:
             if conversion_task.framework != TargetFramework.TENSORFLOW_LITE:
                 raise UnsupportedEvaluationFrameworkException(framework=conversion_task.framework)
 
-            # 5. Get evaluation task with confidence score - Pass DB session
-            evaluation_task = evaluation_task_repository.get_by_model_dataset_and_confidence(
-                db=db,
-                model_id=model_id,
-                dataset_id=dataset_id,
-                confidence_score=confidence_score
-            )
+            # 5. Check evaluation task status
+            self._check_evaluation_task_status(db=db, model_id=model_id, dataset_id=dataset_id, confidence_score=confidence_score)
 
-            if evaluation_task:
-                if evaluation_task.status == Status.COMPLETED:
-                    logger.warning(f"Evaluation task already completed: {evaluation_task.task_id}")
-                    raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, status=Status.COMPLETED)
-                elif evaluation_task.status == Status.IN_PROGRESS:
-                    logger.warning(f"Evaluation task already in progress: {evaluation_task.task_id}")
-                    raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, status=Status.IN_PROGRESS)
-                elif evaluation_task.status == Status.ERROR:
-                    logger.info(f"Retrying failed evaluation task: {evaluation_task.task_id}")
-                else:
-                    # Other status (NOT_STARTED, STOPPED, etc.)
-                    logger.info(f"Using existing evaluation task with ID: {evaluation_task.task_id}")
+            # Create task with DB session
+            if evaluation_task_id:
+                evaluation_task = EvaluationTask(
+                    task_id=evaluation_task_id,
+                    dataset_id=dataset_id,
+                    input_model_id=model_id,
+                    training_task_id=training_task.task_id,
+                    conversion_task_id=conversion_task.task_id,
+                    confidence_score=confidence_score,
+                    status=Status.NOT_STARTED,
+                )
             else:
-                # Create task with DB session
                 evaluation_task = EvaluationTask(
                     dataset_id=dataset_id,
                     input_model_id=model_id,
@@ -153,8 +171,8 @@ class Evaluator:
                     confidence_score=confidence_score,
                     status=Status.NOT_STARTED,
                 )
-                evaluation_task = evaluation_task_repository.save(db=db, model=evaluation_task)
-                logger.info(f"Created new evaluation task with ID: {evaluation_task.task_id}")
+            evaluation_task = evaluation_task_repository.save(db=db, model=evaluation_task)
+            logger.info(f"Created new evaluation task with ID: {evaluation_task.task_id}")
 
             # Query model info - Pass DB session
             input_model = model_repository.get_by_model_id(db=db, model_id=model_id)
