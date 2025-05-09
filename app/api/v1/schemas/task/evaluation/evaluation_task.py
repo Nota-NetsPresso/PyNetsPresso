@@ -105,3 +105,12 @@ class EvaluationsResponse(ResponsePaginationItems):
 
 class EvaluationResultsResponse(ResponseItem):
     data: EvaluationResultsPayload
+
+
+class EvaluationDatasetsPayload(BaseModel):
+    model_id: str
+    dataset_ids: List[str]
+
+
+class EvaluationDatasetsResponse(ResponseItem):
+    data: EvaluationDatasetsPayload

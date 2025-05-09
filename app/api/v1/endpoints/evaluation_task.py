@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Path
 from sqlalchemy.orm import Session
 
 from app.api.deps import api_key_header
@@ -7,6 +7,8 @@ from app.api.v1.schemas.task.evaluation.evaluation_task import (
     EvaluationCreate,
     EvaluationCreatePayload,
     EvaluationCreateResponse,
+    EvaluationDatasetsPayload,
+    EvaluationDatasetsResponse,
     EvaluationsResponse,
 )
 from app.services.evaluation_task import evaluation_task_service
@@ -43,9 +45,9 @@ def create_evaluations_task(
     return EvaluationCreateResponse(data=response_data)
 
 
-@router.get("/evaluations", response_model=EvaluationsResponse, status_code=200)
+@router.get("/evaluations/{model_id}", response_model=EvaluationsResponse, status_code=200)
 def get_evaluation_tasks(
-    model_id: str = Query(..., description="Filter evaluation tasks by model ID"),
+    model_id: str = Path(..., description="Model ID to filter evaluation tasks"),
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> EvaluationsResponse:
@@ -57,3 +59,23 @@ def get_evaluation_tasks(
     total_count = evaluation_task_service.count_evaluation_task_by_user_id(db=db, api_key=api_key, model_id=model_id)
 
     return EvaluationsResponse(data=evaluation_tasks, result_count=len(evaluation_tasks), total_count=total_count)
+
+
+@router.get("/evaluations/{model_id}/datasets", response_model=EvaluationDatasetsResponse, status_code=200)
+def get_unique_evaluation_datasets(
+    model_id: str = Path(..., description="Model ID to get unique datasets for"),
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> EvaluationDatasetsResponse:
+    dataset_ids = evaluation_task_service.get_unique_datasets_by_model_id(
+        db=db,
+        api_key=api_key,
+        model_id=model_id
+    )
+
+    response_data = EvaluationDatasetsPayload(
+        model_id=model_id,
+        dataset_ids=dataset_ids
+    )
+
+    return EvaluationDatasetsResponse(data=response_data)

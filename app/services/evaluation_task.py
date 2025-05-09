@@ -180,4 +180,29 @@ class EvaluationTaskService:
             model_id=model_id
         )
 
+    def get_unique_datasets_by_model_id(
+        self,
+        db: Session,
+        api_key: str,
+        model_id: str,
+    ) -> List[str]:
+        """Get unique dataset IDs used for evaluating a specific model.
+
+        Args:
+            db: Database session
+            api_key: API key for authentication
+            model_id: Model ID
+
+        Returns:
+            List[str]: List of unique dataset IDs
+        """
+        netspresso = NetsPresso(api_key=api_key)
+        evaluator = netspresso.evaluator()
+
+        return evaluator.get_unique_datasets_by_model_id(
+            db=db,
+            user_id=netspresso.user_info.user_id,
+            model_id=model_id
+        )
+
 evaluation_task_service = EvaluationTaskService()

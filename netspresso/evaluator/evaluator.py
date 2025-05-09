@@ -322,3 +322,20 @@ class Evaluator:
             user_id=user_id,
             model_id=model_id
         )
+
+    def get_unique_datasets_by_model_id(self, db: Session, user_id: str, model_id: str) -> List[str]:
+        """Get unique dataset IDs used for evaluating a specific model.
+
+        Args:
+            db: Database session
+            user_id: User ID
+            model_id: Model ID
+
+        Returns:
+            List[str]: List of unique dataset IDs
+        """
+        return evaluation_task_repository.get_unique_datasets_by_model_id(
+            db=db,
+            user_id=user_id,
+            model_id=model_id
+        )

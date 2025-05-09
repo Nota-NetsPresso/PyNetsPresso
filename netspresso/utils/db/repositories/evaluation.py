@@ -28,15 +28,15 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
 
     def get_by_model_and_dataset(self, db: Session, model_id: str, dataset_id: str) -> Optional[EvaluationTask]:
         """
-        모델 ID와 데이터셋 ID로 평가 태스크를 조회합니다.
+        Retrieve an evaluation task by model ID and dataset ID.
 
         Args:
-            db: 데이터베이스 세션
-            model_id: 입력 모델 ID
-            dataset_id: 데이터셋 ID
+            db: Database session
+            model_id: Input model ID
+            dataset_id: Dataset ID
 
         Returns:
-            EvaluationTask 또는 None
+            EvaluationTask or None
         """
         conditions = [
             self.model.input_model_id == model_id,
@@ -55,16 +55,16 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
         confidence_score: float
     ) -> Optional[EvaluationTask]:
         """
-        모델 ID, 데이터셋 ID, 그리고 신뢰도 점수로 평가 태스크를 조회합니다.
+        Retrieve an evaluation task by model ID, dataset ID, and confidence score.
 
         Args:
-            db: 데이터베이스 세션
-            model_id: 입력 모델 ID
-            dataset_id: 데이터셋 ID
-            confidence_score: 신뢰도 점수
+            db: Database session
+            model_id: Input model ID
+            dataset_id: Dataset ID
+            confidence_score: Confidence score
 
         Returns:
-            EvaluationTask 또는 None
+            EvaluationTask or None
         """
         conditions = [
             self.model.input_model_id == model_id,
@@ -103,6 +103,33 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
             db=db,
             conditions=conditions,
         )
+
+    def get_unique_datasets_by_model_id(self, db: Session, user_id: str, model_id: str) -> List[str]:
+        """
+        Retrieve a list of unique dataset IDs used for evaluating a specific model.
+
+        Args:
+            db: Database session
+            user_id: User ID
+            model_id: Model ID
+
+        Returns:
+            List[str]: List of unique dataset IDs
+        """
+        # We need to make a custom query to get unique dataset_ids
+        query = db.query(
+            self.model.dataset_id.distinct()
+        ).filter(
+            self.model.user_id == user_id,
+            self.model.input_model_id == model_id,
+            self.model.is_deleted.is_(False)
+        )
+
+        # Execute the query and extract dataset IDs
+        result = query.all()
+
+        # Convert the result (list of tuples) to a list of strings
+        return [item[0] for item in result]
 
 
 evaluation_task_repository = EvaluationTaskRepository(EvaluationTask)
