@@ -8,17 +8,6 @@ from netspresso.enums.conversion import PrecisionForConversion, TargetFramework
 from netspresso.enums.device import DeviceName, SoftwareVersion
 
 
-class EvaluationResultResponse(BaseModel):
-    """평가 결과 응답 스키마"""
-    result_id: str
-    confidence_score: float
-    metric_unit: Optional[str] = None
-    metric_value: Optional[float] = None
-    results_path: Optional[str] = None
-    status: str
-    error_detail: Optional[Dict[str, Any]] = None
-
-
 class EvaluationCreate(BaseModel):
     input_model_id: str = Field(description="Input model ID")
     dataset_id: str = Field(description="Dataset ID")
@@ -40,22 +29,25 @@ class EvaluationPayload(BaseModel):
 
     task_id: str
     dataset_id: str
-    dataset_name: str
+    dataset_name: str = "Traffic Sign"
     is_dataset_deleted: bool
-    metric_unit: str
-    metric_value: float
+
+    confidence_score: float
+    metrics: Dict
+    metrics_names: List[str]
+    primary_metric: str
     results_path: str
 
     input_model_id: str
     training_task_id: str
     conversion_task_id: str
+    user_id: str
 
     status: str
     error_detail: Optional[Dict] = None
     is_deleted: bool
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    results: Optional[List[EvaluationResultResponse]] = None
 
 
 class BoundingBoxCoordinates(BaseModel):

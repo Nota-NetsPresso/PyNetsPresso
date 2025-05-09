@@ -14,7 +14,7 @@ class EvaluationTask(BaseModel):
     is_dataset_deleted = Column(Boolean, nullable=False, default=False)
 
     # 평가 설정
-    confidence_score = Column(Numeric(precision=2, scale=1), nullable=True)
+    confidence_score = Column(Numeric(precision=2, scale=1), nullable=False)
     metrics = Column(JSON, nullable=True)
     metrics_names = Column(JSON, nullable=True)
     primary_metric = Column(String(30), nullable=True)

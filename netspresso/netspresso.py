@@ -176,7 +176,7 @@ class NetsPresso:
         """
         return Trainer(token_handler=self.token_handler, task=task, yaml_path=yaml_path)
 
-    def evaluator(self, trainer: Trainer) -> Evaluator:
+    def evaluator(self, trainer: Optional[Trainer] = None) -> Evaluator:
         """Initialize and return a Evaluator instance.
 
         Returns:

@@ -1,6 +1,6 @@
 import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from loguru import logger
 from netspresso_trainer.evaluator_main import evaluation_with_yaml_impl
@@ -33,10 +33,13 @@ EVALUATION_BUCKET_NAME = "evaluation"
 
 
 class Evaluator:
-    def __init__(self, trainer: Trainer):
+    def __init__(self, trainer: Optional[Trainer] = None):
         self.trainer = trainer
 
     def evaluate(self, model_path: str, confidence_score: float, gpus: int = 0):
+        if self.trainer is None:
+            raise ValueError("Trainer is required for evaluate method")
+
         try:
             self.trainer.model.checkpoint.path = model_path
             self.trainer.environment.batch_size = 1
@@ -74,6 +77,9 @@ class Evaluator:
         evaluation_task_id: Optional[str] = None,
         db: Optional[Session] = None,
     ) -> str:
+        if self.trainer is None:
+            raise ValueError("Trainer is required for evaluation")
+
         logger.info(f"Starting evaluation for model {model_id} with confidence score {confidence_score}")
 
         # Session management
@@ -164,6 +170,7 @@ class Evaluator:
                     conversion_task_id=conversion_task.task_id,
                     confidence_score=confidence_score,
                     status=Status.NOT_STARTED,
+                    user_id=conversion_task.user_id,
                 )
             else:
                 evaluation_task = EvaluationTask(
@@ -173,6 +180,7 @@ class Evaluator:
                     conversion_task_id=conversion_task.task_id,
                     confidence_score=confidence_score,
                     status=Status.NOT_STARTED,
+                    user_id=conversion_task.user_id,
                 )
             evaluation_task = evaluation_task_repository.save(db=db, model=evaluation_task)
             logger.info(f"Created new evaluation task with ID: {evaluation_task.task_id}")
@@ -300,3 +308,9 @@ class Evaluator:
                 error_msg = f"Failed to generate download URL: {str(e)}"
                 logger.error(error_msg)
                 raise EvaluationDownloadURLGenerationException(task_id=evaluation_task_id, error_details=str(e)) from e
+
+    def get_evaluation_tasks(self, db: Session, user_id: str) -> List[EvaluationTask]:
+        return evaluation_task_repository.get_all_by_user_id(db=db, user_id=user_id)
+
+    def count_evaluation_task_by_user_id(self, db: Session, user_id: str) -> int:
+        return evaluation_task_repository.count_by_user_id(db=db, user_id=user_id)

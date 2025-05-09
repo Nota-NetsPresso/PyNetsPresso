@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -75,6 +75,21 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
             db=db,
             conditions=conditions,
         )
+
+    def get_all_by_user_id(self, db: Session, user_id: str) -> List[EvaluationTask]:
+        conditions = [self.model.user_id == user_id]
+        return self.find_all(
+            db=db,
+            conditions=conditions,
+        )
+
+    def count_by_user_id(self, db: Session, user_id: str) -> int:
+        count_field = self.model.user_id
+        conditions = [self.model.user_id == user_id]
+
+        count = self.count_by_field(db=db, count_field=count_field, conditions=conditions)
+
+        return count
 
 
 evaluation_task_repository = EvaluationTaskRepository(EvaluationTask)

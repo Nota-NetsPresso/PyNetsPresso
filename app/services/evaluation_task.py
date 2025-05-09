@@ -13,9 +13,8 @@ from app.api.v1.schemas.device import (
 from app.api.v1.schemas.task.conversion.conversion_task import (
     TargetFrameworkPayload,
 )
-from app.api.v1.schemas.task.evaluation.evaluation_task import EvaluationCreate
+from app.api.v1.schemas.task.evaluation.evaluation_task import EvaluationCreate, EvaluationPayload
 from app.worker.evaluation_task import run_multiple_evaluations
-from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums import DataType, DeviceName, SoftwareVersion, Status
 from netspresso.enums.conversion import SourceFramework, TargetFramework
@@ -23,10 +22,6 @@ from netspresso.exceptions.conversion import ConversionTaskNotFoundException
 from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
-
-storage_handler = ObjectStorageHandler()
-BUCKET_NAME = "model"
-POLLING_INTERVAL = 30  # seconds
 
 
 class EvaluationTaskService:
@@ -154,5 +149,25 @@ class EvaluationTaskService:
 
         return evaluation_task_id
 
+    def get_evaluation_tasks(
+        self,
+        db: Session,
+        api_key: str,
+    ) -> List[EvaluationPayload]:
+        netspresso = NetsPresso(api_key=api_key)
+        evaluator = netspresso.evaluator()
+        evaluation_tasks = evaluator.get_evaluation_tasks(db=db, user_id=netspresso.user_info.user_id)
+
+        return [EvaluationPayload.model_validate(evaluation_task) for evaluation_task in evaluation_tasks]
+
+    def count_evaluation_task_by_user_id(
+        self,
+        db: Session,
+        api_key: str,
+    ) -> int:
+        netspresso = NetsPresso(api_key=api_key)
+        evaluator = netspresso.evaluator()
+
+        return evaluator.count_evaluation_task_by_user_id(db=db, user_id=netspresso.user_info.user_id)
 
 evaluation_task_service = EvaluationTaskService()
