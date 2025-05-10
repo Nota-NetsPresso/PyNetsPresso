@@ -213,13 +213,27 @@ class Evaluator:
 
             # Upload predictions.json file to evaluation bucket
             object_path = f"{input_model.user_id}/{evaluation_task.task_id}/predictions.json"
-
             logger.info(f"Uploading predictions.json to storage: {object_path}")
             storage_handler.upload_file_to_s3(
                 bucket_name=EVALUATION_BUCKET_NAME,
                 local_path=str(predictions_file),
                 object_path=object_path
             )
+
+            # Upload result images to evaluation bucket
+            result_images_dir = Path(evaluation_logging_dir) / "result_image"
+            VALID_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff", ".bmp"}
+            for image_file in result_images_dir.glob("*"):
+                if image_file.suffix not in VALID_IMAGE_EXTENSIONS:
+                    logger.warning(f"Skipping non-image file: {image_file}")
+                    continue
+                object_path = f"{input_model.user_id}/{evaluation_task.task_id}/result_images/{image_file.name}"
+                logger.info(f"Uploading result image to storage: {object_path}")
+                storage_handler.upload_file_to_s3(
+                    bucket_name=EVALUATION_BUCKET_NAME,
+                    local_path=str(image_file),
+                    object_path=object_path
+                )
 
             evaluation_summary_path = Path(evaluation_logging_dir) / "evaluation_summary.json"
             evaluation_summary = FileHandler.load_json(evaluation_summary_path)
@@ -318,23 +332,6 @@ class Evaluator:
 
     def count_evaluation_task_by_user_id(self, db: Session, user_id: str, model_id: str) -> int:
         return evaluation_task_repository.count_by_user_id_and_model_id(
-            db=db,
-            user_id=user_id,
-            model_id=model_id
-        )
-
-    def get_unique_datasets_by_model_id(self, db: Session, user_id: str, model_id: str) -> List[str]:
-        """Get unique dataset IDs used for evaluating a specific model.
-
-        Args:
-            db: Database session
-            user_id: User ID
-            model_id: Model ID
-
-        Returns:
-            List[str]: List of unique dataset IDs
-        """
-        return evaluation_task_repository.get_unique_datasets_by_model_id(
             db=db,
             user_id=user_id,
             model_id=model_id
