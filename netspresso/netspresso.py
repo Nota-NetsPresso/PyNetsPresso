@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -46,7 +47,7 @@ class NetsPresso:
         user_info = auth_client.get_user_info(self.token_handler.tokens.access_token, self.token_handler.verify_ssl)
         return user_info
 
-    def create_project(self, project_name: str, project_path: str = "./projects") -> Project:
+    def create_project(self, project_name: str, project_path: Optional[str] = None) -> Project:
         """
         Create a new project with the specified name and path.
 
@@ -58,7 +59,8 @@ class NetsPresso:
             project_name (str): The name of the project to create.
                 Must not exceed 30 characters.
             project_path (str, optional): The base path where the project
-                will be created. Defaults to "./projects".
+                will be created. Defaults to value from NETSPRESSO_PROJECT_PATH
+                environment variable or "./projects" if not set.
 
         Returns:
             Project: The created project object containing information
@@ -72,6 +74,10 @@ class NetsPresso:
             ProjectSaveException: If an error occurs while saving the project
                 to the database.
         """
+        # Get project path from environment variable if not provided
+        if project_path is None:
+            project_path = os.environ.get("NETSPRESSO_PROJECT_PATH", "./projects")
+
         if len(project_name) > 30:
             raise ProjectNameTooLongException(max_length=30, actual_length=len(project_name))
 
