@@ -254,14 +254,18 @@ class EvaluationTaskService:
         api_key: str,
         model_id: str,
         dataset_id: str,
+        start: int = 0,
+        size: int = 20,
     ) -> EvaluationResultsPayload:
-        """Get detailed evaluation results including predictions and result images.
+        """Get detailed evaluation results including predictions and result images with pagination.
 
         Args:
             db: Database session
             api_key: API key for authentication
             model_id: Model ID
             dataset_id: Dataset ID
+            start: Pagination start index
+            size: Page size (number of images)
 
         Returns:
             EvaluationResultsPayload: Detailed evaluation results with predictions and image URLs
@@ -345,7 +349,7 @@ class EvaluationTaskService:
                 image_urls[image_filename] = presigned_url
 
             # 5. Combine predictions with image URLs
-            image_predictions = []
+            all_image_predictions = []
 
             # Extract base predictions from the loaded file
             if "predictions" in predictions_data:
@@ -365,7 +369,6 @@ class EvaluationTaskService:
                     # Extract filename from path
                     image_filename = Path(image_path).name
 
-                    # Create presigned URL for this image
                     image_url = image_urls.get(image_filename)
 
                     if not image_url:
@@ -389,17 +392,32 @@ class EvaluationTaskService:
                         })
 
                     # Add to results
-                    image_predictions.append({
+                    all_image_predictions.append({
                         "image_id": image_filename,
                         "image_url": image_url,
                         "predictions": threshold_predictions
                     })
 
-            # Return combined results
+            # Apply pagination to image predictions
+            total_count = len(all_image_predictions)
+
+            # Validate start index
+            if start >= total_count:
+                start = 0
+
+            # Calculate end index
+            end = min(start + size, total_count)
+
+            # Get paginated results
+            paginated_predictions = all_image_predictions[start:end]
+
+            # Return combined results with pagination info
             return EvaluationResultsPayload(
                 model_id=model_id,
                 dataset_id=dataset_id,
-                results=image_predictions
+                results=paginated_predictions,
+                result_count=len(paginated_predictions),
+                total_count=total_count
             )
 
         except Exception as e:

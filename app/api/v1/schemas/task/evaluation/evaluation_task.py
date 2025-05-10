@@ -89,6 +89,8 @@ class EvaluationResultsPayload(BaseModel):
     model_id: str
     dataset_id: str
     results: List[ImagePrediction]
+    result_count: int = 0
+    total_count: int = 0
 
 
 class EvaluationCreateResponse(ResponseItem):

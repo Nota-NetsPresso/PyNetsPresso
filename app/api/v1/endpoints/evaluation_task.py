@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import api_key_header
@@ -86,6 +86,8 @@ def get_unique_evaluation_datasets(
 def get_evaluation_results(
     model_id: str = Path(..., description="Model ID"),
     dataset_id: str = Path(..., description="Dataset ID"),
+    start: int = Query(0, description="Pagination start index"),
+    size: int = Query(20, description="Page size (number of images)"),
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> EvaluationResultsResponse:
@@ -94,7 +96,9 @@ def get_evaluation_results(
         db=db,
         api_key=api_key,
         model_id=model_id,
-        dataset_id=dataset_id
+        dataset_id=dataset_id,
+        start=start,
+        size=size
     )
 
     return EvaluationResultsResponse(data=evaluation_result)
