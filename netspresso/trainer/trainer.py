@@ -871,7 +871,7 @@ class Trainer(NetsPressoBase):
     def download_dataset_for_training(
         self,
         dataset_uuid: str,
-        output_dir: str = "./datasets",
+        output_dir: str = "/datasets",
         valid_split: float = 0.2,
         random_seed: int = 0,
         max_retries: int = 3,
@@ -894,30 +894,30 @@ class Trainer(NetsPressoBase):
         Returns:
             str: Path to the configured dataset
         """
-        dataset_path = self.dataset_manager.download_dataset_for_training(
-            dataset_uuid=dataset_uuid,
-            output_dir=output_dir,
-            valid_split=valid_split,
-            random_seed=random_seed,
-            max_retries=max_retries,
-            retry_delay=retry_delay,
-            verbose=verbose,
-        )
+        try:
+            dataset_path = self.dataset_manager.download_dataset_for_training(
+                dataset_uuid=dataset_uuid,
+                output_dir=output_dir,
+                valid_split=valid_split,
+                random_seed=random_seed,
+                max_retries=max_retries,
+                retry_delay=retry_delay,
+                verbose=verbose,
+            )
+            logger.info(f"Downloaded dataset from DataForge: {dataset_path}")
 
-        if dataset_path:
-            # 데이터셋 설정
-            try:
-                self.set_dataset(dataset_path)
-                return dataset_path
-            except Exception as e:
-                logger.error(f"Error configuring dataset: {str(e)}")
-                return ""
-        return ""
+            self.set_dataset(dataset_path)
+
+            return dataset_path
+
+        except Exception as e:
+            logger.error(f"Failed to download dataset for training: {str(e)}")
+            raise e
 
     def download_dataset_for_evaluation(
         self,
         dataset_uuid: str,
-        output_dir: str = "./datasets",
+        output_dir: str = "/datasets",
         split: str = Split.TEST,
         max_retries: int = 3,
         retry_delay: int = 5,
@@ -937,35 +937,28 @@ class Trainer(NetsPressoBase):
         Returns:
             str: Path to the configured evaluation dataset
         """
-        dataset_path = self.dataset_manager.download_dataset_for_evaluation(
-            dataset_uuid=dataset_uuid,
-            output_dir=output_dir,
-            split=split,
-            max_retries=max_retries,
-            retry_delay=retry_delay,
-            verbose=verbose,
-        )
-        logger.info(f"Downloaded dataset from DataForge: {dataset_path}")
+        try:
+            dataset_path = self.dataset_manager.download_dataset_for_evaluation(
+                dataset_uuid=dataset_uuid,
+                output_dir=output_dir,
+                split=split,
+                max_retries=max_retries,
+                retry_delay=retry_delay,
+                verbose=verbose,
+            )
+            logger.info(f"Downloaded dataset from DataForge: {dataset_path}")
 
-        self.set_test_dataset(dataset_path)
+            self.set_test_dataset(dataset_path)
 
-        return dataset_path
+            return dataset_path
 
-        # if dataset_path:
-        #     try:
-        #         logger.info(f"Setting test dataset: {dataset_path}")
-        #         self.set_test_dataset(dataset_path)
-        #         return dataset_path
-        #     except Exception as e:
-        #         logger.error(f"Error configuring dataset: {str(e)}")
-        #         return ""
-        # return ""
+        except Exception as e:
+            logger.error(f"Failed to download dataset for evaluation: {str(e)}")
+            raise e
 
     def set_test_dataset(self, dataset_root_path: str):
         dataset_name = Path(dataset_root_path).name
         root_path = Path(dataset_root_path).resolve().as_posix()
-
-        print(root_path)
 
         # self.check_test_paths_exist(root_path)
         images_test = self.find_paths(root_path, "images", "test")
