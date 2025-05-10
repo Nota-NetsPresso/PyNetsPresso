@@ -131,5 +131,29 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
         # Convert the result (list of tuples) to a list of strings
         return [item[0] for item in result]
 
+    def get_all_by_model_and_dataset(self, db: Session, user_id: str, model_id: str, dataset_id: str) -> List[EvaluationTask]:
+        """
+        Retrieve all evaluation tasks for a specific model and dataset.
+
+        Args:
+            db: Database session
+            user_id: User ID
+            model_id: Model ID
+            dataset_id: Dataset ID
+
+        Returns:
+            List[EvaluationTask]: List of evaluation tasks
+        """
+        conditions = [
+            self.model.user_id == user_id,
+            self.model.input_model_id == model_id,
+            self.model.dataset_id == dataset_id,
+        ]
+
+        return self.find_all(
+            db=db,
+            conditions=conditions,
+        )
+
 
 evaluation_task_repository = EvaluationTaskRepository(EvaluationTask)

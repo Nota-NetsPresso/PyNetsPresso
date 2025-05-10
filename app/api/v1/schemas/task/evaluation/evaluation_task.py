@@ -86,7 +86,7 @@ class ImagePrediction(BaseModel):
 class EvaluationResultsPayload(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    task_id: str
+    model_id: str
     dataset_id: str
     results: List[ImagePrediction]
 

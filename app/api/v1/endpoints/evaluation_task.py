@@ -9,6 +9,7 @@ from app.api.v1.schemas.task.evaluation.evaluation_task import (
     EvaluationCreateResponse,
     EvaluationDatasetsPayload,
     EvaluationDatasetsResponse,
+    EvaluationResultsResponse,
     EvaluationsResponse,
 )
 from app.services.evaluation_task import evaluation_task_service
@@ -79,3 +80,21 @@ def get_unique_evaluation_datasets(
     )
 
     return EvaluationDatasetsResponse(data=response_data)
+
+
+@router.get("/evaluations/{model_id}/datasets/{dataset_id}/results", response_model=EvaluationResultsResponse, status_code=200)
+def get_evaluation_results(
+    model_id: str = Path(..., description="Model ID"),
+    dataset_id: str = Path(..., description="Dataset ID"),
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> EvaluationResultsResponse:
+    """Get detailed evaluation results for a specific model and dataset, including predictions and result images."""
+    evaluation_result = evaluation_task_service.get_evaluation_result_details(
+        db=db,
+        api_key=api_key,
+        model_id=model_id,
+        dataset_id=dataset_id
+    )
+
+    return EvaluationResultsResponse(data=evaluation_result)

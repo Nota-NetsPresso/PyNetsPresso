@@ -175,3 +175,40 @@ class ObjectStorageHandler:
             self.s3_client.download_file(bucket_name, object_path, local_path)
         except FileNotFoundError:
             raise Exception("The file was not found")
+
+    def list_objects(
+        self,
+        bucket_name: str,
+        prefix: str,
+    ) -> list:
+        """List objects in a bucket with specified prefix
+
+        Args:
+            bucket_name: S3 bucket name
+            prefix: Object prefix to filter results
+
+        Returns:
+            list: List of object paths (keys)
+
+        Raises:
+            HTTPException: If operation fails
+        """
+        try:
+            result = []
+            paginator = self.s3_client.get_paginator('list_objects_v2')
+            page_iterator = paginator.paginate(
+                Bucket=bucket_name,
+                Prefix=prefix
+            )
+
+            for page in page_iterator:
+                if 'Contents' in page:
+                    for obj in page['Contents']:
+                        result.append(obj['Key'])
+
+            return result
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to list objects: {str(e)}"
+            )

@@ -1,3 +1,6 @@
+import shutil
+import tempfile
+from pathlib import Path
 from typing import List, Optional
 
 from loguru import logger
@@ -13,15 +16,25 @@ from app.api.v1.schemas.device import (
 from app.api.v1.schemas.task.conversion.conversion_task import (
     TargetFrameworkPayload,
 )
-from app.api.v1.schemas.task.evaluation.evaluation_task import EvaluationCreate, EvaluationPayload
+from app.api.v1.schemas.task.evaluation.evaluation_task import (
+    EvaluationCreate,
+    EvaluationPayload,
+    EvaluationResultsPayload,
+)
 from app.worker.evaluation_task import run_multiple_evaluations
+from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums import DataType, DeviceName, SoftwareVersion, Status
 from netspresso.enums.conversion import SourceFramework, TargetFramework
+from netspresso.evaluator.evaluator import EVALUATION_BUCKET_NAME
 from netspresso.exceptions.conversion import ConversionTaskNotFoundException
 from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.models.conversion import ConversionTask
+from netspresso.utils.db.models.evaluation import EvaluationTask
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
+from netspresso.utils.file import FileHandler
+
+storage_handler = ObjectStorageHandler()
 
 
 class EvaluationTaskService:
@@ -204,5 +217,197 @@ class EvaluationTaskService:
             user_id=netspresso.user_info.user_id,
             model_id=model_id
         )
+
+    def get_evaluation_results_by_model_and_dataset(
+        self,
+        db: Session,
+        api_key: str,
+        model_id: str,
+        dataset_id: str,
+    ) -> List[EvaluationTask]:
+        """Get evaluation results for a specific model and dataset.
+
+        Args:
+            db: Database session
+            api_key: API key for authentication
+            model_id: Model ID
+            dataset_id: Dataset ID
+
+        Returns:
+            List[EvaluationTask]: List of evaluation results
+        """
+        netspresso = NetsPresso(api_key=api_key)
+        evaluator = netspresso.evaluator()
+
+        evaluation_tasks = evaluator.get_evaluation_results_by_model_and_dataset(
+            db=db,
+            user_id=netspresso.user_info.user_id,
+            model_id=model_id,
+            dataset_id=dataset_id
+        )
+
+        return evaluation_tasks
+
+    def get_evaluation_result_details(
+        self,
+        db: Session,
+        api_key: str,
+        model_id: str,
+        dataset_id: str,
+    ) -> EvaluationResultsPayload:
+        """Get detailed evaluation results including predictions and result images.
+
+        Args:
+            db: Database session
+            api_key: API key for authentication
+            model_id: Model ID
+            dataset_id: Dataset ID
+
+        Returns:
+            EvaluationResultsPayload: Detailed evaluation results with predictions and image URLs
+        """
+        netspresso = NetsPresso(api_key=api_key)
+        evaluator = netspresso.evaluator()
+
+        # Get evaluation tasks for this model and dataset
+        evaluation_tasks = evaluator.get_evaluation_results_by_model_and_dataset(
+            db=db,
+            user_id=netspresso.user_info.user_id,
+            model_id=model_id,
+            dataset_id=dataset_id
+        )
+
+        if not evaluation_tasks:
+            logger.warning(f"No evaluation tasks found for model {model_id} and dataset {dataset_id}")
+            return EvaluationResultsPayload(
+                task_id="",
+                dataset_id=dataset_id,
+                results=[]
+            )
+
+        # Find the most recent completed evaluation task
+        completed_tasks = [task for task in evaluation_tasks if task.status == Status.COMPLETED]
+        if not completed_tasks:
+            logger.warning(f"No completed evaluation tasks found for model {model_id} and dataset {dataset_id}")
+            return EvaluationResultsPayload(
+                task_id="",
+                dataset_id=dataset_id,
+                results=[]
+            )
+
+        # Get user_id and task_id from the first completed task
+        user_id = completed_tasks[0].user_id
+        task_id = completed_tasks[0].task_id
+
+        # Create temporary directory for downloads
+        temp_dir = tempfile.mkdtemp(prefix="evaluation_results_")
+        temp_path = Path(temp_dir)
+
+        try:
+            # 1. Download predictions.json
+            predictions_object_path = f"{user_id}/{task_id}/predictions.json"
+            predictions_local_path = temp_path / "predictions.json"
+
+            storage_handler.download_file_from_s3(
+                bucket_name=EVALUATION_BUCKET_NAME,
+                object_path=predictions_object_path,
+                local_path=predictions_local_path.as_posix()
+            )
+
+            # 2. Read predictions.json
+            predictions_data = FileHandler.load_json(predictions_local_path)
+
+            # 3. Get list of image files from result_images directory
+            result_images_prefix = f"{user_id}/{task_id}/result_images/"
+            image_objects = storage_handler.list_objects(
+                bucket_name=EVALUATION_BUCKET_NAME,
+                prefix=result_images_prefix
+            )
+
+            # Filter only files with '_images' in the path
+            image_paths = [obj for obj in image_objects if '_images' in Path(obj).name]
+
+            # 4. Create presigned URLs for each image
+            image_urls = {}
+            for image_path in image_paths:
+                # Extract image filename (e.g., "000001_images.png")
+                image_filename = Path(image_path).name
+
+                # Create presigned URL
+                presigned_url = storage_handler.get_download_presigned_url(
+                    bucket_name=EVALUATION_BUCKET_NAME,
+                    object_path=image_path,
+                    download_name=image_filename,
+                    expires_in=3600  # 1 hour
+                )
+
+                # Store URL with filename as key
+                image_urls[image_filename] = presigned_url
+
+            # 5. Combine predictions with image URLs
+            image_predictions = []
+
+            # Extract base predictions from the loaded file
+            if "predictions" in predictions_data:
+                base_predictions = predictions_data["predictions"]
+
+                # Sort image paths to ensure consistent ordering (optional)
+                image_paths.sort()
+
+                # Limit to the minimum length of both arrays to ensure 1:1 mapping
+                max_items = min(len(base_predictions), len(image_paths))
+
+                # Combine predictions with image URLs based on index order
+                for i in range(max_items):
+                    pred = base_predictions[i]
+                    image_path = image_paths[i]
+
+                    # Extract filename from path
+                    image_filename = Path(image_path).name
+
+                    # Create presigned URL for this image
+                    image_url = image_urls.get(image_filename)
+
+                    if not image_url:
+                        logger.warning(f"No presigned URL found for image {image_filename}")
+                        continue
+
+                    # Create prediction entries for each threshold (0.3, 0.5, 0.6)
+                    all_bboxes = pred.get("bboxes", [])
+
+                    # For each threshold, filter bboxes
+                    threshold_predictions = []
+                    for threshold in [0.3, 0.5, 0.6]:
+                        filtered_bboxes = [
+                            bbox for bbox in all_bboxes
+                            if bbox.get("confidence_score", 0) >= threshold
+                        ]
+
+                        threshold_predictions.append({
+                            "threshold": threshold,
+                            "bboxes": filtered_bboxes
+                        })
+
+                    # Add to results
+                    image_predictions.append({
+                        "image_id": image_filename,
+                        "image_url": image_url,
+                        "predictions": threshold_predictions
+                    })
+
+            # Return combined results
+            return EvaluationResultsPayload(
+                model_id=model_id,
+                dataset_id=dataset_id,
+                results=image_predictions
+            )
+
+        except Exception as e:
+            logger.error(f"Error retrieving evaluation results: {str(e)}")
+            raise e
+
+        finally:
+            # Clean up temporary directory
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
 evaluation_task_service = EvaluationTaskService()

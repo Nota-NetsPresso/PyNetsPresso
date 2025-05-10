@@ -221,7 +221,7 @@ class Evaluator:
             )
 
             # Upload result images to evaluation bucket
-            result_images_dir = Path(evaluation_logging_dir) / "result_image"
+            result_images_dir = Path(evaluation_logging_dir) / "result_image" / "evaluation"
             VALID_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tiff", ".bmp"}
             for image_file in result_images_dir.glob("*"):
                 if image_file.suffix not in VALID_IMAGE_EXTENSIONS:
@@ -335,4 +335,49 @@ class Evaluator:
             db=db,
             user_id=user_id,
             model_id=model_id
+        )
+
+    def get_evaluation_task(self, db: Session, evaluation_id: str) -> EvaluationTask:
+        return evaluation_task_repository.get_by_task_id(db=db, task_id=evaluation_id)
+
+    def get_unique_datasets_by_model_id(self, db: Session, user_id: str, model_id: str) -> List[str]:
+        """Get unique dataset IDs used for evaluating a specific model.
+
+        Args:
+            db: Database session
+            user_id: User ID
+            model_id: Model ID
+
+        Returns:
+            List[str]: List of unique dataset IDs
+        """
+        return evaluation_task_repository.get_unique_datasets_by_model_id(
+            db=db,
+            user_id=user_id,
+            model_id=model_id
+        )
+
+    def get_evaluation_results_by_model_and_dataset(
+        self,
+        db: Session,
+        user_id: str,
+        model_id: str,
+        dataset_id: str
+    ) -> List[EvaluationTask]:
+        """Get evaluation results for a specific model and dataset.
+
+        Args:
+            db: Database session
+            user_id: User ID
+            model_id: Model ID
+            dataset_id: Dataset ID
+
+        Returns:
+            List[EvaluationTask]: List of evaluation tasks with results
+        """
+        return evaluation_task_repository.get_all_by_model_and_dataset(
+            db=db,
+            user_id=user_id,
+            model_id=model_id,
+            dataset_id=dataset_id
         )
