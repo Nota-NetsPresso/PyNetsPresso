@@ -25,8 +25,12 @@ def train_model(
         netspresso = NetsPresso(api_key=api_key)
         trainer = netspresso.trainer(task=training_in.task)
 
-        # Download dataset from dataforage
+        # Download training dataset from dataforage
         trainer.download_dataset_for_training(dataset_uuid=training_in.dataset.train_path)
+
+        # Download evaluation dataset from dataforage
+        if training_in.dataset.test_path:
+            trainer.download_dataset_for_evaluation(dataset_uuid=training_in.dataset.test_path)
 
         img_size = training_in.input_shapes[0].dimension[0]
         trainer.set_model_config(model_name=training_in.pretrained_model, img_size=img_size)
