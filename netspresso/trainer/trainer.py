@@ -40,6 +40,7 @@ from netspresso.trainer.storage import DatasetManager
 from netspresso.trainer.storage.dataforge import Split
 from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.trainer.training import TRAINING_CONFIG_TYPE, EnvironmentConfig, LoggingConfig, ScheduleConfig
+from netspresso.trainer.training.logging import Metrics, ModelSaveOptions
 from netspresso.utils import FileHandler
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.models.training import (
@@ -255,6 +256,21 @@ class Trainer(NetsPressoBase):
                 else:  # It's a directory
                     raise DirectoryNotFoundException(relative_path)
 
+    def check_test_paths_exist(self, base_path):
+        paths = [
+            "images/test",
+            "id_mapping.json",
+        ]
+
+        # Check for the existence of required directories and files
+        for relative_path in paths:
+            path = Path(base_path) / relative_path
+            if not path.exists():
+                if path.suffix:  # It's a file
+                    raise FileNotFoundErrorException(relative_path)
+                else:  # It's a directory
+                    raise DirectoryNotFoundException(relative_path)
+
     def find_paths(self, base_path: str, search_dir, split: str) -> List[str]:
         base_dir = Path(base_path)
 
@@ -329,7 +345,7 @@ class Trainer(NetsPressoBase):
         self.model_name = model_name
         model = self._get_available_models_w_deprecated_names().get(model_name)
         self.img_size = img_size
-        self.logging.sample_input_size = [img_size, img_size]
+        self.logging.model_save_options.sample_input_size = [img_size, img_size]
 
         if model is None:
             raise NotSupportedModelException(
@@ -431,6 +447,16 @@ class Trainer(NetsPressoBase):
             validation_epoch (int, optional): Validation frequency in total training process. Defaults to 10.
             save_checkpoint_epoch (int, optional): Checkpoint saving frequency in total training process. Defaults to None.
         """
+        model_save_options = ModelSaveOptions(
+            save_optimizer_state=save_optimizer_state,
+            sample_input_size=[self.img_size, self.img_size],
+            validation_epoch=validation_epoch,
+            save_checkpoint_epoch=save_checkpoint_epoch,
+        )
+        metrics = Metrics(
+            classwise_analysis=False,
+            metric_names=None,
+        )
 
         self.logging = LoggingConfig(
             project_id=project_id,
@@ -439,9 +465,8 @@ class Trainer(NetsPressoBase):
             csv=csv,
             image=image,
             stdout=stdout,
-            save_optimizer_state=save_optimizer_state,
-            validation_epoch=validation_epoch,
-            save_checkpoint_epoch=save_checkpoint_epoch,
+            model_save_options=model_save_options,
+            metrics=metrics,
         )
 
     def set_environment_config(self, seed: int = 1, num_workers: int = 4):
@@ -912,11 +937,44 @@ class Trainer(NetsPressoBase):
         Returns:
             str: Path to the configured evaluation dataset
         """
-        return self.dataset_manager.download_dataset_for_evaluation(
+        dataset_path = self.dataset_manager.download_dataset_for_evaluation(
             dataset_uuid=dataset_uuid,
             output_dir=output_dir,
             split=split,
             max_retries=max_retries,
             retry_delay=retry_delay,
             verbose=verbose,
+        )
+        logger.info(f"Downloaded dataset from DataForge: {dataset_path}")
+
+        self.set_test_dataset(dataset_path)
+
+        return dataset_path
+
+        # if dataset_path:
+        #     try:
+        #         logger.info(f"Setting test dataset: {dataset_path}")
+        #         self.set_test_dataset(dataset_path)
+        #         return dataset_path
+        #     except Exception as e:
+        #         logger.error(f"Error configuring dataset: {str(e)}")
+        #         return ""
+        # return ""
+
+    def set_test_dataset(self, dataset_root_path: str):
+        dataset_name = Path(dataset_root_path).name
+        root_path = Path(dataset_root_path).resolve().as_posix()
+
+        print(root_path)
+
+        # self.check_test_paths_exist(root_path)
+        images_test = self.find_paths(root_path, "images", "test")
+        labels_test = self.find_paths(root_path, "labels", "test")
+        id_mapping = FileHandler.load_json(f"{root_path}/id_mapping.json")
+        self.set_dataset_config(
+            name=dataset_name,
+            root_path=dataset_root_path,
+            test_image=images_test,
+            test_label=labels_test,
+            id_mapping=id_mapping,
         )
