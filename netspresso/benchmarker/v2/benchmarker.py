@@ -204,6 +204,7 @@ class BenchmarkerV2(NetsPressoBase):
                 status=Status.NOT_STARTED,
                 input_model_id=input_model_id,
                 model_id=model_id,
+                user_id=self.user_info.user_id,
             )
             benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
             return benchmark_task

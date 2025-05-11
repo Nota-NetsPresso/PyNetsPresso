@@ -614,7 +614,7 @@ class Trainer(NetsPressoBase):
             model = model_repository.save(db=db, model=model)
             return model
 
-    def create_training_task(self, model_id, task_id) -> TrainingTask:
+    def create_training_task(self, model_id, task_id, user_id) -> TrainingTask:
         with get_db_session() as db:
             dataset = Dataset(
                 train_path="train",
@@ -663,6 +663,7 @@ class Trainer(NetsPressoBase):
                     hyperparameter=hyperparameter,
                     environment=environment,
                     model_id=model_id,
+                    user_id=user_id,
                 )
             else:
                 task = TrainingTask(
@@ -675,6 +676,7 @@ class Trainer(NetsPressoBase):
                     hyperparameter=hyperparameter,
                     environment=environment,
                     model_id=model_id,
+                    user_id=user_id,
                 )
             task = training_task_repository.save(db=db, model=task)
 
@@ -741,7 +743,7 @@ class Trainer(NetsPressoBase):
         object_path = f"{project.user_id}/{project.project_id}/{model.model_id}"
         model.object_path = object_path
         model = self._save_model(model=model)
-        train_task = self.create_training_task(model_id=model.model_id, task_id=task_id)
+        train_task = self.create_training_task(model_id=model.model_id, task_id=task_id, user_id=project.user_id)
 
         try:
             self.logging.output_dir = output_dir
