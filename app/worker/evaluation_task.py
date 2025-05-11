@@ -93,8 +93,8 @@ def evaluate_model_task(
         img_size = training_in.input_shapes[0].dimension[0]
         trainer.set_model_config(model_name=training_in.pretrained_model, img_size=img_size)
         trainer.set_augmentation_config(
-            train_transforms=[Resize(), Pad(), ToTensor(), Normalize()],
-            inference_transforms=[Resize(), Pad(), ToTensor(), Normalize()],
+            train_transforms=[Resize(), Pad(fill=114), ToTensor(), Normalize()],
+            inference_transforms=[Resize(), Pad(fill=114), ToTensor(), Normalize()],
         )
         optimizer = OptimizerManager.get_optimizer(
             name=training_in.hyperparameter.optimizer,
