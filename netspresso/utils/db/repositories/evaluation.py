@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from netspresso.exceptions.evaluation import EvaluationTaskIsDeletedException, EvaluationTaskNotFoundException
 from netspresso.utils.db.models.evaluation import EvaluationTask
-from netspresso.utils.db.repositories.base import BaseRepository
+from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
 
 
 class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
@@ -153,6 +153,43 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
         return self.find_all(
             db=db,
             conditions=conditions,
+        )
+
+    def get_all_by_model_id(
+        self,
+        db: Session,
+        model_id: str,
+        start: Optional[int] = None,
+        size: Optional[int] = None,
+        order: Optional[Order] = None,
+        time_sort: Optional[TimeSort] = None,
+    ) -> List[EvaluationTask]:
+        conditions = [self.model.input_model_id == model_id]
+        tasks = self.find_all(
+            db=db,
+            conditions=conditions,
+            start=start,
+            size=size,
+            order=order,
+            time_sort=time_sort,
+        )
+
+        return tasks
+
+    def get_latest_evaluation_task(
+        self,
+        db: Session,
+        model_id: str,
+        order: Optional[Order] = None,
+        time_sort: Optional[TimeSort] = None,
+    ) -> Optional[EvaluationTask]:
+        conditions = [self.model.input_model_id == model_id]
+
+        return self.find_first(
+            db=db,
+            conditions=conditions,
+            order=order,
+            time_sort=time_sort,
         )
 
 

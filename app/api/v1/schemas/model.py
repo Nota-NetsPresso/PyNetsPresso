@@ -11,6 +11,7 @@ from netspresso.enums import Status
 class ExperimentStatus(BaseModel):
     convert: Status = Field(default=Status.NOT_STARTED, description="The status of the conversion experiment.")
     benchmark: Status = Field(default=Status.NOT_STARTED, description="The status of the benchmark experiment.")
+    evaluate: Status = Field(default=Status.NOT_STARTED, description="The status of the evaluation experiment.")
 
 
 class ModelPayload(BaseModel):
@@ -28,7 +29,7 @@ class ModelPayload(BaseModel):
     compress_task_ids: Optional[List] = []
     convert_task_ids: Optional[List] = []
     benchmark_task_ids: Optional[List] = []
-    evaluation_task_ids: Optional[List] = ["task_uFUOSIObHX", "task_4NFjgwIb-M"]
+    evaluation_task_ids: Optional[List] = []
     is_deleted: bool
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

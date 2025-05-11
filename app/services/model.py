@@ -15,6 +15,7 @@ from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.repositories.base import Order, TimeSort
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
+from netspresso.utils.db.repositories.evaluation import evaluation_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
 
@@ -60,6 +61,37 @@ class ModelService:
 
         return latest_status, task_ids, model_ids
 
+    def _get_evaluation_info(self, db: Session, model_id: str) -> tuple[Optional[str], List[str]]:
+        """Get evaluation task information
+
+        Args:
+            db: Database session
+            model_id: Model ID
+
+        Returns:
+            tuple: (latest_status, task_ids)
+        """
+        evaluation_tasks = evaluation_task_repository.get_all_by_model_id(
+            db=db,
+            model_id=model_id,
+            order=Order.DESC,
+            time_sort=TimeSort.CREATED_AT,
+        )
+        if not evaluation_tasks:
+            return None, []
+
+        task_ids = [task.task_id for task in evaluation_tasks]
+
+        evaluation_task = evaluation_task_repository.get_latest_evaluation_task(
+            db=db,
+            model_id=model_id,
+            order=Order.DESC,
+            time_sort=TimeSort.UPDATED_AT,
+        )
+        latest_status = evaluation_task.status
+
+        return latest_status, task_ids
+
     def _get_benchmark_info(self, db: Session, converted_model_ids: List[str]) -> tuple[Optional[str], List[str]]:
         """Get benchmark task information
 
@@ -95,7 +127,7 @@ class ModelService:
         return latest_status, task_ids
 
     def _attach_child_task_info(self, db: Session, model: ModelPayload) -> ModelPayload:
-        """Attach child tasks (conversion, benchmark) information to model
+        """Attach child tasks (conversion, benchmark, evaluation) information to model
 
         Args:
             db: Database session
@@ -104,6 +136,12 @@ class ModelService:
         Returns:
             ModelPayload: Model with attached task information
         """
+        # Get evaluation tasks
+        eval_status, eval_task_ids = self._get_evaluation_info(db, model.model_id)
+        if eval_status:
+            model.latest_experiments.evaluate = eval_status
+            model.evaluation_task_ids.extend(eval_task_ids)
+
         # Get conversion tasks and their benchmark tasks
         conv_status, conv_task_ids, conv_model_ids = self._get_conversion_info(db, model.model_id)
         if conv_status:
