@@ -17,6 +17,7 @@ from netspresso.utils.db.session import SessionLocal
 
 POLLING_INTERVAL = 30  # seconds
 logger = logging.getLogger(__name__)
+NP_TRAINING_STUDIO_PATH = os.environ.get("NP_TRAINING_STUDIO_PATH", "/np_training_studio")
 
 
 @celery_app.task(bind=True, name='evaluate_model_task')
@@ -77,8 +78,15 @@ def evaluate_model_task(
             project_id="",
             name="",
         )
+
+        # Get NP_TRAINING_STUDIO_PATH
+        dataset_dir = os.path.join(NP_TRAINING_STUDIO_PATH, "datasets")
+
+        # Create datasets directory if it doesn't exist
+        os.makedirs(dataset_dir, exist_ok=True)
+
         logger.info(f"Downloading dataset from DataForge: {dataset_id}")
-        trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id)
+        trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)
 
         img_size = training_in.input_shapes[0].dimension[0]
         trainer.set_model_config(model_name=training_in.pretrained_model, img_size=img_size)

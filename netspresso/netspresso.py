@@ -26,6 +26,8 @@ from netspresso.utils.db.models.project import Project
 from netspresso.utils.db.repositories.project import project_repository
 from netspresso.utils.db.session import SessionLocal
 
+NP_TRAINING_STUDIO_PATH = os.environ.get("NP_TRAINING_STUDIO_PATH", "/np_training_studio")
+
 
 class NetsPresso:
     def __init__(self, api_key: str, verify_ssl: bool = True) -> None:
@@ -59,8 +61,8 @@ class NetsPresso:
             project_name (str): The name of the project to create.
                 Must not exceed 30 characters.
             project_path (str, optional): The base path where the project
-                will be created. Defaults to value from NETSPRESSO_PROJECT_PATH
-                environment variable or "./projects" if not set.
+                will be created. Defaults to value from NP_TRAINING_STUDIO_PATH
+                environment variable or "/np_training_studio" if not set.
 
         Returns:
             Project: The created project object containing information
@@ -76,7 +78,7 @@ class NetsPresso:
         """
         # Get project path from environment variable if not provided
         if project_path is None:
-            project_path = os.environ.get("NETSPRESSO_PROJECT_PATH", "./projects")
+            project_path = os.path.join(NP_TRAINING_STUDIO_PATH, "projects")
 
         if len(project_name) > 30:
             raise ProjectNameTooLongException(max_length=30, actual_length=len(project_name))

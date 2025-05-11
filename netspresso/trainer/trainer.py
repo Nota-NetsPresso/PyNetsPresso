@@ -906,8 +906,6 @@ class Trainer(NetsPressoBase):
             )
             logger.info(f"Downloaded dataset from DataForge: {dataset_path}")
 
-            self.set_dataset(dataset_path)
-
             return dataset_path
 
         except Exception as e:
@@ -947,8 +945,6 @@ class Trainer(NetsPressoBase):
                 verbose=verbose,
             )
             logger.info(f"Downloaded dataset from DataForge: {dataset_path}")
-
-            self.set_test_dataset(dataset_path)
 
             return dataset_path
 
