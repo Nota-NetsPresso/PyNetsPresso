@@ -684,7 +684,7 @@ class DatasetManager:
         self,
         dataset_uuid: str,
         output_dir: str = "/datasets",
-        valid_split: float = 0.2,
+        valid_split: float = 0.1,
         random_seed: int = 0,
         max_retries: int = 3,
         retry_delay: int = 5,
