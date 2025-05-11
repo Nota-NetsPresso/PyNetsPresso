@@ -86,7 +86,9 @@ def evaluate_model_task(
         os.makedirs(dataset_dir, exist_ok=True)
 
         logger.info(f"Downloading dataset from DataForge: {dataset_id}")
-        trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)
+        test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)
+        trainer.set_test_dataset(test_dataset_path)
+        logger.info(f"Downloaded dataset to: {test_dataset_path}")
 
         img_size = training_in.input_shapes[0].dimension[0]
         trainer.set_model_config(model_name=training_in.pretrained_model, img_size=img_size)
