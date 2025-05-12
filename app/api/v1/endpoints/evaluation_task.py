@@ -7,6 +7,7 @@ from app.api.v1.schemas.task.evaluation.evaluation_task import (
     EvaluationCreate,
     EvaluationCreatePayload,
     EvaluationCreateResponse,
+    EvaluationDatasetPayload,
     EvaluationDatasetsPayload,
     EvaluationDatasetsResponse,
     EvaluationResultsResponse,
@@ -89,29 +90,31 @@ def get_evaluation_tasks(
     return EvaluationsResponse(data=evaluation_tasks, result_count=len(evaluation_tasks), total_count=total_count)
 
 
-@router.get("/evaluations/{model_id}/datasets", response_model=EvaluationDatasetsResponse, status_code=200)
+@router.get("/evaluations/{converted_model_id}/datasets", response_model=EvaluationDatasetsResponse, status_code=200)
 def get_unique_evaluation_datasets(
-    model_id: str = Path(..., description="Model ID to get unique datasets for"),
+    converted_model_id: str = Path(..., description="Converted Model ID to get unique datasets for"),
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> EvaluationDatasetsResponse:
     dataset_ids = evaluation_task_service.get_unique_datasets_by_model_id(
         db=db,
         api_key=api_key,
-        model_id=model_id
+        model_id=converted_model_id
     )
 
+    datasets = [EvaluationDatasetPayload(dataset_id=dataset_id) for dataset_id in dataset_ids]
+
     response_data = EvaluationDatasetsPayload(
-        model_id=model_id,
-        dataset_ids=dataset_ids
+        model_id=converted_model_id,
+        datasets=datasets
     )
 
     return EvaluationDatasetsResponse(data=response_data)
 
 
-@router.get("/evaluations/{model_id}/datasets/{dataset_id}/results", response_model=EvaluationResultsResponse, status_code=200)
+@router.get("/evaluations/{converted_model_id}/datasets/{dataset_id}/results", response_model=EvaluationResultsResponse, status_code=200)
 def get_evaluation_results(
-    model_id: str = Path(..., description="Model ID"),
+    converted_model_id: str = Path(..., description="Converted Model ID"),
     dataset_id: str = Path(..., description="Dataset ID"),
     start: int = Query(0, description="Pagination start index"),
     size: int = Query(20, description="Page size (number of images)"),
@@ -122,7 +125,7 @@ def get_evaluation_results(
     evaluation_result = evaluation_task_service.get_evaluation_result_details(
         db=db,
         api_key=api_key,
-        model_id=model_id,
+        model_id=converted_model_id,
         dataset_id=dataset_id,
         start=start,
         size=size

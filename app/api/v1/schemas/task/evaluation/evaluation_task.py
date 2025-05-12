@@ -109,9 +109,15 @@ class EvaluationResultsResponse(ResponseItem):
     data: EvaluationResultsPayload
 
 
+class EvaluationDatasetPayload(BaseModel):
+    dataset_id: str
+    dataset_name: str = "Traffic Sign"
+    dataset_type: str = "detection"
+
+
 class EvaluationDatasetsPayload(BaseModel):
     model_id: str
-    dataset_ids: List[str]
+    datasets: List[EvaluationDatasetPayload]
 
 
 class EvaluationDatasetsResponse(ResponseItem):
