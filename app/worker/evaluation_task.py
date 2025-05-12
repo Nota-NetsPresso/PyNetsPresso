@@ -167,7 +167,7 @@ def run_multiple_evaluations(
     for score in confidence_scores:
         # Run each task independently
         evaluation_task_id = generate_uuid(entity="task")
-        result = evaluate_model_task.apply_async(
+        _ = evaluate_model_task.apply_async(
             kwargs={
                 "api_key": api_key,
                 "model_id": model_id,
