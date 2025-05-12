@@ -771,9 +771,11 @@ class Trainer(NetsPressoBase):
 
         except Exception as e:
             e = FailedTrainingException(error_log=e.args[0])
-            train_task = self.handle_error(train_task, ServiceTask.TRAINING, e.args[0])
+            train_task.status = Status.ERROR
+            train_task.error_detail = e.args[0]
         except KeyboardInterrupt:
-            train_task = self.handle_stop(train_task, ServiceTask.TRAINING)
+            train_task.status = Status.STOPPED
+            train_task.error_detail = "Training stopped by user"
         finally:
             FileHandler.remove_folder(configs.temp_folder)
             logger.info(f"Removed {configs.temp_folder} folder.")
