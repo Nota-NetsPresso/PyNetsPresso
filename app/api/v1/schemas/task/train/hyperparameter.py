@@ -61,7 +61,7 @@ class HyperparameterCreate(BaseModel):
     batch_size: int = Field(default=32, description="Batch size to use")
     learning_rate: Optional[float] = Field(default=0.001, description="Learning rate to use")
     optimizer: Optimizer = Field(..., description="Optimizer to use")
-    scheduler: Scheduler = Field(..., description="Scheduler to use")
+    scheduler: Scheduler = Field(Scheduler.COSINE_ANNEALING_WARM_RESTARTS, description="Scheduler to use")
 
 
 class HyperparameterPayload(BaseModel):

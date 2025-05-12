@@ -44,7 +44,7 @@ class CosineAnnealingLRWithCustomWarmUp(BaseScheduler):
 @dataclass
 class CosineAnnealingWarmRestartsWithCustomWarmUp(BaseScheduler):
     name: str = "cosine"
-    warmup_epochs: int = 5
+    warmup_epochs: int = 10
     warmup_bias_lr: float = 1e-5
     min_lr: float = 1e-6
     iters_per_phase: int = 10
