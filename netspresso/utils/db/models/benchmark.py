@@ -41,6 +41,8 @@ class BenchmarkTask(BaseModel):
     status = Column(String(30), nullable=False)
     error_detail = Column(JSON, nullable=True)
 
+    user_id = Column(String(36), nullable=False)
+
     # Relationships
     result = relationship("BenchmarkResult", uselist=False, back_populates="task", cascade="all, delete-orphan")
 

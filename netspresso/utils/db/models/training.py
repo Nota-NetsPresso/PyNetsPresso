@@ -28,6 +28,8 @@ class TrainingTask(BaseModel):
     status = Column(String(30), nullable=False)
     error_detail = Column(JSON, nullable=True)
 
+    user_id = Column(String(36), nullable=False)
+
     # Relationships (1:1 Mapping)
     dataset = relationship("Dataset", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy="joined")
     hyperparameter = relationship(

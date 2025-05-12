@@ -9,11 +9,13 @@ from app.configs.settings import settings
 from app.services.training_task import train_task_service
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.enums.project import SubFolder
+from netspresso.enums.task import TaskType
 from netspresso.exceptions.model import ModelCannotBeDeletedException
 from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.repositories.base import Order, TimeSort
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
+from netspresso.utils.db.repositories.evaluation import evaluation_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
 
@@ -59,6 +61,37 @@ class ModelService:
 
         return latest_status, task_ids, model_ids
 
+    def _get_evaluation_info(self, db: Session, model_id: str) -> tuple[Optional[str], List[str]]:
+        """Get evaluation task information
+
+        Args:
+            db: Database session
+            model_id: Model ID
+
+        Returns:
+            tuple: (latest_status, task_ids)
+        """
+        evaluation_tasks = evaluation_task_repository.get_all_by_model_id(
+            db=db,
+            model_id=model_id,
+            order=Order.DESC,
+            time_sort=TimeSort.CREATED_AT,
+        )
+        if not evaluation_tasks:
+            return None, []
+
+        task_ids = [task.task_id for task in evaluation_tasks]
+
+        evaluation_task = evaluation_task_repository.get_latest_evaluation_task(
+            db=db,
+            model_id=model_id,
+            order=Order.DESC,
+            time_sort=TimeSort.UPDATED_AT,
+        )
+        latest_status = evaluation_task.status
+
+        return latest_status, task_ids
+
     def _get_benchmark_info(self, db: Session, converted_model_ids: List[str]) -> tuple[Optional[str], List[str]]:
         """Get benchmark task information
 
@@ -94,7 +127,7 @@ class ModelService:
         return latest_status, task_ids
 
     def _attach_child_task_info(self, db: Session, model: ModelPayload) -> ModelPayload:
-        """Attach child tasks (conversion, benchmark) information to model
+        """Attach child tasks (conversion, benchmark, evaluation) information to model
 
         Args:
             db: Database session
@@ -103,6 +136,12 @@ class ModelService:
         Returns:
             ModelPayload: Model with attached task information
         """
+        # Get evaluation tasks
+        eval_status, eval_task_ids = self._get_evaluation_info(db, model.model_id)
+        if eval_status:
+            model.latest_experiments.evaluate = eval_status
+            model.evaluation_task_ids.extend(eval_task_ids)
+
         # Get conversion tasks and their benchmark tasks
         conv_status, conv_task_ids, conv_model_ids = self._get_conversion_info(db, model.model_id)
         if conv_status:
@@ -117,17 +156,37 @@ class ModelService:
 
         return model
 
-    def get_models(self, db: Session, api_key: str) -> List[ModelPayload]:
+    def get_models(
+        self,
+        db: Session,
+        api_key: str,
+        task_type: Optional[TaskType] = None,
+        project_id: Optional[str] = None
+    ) -> List[ModelPayload]:
         netspresso = NetsPresso(api_key=api_key)
-        models = model_repository.get_all_by_user_id(db=db, user_id=netspresso.user_info.user_id)
+
+        # Base query by user ID
+        user_id = netspresso.user_info.user_id
+
+        # If project_id is provided, filter by project
+        if project_id:
+            models = model_repository.get_all_by_project_id(db=db, project_id=project_id)
+            # Filter models that belong to the user for security
+            models = [model for model in models if model.user_id == user_id]
+        else:
+            models = model_repository.get_all_by_user_id(db=db, user_id=user_id)
 
         new_models = []
         for model in models:
-            if model.type != SubFolder.TRAINED_MODELS:
-                continue
+            if task_type and task_type in [TaskType.BENCHMARK, TaskType.EVALUATE, TaskType.CONVERT]:
+                if model.type != SubFolder.TRAINED_MODELS:
+                    continue
+            else:
+                if model.type in [SubFolder.CONVERTED_MODELS, SubFolder.BENCHMARKED_MODELS]:
+                    continue
 
-            training_task = training_task_repository.get_by_model_id(db=db, model_id=model.model_id)
             model_payload = ModelPayload.model_validate(model)
+            training_task = training_task_repository.get_by_model_id(db=db, model_id=model.model_id)
             model_payload.train_task_id = training_task.task_id
             model_payload.status = training_task.status
             model_payload = self._attach_child_task_info(db, model_payload)

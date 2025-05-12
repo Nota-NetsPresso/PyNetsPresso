@@ -111,3 +111,14 @@ class FailedTrainingException(PyNPException):
             name=self.__class__.__name__,
             message=message,
         )
+
+
+class NotCompletedTrainingException(PyNPException):
+    def __init__(self, training_task_id: str):
+        message = f"The training task {training_task_id} is not completed."
+        super().__init__(
+            data=AdditionalData(origin="pynp"),
+            error_code="",
+            name=self.__class__.__name__,
+            message=message,
+        )

@@ -40,6 +40,7 @@ from netspresso.trainer.storage import DatasetManager
 from netspresso.trainer.storage.dataforge import Split
 from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.trainer.training import TRAINING_CONFIG_TYPE, EnvironmentConfig, LoggingConfig, ScheduleConfig
+from netspresso.trainer.training.logging import Metrics, ModelSaveOptions
 from netspresso.utils import FileHandler
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.models.training import (
@@ -255,6 +256,21 @@ class Trainer(NetsPressoBase):
                 else:  # It's a directory
                     raise DirectoryNotFoundException(relative_path)
 
+    def check_test_paths_exist(self, base_path):
+        paths = [
+            "images/test",
+            "id_mapping.json",
+        ]
+
+        # Check for the existence of required directories and files
+        for relative_path in paths:
+            path = Path(base_path) / relative_path
+            if not path.exists():
+                if path.suffix:  # It's a file
+                    raise FileNotFoundErrorException(relative_path)
+                else:  # It's a directory
+                    raise DirectoryNotFoundException(relative_path)
+
     def find_paths(self, base_path: str, search_dir, split: str) -> List[str]:
         base_dir = Path(base_path)
 
@@ -329,7 +345,7 @@ class Trainer(NetsPressoBase):
         self.model_name = model_name
         model = self._get_available_models_w_deprecated_names().get(model_name)
         self.img_size = img_size
-        self.logging.sample_input_size = [img_size, img_size]
+        self.logging.model_save_options.sample_input_size = [img_size, img_size]
 
         if model is None:
             raise NotSupportedModelException(
@@ -431,6 +447,16 @@ class Trainer(NetsPressoBase):
             validation_epoch (int, optional): Validation frequency in total training process. Defaults to 10.
             save_checkpoint_epoch (int, optional): Checkpoint saving frequency in total training process. Defaults to None.
         """
+        model_save_options = ModelSaveOptions(
+            save_optimizer_state=save_optimizer_state,
+            sample_input_size=[self.img_size, self.img_size],
+            validation_epoch=validation_epoch,
+            save_checkpoint_epoch=save_checkpoint_epoch,
+        )
+        metrics = Metrics(
+            classwise_analysis=False,
+            metric_names=None,
+        )
 
         self.logging = LoggingConfig(
             project_id=project_id,
@@ -439,9 +465,8 @@ class Trainer(NetsPressoBase):
             csv=csv,
             image=image,
             stdout=stdout,
-            save_optimizer_state=save_optimizer_state,
-            validation_epoch=validation_epoch,
-            save_checkpoint_epoch=save_checkpoint_epoch,
+            model_save_options=model_save_options,
+            metrics=metrics,
         )
 
     def set_environment_config(self, seed: int = 1, num_workers: int = 4):
@@ -589,7 +614,7 @@ class Trainer(NetsPressoBase):
             model = model_repository.save(db=db, model=model)
             return model
 
-    def create_training_task(self, model_id, task_id) -> TrainingTask:
+    def create_training_task(self, model_id, task_id, user_id) -> TrainingTask:
         with get_db_session() as db:
             dataset = Dataset(
                 train_path="train",
@@ -638,6 +663,7 @@ class Trainer(NetsPressoBase):
                     hyperparameter=hyperparameter,
                     environment=environment,
                     model_id=model_id,
+                    user_id=user_id,
                 )
             else:
                 task = TrainingTask(
@@ -650,6 +676,7 @@ class Trainer(NetsPressoBase):
                     hyperparameter=hyperparameter,
                     environment=environment,
                     model_id=model_id,
+                    user_id=user_id,
                 )
             task = training_task_repository.save(db=db, model=task)
 
@@ -716,7 +743,7 @@ class Trainer(NetsPressoBase):
         object_path = f"{project.user_id}/{project.project_id}/{model.model_id}"
         model.object_path = object_path
         model = self._save_model(model=model)
-        train_task = self.create_training_task(model_id=model.model_id, task_id=task_id)
+        train_task = self.create_training_task(model_id=model.model_id, task_id=task_id, user_id=project.user_id)
 
         try:
             self.logging.output_dir = output_dir
@@ -744,9 +771,11 @@ class Trainer(NetsPressoBase):
 
         except Exception as e:
             e = FailedTrainingException(error_log=e.args[0])
-            train_task = self.handle_error(train_task, ServiceTask.TRAINING, e.args[0])
+            train_task.status = Status.ERROR
+            train_task.error_detail = e.args[0]
         except KeyboardInterrupt:
-            train_task = self.handle_stop(train_task, ServiceTask.TRAINING)
+            train_task.status = Status.STOPPED
+            train_task.error_detail = "Training stopped by user"
         finally:
             FileHandler.remove_folder(configs.temp_folder)
             logger.info(f"Removed {configs.temp_folder} folder.")
@@ -846,7 +875,7 @@ class Trainer(NetsPressoBase):
     def download_dataset_for_training(
         self,
         dataset_uuid: str,
-        output_dir: str = "./datasets",
+        output_dir: str = "/datasets",
         valid_split: float = 0.2,
         random_seed: int = 0,
         max_retries: int = 3,
@@ -869,30 +898,28 @@ class Trainer(NetsPressoBase):
         Returns:
             str: Path to the configured dataset
         """
-        dataset_path = self.dataset_manager.download_dataset_for_training(
-            dataset_uuid=dataset_uuid,
-            output_dir=output_dir,
-            valid_split=valid_split,
-            random_seed=random_seed,
-            max_retries=max_retries,
-            retry_delay=retry_delay,
-            verbose=verbose,
-        )
+        try:
+            dataset_path = self.dataset_manager.download_dataset_for_training(
+                dataset_uuid=dataset_uuid,
+                output_dir=output_dir,
+                valid_split=valid_split,
+                random_seed=random_seed,
+                max_retries=max_retries,
+                retry_delay=retry_delay,
+                verbose=verbose,
+            )
+            logger.info(f"Downloaded dataset from DataForge: {dataset_path}")
 
-        if dataset_path:
-            # 데이터셋 설정
-            try:
-                self.set_dataset(dataset_path)
-                return dataset_path
-            except Exception as e:
-                logger.error(f"Error configuring dataset: {str(e)}")
-                return ""
-        return ""
+            return dataset_path
+
+        except Exception as e:
+            logger.error(f"Failed to download dataset for training: {str(e)}")
+            raise e
 
     def download_dataset_for_evaluation(
         self,
         dataset_uuid: str,
-        output_dir: str = "./datasets",
+        output_dir: str = "/datasets",
         split: str = Split.TEST,
         max_retries: int = 3,
         retry_delay: int = 5,
@@ -912,11 +939,35 @@ class Trainer(NetsPressoBase):
         Returns:
             str: Path to the configured evaluation dataset
         """
-        return self.dataset_manager.download_dataset_for_evaluation(
-            dataset_uuid=dataset_uuid,
-            output_dir=output_dir,
-            split=split,
-            max_retries=max_retries,
-            retry_delay=retry_delay,
-            verbose=verbose,
+        try:
+            dataset_path = self.dataset_manager.download_dataset_for_evaluation(
+                dataset_uuid=dataset_uuid,
+                output_dir=output_dir,
+                split=split,
+                max_retries=max_retries,
+                retry_delay=retry_delay,
+                verbose=verbose,
+            )
+            logger.info(f"Downloaded dataset from DataForge: {dataset_path}")
+
+            return dataset_path
+
+        except Exception as e:
+            logger.error(f"Failed to download dataset for evaluation: {str(e)}")
+            raise e
+
+    def set_test_dataset(self, dataset_root_path: str):
+        dataset_name = Path(dataset_root_path).name
+        root_path = Path(dataset_root_path).resolve().as_posix()
+
+        # self.check_test_paths_exist(root_path)
+        images_test = self.find_paths(root_path, "images", "test")
+        labels_test = self.find_paths(root_path, "labels", "test")
+        id_mapping = FileHandler.load_json(f"{root_path}/id_mapping.json")
+        self.set_dataset_config(
+            name=dataset_name,
+            root_path=dataset_root_path,
+            test_image=images_test,
+            test_label=labels_test,
+            id_mapping=id_mapping,
         )

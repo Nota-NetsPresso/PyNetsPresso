@@ -44,7 +44,7 @@ class CosineAnnealingLRWithCustomWarmUp(BaseScheduler):
 @dataclass
 class CosineAnnealingWarmRestartsWithCustomWarmUp(BaseScheduler):
     name: str = "cosine"
-    warmup_epochs: int = 5
+    warmup_epochs: int = 10
     warmup_bias_lr: float = 1e-5
     min_lr: float = 1e-6
     iters_per_phase: int = 10
@@ -60,10 +60,10 @@ class MultiStepLR(BaseScheduler):
 def get_supported_schedulers() -> List[Dict[str, Any]]:
     """Return a list of supported schedulers with their parameters and default values."""
     schedulers = [
+        CosineAnnealingWarmRestartsWithCustomWarmUp(),
         StepLR(),
         PolynomialLRWithWarmUp(),
         CosineAnnealingLRWithCustomWarmUp(),
-        CosineAnnealingWarmRestartsWithCustomWarmUp(),
         MultiStepLR(),
     ]
     return [{"name": scheduler.name, "parameters": scheduler.to_parameters()} for scheduler in schedulers]

@@ -1,0 +1,35 @@
+{
+    "losses": {
+        "yolox_loss": 10.134843634194135,
+        "total": 10.134843634194135
+    },
+    "metrics": {
+        "mAP50": {
+            "mean": 0.5201176497671022
+        },
+        "mAP75": {
+            "mean": 0.35076492367694695
+        },
+        "mAP50_95": {
+            "mean": 0.31621336150141294
+        },
+        "Precision50": {
+            "mean": 0.0362038050802497
+        },
+        "Recall50": {
+            "mean": 0.7873630104448012
+        }
+    },
+    "metrics_list": [
+        "mAP50",
+        "mAP75",
+        "mAP50_95",
+        "Precision50",
+        "Recall50"
+    ],
+    "primary_metric": "mAP50",
+    "flops": 0,
+    "params": 0,
+    "total_evaluation_time": 1148.1274659633636,
+    "success": true
+}

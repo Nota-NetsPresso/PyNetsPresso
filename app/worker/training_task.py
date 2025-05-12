@@ -4,9 +4,11 @@ from typing import Dict
 from app.api.v1.schemas.task.train.train_task import TrainingCreate
 from app.worker.celery_app import celery_app
 from netspresso import NetsPresso
-from netspresso.trainer.augmentations.augmentation import Normalize, Resize, ToTensor
+from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize, ToTensor
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
+
+NP_TRAINING_STUDIO_PATH = os.environ.get("NP_TRAINING_STUDIO_PATH", "/np_training_studio")
 
 
 @celery_app.task(bind=True, name='train_model')
@@ -25,16 +27,26 @@ def train_model(
         netspresso = NetsPresso(api_key=api_key)
         trainer = netspresso.trainer(task=training_in.task)
 
-        # Download dataset from dataforage
-        trainer.download_dataset_for_training(dataset_uuid=training_in.dataset.train_path)
+        # Get NP_TRAINING_STUDIO_PATH
+        dataset_dir = os.path.join(NP_TRAINING_STUDIO_PATH, "datasets")
+
+        # Create datasets directory if it doesn't exist
+        os.makedirs(dataset_dir, exist_ok=True)
+
+        # Download training dataset from dataforage
+        train_dataset_path = trainer.download_dataset_for_training(dataset_uuid=training_in.dataset.train_path, output_dir=dataset_dir)
+        trainer.set_dataset(train_dataset_path)
+
+        # Download evaluation dataset from dataforage
+        if training_in.dataset.test_path:
+            trainer.download_dataset_for_evaluation(dataset_uuid=training_in.dataset.test_path, output_dir=dataset_dir)
 
         img_size = training_in.input_shapes[0].dimension[0]
         trainer.set_model_config(model_name=training_in.pretrained_model, img_size=img_size)
         trainer.set_augmentation_config(
-            train_transforms=[Resize(), ToTensor(), Normalize()],
-            inference_transforms=[Resize(), ToTensor(), Normalize()],
+            train_transforms=[Resize(), Pad(fill=114), ToTensor(), Normalize()],
+            inference_transforms=[Resize(), Pad(fill=114), ToTensor(), Normalize()],
         )
-
         optimizer = OptimizerManager.get_optimizer(
             name=training_in.hyperparameter.optimizer,
             lr=training_in.hyperparameter.learning_rate,

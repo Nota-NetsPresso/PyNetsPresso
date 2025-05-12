@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import api_key_header
 from app.api.v1.schemas.model import ModelDetailResponse, ModelsResponse, ModelUrlResponse
 from app.services.model import model_service
+from netspresso.enums.task import TaskType
 from netspresso.utils.db.session import get_db
 
 router = APIRouter()
@@ -14,8 +17,10 @@ def get_models(
     *,
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
+    task_type: Optional[TaskType] = Query(None, description="Filter models by task type"),
+    project_id: Optional[str] = Query(None, description="Filter models by project ID"),
 ) -> ModelsResponse:
-    models = model_service.get_models(db=db, api_key=api_key)
+    models = model_service.get_models(db=db, api_key=api_key, task_type=task_type, project_id=project_id)
 
     return ModelsResponse(data=models, total_count=len(models))
 

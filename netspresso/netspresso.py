@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -11,6 +12,7 @@ from netspresso.compressor import CompressorV2
 from netspresso.constant.project import SUB_FOLDERS
 from netspresso.converter import ConverterV2
 from netspresso.enums import Task
+from netspresso.evaluator.evaluator import Evaluator
 from netspresso.exceptions.project import (
     ProjectAlreadyExistsException,
     ProjectNameTooLongException,
@@ -23,6 +25,8 @@ from netspresso.trainer import Trainer
 from netspresso.utils.db.models.project import Project
 from netspresso.utils.db.repositories.project import project_repository
 from netspresso.utils.db.session import SessionLocal
+
+NP_TRAINING_STUDIO_PATH = os.environ.get("NP_TRAINING_STUDIO_PATH", "/np_training_studio")
 
 
 class NetsPresso:
@@ -45,7 +49,7 @@ class NetsPresso:
         user_info = auth_client.get_user_info(self.token_handler.tokens.access_token, self.token_handler.verify_ssl)
         return user_info
 
-    def create_project(self, project_name: str, project_path: str = "./projects") -> Project:
+    def create_project(self, project_name: str, project_path: Optional[str] = None) -> Project:
         """
         Create a new project with the specified name and path.
 
@@ -57,7 +61,8 @@ class NetsPresso:
             project_name (str): The name of the project to create.
                 Must not exceed 30 characters.
             project_path (str, optional): The base path where the project
-                will be created. Defaults to "./projects".
+                will be created. Defaults to value from NP_TRAINING_STUDIO_PATH
+                environment variable or "/np_training_studio" if not set.
 
         Returns:
             Project: The created project object containing information
@@ -71,6 +76,10 @@ class NetsPresso:
             ProjectSaveException: If an error occurs while saving the project
                 to the database.
         """
+        # Get project path from environment variable if not provided
+        if project_path is None:
+            project_path = os.path.join(NP_TRAINING_STUDIO_PATH, "projects")
+
         if len(project_name) > 30:
             raise ProjectNameTooLongException(max_length=30, actual_length=len(project_name))
 
@@ -174,6 +183,14 @@ class NetsPresso:
             Trainer: Initialized Trainer instance.
         """
         return Trainer(token_handler=self.token_handler, task=task, yaml_path=yaml_path)
+
+    def evaluator(self, trainer: Optional[Trainer] = None) -> Evaluator:
+        """Initialize and return a Evaluator instance.
+
+        Returns:
+            Evaluator: Initialized Evaluator instance.
+        """
+        return Evaluator(trainer=trainer)
 
     def compressor_v2(self) -> CompressorV2:
         """Initialize and return a Compressor instance.
