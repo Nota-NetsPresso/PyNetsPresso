@@ -26,38 +26,29 @@ class ModelService:
         self.BUCKET_NAME = settings.MODEL_BUCKET_NAME
 
     def _get_conversion_info(self, db: Session, model_id: str) -> tuple[Optional[str], List[str], List[str]]:
-        """Get conversion task information
-
-        Args:
-            db: Database session
-            model_id: Model ID
-
-        Returns:
-            tuple: (latest_status, task_ids, model_ids)
-        """
         conversion_tasks = conversion_task_repository.get_all_by_model_id(
-            db=db,
-            model_id=model_id,
-            order=Order.DESC,
-            time_sort=TimeSort.CREATED_AT,
+            db=db, model_id=model_id, order=Order.ASC, time_sort=TimeSort.CREATED_AT,
         )
-        if not conversion_tasks:
-            return None, [], []
+
+        unique_option_tasks = {}
+
+        for task in conversion_tasks:
+            option_key = (task.framework, task.device_name,
+                        task.software_version, task.precision)
+
+            if option_key not in unique_option_tasks:
+                unique_option_tasks[option_key] = task
+
+        filtered_tasks = list(unique_option_tasks.values())
 
         task_ids = []
         model_ids = []
 
-        for task in conversion_tasks:
+        for task in filtered_tasks:
             task_ids.append(task.task_id)
             model_ids.append(task.model_id)
 
-        conversion_task = conversion_task_repository.get_latest_conversion_task(
-            db=db,
-            model_id=model_id,
-            order=Order.DESC,
-            time_sort=TimeSort.UPDATED_AT,
-        )
-        latest_status = conversion_task.status
+        latest_status = filtered_tasks[0].status if filtered_tasks else None
 
         return latest_status, task_ids, model_ids
 
