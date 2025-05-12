@@ -21,6 +21,7 @@ from app.api.v1.schemas.task.evaluation.evaluation_task import (
     EvaluationPayload,
     EvaluationResultsPayload,
 )
+from app.exceptions.evaluation import EvaluationTaskAlreadyExistsException
 from app.worker.evaluation_task import run_multiple_evaluations
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
@@ -28,7 +29,6 @@ from netspresso.enums import DataType, DeviceName, SoftwareVersion, Status
 from netspresso.enums.conversion import SourceFramework, TargetFramework
 from netspresso.evaluator.evaluator import EVALUATION_BUCKET_NAME
 from netspresso.exceptions.conversion import ConversionTaskNotFoundException
-from netspresso.exceptions.evaluation import EvaluationTaskAlreadyExistsException
 from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.models.evaluation import EvaluationTask
@@ -142,10 +142,10 @@ class EvaluationTaskService:
         if evaluation_task:
             if evaluation_task.status == Status.COMPLETED:
                 logger.warning(f"Evaluation task already completed: {evaluation_task.task_id}")
-                raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, status=Status.COMPLETED)
+                raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, task_status=Status.COMPLETED.value)
             elif evaluation_task.status == Status.IN_PROGRESS:
                 logger.warning(f"Evaluation task already in progress: {evaluation_task.task_id}")
-                raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, status=Status.IN_PROGRESS)
+                raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, task_status=Status.IN_PROGRESS.value)
             elif evaluation_task.status == Status.ERROR:
                 logger.info(f"Retrying failed evaluation task: {evaluation_task.task_id}")
             else:
@@ -172,8 +172,8 @@ class EvaluationTaskService:
         try:
             for confidence_score in confidence_scores:
                 self._check_evaluation_task_status(db=db, model_id=conversion_task.model_id, dataset_id=evaluation_in.dataset_id, confidence_score=confidence_score)
-        except EvaluationTaskAlreadyExistsException as e:
-            raise e
+        except EvaluationTaskAlreadyExistsException:
+            raise
 
         task_result = run_multiple_evaluations.apply_async(
             kwargs={
