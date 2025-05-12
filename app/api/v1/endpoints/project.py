@@ -70,3 +70,15 @@ def get_project(
     project = project_service.get_project(db=db, project_id=project_id, api_key=api_key)
 
     return ProjectResponse(data=project)
+
+
+@router.delete("/{project_id}", response_model=ProjectResponse)
+def delete_project(
+    *,
+    project_id: str,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> ProjectResponse:
+    project = project_service.delete_project(db=db, project_id=project_id, api_key=api_key)
+
+    return ProjectResponse(data=project)

@@ -172,6 +172,33 @@ class NetsPresso:
         finally:
             db and db.close()
 
+    def delete_project(self, project_id: str) -> Project:
+        """
+        Delete a project from the database.
+
+        This method deletes a project from the database based on the provided project ID.
+
+        Args:
+            project_id (str): The ID of the project to delete.
+
+        Returns:
+            None
+        """
+
+        db = None
+        try:
+            db = SessionLocal()
+            project = project_repository.delete_by_project_id(db=db, project_id=project_id)
+            project = project_repository.soft_delete(db=db, model=project)
+
+            return project
+
+        except Exception as e:
+            logger.error(f"Failed to delete project from the database: {e}")
+            raise
+        finally:
+            db and db.close()
+
     def trainer(self, task: Optional[Union[str, Task]] = None, yaml_path: Optional[str] = None) -> Trainer:
         """Initialize and return a Trainer instance.
 
