@@ -28,10 +28,12 @@ from netspresso.enums import DataType, DeviceName, SoftwareVersion, Status
 from netspresso.enums.conversion import SourceFramework, TargetFramework
 from netspresso.evaluator.evaluator import EVALUATION_BUCKET_NAME
 from netspresso.exceptions.conversion import ConversionTaskNotFoundException
+from netspresso.exceptions.evaluation import EvaluationTaskAlreadyExistsException
 from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.models.evaluation import EvaluationTask
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
+from netspresso.utils.db.repositories.evaluation import evaluation_task_repository
 from netspresso.utils.file import FileHandler
 
 storage_handler = ObjectStorageHandler()
@@ -129,6 +131,27 @@ class EvaluationTaskService:
 
         raise ConversionTaskNotFoundException()
 
+    def _check_evaluation_task_status(self, db: Session, model_id: str, dataset_id: str, confidence_score: float):
+        evaluation_task = evaluation_task_repository.get_by_model_dataset_and_confidence(
+            db=db,
+            model_id=model_id,
+            dataset_id=dataset_id,
+            confidence_score=confidence_score
+        )
+
+        if evaluation_task:
+            if evaluation_task.status == Status.COMPLETED:
+                logger.warning(f"Evaluation task already completed: {evaluation_task.task_id}")
+                raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, status=Status.COMPLETED)
+            elif evaluation_task.status == Status.IN_PROGRESS:
+                logger.warning(f"Evaluation task already in progress: {evaluation_task.task_id}")
+                raise EvaluationTaskAlreadyExistsException(task_id=evaluation_task.task_id, status=Status.IN_PROGRESS)
+            elif evaluation_task.status == Status.ERROR:
+                logger.info(f"Retrying failed evaluation task: {evaluation_task.task_id}")
+            else:
+                # Other status (NOT_STARTED, STOPPED, etc.)
+                logger.info(f"Using existing evaluation task with ID: {evaluation_task.task_id}")
+
     def create_evaluation_task(
         self,
         db: Session,
@@ -145,6 +168,12 @@ class EvaluationTaskService:
             target_software_version=evaluation_in.software_version,
             target_data_type=evaluation_in.precision
         )
+
+        try:
+            for confidence_score in confidence_scores:
+                self._check_evaluation_task_status(db=db, model_id=conversion_task.model_id, dataset_id=evaluation_in.dataset_id, confidence_score=confidence_score)
+        except EvaluationTaskAlreadyExistsException as e:
+            raise e
 
         task_result = run_multiple_evaluations.apply_async(
             kwargs={
