@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.device import (
@@ -93,8 +94,9 @@ class ConversionTaskService:
 
         input_model_path = input_model_dir / "model.onnx"
         output_dir = input_model_dir / "converted"
-        print(f"Input model path: {input_model_path}")
-        print(f"Output dir: {output_dir}")
+        logger.info(f"Input model path: {input_model_path}")
+        logger.info(f"Conversion Info: {conversion_in.model_dump()}")
+        logger.info(f"Output dir: {output_dir}")
 
         task = convert_model.apply_async(
             kwargs={

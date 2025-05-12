@@ -22,6 +22,7 @@ from netspresso.enums.project import SubFolder
 from netspresso.utils import FileHandler
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.models.model import Model
+from netspresso.utils.db.models.project import Project
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.session import get_db_session
@@ -100,14 +101,13 @@ class ConverterV2(NetsPressoBase):
             input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id)
             return input_model
 
-    def save_model(self, model_name: str, project_id: str, user_id: str, object_path: str) -> Model:
+    def save_model(self, model_name: str, project_id: str, user_id: str) -> Model:
         """Create and save a new converted model.
 
         Args:
             model_name: Name of the model
             project_id: Project ID to associate with the model
             user_id: User ID who owns the model
-            object_path: Path to the model file
 
         Returns:
             Saved model object
@@ -118,7 +118,6 @@ class ConverterV2(NetsPressoBase):
             is_retrainable=False,
             project_id=project_id,
             user_id=user_id,
-            object_path=object_path,
         )
         return self._save_model(model)
 
@@ -383,7 +382,7 @@ class ConverterV2(NetsPressoBase):
     def _perform_conversion(
         self,
         input_model: Model,
-        project,
+        project: Project,
         input_model_path: str,
         output_dir: str,
         target_framework: Union[str, TargetFramework],
@@ -417,7 +416,6 @@ class ConverterV2(NetsPressoBase):
         # Set output model path
         _ = FileHandler.get_default_model_path(folder_path=output_dir)
         extension = FileHandler.get_extension(framework=target_framework)
-        object_path = f"{project.user_id}/{project.project_id}/{input_model.model_id}/model{extension}"
 
         # Generate model name with safe enum value handling
         model_name_parts = [
@@ -433,15 +431,18 @@ class ConverterV2(NetsPressoBase):
         model_name = "_".join(map(str, model_name_parts))
 
         logger.info(f"Model name: {model_name}")
-        logger.info(f"Object path: {object_path}")
 
         # Save converted model
         model = self.save_model(
             model_name=model_name,
             project_id=input_model.project_id,
             user_id=self.user_info.user_id,
-            object_path=object_path,
         )
+
+        object_path = f"{project.user_id}/{project.project_id}/{model.model_id}/model{extension}"
+        logger.info(f"Object path: {object_path}")
+        model.object_path = object_path
+        model = self._save_model(model)
 
         # Create conversion task
         conversion_task = self.create_conversion_task(
