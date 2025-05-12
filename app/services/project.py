@@ -50,5 +50,12 @@ class ProjectService:
 
         return project
 
+    def delete_project(self, *, db: Session, project_id: str, api_key: str) -> Project:
+        netspresso = NetsPresso(api_key=api_key)
+        project = netspresso.delete_project(project_id=project_id)
+        project = ProjectPayload.model_validate(project)
+
+        return project
+
 
 project_service = ProjectService()
