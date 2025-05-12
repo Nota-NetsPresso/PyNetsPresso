@@ -60,10 +60,10 @@ class MultiStepLR(BaseScheduler):
 def get_supported_schedulers() -> List[Dict[str, Any]]:
     """Return a list of supported schedulers with their parameters and default values."""
     schedulers = [
+        CosineAnnealingWarmRestartsWithCustomWarmUp(),
         StepLR(),
         PolynomialLRWithWarmUp(),
         CosineAnnealingLRWithCustomWarmUp(),
-        CosineAnnealingWarmRestartsWithCustomWarmUp(),
         MultiStepLR(),
     ]
     return [{"name": scheduler.name, "parameters": scheduler.to_parameters()} for scheduler in schedulers]
