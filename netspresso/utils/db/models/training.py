@@ -66,25 +66,25 @@ class Dataset(Base):
     random_seed = Column(Integer, default=0)
 
     # Relationship to DatasetSplit
-    splits = relationship("DatasetSplit", back_populates="dataset")
+    splits = relationship("DatasetSplit", back_populates="dataset", lazy="joined")
 
     train_split = relationship(
         "DatasetSplit",
         primaryjoin="and_(Dataset.id==DatasetSplit.dataset_id, DatasetSplit.split_type=='train')",
-        uselist=False,  # one-to-one 관계
-        viewonly=True
+        uselist=False,
+        lazy="joined",
     )
     valid_split = relationship(
         "DatasetSplit",
         primaryjoin="and_(Dataset.id==DatasetSplit.dataset_id, DatasetSplit.split_type=='valid')",
         uselist=False,
-        viewonly=True
+        lazy="joined",
     )
     test_split = relationship(
         "DatasetSplit",
         primaryjoin="and_(Dataset.id==DatasetSplit.dataset_id, DatasetSplit.split_type=='test')",
         uselist=False,
-        viewonly=True
+        lazy="joined",
     )
 
     # Relationship to TrainingTask
