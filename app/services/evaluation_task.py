@@ -22,7 +22,8 @@ from app.api.v1.schemas.task.evaluation.evaluation_task import (
     EvaluationResultsPayload,
 )
 from app.exceptions.evaluation import EvaluationTaskAlreadyExistsException
-from app.worker.evaluation_task import run_multiple_evaluations
+from app.services.project import project_service
+from app.worker.evaluation_task import chain_conversion_and_evaluation, run_multiple_evaluations
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums import DataType, DeviceName, SoftwareVersion, Status
@@ -34,6 +35,7 @@ from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.models.evaluation import EvaluationTask
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.evaluation import evaluation_task_repository
+from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.file import FileHandler
 
 storage_handler = ObjectStorageHandler()
@@ -160,36 +162,88 @@ class EvaluationTaskService:
     ) -> str:
         confidence_scores = [0.3, 0.5, 0.6]
 
-        conversion_task = self._find_existing_conversion_task(
-            db=db,
-            input_model_id=evaluation_in.input_model_id,
-            target_framework=evaluation_in.framework,
-            target_device_name=evaluation_in.device_name,
-            target_software_version=evaluation_in.software_version,
-            target_data_type=evaluation_in.precision
-        )
-
         try:
-            for confidence_score in confidence_scores:
-                self._check_evaluation_task_status(db=db, model_id=conversion_task.model_id, dataset_id=evaluation_in.dataset_id, confidence_score=confidence_score)
-        except EvaluationTaskAlreadyExistsException:
-            raise
+            # Check if a conversion task exists
+            conversion_task = self._find_existing_conversion_task(
+                db=db,
+                input_model_id=evaluation_in.input_model_id,
+                target_framework=evaluation_in.framework,
+                target_device_name=evaluation_in.device_name,
+                target_software_version=evaluation_in.software_version,
+                target_data_type=evaluation_in.precision
+            )
 
-        task_result = run_multiple_evaluations.apply_async(
-            kwargs={
-                "api_key": api_key,
-                "model_id": conversion_task.model_id,
-                "dataset_id": evaluation_in.dataset_id,
-                "training_task_id": evaluation_in.training_task_id,
-                "confidence_scores": confidence_scores,
-            },
-        )
+            # If conversion task exists, start only the evaluation
+            try:
+                for confidence_score in confidence_scores:
+                    self._check_evaluation_task_status(db=db, model_id=conversion_task.model_id, dataset_id=evaluation_in.dataset_id, confidence_score=confidence_score)
+            except EvaluationTaskAlreadyExistsException:
+                raise
 
-        evaluation_task_id = task_result.get(timeout=5)
+            task_result = run_multiple_evaluations.apply_async(
+                kwargs={
+                    "api_key": api_key,
+                    "model_id": conversion_task.model_id,
+                    "dataset_id": evaluation_in.dataset_id,
+                    "training_task_id": evaluation_in.training_task_id,
+                    "confidence_scores": confidence_scores,
+                },
+            )
 
-        logger.info(f"Evaluation task ID: {evaluation_task_id}")
+            evaluation_task_id = task_result.get(timeout=5)
+            logger.info(f"Evaluation task ID: {evaluation_task_id}")
 
-        return evaluation_task_id
+            return evaluation_task_id
+
+        except ConversionTaskNotFoundException:
+            # If no conversion task exists, chain conversion and evaluation together
+            logger.info("No existing conversion task found. Creating a new conversion task and chaining with evaluation.")
+
+            # Get model information
+            model = model_repository.get_by_model_id(
+                db=db,
+                model_id=evaluation_in.input_model_id
+            )
+
+            if not model:
+                raise Exception(f"Input model with ID {evaluation_in.input_model_id} not found")
+
+            # Get project information
+            project = project_service.get_project(db=db, project_id=model.project_id, api_key=api_key)
+
+            # Create input model and output directory paths
+            project_abs_path = Path(project.project_abs_path)
+            input_model_dir = project_abs_path / model.object_path
+
+            input_model_path = input_model_dir / "model.onnx"
+            output_dir = input_model_dir / "converted"
+
+            logger.info(f"Input model path: {input_model_path}")
+            logger.info(f"Output directory: {output_dir}")
+
+            task_result = chain_conversion_and_evaluation.apply_async(
+                kwargs={
+                    "api_key": api_key,
+                    "input_model_path": input_model_path.as_posix(),
+                    "output_dir": output_dir.as_posix(),
+                    "target_framework": evaluation_in.framework,
+                    "target_device_name": evaluation_in.device_name,
+                    "target_data_type": evaluation_in.precision,
+                    "target_software_version": evaluation_in.software_version,
+                    "input_layer": None,
+                    "dataset_path": None,
+                    "input_model_id": evaluation_in.input_model_id,
+                    "dataset_id": evaluation_in.dataset_id,
+                    "training_task_id": evaluation_in.training_task_id,
+                    "confidence_scores": confidence_scores,
+                }
+            )
+
+            # Get the starting task ID of the chain
+            evaluation_task_id = task_result.get(timeout=5)
+            logger.info(f"Conversion and evaluation chain started with ID: {evaluation_task_id}")
+
+            return evaluation_task_id
 
     def get_evaluation_tasks(
         self,
