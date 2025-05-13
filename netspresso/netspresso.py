@@ -188,7 +188,7 @@ class NetsPresso:
         db = None
         try:
             db = SessionLocal()
-            project = project_repository.delete_by_project_id(db=db, project_id=project_id)
+            project = project_repository.get_by_project_id(db=db, project_id=project_id)
             project = project_repository.soft_delete(db=db, model=project)
 
             return project
