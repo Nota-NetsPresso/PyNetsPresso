@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -11,12 +11,32 @@ class DatasetCreate(BaseModel):
     test_path: Optional[str] = None
 
 
+class DatasetSplitPayload(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: Optional[int] = None
+    path: str
+    storage_location: StorageLocation
+    split_type: str
+    count: int
+    dataset_id: Optional[int] = None
+
+
 class DatasetPayload(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    train_path: str
-    valid_path: Optional[str]
-    test_path: Optional[str]
-    storage_location: StorageLocation
+    id: Optional[int] = None
+    name: Optional[str] = None
+    task_type: Optional[str] = None
+    mime_type: Optional[str] = "image"
+    class_count: Optional[int] = None
     id_mapping: Optional[List] = []
-    palette: Optional[dict] = {}
+    palette: Optional[Dict] = {}
+    valid_split_ratio: Optional[float] = 0.1
+    random_seed: Optional[int] = 0
+
+    # 관계 필드
+    splits: Optional[List[DatasetSplitPayload]] = []
+    train_split: Optional[DatasetSplitPayload] = None
+    valid_split: Optional[DatasetSplitPayload] = None
+    test_split: Optional[DatasetSplitPayload] = None
