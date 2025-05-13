@@ -33,10 +33,10 @@ class EvaluationPayload(BaseModel):
     is_dataset_deleted: bool
 
     confidence_score: float
-    metrics: Dict
-    metrics_names: List[str]
-    primary_metric: str
-    results_path: str
+    metrics: Optional[Dict] = None
+    metrics_names: Optional[List[str]] = None
+    primary_metric: Optional[str] = None
+    results_path: Optional[str] = None
 
     input_model_id: str
     training_task_id: str
