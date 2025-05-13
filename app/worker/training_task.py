@@ -7,6 +7,7 @@ from netspresso import NetsPresso
 from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize, ToTensor
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
+from netspresso.trainer.storage.dataforge import Split
 
 NP_TRAINING_STUDIO_PATH = os.environ.get("NP_TRAINING_STUDIO_PATH", "/np_training_studio")
 
@@ -35,11 +36,18 @@ def train_model(
 
         # Download training dataset from dataforage
         train_dataset_path = trainer.download_dataset_for_training(dataset_uuid=training_in.dataset.train_path, output_dir=dataset_dir)
-        trainer.set_dataset(train_dataset_path)
+        train_dataset_version = trainer.get_dataset_version_from_storage(dataset_uuid=training_in.dataset.train_path, split=Split.TRAIN)
+        train_dataset_info = trainer.get_dataset_info_from_storage(project_id=train_dataset_version.project_id, dataset_uuid=training_in.dataset.train_path, split=Split.TRAIN)
+        dataset_name = f"{train_dataset_info.dataset.project_summary.project_id}_{train_dataset_info.dataset.dataset_uuid} #({train_dataset_version.dataset_data_count})"
+        trainer.set_dataset(train_dataset_path, dataset_name)
 
         # Download evaluation dataset from dataforage
         if training_in.dataset.test_path:
-            trainer.download_dataset_for_evaluation(dataset_uuid=training_in.dataset.test_path, output_dir=dataset_dir)
+            test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=training_in.dataset.test_path, output_dir=dataset_dir)
+            test_dataset_version = trainer.get_dataset_version_from_storage(dataset_uuid=training_in.dataset.test_path, split=Split.TEST)
+            test_dataset_info = trainer.get_dataset_info_from_storage(project_id=test_dataset_version.project_id, dataset_uuid=training_in.dataset.test_path, split=Split.TEST)
+            dataset_name = f"{test_dataset_info.dataset.project_summary.project_id}_{test_dataset_info.dataset.dataset_uuid} #({test_dataset_version.dataset_data_count})"
+            trainer.set_test_dataset(test_dataset_path, dataset_name)
 
         img_size = training_in.input_shapes[0].dimension[0]
         trainer.set_model_config(model_name=training_in.pretrained_model, img_size=img_size)

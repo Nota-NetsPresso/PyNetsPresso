@@ -35,9 +35,9 @@ class DataForge:
         """Get all datasets in a project"""
         return self.client.get_datasets(project_id, access_token)
 
-    def get_dataset(self, dataset_uuid: str, split: str, access_token: str) -> DatasetResponse:
+    def get_dataset(self, project_id: str, dataset_uuid: str, access_token: str) -> DatasetResponse:
         """Get a specific dataset by UUID and split"""
-        return self.client.get_dataset(dataset_uuid, split, access_token)
+        return self.client.get_dataset(project_id, dataset_uuid, access_token)
 
     def get_dataset_versions(self, dataset_uuid: str, split: str, access_token: str) -> DatasetVersionsResponse:
         """Get all versions of a dataset by UUID and split"""

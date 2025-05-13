@@ -36,23 +36,9 @@ class DatasetInfo:
     dataset_uuid: Optional[str] = None
     project_summary: Optional[ProjectSummary] = None
 
-    # 기존 필드들도 옵셔널로 유지
-    dataset_id: Optional[str] = None
-    dataset_created: Optional[datetime] = None
-    dataset_hash: Optional[str] = None
-    project_id: Optional[str] = None
-    dataset_type: Optional[str] = None
-    dataset_data_count: Optional[str] = None
-    dataset_creator_id: Optional[str] = None
-    dataset_metadata: Dict[str, Any] = field(default_factory=dict)
-
     def __post_init__(self):
         if hasattr(self, 'project_summary') and isinstance(self.project_summary, dict):
             self.project_summary = ProjectSummary(**self.project_summary)
-
-        # project_id 자동 추출 (backward compatibility)
-        if self.project_id is None and hasattr(self, 'project_summary') and self.project_summary and self.project_summary.project_id:
-            self.project_id = self.project_summary.project_id
 
 
 @dataclass
@@ -87,6 +73,7 @@ class DatasetVersionInfo:
     dataset_metadata: Union[Dict[str, Any], DatasetMetadata] = field(default_factory=dict)
     user_uuid: Optional[str] = None
     origin_dataset_hash: Optional[str] = None
+    project_id: Optional[str] = None
 
     def __post_init__(self):
         # 정수형 필드 타입 변환
@@ -120,7 +107,6 @@ class DatasetVersionsPayload:
 class DatasetPayload:
     """데이터셋 페이로드 스키마"""
     dataset: DatasetInfo
-    s3_path: Optional[S3Path] = None
 
     def __init__(self, **kwargs):
         names = {f.name for f in dataclasses.fields(self)}
@@ -130,9 +116,6 @@ class DatasetPayload:
 
         if hasattr(self, 'dataset') and isinstance(self.dataset, dict):
             self.dataset = DatasetInfo(**self.dataset)
-
-        if hasattr(self, 's3_path') and isinstance(self.s3_path, dict):
-            self.s3_path = S3Path(**self.s3_path)
 
 
 @dataclass

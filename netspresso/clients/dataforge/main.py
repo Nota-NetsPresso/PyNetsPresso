@@ -45,8 +45,9 @@ class DataForgeClient:
 
         return DatasetVersionsResponse(**response.json())
 
-    def get_latest_dataset_version(self, dataset_uuid: str, split: str, access_token: str) -> DatasetVersionResponse:
-        url = f"{self.url}/dataset/version/{dataset_uuid}/{split}/latest"
+    def get_latest_dataset_version(self, dataset_uuid: str, split: str, access_token: str, include_info: bool = True) -> DatasetVersionResponse:
+        include_info_value = "true" if include_info else "false"
+        url = f"{self.url}/dataset/version/{dataset_uuid}/{split}/latest?include_info={include_info_value}"
 
         # TODO: Remove verify=False in production. This is only for testing purposes.
         response = Requester.get(url=url, headers=get_headers(access_token), verify=False)

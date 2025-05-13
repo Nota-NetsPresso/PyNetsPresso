@@ -3,13 +3,17 @@ import random
 import shutil
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from loguru import logger
 from tqdm import tqdm
 
 from netspresso.clients.auth.client import TokenHandler
-from netspresso.clients.dataforge.schemas.response_body import DatasetVersionResponse
+from netspresso.clients.dataforge.schemas.response_body import (
+    DatasetPayload,
+    DatasetVersionInfo,
+    DatasetVersionResponse,
+)
 from netspresso.exceptions.dataset import DatasetDownloadError, DatasetNotFoundError, DatasetPrepareError
 from netspresso.trainer.storage.dataforge import Split, dataforge
 
@@ -493,7 +497,7 @@ class DatasetManager:
         temp_dir: Path,
         dataset_uuid: str,
         split: str,
-        valid_split: float = 0.2,
+        valid_split: float = 0.1,
         random_seed: int = 0,
         verbose: bool = False,
     ) -> str:
@@ -605,7 +609,7 @@ class DatasetManager:
         dataset_uuid: str,
         output_dir: str,
         split: str,
-        valid_split: float = 0.2,
+        valid_split: float = 0.1,
         random_seed: int = 0,
         max_retries: int = 3,
         retry_delay: int = 5,
@@ -760,3 +764,13 @@ class DatasetManager:
             retry_delay=retry_delay,
             verbose=verbose,
         )
+
+    def get_dataset_version_from_dataforge(self, dataset_uuid: str, split: Split) -> DatasetVersionInfo:
+        dataset_version = self._get_dataset_version_with_retry(dataset_uuid, split)
+
+        return dataset_version.data
+
+    def get_dataset_info_from_dataforge(self, project_id: str, dataset_uuid: str, split: Split) -> DatasetPayload:
+        dataset_info = dataforge.get_dataset(project_id, dataset_uuid, self.token_handler.tokens.access_token)
+
+        return dataset_info.data
