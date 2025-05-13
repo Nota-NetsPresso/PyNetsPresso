@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Column, Float, ForeignKey, Integer, String
+from sqlalchemy import JSON, Column, Float, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from netspresso.utils.db.models.base import Base, BaseModel, generate_uuid
@@ -55,16 +55,60 @@ class Dataset(Base):
     __tablename__ = "dataset"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
-    train_path = Column(String(255), nullable=False)
-    valid_path = Column(String(255), nullable=True)
-    test_path = Column(String(255), nullable=True)
+    name = Column(String(100), nullable=False)
     storage_location = Column(String(50), nullable=False)
     id_mapping = Column(JSON, nullable=True)
     palette = Column(JSON, nullable=True)
+    task_type = Column(String(30), nullable=False)
+    mime_type = Column(String(30), nullable=False)
+    class_count = Column(Integer, nullable=False)
+
+    valid_split_ratio = Column(Float, default=0.2)
+    random_seed = Column(Integer, default=0)
+
+    # Relationship to DatasetSplit
+    splits = relationship("DatasetSplit", back_populates="dataset")
+
+    train_split = relationship(
+        "DatasetSplit",
+        primaryjoin="and_(Dataset.id==DatasetSplit.dataset_id, DatasetSplit.split_type=='train')",
+        uselist=False,  # one-to-one 관계
+        viewonly=True
+    )
+
+    valid_split = relationship(
+        "DatasetSplit",
+        primaryjoin="and_(Dataset.id==DatasetSplit.dataset_id, DatasetSplit.split_type=='valid')",
+        uselist=False,
+        viewonly=True
+    )
+
+    test_split = relationship(
+        "DatasetSplit",
+        primaryjoin="and_(Dataset.id==DatasetSplit.dataset_id, DatasetSplit.split_type=='test')",
+        uselist=False,
+        viewonly=True
+    )
 
     # Relationship to TrainingTask
     task_id = Column(String(36), ForeignKey("training_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
     task = relationship("TrainingTask", back_populates="dataset")
+
+
+class DatasetSplit(Base):
+    __tablename__ = "dataset_split"
+
+    id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
+    path = Column(String(255), nullable=False)
+    split_type = Column(String(30), nullable=False)
+    count = Column(Integer, nullable=False)
+
+    dataset_id = Column(Integer, ForeignKey("dataset.id"), nullable=False)
+
+    # 유일성 제약 조건 추가 (하나의 데이터셋에 같은 타입의 split이 여러 개 있으면 안됨)
+    __table_args__ = (
+        UniqueConstraint('dataset_id', 'split_type', name='uix_dataset_split_type'),
+    )
 
 
 class Hyperparameter(Base):
