@@ -63,7 +63,7 @@ class Dataset(Base):
     mime_type = Column(String(30), nullable=False)
     class_count = Column(Integer, nullable=False)
 
-    valid_split_ratio = Column(Float, default=0.2)
+    valid_split_ratio = Column(Float, default=0.1)
     random_seed = Column(Integer, default=0)
 
     # Relationship to DatasetSplit
