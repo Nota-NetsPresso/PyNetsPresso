@@ -102,6 +102,7 @@ class DatasetSplit(Base):
     count = Column(Integer, nullable=False)
 
     dataset_id = Column(Integer, ForeignKey("dataset.id"), nullable=False)
+    dataset = relationship("Dataset", back_populates="splits")
 
     __table_args__ = (
         UniqueConstraint('dataset_id', 'split_type', name='uix_dataset_split_type'),
