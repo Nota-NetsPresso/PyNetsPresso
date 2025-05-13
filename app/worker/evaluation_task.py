@@ -16,6 +16,7 @@ from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
 from netspresso.utils.db.models.base import generate_uuid
+from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.session import SessionLocal
 
 POLLING_INTERVAL = 30  # seconds
@@ -218,49 +219,55 @@ def poll_and_start_evaluation(
     Returns:
         evaluation_task_id: ID of the started evaluation task
     """
-    netspresso = NetsPresso(api_key=api_key)
-    converter = netspresso.converter_v2()
-    conversion_task = converter.get_conversion_task(conversion_task_id)
+    session = SessionLocal()
+    try:
+        conversion_task = conversion_task_repository.get_by_task_id(db=session, task_id=conversion_task_id)
 
-    if conversion_task.status == Status.COMPLETED:
-        model_id = conversion_task.output_model_id
-        logger.info(f"Conversion completed successfully. Model ID: {model_id}")
+        if conversion_task.status == Status.COMPLETED:
+            model_id = conversion_task.model_id
+            logger.info(f"Conversion completed successfully. Model ID: {model_id}")
 
-        # 생성된 평가 작업 ID가 없으면 생성
-        if not evaluation_task_id:
-            evaluation_task_id = generate_uuid(entity="task")
+            # 생성된 평가 작업 ID가 없으면 생성
+            if not evaluation_task_id:
+                evaluation_task_id = generate_uuid(entity="task")
 
-        # 변환이 완료되었으므로 평가 실행
-        return run_multiple_evaluations.apply_async(
-            kwargs={
-                "api_key": api_key,
-                "model_id": model_id,
-                "dataset_id": dataset_id,
-                "training_task_id": training_task_id,
-                "confidence_scores": confidence_scores,
-                "gpus": gpus
-            },
-            task_id=evaluation_task_id
-        ).get()
-    elif conversion_task.status in [Status.STOPPED, Status.ERROR]:
-        error_message = conversion_task.error_log
-        logger.error(f"Conversion failed: {error_message}")
-        raise Exception(f"Conversion failed: {error_message}")
-    else:
-        # 아직 변환이 진행 중이므로 자신을 다시 예약
-        logger.info(f"Conversion in progress. Status: {conversion_task.status}. Scheduling poll again.")
-        return poll_and_start_evaluation.apply_async(
-            args=[
-                conversion_task_id,
-                api_key,
-                dataset_id,
-                training_task_id,
-                confidence_scores,
-                gpus,
-                evaluation_task_id
-            ],
-            countdown=POLLING_INTERVAL
-        )
+            # 변환이 완료되었으므로 평가 실행
+            return run_multiple_evaluations.apply_async(
+                kwargs={
+                    "api_key": api_key,
+                    "model_id": model_id,
+                    "dataset_id": dataset_id,
+                    "training_task_id": training_task_id,
+                    "confidence_scores": confidence_scores,
+                    "gpus": gpus
+                },
+                task_id=evaluation_task_id
+            ).get()
+        elif conversion_task.status in [Status.STOPPED, Status.ERROR]:
+            error_message = conversion_task.error_detail
+            logger.error(f"Conversion failed: {error_message}")
+            raise Exception(f"Conversion failed: {error_message}")
+        else:
+            # 아직 변환이 진행 중이므로 자신을 다시 예약
+            logger.info(f"Conversion in progress. Status: {conversion_task.status}. Scheduling poll again.")
+            return poll_and_start_evaluation.apply_async(
+                args=[
+                    conversion_task_id,
+                    api_key,
+                    dataset_id,
+                    training_task_id,
+                    confidence_scores,
+                    gpus,
+                    evaluation_task_id
+                ],
+                countdown=POLLING_INTERVAL
+            )
+    except Exception as e:
+        logger.error(f"Evaluation task error: {str(e)}")
+        raise e
+    finally:
+        session.close()
+
 
 @celery_app.task(name='chain_conversion_and_evaluation')
 def chain_conversion_and_evaluation(

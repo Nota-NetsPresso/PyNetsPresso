@@ -18,7 +18,7 @@ class ConversionTaskRepository(BaseRepository[ConversionTask]):
 
         return task
 
-    def get_by_task_id(self, db: Session, task_id: str) -> Optional[ConversionTask]:
+    def get_by_task_id(self, db: Session, task_id: str) -> ConversionTask:
         conditions = [self.model.task_id == task_id]
         task = self.find_first(
             db=db,
