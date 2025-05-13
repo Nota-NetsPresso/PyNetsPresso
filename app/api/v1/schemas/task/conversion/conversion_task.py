@@ -14,12 +14,15 @@ from netspresso.enums.conversion import PrecisionForConversion, TargetFramework
 from netspresso.enums.device import DeviceName, SoftwareVersion
 
 
-class ConversionCreate(BaseModel):
-    input_model_id: str = Field(description="Input model ID")
+class ConversionCreateBase(BaseModel):
     framework: TargetFramework = Field(description="Framework name")
     device_name: DeviceName = Field(description="Device name")
     software_version: Optional[SoftwareVersion] = Field(default=None, description="Software version")
     precision: PrecisionForConversion = Field(description="Precision")
+
+
+class ConversionCreate(ConversionCreateBase):
+    input_model_id: str = Field(description="Input model ID")
     calibration_dataset_path: Optional[str] = Field(default=None, description="Path to the calibration dataset")
 
 

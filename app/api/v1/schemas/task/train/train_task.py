@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.api.v1.schemas.base import ResponseItem
+from app.api.v1.schemas.task.conversion.conversion_task import ConversionCreateBase
 from netspresso.enums.train import (
     FRAMEWORK_DISPLAY_MAP,
     MODEL_DISPLAY_MAP,
@@ -39,6 +40,7 @@ class TrainingCreate(BaseModel):
     dataset: Optional[DatasetCreate]
     hyperparameter: Optional[HyperparameterCreate]
     environment: Optional[EnvironmentCreate]
+    conversion: Optional[ConversionCreateBase]
 
 
 class PretrainedModelPayload(BaseModel):
