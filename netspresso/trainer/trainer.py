@@ -318,6 +318,7 @@ class Trainer(NetsPressoBase):
         total_image_count = train_image_count + valid_image_count
 
         self.train_split = DatasetSplit(
+            name=dataset_name,
             path=root_path,
             storage_location=StorageLocation.STORAGE if self.is_dataforge else StorageLocation.LOCAL,
             split_type=Split.TRAIN,
@@ -350,6 +351,7 @@ class Trainer(NetsPressoBase):
         test_image_count = len(list(test_image_path.glob("*.*"))) if test_image_path.is_dir() else 1
 
         self.test_split = DatasetSplit(
+            name=dataset_name,
             path=root_path,
             storage_location=StorageLocation.STORAGE if self.is_dataforge else StorageLocation.LOCAL,
             split_type=Split.TEST,

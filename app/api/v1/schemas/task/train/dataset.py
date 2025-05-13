@@ -15,6 +15,7 @@ class DatasetSplitPayload(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: Optional[int] = None
+    name: str
     path: str
     storage_location: StorageLocation
     split_type: str
@@ -35,8 +36,5 @@ class DatasetPayload(BaseModel):
     valid_split_ratio: Optional[float] = 0.1
     random_seed: Optional[int] = 0
 
-    # 관계 필드
-    splits: Optional[List[DatasetSplitPayload]] = []
     train_split: Optional[DatasetSplitPayload] = None
-    valid_split: Optional[DatasetSplitPayload] = None
     test_split: Optional[DatasetSplitPayload] = None

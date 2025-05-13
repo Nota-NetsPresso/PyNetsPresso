@@ -96,6 +96,7 @@ class DatasetSplit(Base):
     __tablename__ = "dataset_split"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
+    name = Column(String(255), nullable=False)
     path = Column(String(255), nullable=False)
     storage_location = Column(String(50), nullable=False)
     split_type = Column(String(30), nullable=False)
