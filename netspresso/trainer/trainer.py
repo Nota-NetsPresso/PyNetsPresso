@@ -8,7 +8,7 @@ from omegaconf import OmegaConf
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
-from netspresso.clients.dataforge.schemas.response_body import DatasetPayload
+from netspresso.clients.dataforge.schemas.response_body import DatasetPayload, DatasetVersionInfo
 from netspresso.clients.launcher import launcher_client_v2
 from netspresso.enums import Framework, ServiceTask, Status, Task
 from netspresso.enums.project import SubFolder
@@ -1009,7 +1009,12 @@ class Trainer(NetsPressoBase):
             logger.error(f"Failed to download dataset for evaluation: {str(e)}")
             raise e
 
-    def get_dataset_info_from_storage(self, dataset_uuid: str, split: Split) -> DatasetPayload:
-        dataset_info = self.dataset_manager.get_dataset_info_from_dataforge(dataset_uuid=dataset_uuid, split=split)
+    def get_dataset_version_from_storage(self, dataset_uuid: str, split: Split) -> DatasetVersionInfo:
+        dataset_version = self.dataset_manager.get_dataset_version_from_dataforge(dataset_uuid=dataset_uuid, split=split)
+
+        return dataset_version
+
+    def get_dataset_info_from_storage(self, project_id: str, dataset_uuid: str, split: Split) -> DatasetPayload:
+        dataset_info = self.dataset_manager.get_dataset_info_from_dataforge(project_id=project_id, dataset_uuid=dataset_uuid, split=split)
 
         return dataset_info
