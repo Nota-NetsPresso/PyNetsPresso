@@ -227,11 +227,11 @@ def poll_and_start_evaluation(
             model_id = conversion_task.model_id
             logger.info(f"Conversion completed successfully. Model ID: {model_id}")
 
-            # 생성된 평가 작업 ID가 없으면 생성
+            # If there's no generated evaluation task ID, create one
             if not evaluation_task_id:
                 evaluation_task_id = generate_uuid(entity="task")
 
-            # 변환이 완료되었으므로 평가 실행
+            # The conversion is complete, so run the evaluation
             return run_multiple_evaluations.apply_async(
                 kwargs={
                     "api_key": api_key,
@@ -248,7 +248,7 @@ def poll_and_start_evaluation(
             logger.error(f"Conversion failed: {error_message}")
             raise Exception(f"Conversion failed: {error_message}")
         else:
-            # 아직 변환이 진행 중이므로 자신을 다시 예약
+            # The conversion is still in progress, so schedule this task again
             logger.info(f"Conversion in progress. Status: {conversion_task.status}. Scheduling poll again.")
             return poll_and_start_evaluation.apply_async(
                 args=[
@@ -307,11 +307,11 @@ def chain_conversion_and_evaluation(
     Returns:
         task_id: Chain task ID
     """
-    # 모든 태스크에서 공유할 평가 작업 ID 생성
+    # Create an evaluation task ID to be shared across all tasks
     evaluation_task_id = generate_uuid(entity="task")
     logger.info(f"Starting conversion and evaluation chain with evaluation ID: {evaluation_task_id}")
 
-    # 변환 태스크 설정
+    # Configure conversion task
     conversion_task = signature(
         'convert_model',
         kwargs={
@@ -328,7 +328,7 @@ def chain_conversion_and_evaluation(
         }
     )
 
-    # 폴링 태스크 설정 - 변환 완료 체크 후 평가 시작
+    # Configure polling task - check for conversion completion and start evaluation
     poll_task = signature(
         'poll_and_start_evaluation',
         kwargs={
@@ -341,14 +341,14 @@ def chain_conversion_and_evaluation(
         }
     )
 
-    # 체인 생성 및 실행
+    # Create and execute the chain
     task_chain = chain(
         conversion_task,
         poll_task
     )
 
-    # 체인 실행 - 결과는 async로 처리됨
+    # Execute the chain - results are processed asynchronously
     task_chain.apply_async()
 
-    # evaluation_task_id를 즉시 반환
+    # Return the evaluation_task_id immediately
     return evaluation_task_id

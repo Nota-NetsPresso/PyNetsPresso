@@ -163,7 +163,7 @@ class EvaluationTaskService:
         confidence_scores = [0.3, 0.5, 0.6]
 
         try:
-            # 변환 작업이 있는지 확인
+            # Check if a conversion task exists
             conversion_task = self._find_existing_conversion_task(
                 db=db,
                 input_model_id=evaluation_in.input_model_id,
@@ -173,7 +173,7 @@ class EvaluationTaskService:
                 target_data_type=evaluation_in.precision
             )
 
-            # 변환 작업이 있으면 평가만 시작
+            # If conversion task exists, start only the evaluation
             try:
                 for confidence_score in confidence_scores:
                     self._check_evaluation_task_status(db=db, model_id=conversion_task.model_id, dataset_id=evaluation_in.dataset_id, confidence_score=confidence_score)
@@ -196,10 +196,10 @@ class EvaluationTaskService:
             return evaluation_task_id
 
         except ConversionTaskNotFoundException:
-            # 변환 작업이 없는 경우 변환과 평가를 체인으로 연결
+            # If no conversion task exists, chain conversion and evaluation together
             logger.info("No existing conversion task found. Creating a new conversion task and chaining with evaluation.")
 
-            # 모델 정보 가져오기
+            # Get model information
             model = model_repository.get_by_model_id(
                 db=db,
                 model_id=evaluation_in.input_model_id
@@ -208,10 +208,10 @@ class EvaluationTaskService:
             if not model:
                 raise Exception(f"Input model with ID {evaluation_in.input_model_id} not found")
 
-            # 프로젝트 정보 가져오기
+            # Get project information
             project = project_service.get_project(db=db, project_id=model.project_id, api_key=api_key)
 
-            # 입력 모델 및 출력 디렉토리 경로 생성
+            # Create input model and output directory paths
             project_abs_path = Path(project.project_abs_path)
             input_model_dir = project_abs_path / model.object_path
 
@@ -239,7 +239,7 @@ class EvaluationTaskService:
                 }
             )
 
-            # 체인 시작 태스크 ID 획득
+            # Get the starting task ID of the chain
             evaluation_task_id = task_result.get(timeout=5)
             logger.info(f"Conversion and evaluation chain started with ID: {evaluation_task_id}")
 
