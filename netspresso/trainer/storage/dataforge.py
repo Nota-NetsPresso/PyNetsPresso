@@ -31,21 +31,21 @@ class DataForge:
         self.annotation_bucket = "annotations"
         self.csv_bucket = "dataset"
 
-    def get_datasets(self, project_id: str) -> DatasetsResponse:
+    def get_datasets(self, project_id: str, access_token: str) -> DatasetsResponse:
         """Get all datasets in a project"""
-        return self.client.get_datasets(project_id)
+        return self.client.get_datasets(project_id, access_token)
 
-    def get_dataset(self, dataset_uuid: str, split: str) -> DatasetResponse:
+    def get_dataset(self, dataset_uuid: str, split: str, access_token: str) -> DatasetResponse:
         """Get a specific dataset by UUID and split"""
-        return self.client.get_dataset(dataset_uuid, split)
+        return self.client.get_dataset(dataset_uuid, split, access_token)
 
-    def get_dataset_versions(self, dataset_uuid: str, split: str) -> DatasetVersionsResponse:
+    def get_dataset_versions(self, dataset_uuid: str, split: str, access_token: str) -> DatasetVersionsResponse:
         """Get all versions of a dataset by UUID and split"""
-        return self.client.get_dataset_versions(dataset_uuid, split)
+        return self.client.get_dataset_versions(dataset_uuid, split, access_token)
 
-    def get_latest_dataset_version(self, dataset_uuid: str, split: str) -> DatasetVersionResponse:
+    def get_latest_dataset_version(self, dataset_uuid: str, split: str, access_token: str) -> DatasetVersionResponse:
         """Get the latest version of a dataset by UUID and split"""
-        return self.client.get_latest_dataset_version(dataset_uuid, split)
+        return self.client.get_latest_dataset_version(dataset_uuid, split, access_token)
 
     def _download_csv_file(self, csv_path: str, dataset_dir: Path) -> bool:
         """

@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from loguru import logger
 from tqdm import tqdm
 
+from netspresso.clients.auth.client import TokenHandler
 from netspresso.clients.dataforge.schemas.response_body import DatasetVersionResponse
 from netspresso.exceptions.dataset import DatasetDownloadError, DatasetNotFoundError, DatasetPrepareError
 from netspresso.trainer.storage.dataforge import Split, dataforge
@@ -19,8 +20,8 @@ class DatasetManager:
     and preparing datasets for training and evaluation.
     """
 
-    def __init__(self, token_handler: Optional[Any] = None) -> None:
-        self.token_handler: Optional[Any] = token_handler
+    def __init__(self, token_handler: TokenHandler) -> None:
+        self.token_handler: TokenHandler = token_handler
 
     def _check_dataset_exists(self, dataset_dir: Path, split: str) -> bool:
         """
@@ -201,7 +202,11 @@ class DatasetManager:
 
         for attempt in range(max_retries):
             try:
-                dataset_version = dataforge.get_latest_dataset_version(dataset_uuid=dataset_uuid, split=split)
+                dataset_version = dataforge.get_latest_dataset_version(
+                    dataset_uuid=dataset_uuid,
+                    split=split,
+                    access_token=self.token_handler.tokens.access_token,
+                )
                 if not dataset_version or not dataset_version.data:
                     logger.error(f"Could not get dataset info for UUID: {dataset_uuid}, split: {split}")
                     permanent_error = True
