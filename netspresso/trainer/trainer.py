@@ -666,6 +666,7 @@ class Trainer(NetsPressoBase):
     def create_training_task(self, model_id, task_id, user_id) -> TrainingTask:
         with get_db_session() as db:
             dataset = Dataset(
+                name=self.data.name,
                 id_mapping=self.data.id_mapping,
                 palette=self.data.pallete,
                 task_type=self.task,
