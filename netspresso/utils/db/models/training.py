@@ -56,11 +56,10 @@ class Dataset(Base):
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
     name = Column(String(100), nullable=False)
-    storage_location = Column(String(50), nullable=False)
     id_mapping = Column(JSON, nullable=True)
     palette = Column(JSON, nullable=True)
     task_type = Column(String(30), nullable=False)
-    mime_type = Column(String(30), nullable=False)
+    mime_type = Column(String(30), default="image")
     class_count = Column(Integer, nullable=False)
 
     valid_split_ratio = Column(Float, default=0.1)
@@ -75,14 +74,12 @@ class Dataset(Base):
         uselist=False,  # one-to-one 관계
         viewonly=True
     )
-
     valid_split = relationship(
         "DatasetSplit",
         primaryjoin="and_(Dataset.id==DatasetSplit.dataset_id, DatasetSplit.split_type=='valid')",
         uselist=False,
         viewonly=True
     )
-
     test_split = relationship(
         "DatasetSplit",
         primaryjoin="and_(Dataset.id==DatasetSplit.dataset_id, DatasetSplit.split_type=='test')",
@@ -100,12 +97,12 @@ class DatasetSplit(Base):
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
     path = Column(String(255), nullable=False)
+    storage_location = Column(String(50), nullable=False)
     split_type = Column(String(30), nullable=False)
     count = Column(Integer, nullable=False)
 
     dataset_id = Column(Integer, ForeignKey("dataset.id"), nullable=False)
 
-    # 유일성 제약 조건 추가 (하나의 데이터셋에 같은 타입의 split이 여러 개 있으면 안됨)
     __table_args__ = (
         UniqueConstraint('dataset_id', 'split_type', name='uix_dataset_split_type'),
     )

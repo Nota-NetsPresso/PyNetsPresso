@@ -35,11 +35,14 @@ def train_model(
 
         # Download training dataset from dataforage
         train_dataset_path = trainer.download_dataset_for_training(dataset_uuid=training_in.dataset.train_path, output_dir=dataset_dir)
-        trainer.set_dataset(train_dataset_path)
+        train_dataset_info = trainer.get_dataset_info_from_storage(dataset_uuid=training_in.dataset.train_path)
+        trainer.set_dataset(train_dataset_path, train_dataset_info.dataset.dataset_title)
 
         # Download evaluation dataset from dataforage
         if training_in.dataset.test_path:
-            trainer.download_dataset_for_evaluation(dataset_uuid=training_in.dataset.test_path, output_dir=dataset_dir)
+            test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=training_in.dataset.test_path, output_dir=dataset_dir)
+            test_dataset_info = trainer.get_dataset_info_from_storage(dataset_uuid=training_in.dataset.test_path)
+            trainer.set_test_dataset(test_dataset_path, test_dataset_info.dataset.dataset_title)
 
         img_size = training_in.input_shapes[0].dimension[0]
         trainer.set_model_config(model_name=training_in.pretrained_model, img_size=img_size)

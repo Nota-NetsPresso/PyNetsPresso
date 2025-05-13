@@ -9,7 +9,7 @@ from loguru import logger
 from tqdm import tqdm
 
 from netspresso.clients.auth.client import TokenHandler
-from netspresso.clients.dataforge.schemas.response_body import DatasetVersionResponse
+from netspresso.clients.dataforge.schemas.response_body import DatasetPayload, DatasetVersionResponse
 from netspresso.exceptions.dataset import DatasetDownloadError, DatasetNotFoundError, DatasetPrepareError
 from netspresso.trainer.storage.dataforge import Split, dataforge
 
@@ -760,3 +760,11 @@ class DatasetManager:
             retry_delay=retry_delay,
             verbose=verbose,
         )
+
+    def get_dataset_info_from_dataforge(self, dataset_uuid: str, split: Split) -> DatasetPayload:
+        dataset_version = self._get_dataset_version_with_retry(dataset_uuid, split)
+        project_id = dataset_version.data.project_id
+
+        dataset_info = dataforge.get_dataset(project_id, dataset_uuid, self.token_handler.tokens.access_token)
+
+        return dataset_info.data

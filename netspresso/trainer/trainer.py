@@ -8,6 +8,7 @@ from omegaconf import OmegaConf
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
+from netspresso.clients.dataforge.schemas.response_body import DatasetPayload
 from netspresso.clients.launcher import launcher_client_v2
 from netspresso.enums import Framework, ServiceTask, Status, Task
 from netspresso.enums.project import SubFolder
@@ -46,6 +47,7 @@ from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.models.training import (
     Augmentation,
     Dataset,
+    DatasetSplit,
     Environment,
     Hyperparameter,
     Performance,
@@ -96,6 +98,7 @@ class Trainer(NetsPressoBase):
             self._initialize_from_yaml(yaml_path)
 
         self.dataset_manager = DatasetManager(token_handler=token_handler)
+        self.is_dataforge = False
 
     def _initialize_from_task(self, task: Union[str, Task]) -> None:
         """Initialize the Trainer object based on the provided task.
@@ -287,8 +290,9 @@ class Trainer(NetsPressoBase):
 
         return result_paths[0]
 
-    def set_dataset(self, dataset_root_path: str):
-        dataset_name = Path(dataset_root_path).name
+    def set_dataset(self, dataset_root_path: str, dataset_name: Optional[str] = None):
+        if dataset_name is None:
+            dataset_name = Path(dataset_root_path).name
         root_path = Path(dataset_root_path).resolve().as_posix()
 
         self.check_paths_exist(root_path)
@@ -305,6 +309,51 @@ class Trainer(NetsPressoBase):
             valid_image=images_valid,
             valid_label=labels_valid,
             id_mapping=id_mapping,
+        )
+
+        train_image_path = Path(images_train)
+        valid_image_path = Path(images_valid)
+        train_image_count = len(list(train_image_path.glob("*.*"))) if train_image_path.is_dir() else 1
+        valid_image_count = len(list(valid_image_path.glob("*.*"))) if valid_image_path.is_dir() else 1
+        total_image_count = train_image_count + valid_image_count
+
+        self.train_split = DatasetSplit(
+            path=root_path,
+            storage_location=StorageLocation.STORAGE if self.is_dataforge else StorageLocation.LOCAL,
+            split_type=Split.TRAIN,
+            count=total_image_count,
+        )
+
+    def set_test_dataset(self, dataset_root_path: str, dataset_name: Optional[str] = None):
+        if dataset_name is None:
+            dataset_name = Path(dataset_root_path).name
+        root_path = Path(dataset_root_path).resolve().as_posix()
+
+        # self.check_test_paths_exist(root_path)
+        images_test = self.find_paths(root_path, "images", "test")
+        labels_test = self.find_paths(root_path, "labels", "test")
+        id_mapping = FileHandler.load_json(f"{root_path}/id_mapping.json")
+
+        if self.data is not None:
+            self.data.path.test.image = images_test
+            self.data.path.test.label = labels_test
+        else:
+            self.set_dataset_config(
+                name=dataset_name,
+                root_path=dataset_root_path,
+                test_image=images_test,
+                test_label=labels_test,
+                id_mapping=id_mapping,
+            )
+
+        test_image_path = Path(images_test)
+        test_image_count = len(list(test_image_path.glob("*.*"))) if test_image_path.is_dir() else 1
+
+        self.test_split = DatasetSplit(
+            path=root_path,
+            storage_location=StorageLocation.STORAGE if self.is_dataforge else StorageLocation.LOCAL,
+            split_type=Split.TEST,
+            count=test_image_count,
         )
 
     def set_model_config(
@@ -617,12 +666,12 @@ class Trainer(NetsPressoBase):
     def create_training_task(self, model_id, task_id, user_id) -> TrainingTask:
         with get_db_session() as db:
             dataset = Dataset(
-                train_path="train",
-                valid_path="valid",
-                test_path="test",
-                storage_location=StorageLocation.STORAGE,
                 id_mapping=self.data.id_mapping,
                 palette=self.data.pallete,
+                task_type=self.task,
+                class_count=len(self.data.id_mapping),
+                train_split=self.train_split,
+                test_split=self.test_split,
             )
             augs = [
                 Augmentation(
@@ -908,6 +957,7 @@ class Trainer(NetsPressoBase):
                 retry_delay=retry_delay,
                 verbose=verbose,
             )
+            self.is_dataforge = True
             logger.info(f"Downloaded dataset from DataForge: {dataset_path}")
 
             return dataset_path
@@ -956,18 +1006,7 @@ class Trainer(NetsPressoBase):
             logger.error(f"Failed to download dataset for evaluation: {str(e)}")
             raise e
 
-    def set_test_dataset(self, dataset_root_path: str):
-        dataset_name = Path(dataset_root_path).name
-        root_path = Path(dataset_root_path).resolve().as_posix()
+    def get_dataset_info_from_storage(self, dataset_uuid: str) -> DatasetPayload:
+        dataset_info = self.dataset_manager.get_dataset_info_from_dataforge(dataset_uuid=dataset_uuid)
 
-        # self.check_test_paths_exist(root_path)
-        images_test = self.find_paths(root_path, "images", "test")
-        labels_test = self.find_paths(root_path, "labels", "test")
-        id_mapping = FileHandler.load_json(f"{root_path}/id_mapping.json")
-        self.set_dataset_config(
-            name=dataset_name,
-            root_path=dataset_root_path,
-            test_image=images_test,
-            test_label=labels_test,
-            id_mapping=id_mapping,
-        )
+        return dataset_info
