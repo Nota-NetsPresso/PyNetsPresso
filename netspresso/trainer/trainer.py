@@ -1006,7 +1006,7 @@ class Trainer(NetsPressoBase):
             logger.error(f"Failed to download dataset for evaluation: {str(e)}")
             raise e
 
-    def get_dataset_info_from_storage(self, dataset_uuid: str) -> DatasetPayload:
-        dataset_info = self.dataset_manager.get_dataset_info_from_dataforge(dataset_uuid=dataset_uuid)
+    def get_dataset_info_from_storage(self, dataset_uuid: str, split: Split) -> DatasetPayload:
+        dataset_info = self.dataset_manager.get_dataset_info_from_dataforge(dataset_uuid=dataset_uuid, split=split)
 
         return dataset_info
