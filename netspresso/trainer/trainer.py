@@ -43,6 +43,7 @@ from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.trainer.training import TRAINING_CONFIG_TYPE, EnvironmentConfig, LoggingConfig, ScheduleConfig
 from netspresso.trainer.training.logging import Metrics, ModelSaveOptions
 from netspresso.utils import FileHandler
+from netspresso.utils.db.models.evaluation import EvaluationDataset
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.models.training import (
     Augmentation,
@@ -353,7 +354,7 @@ class Trainer(NetsPressoBase):
         test_image_path = Path(images_test)
         test_image_count = len(list(test_image_path.glob("*.*"))) if test_image_path.is_dir() else 1
 
-        self.test_dataset = Dataset(
+        self.test_dataset = EvaluationDataset(
             name=dataset_name,
             path=root_path,
             id_mapping=self.data.id_mapping,
