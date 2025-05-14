@@ -15,6 +15,7 @@ from netspresso.enums.metadata import Status
 from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize, ToTensor
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
+from netspresso.trainer.storage.dataforge import Split
 from netspresso.utils.db.models.base import generate_uuid
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.session import SessionLocal
@@ -91,7 +92,9 @@ def evaluate_model_task(
 
         logger.info(f"Downloading dataset from DataForge: {dataset_id}")
         test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)
-        trainer.set_test_dataset(test_dataset_path)
+        test_dataset_version = trainer.get_dataset_version_from_storage(dataset_uuid=dataset_id, split=Split.TEST)
+        test_dataset_info = trainer.get_dataset_info_from_storage(project_id=test_dataset_version.project_id, dataset_uuid=dataset_id, split=Split.TEST)
+        trainer.set_test_dataset(test_dataset_path, test_dataset_info.dataset.dataset_title)
         logger.info(f"Downloaded dataset to: {test_dataset_path}")
 
         img_size = training_in.input_shapes[0].dimension[0]
