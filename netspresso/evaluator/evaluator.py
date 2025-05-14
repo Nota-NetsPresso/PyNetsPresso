@@ -18,10 +18,10 @@ from netspresso.exceptions.evaluation import (
 from netspresso.exceptions.trainer import NotCompletedTrainingException
 from netspresso.trainer.trainer import Trainer
 from netspresso.trainer.trainer_configs import TrainerConfigs
-from netspresso.utils.db.models.evaluation import EvaluationTask
+from netspresso.utils.db.models.evaluation import EvaluationDataset, EvaluationTask
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
-from netspresso.utils.db.repositories.evaluation import evaluation_task_repository
+from netspresso.utils.db.repositories.evaluation import evaluation_dataset_repository, evaluation_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
 from netspresso.utils.db.session import get_db_session
@@ -71,7 +71,6 @@ class Evaluator:
     def evaluate_from_id(
         self,
         model_id: str,
-        dataset_id: str,
         confidence_score: float,
         gpus: int = 0,
         evaluation_task_id: Optional[str] = None,
@@ -90,7 +89,6 @@ class Evaluator:
             return self._evaluate_with_session(
                 db=db,
                 model_id=model_id,
-                dataset_id=dataset_id,
                 confidence_score=confidence_score,
                 gpus=gpus,
                 evaluation_task_id=evaluation_task_id,
@@ -100,7 +98,6 @@ class Evaluator:
                 return self._evaluate_with_session(
                     db=db,
                     model_id=model_id,
-                    dataset_id=dataset_id,
                     confidence_score=confidence_score,
                     gpus=gpus,
                     evaluation_task_id=evaluation_task_id,
@@ -131,17 +128,16 @@ class Evaluator:
         self,
         db: Session,
         model_id: str,
-        dataset_id: str,
         confidence_score: float,
         gpus: int = 0,
         evaluation_task_id: Optional[str] = None,
     ) -> str:
         evaluation_task = None  # Initialize so it can be safely referenced in except block
 
-        try:
-            self._check_evaluation_task_status(db=db, model_id=model_id, dataset_id=dataset_id, confidence_score=confidence_score)
-        except EvaluationTaskAlreadyExistsException as e:
-            raise e
+        # try:
+        #     self._check_evaluation_task_status(db=db, model_id=model_id, dataset_id=dataset_id, confidence_score=confidence_score)
+        # except EvaluationTaskAlreadyExistsException as e:
+        #     raise e
 
         try:
             output_dir = tempfile.mkdtemp(prefix="netspresso_evaluate_")
@@ -162,19 +158,31 @@ class Evaluator:
 
             # Create task with DB session
             if evaluation_task_id:
-                evaluation_task = EvaluationTask(
-                    task_id=evaluation_task_id,
-                    dataset_id=dataset_id,
-                    input_model_id=model_id,
-                    training_task_id=training_task.task_id,
-                    conversion_task_id=conversion_task.task_id,
-                    confidence_score=confidence_score,
-                    status=Status.NOT_STARTED,
-                    user_id=conversion_task.user_id,
-                )
+                if self.trainer.test_dataset_id:
+                    evaluation_task = EvaluationTask(
+                        task_id=evaluation_task_id,
+                        dataset_id=self.trainer.test_dataset_id,
+                        input_model_id=model_id,
+                        training_task_id=training_task.task_id,
+                        conversion_task_id=conversion_task.task_id,
+                        confidence_score=confidence_score,
+                        status=Status.NOT_STARTED,
+                        user_id=conversion_task.user_id,
+                    )
+                if self.trainer.test_dataset:
+                    evaluation_task = EvaluationTask(
+                        task_id=evaluation_task_id,
+                        dataset=self.trainer.test_dataset,
+                        input_model_id=model_id,
+                        training_task_id=training_task.task_id,
+                        conversion_task_id=conversion_task.task_id,
+                        confidence_score=confidence_score,
+                        status=Status.NOT_STARTED,
+                        user_id=conversion_task.user_id,
+                    )
             else:
                 evaluation_task = EvaluationTask(
-                    dataset_id=dataset_id,
+                    dataset_id=self.trainer.test_dataset,
                     input_model_id=model_id,
                     training_task_id=training_task.task_id,
                     conversion_task_id=conversion_task.task_id,
@@ -340,7 +348,7 @@ class Evaluator:
     def get_evaluation_task(self, db: Session, evaluation_id: str) -> EvaluationTask:
         return evaluation_task_repository.get_by_task_id(db=db, task_id=evaluation_id)
 
-    def get_unique_datasets_by_model_id(self, db: Session, user_id: str, model_id: str) -> List[str]:
+    def get_unique_datasets_by_model_id(self, db: Session, user_id: str, model_id: str) -> List[EvaluationDataset]:
         """Get unique dataset IDs used for evaluating a specific model.
 
         Args:
@@ -351,11 +359,17 @@ class Evaluator:
         Returns:
             List[str]: List of unique dataset IDs
         """
-        return evaluation_task_repository.get_unique_datasets_by_model_id(
+        dataset_ids = evaluation_task_repository.get_unique_datasets_by_model_id(
             db=db,
             user_id=user_id,
             model_id=model_id
         )
+        evaluation_datasets = evaluation_dataset_repository.get_by_dataset_ids(
+            db=db,
+            dataset_ids=dataset_ids
+        )
+
+        return evaluation_datasets
 
     def get_evaluation_results_by_model_and_dataset(
         self,

@@ -12,7 +12,7 @@ class ConversionTask(BaseModel):
 
     # Conversion settings
     framework = Column(String(30), nullable=False)
-    device_name = Column(String(30), nullable=False)
+    device_name = Column(String(100), nullable=False)
     software_version = Column(String(30), nullable=True)
     precision = Column(String(30), nullable=False)
 

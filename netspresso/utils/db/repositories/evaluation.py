@@ -1,9 +1,11 @@
 from typing import List, Optional
 
+from loguru import logger
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from netspresso.exceptions.evaluation import EvaluationTaskIsDeletedException, EvaluationTaskNotFoundException
-from netspresso.utils.db.models.evaluation import EvaluationTask
+from netspresso.utils.db.models.evaluation import EvaluationDataset, EvaluationTask
 from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
 
 
@@ -193,4 +195,27 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
         )
 
 
+class EvaluationDatasetRepository(BaseRepository[EvaluationDataset]):
+    def get_by_dataforge_dataset_id(self, db: Session, dataset_id: str) -> Optional[EvaluationDataset]:
+        try:
+            all_datasets = db.query(self.model).all()
+            logger.info(f"All datasets: {all_datasets}")
+            for dataset in all_datasets:
+                if dataset.storage_info and dataset.storage_info.get('dataset_id') == dataset_id:
+                    logger.info(f"Found dataset: {dataset}")
+                    return dataset
+        except Exception as e:
+            logger.warning(f"Failed to query JSON field with SQL function: {str(e)}")
+            all_datasets = db.query(self.model).all()
+            logger.info(f"All datasets: {all_datasets}")
+            for dataset in all_datasets:
+                if dataset.storage_info and dataset.storage_info.get('dataset_id') == dataset_id:
+                    return dataset
+            return None
+
+    def get_by_dataset_ids(self, db: Session, dataset_ids: List[str]) -> List[EvaluationDataset]:
+        return db.query(self.model).filter(self.model.dataset_id.in_(dataset_ids)).all()
+
+
 evaluation_task_repository = EvaluationTaskRepository(EvaluationTask)
+evaluation_dataset_repository = EvaluationDatasetRepository(EvaluationDataset)

@@ -43,11 +43,11 @@ from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.trainer.training import TRAINING_CONFIG_TYPE, EnvironmentConfig, LoggingConfig, ScheduleConfig
 from netspresso.trainer.training.logging import Metrics, ModelSaveOptions
 from netspresso.utils import FileHandler
+from netspresso.utils.db.models.evaluation import EvaluationDataset
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.models.training import (
     Augmentation,
     Dataset,
-    DatasetSplit,
     Environment,
     Hyperparameter,
     Performance,
@@ -99,6 +99,8 @@ class Trainer(NetsPressoBase):
 
         self.dataset_manager = DatasetManager(token_handler=token_handler)
         self.is_dataforge = False
+        self.test_dataset = None
+        self.test_dataset_id = None
 
     def _initialize_from_task(self, task: Union[str, Task]) -> None:
         """Initialize the Trainer object based on the provided task.
@@ -317,12 +319,16 @@ class Trainer(NetsPressoBase):
         valid_image_count = len(list(valid_image_path.glob("*.*"))) if valid_image_path.is_dir() else 1
         total_image_count = train_image_count + valid_image_count
 
-        self.train_split = DatasetSplit(
+        self.train_dataset = Dataset(
             name=dataset_name,
             path=root_path,
-            storage_location=StorageLocation.STORAGE if self.is_dataforge else StorageLocation.LOCAL,
-            split_type=Split.TRAIN,
+            id_mapping=self.data.id_mapping,
+            palette=self.data.pallete,
+            task_type=self.task,
+            class_count=len(self.data.id_mapping),
             count=total_image_count,
+            storage_location=StorageLocation.STORAGE if self.is_dataforge else StorageLocation.LOCAL,
+            storage_info={"dataset_id": Path(root_path).name}
         )
 
     def set_test_dataset(self, dataset_root_path: str, dataset_name: Optional[str] = None):
@@ -350,13 +356,39 @@ class Trainer(NetsPressoBase):
         test_image_path = Path(images_test)
         test_image_count = len(list(test_image_path.glob("*.*"))) if test_image_path.is_dir() else 1
 
-        self.test_split = DatasetSplit(
+        self.test_dataset = EvaluationDataset(
             name=dataset_name,
             path=root_path,
-            storage_location=StorageLocation.STORAGE if self.is_dataforge else StorageLocation.LOCAL,
-            split_type=Split.TEST,
+            id_mapping=self.data.id_mapping,
+            palette=self.data.pallete,
+            task_type=self.task,
+            class_count=len(self.data.id_mapping),
             count=test_image_count,
+            storage_location=StorageLocation.STORAGE if self.is_dataforge else StorageLocation.LOCAL,
+            storage_info={"dataset_id": Path(root_path).name}
         )
+
+    def set_test_dataset_no_create(self, dataset_root_path: str, dataset_name: Optional[str] = None):
+        if dataset_name is None:
+            dataset_name = Path(dataset_root_path).name
+        root_path = Path(dataset_root_path).resolve().as_posix()
+
+        # self.check_test_paths_exist(root_path)
+        images_test = self.find_paths(root_path, "images", "test")
+        labels_test = self.find_paths(root_path, "labels", "test")
+        id_mapping = FileHandler.load_json(f"{root_path}/id_mapping.json")
+
+        if self.data is not None:
+            self.data.path.test.image = images_test
+            self.data.path.test.label = labels_test
+        else:
+            self.set_dataset_config(
+                name=dataset_name,
+                root_path=dataset_root_path,
+                test_image=images_test,
+                test_label=labels_test,
+                id_mapping=id_mapping,
+            )
 
     def set_model_config(
         self,
@@ -667,15 +699,6 @@ class Trainer(NetsPressoBase):
 
     def create_training_task(self, model_id, task_id, user_id) -> TrainingTask:
         with get_db_session() as db:
-            dataset = Dataset(
-                name=self.data.name,
-                id_mapping=self.data.id_mapping,
-                palette=self.data.pallete,
-                task_type=self.task,
-                class_count=len(self.data.id_mapping),
-                train_split=self.train_split,
-                test_split=self.test_split,
-            )
             augs = [
                 Augmentation(
                     name=train_aug.name,
@@ -711,7 +734,7 @@ class Trainer(NetsPressoBase):
                     framework=Framework.PYTORCH,
                     input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size]).__dict__],
                     status=Status.IN_PROGRESS,
-                    dataset=dataset,
+                    dataset=self.train_dataset,
                     hyperparameter=hyperparameter,
                     environment=environment,
                     model_id=model_id,
@@ -724,7 +747,7 @@ class Trainer(NetsPressoBase):
                     framework=Framework.PYTORCH,
                     input_shapes=[InputShape(batch=1, channel=3, dimension=[self.img_size, self.img_size]).__dict__],
                     status=Status.IN_PROGRESS,
-                    dataset=dataset,
+                    dataset=self.train_dataset,
                     hyperparameter=hyperparameter,
                     environment=environment,
                     model_id=model_id,

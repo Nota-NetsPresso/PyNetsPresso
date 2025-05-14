@@ -7,12 +7,12 @@ from app.api.v1.schemas.task.evaluation.evaluation_task import (
     EvaluationCreate,
     EvaluationCreatePayload,
     EvaluationCreateResponse,
-    EvaluationDatasetPayload,
     EvaluationDatasetsPayload,
     EvaluationDatasetsResponse,
     EvaluationResultsResponse,
     EvaluationsResponse,
 )
+from app.api.v1.schemas.task.train.dataset import EvaluationDatasetPayload
 from app.services.evaluation_task import evaluation_task_service
 from app.services.model import model_service
 from netspresso.enums.conversion import SourceFramework
@@ -96,13 +96,13 @@ def get_unique_evaluation_datasets(
     db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> EvaluationDatasetsResponse:
-    dataset_ids = evaluation_task_service.get_unique_datasets_by_model_id(
+    evaluation_datasets = evaluation_task_service.get_unique_datasets_by_model_id(
         db=db,
         api_key=api_key,
         model_id=converted_model_id
     )
 
-    datasets = [EvaluationDatasetPayload(dataset_id=dataset_id) for dataset_id in dataset_ids]
+    datasets = [EvaluationDatasetPayload.model_validate(evaluation_dataset) for evaluation_dataset in evaluation_datasets]
 
     response_data = EvaluationDatasetsPayload(
         model_id=converted_model_id,
