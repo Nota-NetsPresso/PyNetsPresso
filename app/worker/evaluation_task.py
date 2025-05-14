@@ -253,17 +253,18 @@ def poll_and_start_evaluation(
                 evaluation_task_id = generate_uuid(entity="task")
 
             # The conversion is complete, so run the evaluation as an async task
-            run_multiple_evaluations.apply_async(
+            task_result = run_multiple_evaluations.apply_async(
                 kwargs={
                     "api_key": api_key,
                     "model_id": model_id,
                     "dataset_id": dataset_id,
                     "training_task_id": training_task_id,
                     "confidence_scores": confidence_scores,
-                    "gpus": gpus
                 },
-                task_id=evaluation_task_id
             )
+
+            evaluation_task_id = task_result.get(timeout=5)
+            logger.info(f"Evaluation task ID: {evaluation_task_id}")
 
             return evaluation_task_id
 
