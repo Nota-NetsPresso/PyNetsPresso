@@ -40,7 +40,7 @@ class TrainingCreate(BaseModel):
     dataset: Optional[DatasetCreate]
     hyperparameter: Optional[HyperparameterCreate]
     environment: Optional[EnvironmentCreate]
-    conversion: Optional[ConversionCreateBase]
+    conversion: Optional[ConversionCreateBase] = None
 
 
 class PretrainedModelPayload(BaseModel):
