@@ -8,6 +8,7 @@ from app.api.v1.schemas.task.evaluation.evaluation_task import (
     EvaluationCreatePayload,
     EvaluationCreateResponse,
     EvaluationDatasetPayload,
+    EvaluationDatasetPayload2,
     EvaluationDatasetsPayload,
     EvaluationDatasetsResponse,
     EvaluationResultsResponse,
@@ -102,7 +103,7 @@ def get_unique_evaluation_datasets(
         model_id=converted_model_id
     )
 
-    datasets = [EvaluationDatasetPayload(dataset_id=dataset_id) for dataset_id in dataset_ids]
+    datasets = [EvaluationDatasetPayload2(dataset_id=dataset_id) for dataset_id in dataset_ids]
 
     response_data = EvaluationDatasetsPayload(
         model_id=converted_model_id,

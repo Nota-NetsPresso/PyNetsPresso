@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.api.v1.schemas.base import ResponseItem, ResponsePaginationItems
+from app.api.v1.schemas.task.train.dataset import EvaluationDatasetPayload
 from netspresso.enums.conversion import PrecisionForConversion, TargetFramework
 from netspresso.enums.device import DeviceName, SoftwareVersion
 
@@ -28,8 +29,7 @@ class EvaluationPayload(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     task_id: str
-    dataset_id: str
-    dataset_name: str = "Traffic Sign"
+    dataset: EvaluationDatasetPayload
     is_dataset_deleted: bool
 
     confidence_score: float
@@ -109,7 +109,7 @@ class EvaluationResultsResponse(ResponseItem):
     data: EvaluationResultsPayload
 
 
-class EvaluationDatasetPayload(BaseModel):
+class EvaluationDatasetPayload2(BaseModel):
     dataset_id: str
     dataset_name: str = "Traffic Sign"
     dataset_type: str = "detection"
@@ -117,7 +117,7 @@ class EvaluationDatasetPayload(BaseModel):
 
 class EvaluationDatasetsPayload(BaseModel):
     model_id: str
-    datasets: List[EvaluationDatasetPayload]
+    datasets: List[EvaluationDatasetPayload2]
 
 
 class EvaluationDatasetsResponse(ResponseItem):

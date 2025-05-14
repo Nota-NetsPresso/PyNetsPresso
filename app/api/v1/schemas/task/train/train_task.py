@@ -19,7 +19,7 @@ from netspresso.enums.train import (
     TaskDisplay,
 )
 
-from .dataset import DatasetCreate, DatasetPayload
+from .dataset import DatasetCreate, TrainingDatasetPayload
 from .environment import EnvironmentCreate, EnvironmentPayload
 from .hyperparameter import HyperparameterCreate, HyperparameterPayload
 from .performance import PerformancePayload
@@ -93,7 +93,7 @@ class TrainingPayload(BaseModel):
     input_shapes: List[Dict]
     status: str
     error_detail: Optional[Dict] = None
-    dataset: Optional[DatasetPayload]
+    dataset: Optional[TrainingDatasetPayload]
     hyperparameter: Optional[HyperparameterPayload]
     performance: Optional[PerformancePayload]
     environment: Optional[EnvironmentPayload]
