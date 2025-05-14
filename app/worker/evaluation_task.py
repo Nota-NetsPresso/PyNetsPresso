@@ -8,7 +8,6 @@ from app.api.v1.schemas.task.train.dataset import DatasetCreate
 from app.api.v1.schemas.task.train.environment import EnvironmentCreate
 from app.api.v1.schemas.task.train.hyperparameter import HyperparameterCreate
 from app.api.v1.schemas.task.train.train_task import TrainingCreate
-from app.services.training_task import train_task_service
 from app.worker.celery_app import celery_app
 from netspresso import NetsPresso
 from netspresso.enums.metadata import Status
@@ -53,6 +52,9 @@ def evaluate_model_task(
     """
     session = SessionLocal()
     try:
+        # 지연 로딩으로 순환 참조 해결
+        from app.services.training_task import train_task_service
+
         netspresso = NetsPresso(api_key=api_key)
         training_task = train_task_service.get_training_task(db=session, task_id=training_task_id, api_key=api_key)
 

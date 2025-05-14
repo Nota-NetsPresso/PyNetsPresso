@@ -2,11 +2,12 @@ import os
 from pathlib import Path
 from typing import Dict
 
+from celery import chain
 from loguru import logger
 
 from app.api.v1.schemas.task.train.train_task import TrainingCreate
 from app.worker.celery_app import celery_app
-from app.worker.evaluation_task import chain_conversion_and_evaluation
+from app.worker.conversion_task import convert_model
 from netspresso import NetsPresso
 from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize, ToTensor
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
@@ -114,6 +115,9 @@ def train_model(
 
                 conversion_option = training_in.conversion
                 confidence_scores = [0.3, 0.5, 0.6]
+
+                # 지연 로딩으로 순환 참조 해결
+                from app.worker.evaluation_task import chain_conversion_and_evaluation
                 task_result = chain_conversion_and_evaluation.apply_async(
                     kwargs={
                         "api_key": api_key,
