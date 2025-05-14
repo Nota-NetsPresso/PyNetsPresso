@@ -7,7 +7,6 @@ from netspresso.enums.train import StorageLocation
 
 class DatasetCreate(BaseModel):
     train_path: str
-    valid_path: Optional[str] = None
     test_path: Optional[str] = None
 
 
