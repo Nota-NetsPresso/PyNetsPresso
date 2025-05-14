@@ -31,7 +31,7 @@ class BenchmarkTask(BaseModel):
 
     # Benchmark settings
     framework = Column(String(30), nullable=True)
-    device_name = Column(String(30), nullable=False)
+    device_name = Column(String(100), nullable=False)
     software_version = Column(String(30), nullable=True)
     precision = Column(String(30), nullable=False)
     hardware_type = Column(String(30), nullable=True)
