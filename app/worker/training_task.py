@@ -116,9 +116,8 @@ def train_model(
                 conversion_option = training_in.conversion
                 confidence_scores = [0.3, 0.5, 0.6]
 
-                # 지연 로딩으로 순환 참조 해결
                 from app.worker.evaluation_task import chain_conversion_and_evaluation
-                task_result = chain_conversion_and_evaluation.apply_async(
+                _ = chain_conversion_and_evaluation.apply_async(
                     kwargs={
                         "api_key": api_key,
                         "input_model_path": input_model_path.as_posix(),

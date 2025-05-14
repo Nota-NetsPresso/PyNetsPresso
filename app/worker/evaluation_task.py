@@ -53,7 +53,6 @@ def evaluate_model_task(
     """
     session = SessionLocal()
     try:
-        # 지연 로딩으로 순환 참조 해결
         from app.services.training_task import train_task_service
 
         netspresso = NetsPresso(api_key=api_key)
@@ -94,25 +93,18 @@ def evaluate_model_task(
 
         logger.info(f"Downloading dataset from DataForge: {dataset_id}")
 
-        # 먼저 이미 존재하는 데이터셋인지 확인
         existing_dataset = evaluation_dataset_repository.get_by_dataforge_dataset_id(db=session, dataset_id=dataset_id)
         logger.info(f"Existing dataset: {existing_dataset}")
         if existing_dataset:
             logger.info(f"Found existing evaluation dataset for dataforge dataset {dataset_id}")
-            # 기존 데이터셋 사용
             test_dataset_path = existing_dataset.path
             trainer.set_test_dataset_no_create(test_dataset_path, existing_dataset.name)
             trainer.test_dataset_id = existing_dataset.dataset_id
         else:
-            # 새 데이터셋 다운로드 및 설정
             test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)
             test_dataset_version = trainer.get_dataset_version_from_storage(dataset_uuid=dataset_id, split=Split.TEST)
             test_dataset_info = trainer.get_dataset_info_from_storage(project_id=test_dataset_version.project_id, dataset_uuid=dataset_id, split=Split.TEST)
             trainer.set_test_dataset(test_dataset_path, test_dataset_info.dataset.dataset_title)
-            # trainer.test_dataset.task_id = evaluation_task_id
-
-            # # 데이터셋 저장
-            # evaluation_dataset = evaluation_dataset_repository.save(db=session, model=trainer.test_dataset)
 
         logger.info(f"Using dataset path: {test_dataset_path}")
 
@@ -142,7 +134,6 @@ def evaluate_model_task(
         try:
             task_id = evaluator.evaluate_from_id(
                 model_id=model_id,
-                # dataset_id=evaluation_dataset.dataset_id,
                 confidence_score=confidence_score,
                 gpus=gpus,
                 evaluation_task_id=evaluation_task_id,
@@ -254,7 +245,7 @@ def poll_and_start_evaluation(
                 evaluation_task_id = generate_uuid(entity="task")
 
             # The conversion is complete, so run the evaluation as an async task
-            task_result = run_multiple_evaluations.apply_async(
+            _ = run_multiple_evaluations.apply_async(
                 kwargs={
                     "api_key": api_key,
                     "model_id": model_id,
@@ -266,7 +257,6 @@ def poll_and_start_evaluation(
                 task_id=evaluation_task_id,
             )
 
-            # task_result.get(timeout=5) 호출을 제거하고 task_id를 직접 반환
             logger.info(f"Started evaluation task with ID: {evaluation_task_id}")
             return evaluation_task_id
 
