@@ -366,6 +366,28 @@ class Trainer(NetsPressoBase):
             storage_info={"dataset_id": Path(root_path).name}
         )
 
+    def set_test_dataset_no_create(self, dataset_root_path: str, dataset_name: Optional[str] = None):
+        if dataset_name is None:
+            dataset_name = Path(dataset_root_path).name
+        root_path = Path(dataset_root_path).resolve().as_posix()
+
+        # self.check_test_paths_exist(root_path)
+        images_test = self.find_paths(root_path, "images", "test")
+        labels_test = self.find_paths(root_path, "labels", "test")
+        id_mapping = FileHandler.load_json(f"{root_path}/id_mapping.json")
+
+        if self.data is not None:
+            self.data.path.test.image = images_test
+            self.data.path.test.label = labels_test
+        else:
+            self.set_dataset_config(
+                name=dataset_name,
+                root_path=dataset_root_path,
+                test_image=images_test,
+                test_label=labels_test,
+                id_mapping=id_mapping,
+            )
+
     def set_model_config(
         self,
         model_name: str,

@@ -198,12 +198,16 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
 class EvaluationDatasetRepository(BaseRepository[EvaluationDataset]):
     def get_by_dataforge_dataset_id(self, db: Session, dataset_id: str) -> Optional[EvaluationDataset]:
         try:
-            return db.query(self.model).filter(
-                func.json_unquote(func.json_extract(self.model.storage_info, '$.dataset_id')) == dataset_id
-            ).first()
+            all_datasets = db.query(self.model).all()
+            logger.info(f"All datasets: {all_datasets}")
+            for dataset in all_datasets:
+                if dataset.storage_info and dataset.storage_info.get('dataset_id') == dataset_id:
+                    logger.info(f"Found dataset: {dataset}")
+                    return dataset
         except Exception as e:
             logger.warning(f"Failed to query JSON field with SQL function: {str(e)}")
             all_datasets = db.query(self.model).all()
+            logger.info(f"All datasets: {all_datasets}")
             for dataset in all_datasets:
                 if dataset.storage_info and dataset.storage_info.get('dataset_id') == dataset_id:
                     return dataset

@@ -96,13 +96,12 @@ def evaluate_model_task(
 
         # 먼저 이미 존재하는 데이터셋인지 확인
         existing_dataset = evaluation_dataset_repository.get_by_dataforge_dataset_id(db=session, dataset_id=dataset_id)
-
+        logger.info(f"Existing dataset: {existing_dataset}")
         if existing_dataset:
             logger.info(f"Found existing evaluation dataset for dataforge dataset {dataset_id}")
             # 기존 데이터셋 사용
             test_dataset_path = existing_dataset.path
-            trainer.set_test_dataset(test_dataset_path, existing_dataset.name)
-            evaluation_dataset = existing_dataset
+            trainer.set_test_dataset_no_create(test_dataset_path, existing_dataset.name)
         else:
             # 새 데이터셋 다운로드 및 설정
             test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)
