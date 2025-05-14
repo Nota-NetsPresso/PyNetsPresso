@@ -142,7 +142,7 @@ def evaluate_model_task(
         try:
             task_id = evaluator.evaluate_from_id(
                 model_id=model_id,
-                dataset_id=evaluation_dataset.dataset_id,
+                # dataset_id=evaluation_dataset.dataset_id,
                 confidence_score=confidence_score,
                 gpus=gpus,
                 evaluation_task_id=evaluation_task_id,

@@ -71,7 +71,7 @@ class Evaluator:
     def evaluate_from_id(
         self,
         model_id: str,
-        dataset_id: str,
+        # dataset_id: str,
         confidence_score: float,
         gpus: int = 0,
         evaluation_task_id: Optional[str] = None,
@@ -90,7 +90,7 @@ class Evaluator:
             return self._evaluate_with_session(
                 db=db,
                 model_id=model_id,
-                dataset_id=dataset_id,
+                # dataset_id=dataset_id,
                 confidence_score=confidence_score,
                 gpus=gpus,
                 evaluation_task_id=evaluation_task_id,
@@ -100,7 +100,7 @@ class Evaluator:
                 return self._evaluate_with_session(
                     db=db,
                     model_id=model_id,
-                    dataset_id=dataset_id,
+                    # dataset_id=dataset_id,
                     confidence_score=confidence_score,
                     gpus=gpus,
                     evaluation_task_id=evaluation_task_id,
@@ -131,17 +131,17 @@ class Evaluator:
         self,
         db: Session,
         model_id: str,
-        dataset_id: str,
+        # dataset_id: str,
         confidence_score: float,
         gpus: int = 0,
         evaluation_task_id: Optional[str] = None,
     ) -> str:
         evaluation_task = None  # Initialize so it can be safely referenced in except block
 
-        try:
-            self._check_evaluation_task_status(db=db, model_id=model_id, dataset_id=dataset_id, confidence_score=confidence_score)
-        except EvaluationTaskAlreadyExistsException as e:
-            raise e
+        # try:
+        #     self._check_evaluation_task_status(db=db, model_id=model_id, dataset_id=dataset_id, confidence_score=confidence_score)
+        # except EvaluationTaskAlreadyExistsException as e:
+        #     raise e
 
         try:
             output_dir = tempfile.mkdtemp(prefix="netspresso_evaluate_")
