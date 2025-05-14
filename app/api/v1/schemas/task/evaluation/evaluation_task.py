@@ -117,7 +117,7 @@ class EvaluationDatasetPayload2(BaseModel):
 
 class EvaluationDatasetsPayload(BaseModel):
     model_id: str
-    datasets: List[EvaluationDatasetPayload2]
+    datasets: List[EvaluationDatasetPayload]
 
 
 class EvaluationDatasetsResponse(ResponseItem):

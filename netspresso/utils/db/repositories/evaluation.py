@@ -213,6 +213,9 @@ class EvaluationDatasetRepository(BaseRepository[EvaluationDataset]):
                     return dataset
             return None
 
+    def get_by_dataset_ids(self, db: Session, dataset_ids: List[str]) -> List[EvaluationDataset]:
+        return db.query(self.model).filter(self.model.dataset_id.in_(dataset_ids)).all()
+
 
 evaluation_task_repository = EvaluationTaskRepository(EvaluationTask)
 evaluation_dataset_repository = EvaluationDatasetRepository(EvaluationDataset)

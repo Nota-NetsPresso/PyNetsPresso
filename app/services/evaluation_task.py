@@ -32,7 +32,7 @@ from netspresso.evaluator.evaluator import EVALUATION_BUCKET_NAME
 from netspresso.exceptions.conversion import ConversionTaskNotFoundException
 from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.models.conversion import ConversionTask
-from netspresso.utils.db.models.evaluation import EvaluationTask
+from netspresso.utils.db.models.evaluation import EvaluationDataset, EvaluationTask
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.evaluation import evaluation_task_repository
 from netspresso.utils.db.repositories.model import model_repository
@@ -281,7 +281,7 @@ class EvaluationTaskService:
         db: Session,
         api_key: str,
         model_id: str,
-    ) -> List[str]:
+    ) -> List[EvaluationDataset]:
         """Get unique dataset IDs used for evaluating a specific model.
 
         Args:

@@ -21,7 +21,7 @@ from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.utils.db.models.evaluation import EvaluationTask
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
-from netspresso.utils.db.repositories.evaluation import evaluation_task_repository
+from netspresso.utils.db.repositories.evaluation import evaluation_dataset_repository, evaluation_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
 from netspresso.utils.db.session import get_db_session
@@ -340,7 +340,7 @@ class Evaluator:
     def get_evaluation_task(self, db: Session, evaluation_id: str) -> EvaluationTask:
         return evaluation_task_repository.get_by_task_id(db=db, task_id=evaluation_id)
 
-    def get_unique_datasets_by_model_id(self, db: Session, user_id: str, model_id: str) -> List[str]:
+    def get_unique_datasets_by_model_id(self, db: Session, user_id: str, model_id: str) -> List[EvaluationDataset]:
         """Get unique dataset IDs used for evaluating a specific model.
 
         Args:
@@ -351,11 +351,17 @@ class Evaluator:
         Returns:
             List[str]: List of unique dataset IDs
         """
-        return evaluation_task_repository.get_unique_datasets_by_model_id(
+        dataset_ids = evaluation_task_repository.get_unique_datasets_by_model_id(
             db=db,
             user_id=user_id,
             model_id=model_id
         )
+        evaluation_datasets = evaluation_dataset_repository.get_by_dataset_ids(
+            db=db,
+            dataset_ids=dataset_ids
+        )
+
+        return evaluation_datasets
 
     def get_evaluation_results_by_model_and_dataset(
         self,
