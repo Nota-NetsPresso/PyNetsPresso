@@ -17,6 +17,7 @@ from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
 from netspresso.trainer.storage.dataforge import Split
 from netspresso.utils.db.models.base import generate_uuid
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
+from netspresso.utils.db.repositories.evaluation import evaluation_dataset_repository
 from netspresso.utils.db.session import SessionLocal
 
 POLLING_INTERVAL = 30  # seconds
@@ -68,9 +69,8 @@ def evaluate_model_task(
             task=training_task.task.name,
             input_shapes=training_task.input_shapes,
             dataset=DatasetCreate(
-                train_path=training_task.dataset.train_path,
-                valid_path=training_task.dataset.valid_path,
-                test_path=training_task.dataset.valid_path,
+                train_path=training_task.dataset.storage_info["dataset_id"],
+                test_path=training_task.dataset.storage_info["dataset_id"],
             ),
             hyperparameter=HyperparameterCreate(
                 epochs=training_task.hyperparameter.epochs,
@@ -93,11 +93,27 @@ def evaluate_model_task(
         os.makedirs(dataset_dir, exist_ok=True)
 
         logger.info(f"Downloading dataset from DataForge: {dataset_id}")
-        test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)
-        test_dataset_version = trainer.get_dataset_version_from_storage(dataset_uuid=dataset_id, split=Split.TEST)
-        test_dataset_info = trainer.get_dataset_info_from_storage(project_id=test_dataset_version.project_id, dataset_uuid=dataset_id, split=Split.TEST)
-        trainer.set_test_dataset(test_dataset_path, test_dataset_info.dataset.dataset_title)
-        logger.info(f"Downloaded dataset to: {test_dataset_path}")
+
+        # 먼저 이미 존재하는 데이터셋인지 확인
+        existing_dataset = evaluation_dataset_repository.get_by_dataforge_dataset_id(db=session, dataset_id=dataset_id)
+
+        if existing_dataset:
+            logger.info(f"Found existing evaluation dataset for dataforge dataset {dataset_id}")
+            # 기존 데이터셋 사용
+            test_dataset_path = existing_dataset.path
+            trainer.set_test_dataset(test_dataset_path, existing_dataset.name)
+            evaluation_dataset = existing_dataset
+        else:
+            # 새 데이터셋 다운로드 및 설정
+            test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)
+            test_dataset_version = trainer.get_dataset_version_from_storage(dataset_uuid=dataset_id, split=Split.TEST)
+            test_dataset_info = trainer.get_dataset_info_from_storage(project_id=test_dataset_version.project_id, dataset_uuid=dataset_id, split=Split.TEST)
+            trainer.set_test_dataset(test_dataset_path, test_dataset_info.dataset.dataset_title)
+
+            # 데이터셋 저장
+            evaluation_dataset = evaluation_dataset_repository.save(db=session, model=trainer.test_dataset)
+
+        logger.info(f"Using dataset path: {test_dataset_path}")
 
         img_size = training_in.input_shapes[0].dimension[0]
         trainer.set_model_config(model_name=training_in.pretrained_model, img_size=img_size)
@@ -125,7 +141,7 @@ def evaluate_model_task(
         try:
             task_id = evaluator.evaluate_from_id(
                 model_id=model_id,
-                dataset_id=dataset_id,
+                dataset_id=evaluation_dataset.dataset_id,
                 confidence_score=confidence_score,
                 gpus=gpus,
                 evaluation_task_id=evaluation_task_id,
@@ -236,8 +252,8 @@ def poll_and_start_evaluation(
             if not evaluation_task_id:
                 evaluation_task_id = generate_uuid(entity="task")
 
-            # The conversion is complete, so run the evaluation
-            return run_multiple_evaluations.apply_async(
+            # The conversion is complete, so run the evaluation as an async task
+            run_multiple_evaluations.apply_async(
                 kwargs={
                     "api_key": api_key,
                     "model_id": model_id,
@@ -247,7 +263,10 @@ def poll_and_start_evaluation(
                     "gpus": gpus
                 },
                 task_id=evaluation_task_id
-            ).get()
+            )
+
+            return evaluation_task_id
+
         elif conversion_task.status in [Status.STOPPED, Status.ERROR]:
             error_message = conversion_task.error_detail
             logger.error(f"Conversion failed: {error_message}")
