@@ -99,6 +99,8 @@ class Trainer(NetsPressoBase):
 
         self.dataset_manager = DatasetManager(token_handler=token_handler)
         self.is_dataforge = False
+        self.test_dataset = None
+        self.test_dataset_id = None
 
     def _initialize_from_task(self, task: Union[str, Task]) -> None:
         """Initialize the Trainer object based on the provided task.

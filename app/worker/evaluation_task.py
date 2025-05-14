@@ -102,7 +102,7 @@ def evaluate_model_task(
             # 기존 데이터셋 사용
             test_dataset_path = existing_dataset.path
             trainer.set_test_dataset_no_create(test_dataset_path, existing_dataset.name)
-            trainer.test_dataset = existing_dataset
+            trainer.test_dataset_id = existing_dataset.dataset_id
         else:
             # 새 데이터셋 다운로드 및 설정
             test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)

@@ -162,19 +162,31 @@ class Evaluator:
 
             # Create task with DB session
             if evaluation_task_id:
-                evaluation_task = EvaluationTask(
-                    task_id=evaluation_task_id,
-                    dataset=self.trainer.test_dataset,
-                    input_model_id=model_id,
-                    training_task_id=training_task.task_id,
-                    conversion_task_id=conversion_task.task_id,
-                    confidence_score=confidence_score,
-                    status=Status.NOT_STARTED,
-                    user_id=conversion_task.user_id,
-                )
+                if self.trainer.test_dataset_id:
+                    evaluation_task = EvaluationTask(
+                        task_id=evaluation_task_id,
+                        dataset_id=self.trainer.test_dataset_id,
+                        input_model_id=model_id,
+                        training_task_id=training_task.task_id,
+                        conversion_task_id=conversion_task.task_id,
+                        confidence_score=confidence_score,
+                        status=Status.NOT_STARTED,
+                        user_id=conversion_task.user_id,
+                    )
+                if self.trainer.test_dataset:
+                    evaluation_task = EvaluationTask(
+                        task_id=evaluation_task_id,
+                        dataset=self.trainer.test_dataset,
+                        input_model_id=model_id,
+                        training_task_id=training_task.task_id,
+                        conversion_task_id=conversion_task.task_id,
+                        confidence_score=confidence_score,
+                        status=Status.NOT_STARTED,
+                        user_id=conversion_task.user_id,
+                    )
             else:
                 evaluation_task = EvaluationTask(
-                    dataset=self.trainer.test_dataset,
+                    dataset_id=self.trainer.test_dataset,
                     input_model_id=model_id,
                     training_task_id=training_task.task_id,
                     conversion_task_id=conversion_task.task_id,
