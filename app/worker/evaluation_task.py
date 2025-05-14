@@ -109,6 +109,7 @@ def evaluate_model_task(
             test_dataset_version = trainer.get_dataset_version_from_storage(dataset_uuid=dataset_id, split=Split.TEST)
             test_dataset_info = trainer.get_dataset_info_from_storage(project_id=test_dataset_version.project_id, dataset_uuid=dataset_id, split=Split.TEST)
             trainer.set_test_dataset(test_dataset_path, test_dataset_info.dataset.dataset_title)
+            trainer.test_dataset.task_id = evaluation_task_id
 
             # 데이터셋 저장
             evaluation_dataset = evaluation_dataset_repository.save(db=session, model=trainer.test_dataset)
