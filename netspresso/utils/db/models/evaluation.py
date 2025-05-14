@@ -1,7 +1,29 @@
 from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
 
-from netspresso.utils.db.models.base import BaseModel, generate_uuid
+from netspresso.utils.db.models.base import Base, BaseModel, generate_uuid
+
+
+class EvaluationDataset(BaseModel):
+    """Dataset for evaluation tasks."""
+    __tablename__ = "evaluation_dataset"
+
+    id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
+    dataset_id = Column(String(36), index=True, unique=True, nullable=False, default=lambda: generate_uuid(entity="dataset"))
+    name = Column(String(100), nullable=False)
+    path = Column(String(255), nullable=False)
+    id_mapping = Column(JSON, nullable=True)
+    palette = Column(JSON, nullable=True)
+    task_type = Column(String(30), nullable=False)
+    mime_type = Column(String(30), default="image")
+    class_count = Column(Integer, nullable=False)
+
+    storage_location = Column(String(50), nullable=False)
+    storage_info = Column(JSON, nullable=True)
+
+    # Relationship to EvaluationTask
+    task_id = Column(String(36), ForeignKey("evaluation_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
+    task = relationship("EvaluationTask", back_populates="dataset")
 
 
 class EvaluationTask(BaseModel):
@@ -11,6 +33,7 @@ class EvaluationTask(BaseModel):
     task_id = Column(String(36), index=True, unique=True, nullable=False, default=lambda: generate_uuid(entity="task"))
 
     dataset_id = Column(String(36), nullable=True)
+    dataset = relationship("EvaluationDataset", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy="joined")
     is_dataset_deleted = Column(Boolean, nullable=False, default=False)
 
     # 평가 설정
