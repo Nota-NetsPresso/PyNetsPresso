@@ -17,6 +17,7 @@ class EvaluationDataset(BaseModel):
     task_type = Column(String(30), nullable=False)
     mime_type = Column(String(30), default="image")
     class_count = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
 
     storage_location = Column(String(50), nullable=False)
     storage_info = Column(JSON, nullable=True)
