@@ -18,7 +18,7 @@ from netspresso.exceptions.evaluation import (
 from netspresso.exceptions.trainer import NotCompletedTrainingException
 from netspresso.trainer.trainer import Trainer
 from netspresso.trainer.trainer_configs import TrainerConfigs
-from netspresso.utils.db.models.evaluation import EvaluationTask
+from netspresso.utils.db.models.evaluation import EvaluationDataset, EvaluationTask
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.evaluation import evaluation_dataset_repository, evaluation_task_repository
