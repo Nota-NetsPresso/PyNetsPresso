@@ -241,7 +241,6 @@ class NPQAIBase:
             SourceModelType.TORCHSCRIPT: Framework.PYTORCH,
             SourceModelType.TFLITE: Framework.TFLITE,
             SourceModelType.ONNX: Framework.ONNX,
-            SourceModelType.ORT: Framework.ONNXRUNTIME,
             SourceModelType.MLMODEL: Framework.COREML,
             SourceModelType.MLMODELC: Framework.COREML,
             SourceModelType.MLPACKAGE: Framework.COREML,
