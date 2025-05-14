@@ -261,12 +261,13 @@ def poll_and_start_evaluation(
                     "dataset_id": dataset_id,
                     "training_task_id": training_task_id,
                     "confidence_scores": confidence_scores,
+                    "gpus": gpus,
                 },
+                task_id=evaluation_task_id,
             )
 
-            evaluation_task_id = task_result.get(timeout=5)
-            logger.info(f"Evaluation task ID: {evaluation_task_id}")
-
+            # task_result.get(timeout=5) 호출을 제거하고 task_id를 직접 반환
+            logger.info(f"Started evaluation task with ID: {evaluation_task_id}")
             return evaluation_task_id
 
         elif conversion_task.status in [Status.STOPPED, Status.ERROR]:
