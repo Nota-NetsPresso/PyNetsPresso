@@ -156,6 +156,8 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
         return self.find_all(
             db=db,
             conditions=conditions,
+            time_sort=TimeSort.CREATED_AT,
+            order=Order.ASC,
         )
 
     def get_all_by_model_id(
