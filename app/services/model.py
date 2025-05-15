@@ -27,14 +27,13 @@ class ModelService:
 
     def _get_conversion_info(self, db: Session, model_id: str) -> tuple[Optional[str], List[str], List[str]]:
         conversion_tasks = conversion_task_repository.get_all_by_model_id(
-            db=db, model_id=model_id, order=Order.ASC, time_sort=TimeSort.CREATED_AT,
+            db=db, model_id=model_id, order=Order.DESC, time_sort=TimeSort.CREATED_AT,
         )
 
         unique_option_tasks = {}
 
         for task in conversion_tasks:
-            option_key = (task.framework, task.device_name,
-                        task.software_version, task.precision)
+            option_key = (task.framework, task.device_name, task.software_version, task.precision)
 
             if option_key not in unique_option_tasks:
                 unique_option_tasks[option_key] = task
