@@ -111,12 +111,12 @@ class Performance(Base):
     __tablename__ = "performance"
 
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
-    train_losses = Column(JSON, nullable=False)
-    valid_losses = Column(JSON, nullable=False)
-    train_metrics = Column(JSON, nullable=False)
-    valid_metrics = Column(JSON, nullable=False)
-    metrics_list = Column(JSON, nullable=False)
-    primary_metric = Column(String(36), nullable=False)
+    train_losses = Column(JSON, nullable=True)
+    valid_losses = Column(JSON, nullable=True)
+    train_metrics = Column(JSON, nullable=True)
+    valid_metrics = Column(JSON, nullable=True)
+    metrics_list = Column(JSON, nullable=True)
+    primary_metric = Column(String(36), nullable=True)
     flops = Column(String(50), nullable=False, default=0)
     params = Column(String(50), nullable=False, default=0)
     total_train_time = Column(Float, nullable=False, default=0)
