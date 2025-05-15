@@ -885,7 +885,7 @@ class Trainer(NetsPressoBase):
                 logger.error(f"Training summary file not found at {summary_path}")
                 # 기본 요약 정보 생성
                 training_summary = {
-                    "train_losses": [], "valid_losses": [],
+                    "train_losses": {}, "valid_losses": {},
                     "train_metrics": {}, "valid_metrics": {},
                     "metrics_list": [], "primary_metric": "",
                     "flops": "0", "params": "0",
