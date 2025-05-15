@@ -1,9 +1,9 @@
 from typing import List, Optional
 
 from loguru import logger
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from netspresso.enums.metadata import Status
 from netspresso.exceptions.evaluation import EvaluationTaskIsDeletedException, EvaluationTaskNotFoundException
 from netspresso.utils.db.models.evaluation import EvaluationDataset, EvaluationTask
 from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
@@ -99,7 +99,7 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
     def get_all_by_user_id_and_model_id(self, db: Session, user_id: str, model_id: str) -> List[EvaluationTask]:
         conditions = [
             self.model.user_id == user_id,
-            self.model.input_model_id == model_id
+            self.model.input_model_id == model_id,
         ]
         return self.find_all(
             db=db,
@@ -150,11 +150,14 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
             self.model.user_id == user_id,
             self.model.input_model_id == model_id,
             self.model.dataset_id == dataset_id,
+            self.model.status == Status.COMPLETED
         ]
 
         return self.find_all(
             db=db,
             conditions=conditions,
+            time_sort=TimeSort.CREATED_AT,
+            order=Order.ASC,
         )
 
     def get_all_by_model_id(
