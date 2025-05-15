@@ -541,8 +541,12 @@ class EvaluationTaskService:
                 for task in evaluation_tasks
             }
 
+<<<<<<< HEAD
             # Log available confidence scores for debugging
             logger.info(f"Available confidence scores: {list(tasks_by_confidence.keys())}")
+=======
+            logger.info(f"tasks_by_confidence: {tasks_by_confidence}")
+>>>>>>> 51148bb0e248a1f48cada553c5369b357e169035
 
             # 1. Initialize prediction objects for all images
             image_predictions = self._initialize_image_predictions(image_paths, image_urls)
@@ -560,7 +564,11 @@ class EvaluationTaskService:
                     logger.warning(f"No completed task found for threshold {threshold}")
                     continue
 
+<<<<<<< HEAD
                 logger.info(f"Processing threshold {threshold} with matched confidence score {closest_match}")
+=======
+                logger.info(threshold)
+>>>>>>> 51148bb0e248a1f48cada553c5369b357e169035
                 self._process_threshold_predictions(
                     threshold=threshold,  # Use the exact threshold for the prediction
                     task=tasks_by_confidence[closest_match],
