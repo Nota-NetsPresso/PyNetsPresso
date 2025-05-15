@@ -371,7 +371,7 @@ class Evaluator:
 
         return evaluation_datasets
 
-    def get_evaluation_results_by_model_and_dataset(
+    def get_completed_evaluation_results_by_model_and_dataset(
         self,
         db: Session,
         user_id: str,

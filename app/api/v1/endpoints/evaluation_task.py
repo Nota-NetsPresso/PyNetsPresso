@@ -125,7 +125,7 @@ def get_evaluation_results(
     evaluation_result = evaluation_task_service.get_evaluation_result_details(
         db=db,
         api_key=api_key,
-        model_id=converted_model_id,
+        converted_model_id=converted_model_id,
         dataset_id=dataset_id,
         start=start,
         size=size

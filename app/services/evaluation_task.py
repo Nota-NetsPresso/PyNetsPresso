@@ -335,7 +335,7 @@ class EvaluationTaskService:
         self,
         db: Session,
         api_key: str,
-        model_id: str,
+        converted_model_id: str,
         dataset_id: str,
         start: int = 0,
         size: int = 20,
@@ -357,25 +357,15 @@ class EvaluationTaskService:
         evaluator = netspresso.evaluator()
 
         # Get evaluation tasks for this model and dataset
-        evaluation_tasks = evaluator.get_evaluation_results_by_model_and_dataset(
+        evaluation_tasks = evaluator.get_completed_evaluation_results_by_model_and_dataset(
             db=db,
             user_id=netspresso.user_info.user_id,
-            model_id=model_id,
+            model_id=converted_model_id,
             dataset_id=dataset_id
         )
 
         if not evaluation_tasks:
-            logger.warning(f"No evaluation tasks found for model {model_id} and dataset {dataset_id}")
-            return EvaluationResultsPayload(
-                task_id="",
-                dataset_id=dataset_id,
-                results=[]
-            )
-
-        # Find the most recent completed evaluation task
-        completed_tasks = [task for task in evaluation_tasks if task.status == Status.COMPLETED]
-        if not completed_tasks:
-            logger.warning(f"No completed evaluation tasks found for model {model_id} and dataset {dataset_id}")
+            logger.warning(f"No evaluation tasks found for model {converted_model_id} and dataset {dataset_id}")
             return EvaluationResultsPayload(
                 task_id="",
                 dataset_id=dataset_id,
@@ -383,8 +373,8 @@ class EvaluationTaskService:
             )
 
         # Get user_id and task_id from the first completed task
-        user_id = completed_tasks[0].user_id
-        task_id = completed_tasks[0].task_id
+        user_id = evaluation_tasks[0].user_id
+        task_id = evaluation_tasks[0].task_id
 
         # Create temporary directory for downloads
         temp_dir = tempfile.mkdtemp(prefix="evaluation_results_")
@@ -496,7 +486,7 @@ class EvaluationTaskService:
 
             # Return combined results with pagination info
             return EvaluationResultsPayload(
-                model_id=model_id,
+                model_id=converted_model_id,
                 dataset_id=dataset_id,
                 results=paginated_predictions,
                 result_count=len(paginated_predictions),
