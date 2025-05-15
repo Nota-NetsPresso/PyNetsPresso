@@ -367,7 +367,7 @@ class EvaluationTaskService:
         if not evaluation_tasks:
             logger.warning(f"No evaluation tasks found for model {model_id} and dataset {dataset_id}")
             return EvaluationResultsPayload(
-                task_id="",
+                model_id=model_id,
                 dataset_id=dataset_id,
                 results=[]
             )
@@ -377,14 +377,28 @@ class EvaluationTaskService:
         if not completed_tasks:
             logger.warning(f"No completed evaluation tasks found for model {model_id} and dataset {dataset_id}")
             return EvaluationResultsPayload(
-                task_id="",
+                model_id=model_id,
                 dataset_id=dataset_id,
                 results=[]
             )
 
+        # Get the first completed task
+        evaluation_task = completed_tasks[0]
+        
+        # Check if dataset is deleted
+        if evaluation_task.is_dataset_deleted:
+            logger.info(f"Dataset for evaluation task {evaluation_task.task_id} has been deleted")
+            return EvaluationResultsPayload(
+                model_id=model_id,
+                dataset_id=dataset_id,
+                results=[],
+                result_count=0,
+                total_count=0
+            )
+
         # Get user_id and task_id from the first completed task
-        user_id = completed_tasks[0].user_id
-        task_id = completed_tasks[0].task_id
+        user_id = evaluation_task.user_id
+        task_id = evaluation_task.task_id
 
         # Create temporary directory for downloads
         temp_dir = tempfile.mkdtemp(prefix="evaluation_results_")
@@ -406,13 +420,34 @@ class EvaluationTaskService:
 
             # 3. Get list of image files from result_images directory
             result_images_prefix = f"{user_id}/{task_id}/result_images/"
-            image_objects = storage_handler.list_objects(
-                bucket_name=EVALUATION_BUCKET_NAME,
-                prefix=result_images_prefix
-            )
+            try:
+                image_objects = storage_handler.list_objects(
+                    bucket_name=EVALUATION_BUCKET_NAME,
+                    prefix=result_images_prefix
+                )
+            except Exception as e:
+                logger.error(f"Error listing image files: {str(e)}. Dataset might have been deleted.")
+                return EvaluationResultsPayload(
+                    model_id=model_id,
+                    dataset_id=dataset_id,
+                    results=[],
+                    result_count=0,
+                    total_count=0
+                )
 
             # Filter only files with '_images' in the path
             image_paths = [obj for obj in image_objects if '_images' in Path(obj).name]
+            
+            # If no images found, dataset might have been deleted
+            if not image_paths:
+                logger.warning(f"No image files found for task {task_id}. Dataset might have been deleted.")
+                return EvaluationResultsPayload(
+                    model_id=model_id,
+                    dataset_id=dataset_id,
+                    results=[],
+                    result_count=0,
+                    total_count=0
+                )
 
             # 4. Create presigned URLs for each image
             image_urls = {}
@@ -510,5 +545,113 @@ class EvaluationTaskService:
         finally:
             # Clean up temporary directory
             shutil.rmtree(temp_dir, ignore_errors=True)
+
+    def delete_evaluation_dataset(
+        self,
+        db: Session,
+        api_key: str,
+        evaluation_task_id: str,
+    ) -> EvaluationPayload:
+        """Delete the dataset used in an evaluation task.
+
+        Args:
+            db: Database session
+            api_key: API key for authentication
+            task_id: Evaluation task ID
+
+        Returns:
+            EvaluationPayload: Updated evaluation task information
+        """
+        _ = NetsPresso(api_key=api_key)
+
+        # Get evaluation task by task_id
+        evaluation_task = evaluation_task_repository.get_by_task_id(
+            db=db,
+            task_id=evaluation_task_id
+        )
+
+        if not evaluation_task:
+            logger.error(f"Evaluation task not found: {evaluation_task_id}")
+            raise ValueError(f"Evaluation task not found: {evaluation_task_id}")
+
+        # Mark dataset as deleted
+        evaluation_task = evaluation_task_repository.delete_evaluation_dataset(db=db, evaluation_task=evaluation_task)
+
+        # Delete dataset images from storage
+        result_images_prefix = f"{evaluation_task.user_id}/{evaluation_task.task_id}/result_images/"
+        try:
+            # Delete result_images directory in S3
+            storage_handler.delete_objects_with_prefix(
+                bucket_name=EVALUATION_BUCKET_NAME,
+                prefix=result_images_prefix
+            )
+            logger.info(f"Successfully deleted result images for task {evaluation_task.task_id}")
+        except Exception as e:
+            logger.error(f"Error deleting evaluation dataset images: {str(e)}")
+            # Continue even if file deletion fails
+
+        return EvaluationPayload.model_validate(evaluation_task)
+        
+    def delete_evaluation_datasets_by_dataset_id(
+        self,
+        db: Session,
+        api_key: str,
+        dataset_id: str,
+    ) -> List[EvaluationPayload]:
+        """Delete dataset from all evaluation tasks that use this dataset.
+
+        Args:
+            db: Database session
+            api_key: API key for authentication
+            dataset_id: Dataset ID
+
+        Returns:
+            List[EvaluationPayload]: List of updated evaluation tasks
+        """
+        netspresso = NetsPresso(api_key=api_key)
+        
+        # Get all evaluation tasks that use the given dataset_id
+        evaluation_tasks = evaluation_task_repository.get_by_dataset_id(
+            db=db,
+            dataset_id=dataset_id,
+            user_id=netspresso.user_info.user_id
+        )
+        
+        if not evaluation_tasks:
+            logger.warning(f"No evaluation tasks found for dataset: {dataset_id}")
+            return []
+            
+        updated_tasks = []
+        for task in evaluation_tasks:
+            # Skip tasks that already have deleted dataset
+            if task.is_dataset_deleted:
+                continue
+                
+            # Mark dataset as deleted
+            task = evaluation_task_repository.delete_evaluation_dataset(db=db, evaluation_task=task)
+            updated_tasks.append(task)
+            
+            # Delete dataset images from storage
+            result_images_prefix = f"{task.user_id}/{task.task_id}/result_images/"
+            try:
+                # Delete result_images directory in S3
+                storage_handler.delete_objects_with_prefix(
+                    bucket_name=EVALUATION_BUCKET_NAME,
+                    prefix=result_images_prefix
+                )
+                
+                # Delete predictions.json if it exists
+                storage_handler.delete_object(
+                    bucket_name=EVALUATION_BUCKET_NAME,
+                    object_path=f"{task.user_id}/{task.task_id}/predictions.json"
+                )
+                
+                logger.info(f"Successfully deleted files for task {task.task_id}")
+            except Exception as e:
+                logger.error(f"Error deleting files for task {task.task_id}: {str(e)}")
+                # Continue even if file deletion fails
+        
+        return [EvaluationPayload.model_validate(task) for task in updated_tasks]
+
 
 evaluation_task_service = EvaluationTaskService()

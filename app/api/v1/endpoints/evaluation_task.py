@@ -4,11 +4,16 @@ from sqlalchemy.orm import Session
 from app.api.deps import api_key_header
 from app.api.v1.schemas.device import SupportedDevicesResponse
 from app.api.v1.schemas.task.evaluation.evaluation_task import (
+    DatasetDeleteRequest,
+    DatasetDeleteResponse,
     EvaluationCreate,
     EvaluationCreatePayload,
     EvaluationCreateResponse,
+    EvaluationDatasetDelete,
+    EvaluationDatasetDeleteResponse,
     EvaluationDatasetsPayload,
     EvaluationDatasetsResponse,
+    EvaluationResponse,
     EvaluationResultsResponse,
     EvaluationsResponse,
 )
@@ -132,3 +137,35 @@ def get_evaluation_results(
     )
 
     return EvaluationResultsResponse(data=evaluation_result)
+
+
+@router.delete("/evaluations/{evaluation_task_id}/datasets", response_model=EvaluationDatasetDeleteResponse, status_code=200)
+def delete_evaluation_dataset(
+    evaluation_task_id: str = Path(..., description="Evaluation Task ID"),
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> EvaluationDatasetDeleteResponse:
+    """Delete dataset and associated files for a specific evaluation task."""
+    evaluation_task = evaluation_task_service.delete_evaluation_dataset(
+        db=db,
+        api_key=api_key,
+        evaluation_task_id=evaluation_task_id
+    )
+
+    return EvaluationDatasetDeleteResponse(data=evaluation_task)
+
+
+@router.delete("/evaluations/datasets/by-dataset", response_model=DatasetDeleteResponse, status_code=200)
+def delete_evaluation_datasets_by_dataset_id(
+    request_body: DatasetDeleteRequest,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> DatasetDeleteResponse:
+    """Delete dataset from all evaluation tasks using this dataset."""
+    updated_tasks = evaluation_task_service.delete_evaluation_datasets_by_dataset_id(
+        db=db,
+        api_key=api_key,
+        dataset_id=request_body.dataset_id
+    )
+
+    return DatasetDeleteResponse(data=updated_tasks)

@@ -194,6 +194,12 @@ class EvaluationTaskRepository(BaseRepository[EvaluationTask]):
             time_sort=time_sort,
         )
 
+    def delete_evaluation_dataset(self, db: Session, evaluation_task: EvaluationTask) -> EvaluationTask:
+        evaluation_task.is_dataset_deleted = True
+        evaluation_task = self.save(db=db, model=evaluation_task)
+
+        return evaluation_task
+
 
 class EvaluationDatasetRepository(BaseRepository[EvaluationDataset]):
     def get_by_dataforge_dataset_id(self, db: Session, dataset_id: str) -> Optional[EvaluationDataset]:

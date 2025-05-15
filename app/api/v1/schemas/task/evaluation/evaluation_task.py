@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -122,3 +122,11 @@ class EvaluationDatasetsPayload(BaseModel):
 
 class EvaluationDatasetsResponse(ResponseItem):
     data: EvaluationDatasetsPayload
+
+
+class DatasetDeleteRequest(BaseModel):
+    dataset_id: str = Field(description="Dataset ID to delete from all evaluation tasks")
+
+
+class DatasetDeleteResponse(ResponseItem):
+    data: List[EvaluationPayload]
