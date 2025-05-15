@@ -947,6 +947,7 @@ class Trainer(NetsPressoBase):
                 training_summary = self._create_default_error_summary(error_msg)
                 train_task.status = Status.ERROR
                 train_task.error_detail = FailedTrainingException(error_log=error_msg).args[0]
+                return train_task
 
         try:
             train_task = self.create_performance(train_task, training_summary)
@@ -954,6 +955,7 @@ class Trainer(NetsPressoBase):
             logger.error(f"Error creating performance record: {e}, {training_summary}")
             train_task.status = Status.ERROR
             train_task.error_detail = FailedTrainingException(error_log=f"Failed to create performance record: {str(e)}").args[0]
+            return train_task
 
         train_task.status = self._get_status_by_training_summary(training_summary.get("status"))
         if train_task.status == Status.ERROR:
