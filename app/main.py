@@ -7,6 +7,8 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.api import api_router
 from app.configs.settings import settings
+from app.exceptions.http_adapter import HTTPExceptionAdapter
+from app.exceptions.pynp_http_exceptions import PyNPHTTPException
 from netspresso.exceptions.common import PyNPException
 from netspresso.exceptions.status import STATUS_MAP
 
@@ -18,9 +20,15 @@ def init_routers(app: FastAPI) -> None:
 def init_exceptions(app: FastAPI) -> None:
     @app.exception_handler(PyNPException)
     async def http_exception_handler(request: Request, exc: PyNPException):
-        status_code = STATUS_MAP.get(exc.detail["error_code"], status.HTTP_500_INTERNAL_SERVER_ERROR)
+        http_exc = HTTPExceptionAdapter.from_pynp_exception(exc)
+        return JSONResponse(
+            status_code=http_exc.status_code,
+            content=http_exc.detail,
+        )
 
-        return JSONResponse(status_code=status_code, content=exc.detail)
+    @app.exception_handler(PyNPHTTPException)
+    async def pynp_http_exception_handler(request: Request, exc: PyNPHTTPException):
+        return exc.to_response()
 
 
 def make_middleware() -> List[Middleware]:
