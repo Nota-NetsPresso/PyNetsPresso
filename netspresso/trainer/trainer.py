@@ -879,8 +879,46 @@ class Trainer(NetsPressoBase):
             FileHandler.move_and_cleanup_folders(source_folder=self.logging_dir, destination_folder=destination_folder)
             logger.info(f"Files in {self.logging_dir} were moved to {destination_folder}.")
 
-            training_summary = FileHandler.load_json(file_path=destination_folder / "training_summary.json")
-            train_task = self.create_performance(train_task, training_summary)
+            # training_summary.json 파일 존재 여부 확인
+            summary_path = destination_folder / "training_summary.json"
+            if not summary_path.exists():
+                logger.error(f"Training summary file not found at {summary_path}")
+                # 기본 요약 정보 생성
+                training_summary = {
+                    "train_losses": [], "valid_losses": [],
+                    "train_metrics": {}, "valid_metrics": {},
+                    "metrics_list": [], "primary_metric": "",
+                    "flops": "0", "params": "0",
+                    "total_train_time": 0, "best_epoch": 0,
+                    "last_epoch": 0, "total_epoch": 0, "status": "error",
+                    "error_stats": f"Training summary file not found at {summary_path}"
+                }
+                train_task.status = Status.ERROR
+                train_task.error_detail = f"Training summary file not found at {summary_path}"
+            else:
+                try:
+                    training_summary = FileHandler.load_json(file_path=summary_path)
+                except Exception as e:
+                    logger.error(f"Failed to load training summary: {e}")
+                    # 오류 발생 시 기본 요약 정보 생성
+                    training_summary = {
+                        "train_losses": [], "valid_losses": [],
+                        "train_metrics": {}, "valid_metrics": {},
+                        "metrics_list": [], "primary_metric": "",
+                        "flops": "0", "params": "0",
+                        "total_train_time": 0, "best_epoch": 0,
+                        "last_epoch": 0, "total_epoch": 0, "status": "error",
+                        "error_stats": f"Failed to load training summary: {str(e)}"
+                    }
+                    train_task.status = Status.ERROR
+                    train_task.error_detail = f"Failed to load training summary: {str(e)}"
+
+            try:
+                train_task = self.create_performance(train_task, training_summary)
+            except Exception as e:
+                logger.error(f"Error creating performance record: {e}")
+                train_task.status = Status.ERROR
+                train_task.error_detail = f"Failed to create performance record: {str(e)}"
 
             train_task.status = self._get_status_by_training_summary(training_summary.get("status"))
             if train_task.status == Status.ERROR:
