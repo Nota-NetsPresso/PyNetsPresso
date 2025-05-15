@@ -918,7 +918,7 @@ class Trainer(NetsPressoBase):
         """Handle training errors."""
         e = FailedTrainingException(error_log=error.args[0])
         train_task.status = Status.ERROR
-        train_task.error_detail = e
+        train_task.error_detail = e.args[0]
 
     def _cleanup_and_move_files(self, configs: TrainerConfigs, destination_folder: Path):
         """Clean up temporary files and move result files."""
