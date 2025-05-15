@@ -155,6 +155,7 @@ class ConverterV2(NetsPressoBase):
         data_type: Union[str, DataType],
         input_model_id: Optional[str] = None,
         model_id: Optional[str] = None,
+        conversion_task_id: Optional[str] = None,
     ) -> ConversionTask:
         """Create a new conversion task.
 
@@ -170,16 +171,29 @@ class ConverterV2(NetsPressoBase):
             Created conversion task object
         """
         with get_db_session() as db:
-            conversion_task = ConversionTask(
-                framework=framework,
-                device_name=device_name,
-                software_version=software_version,
-                precision=data_type,
-                status=Status.NOT_STARTED,
-                input_model_id=input_model_id,
-                model_id=model_id,
-                user_id=self.user_info.user_id,
-            )
+            if conversion_task_id:
+                conversion_task = ConversionTask(
+                    task_id=conversion_task_id,
+                    framework=framework,
+                    device_name=device_name,
+                    software_version=software_version,
+                    precision=data_type,
+                    status=Status.NOT_STARTED,
+                    input_model_id=input_model_id,
+                    model_id=model_id,
+                    user_id=self.user_info.user_id,
+                )
+            else:
+                conversion_task = ConversionTask(
+                    framework=framework,
+                    device_name=device_name,
+                    software_version=software_version,
+                    precision=data_type,
+                    status=Status.NOT_STARTED,
+                    input_model_id=input_model_id,
+                    model_id=model_id,
+                    user_id=self.user_info.user_id,
+                )
             conversion_task = conversion_task_repository.save(db=db, model=conversion_task)
             return conversion_task
 
@@ -208,6 +222,7 @@ class ConverterV2(NetsPressoBase):
         wait_until_done: bool = True,
         sleep_interval: int = 30,
         output_dir: Optional[str] = None,
+        conversion_task_id: Optional[str] = None,
     ) -> str:
         """Convert a model using its model ID.
 
@@ -274,6 +289,7 @@ class ConverterV2(NetsPressoBase):
                 dataset_path=dataset_path,
                 wait_until_done=wait_until_done,
                 sleep_interval=sleep_interval,
+                conversion_task_id=conversion_task_id,
             )
         except Exception as e:
             logger.error(f"Error in convert_model_from_id: {e}")
@@ -393,6 +409,7 @@ class ConverterV2(NetsPressoBase):
         dataset_path: Optional[str] = None,
         wait_until_done: bool = True,
         sleep_interval: int = 30,
+        conversion_task_id: Optional[str] = None,
     ) -> str:
         """Perform the actual model conversion (common logic)
 
@@ -452,6 +469,7 @@ class ConverterV2(NetsPressoBase):
             data_type=target_data_type,
             input_model_id=input_model.model_id,
             model_id=model.model_id,
+            conversion_task_id=conversion_task_id,
         )
 
         try:
@@ -570,6 +588,7 @@ class ConverterV2(NetsPressoBase):
         sleep_interval: int = 30,
         input_model_id: Optional[str] = None,
         project_id: Optional[str] = None,
+        conversion_task_id: Optional[str] = None,
     ) -> str:
         """Convert a model to the specified framework.
 
@@ -610,6 +629,7 @@ class ConverterV2(NetsPressoBase):
                 wait_until_done=wait_until_done,
                 sleep_interval=sleep_interval,
                 output_dir=output_dir,
+                conversion_task_id=conversion_task_id,
             )
         elif input_model_path:
             return self.convert_model_from_path(
