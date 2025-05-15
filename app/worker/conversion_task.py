@@ -19,6 +19,7 @@ def convert_model(
     input_layer=None,
     dataset_path: str = None,
     input_model_id: str = None,
+    conversion_task_id: str = None,
 ):
     netspresso = NetsPresso(api_key=api_key)
 
@@ -33,6 +34,7 @@ def convert_model(
         input_layer=input_layer,
         dataset_path=dataset_path,
         input_model_id=input_model_id,
+        conversion_task_id=conversion_task_id,
         wait_until_done=False,
     )
 

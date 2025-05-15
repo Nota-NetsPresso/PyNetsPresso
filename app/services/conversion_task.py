@@ -24,6 +24,7 @@ from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums import Status, TaskStatusForDisplay
 from netspresso.enums.conversion import SourceFramework
 from netspresso.netspresso import NetsPresso
+from netspresso.utils.db.models.base import generate_uuid
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
@@ -130,7 +131,8 @@ class ConversionTaskService:
         logger.info(f"Conversion Info: {conversion_in.model_dump()}")
         logger.info(f"Output dir: {output_dir}")
 
-        task = convert_model.apply_async(
+        conversion_task_id = generate_uuid(entity="task")
+        _ = convert_model.apply_async(
             kwargs={
                 "api_key": api_key,
                 "input_model_path": input_model_path.as_posix(),
@@ -141,9 +143,9 @@ class ConversionTaskService:
                 "target_software_version": conversion_in.software_version,
                 "input_model_id": conversion_in.input_model_id,
             },
+            conversion_task_id=conversion_task_id,
         )
-        task_id = task.get()
-        return ConversionCreatePayload(task_id=task_id)
+        return ConversionCreatePayload(task_id=conversion_task_id)
 
     def get_conversion_task(self, db: Session, task_id: str, api_key: str) -> ConversionPayload:
         conversion_task = conversion_task_repository.get_by_task_id(db, task_id)
