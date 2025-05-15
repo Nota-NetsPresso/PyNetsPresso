@@ -821,30 +821,30 @@ class Trainer(NetsPressoBase):
         """
         from netspresso_trainer import train_with_yaml
 
-        # 설정 검증 및 초기화
+        # Validate configuration and initialize
         self._validate_config()
         self._apply_img_size()
 
-        # 프로젝트 및 모델 초기화
+        # Initialize project and model
         model_name = model_name if model_name else f"{self.task}_{self.model_name}".lower()
         project = self.get_project(project_id=project_id)
 
-        # 폴더 설정
+        # Setup folder
         destination_folder = self._prepare_destination_folder(project.project_abs_path, model_name)
 
-        # 모델 및 작업 생성
+        # Create model and task
         model = self._initialize_model(model_name, project)
         train_task = self.create_training_task(model_id=model.model_id, task_id=task_id, user_id=project.user_id)
 
-        # 로깅 설정
+        # Setup logging
         self._setup_logging(output_dir, destination_folder.name)
         self.environment.gpus = gpus
 
-        # 훈련 구성 생성
+        # Create training configurations
         configs = self._create_training_configs()
 
         try:
-            # 모델 훈련
+            # Train model
             self._execute_training(gpus, configs)
         except Exception as e:
             self._handle_training_error(train_task, e)
@@ -852,16 +852,16 @@ class Trainer(NetsPressoBase):
             train_task.status = Status.STOPPED
             train_task.error_detail = FailedTrainingException(error_log="Training stopped by user").args[0]
         finally:
-            # 정리 및 파일 이동
+            # Cleanup and move files
             self._cleanup_and_move_files(configs, destination_folder)
 
-            # 훈련 요약 처리
+            # Process training summary
             train_task = self._process_training_summary(train_task, destination_folder)
 
-            # 훈련 작업 저장
+            # Save training task
             train_task = self._save_train_task(train_task=train_task)
 
-        # 완료된 경우 모델 파일 업로드
+        # Upload model files if completed
         if train_task.status == Status.COMPLETED:
             self._upload_model_files(train_task, model, destination_folder)
 
