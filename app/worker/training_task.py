@@ -2,13 +2,12 @@ import os
 from pathlib import Path
 from typing import Dict
 
-from celery import chain
 from loguru import logger
 
 from app.api.v1.schemas.task.train.train_task import TrainingCreate
 from app.worker.celery_app import celery_app
-from app.worker.conversion_task import convert_model
 from netspresso import NetsPresso
+from netspresso.enums.metadata import Status
 from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize, ToTensor
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
@@ -29,6 +28,8 @@ def train_model(
     training_in: Dict,
     unique_model_name: str,
 ):
+    training_successful = False
+
     try:
         training_in: TrainingCreate = TrainingCreate.model_validate(training_in)
         logger.info(f"Starting training task: {task_id} for model: {unique_model_name}")
@@ -79,13 +80,28 @@ def train_model(
         )
         logger.info(f"Training completed with task_id: {training_task_id}")
 
+        session = SessionLocal()
+        training_task = training_task_repository.get_by_task_id(db=session, task_id=training_task_id)
+
+        if training_task.status != Status.COMPLETED:
+            logger.warning(f"Training task {training_task_id} did not complete successfully. Status: {training_task.status}")
+            result = {
+                "task_id": training_task_id,
+                "status": training_task.status,
+            }
+            session.close()
+            return result
+
+        session.close()
+        training_successful = True
+
         result = {
             "task_id": training_task_id,
             "status": "completed",
         }
 
-        # If test dataset path is available and conversion is configured, chain conversion and evaluation tasks
-        if training_in.dataset.test_path and training_in.conversion:
+        # Only proceed with conversion and evaluation if training was successful
+        if training_successful and training_in.dataset.test_path and training_in.conversion:
             try:
                 logger.info("Starting post-training chain for conversion and evaluation")
 
@@ -113,6 +129,12 @@ def train_model(
                 logger.info(f"Input model path: {input_model_path}")
                 logger.info(f"Output directory: {output_dir}")
 
+                # Check if model file exists
+                if not input_model_path.exists():
+                    logger.error(f"Model file not found at {input_model_path}. Skipping conversion and evaluation.")
+                    session.close()
+                    return result
+
                 conversion_option = training_in.conversion
                 confidence_scores = [0.3, 0.5, 0.6]
 
@@ -135,8 +157,11 @@ def train_model(
                     }
                 )
                 logger.info("Successfully initiated conversion and evaluation chain")
+                session.close()
             except Exception as chain_error:
                 logger.error(f"Error in conversion-evaluation chain: {str(chain_error)}")
+                if session:
+                    session.close()
 
         return result
 
