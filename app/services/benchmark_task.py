@@ -27,6 +27,7 @@ from netspresso.enums.model import Framework
 from netspresso.enums.project import SubFolder
 from netspresso.enums.task import TaskStatusForDisplay
 from netspresso.netspresso import NetsPresso
+from netspresso.utils.db.models.base import generate_uuid
 from netspresso.utils.db.models.benchmark import BenchmarkTask
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
@@ -128,7 +129,8 @@ class BenchmarkTaskService:
         input_model_path = Path(project.project_abs_path) / model.object_path
         logger.info(f"Input model path: {input_model_path}")
 
-        task = benchmark_model.apply_async(
+        benchmark_task_id = generate_uuid(entity="task")
+        _ = benchmark_model.apply_async(
             kwargs={
                 "api_key": api_key,
                 "input_model_path": input_model_path.as_posix(),
@@ -137,9 +139,10 @@ class BenchmarkTaskService:
                 "target_hardware_type": benchmark_in.hardware_type,
                 "input_model_id": benchmark_in.input_model_id,
             },
+            benchmark_task_id=benchmark_task_id,
         )
 
-        return BenchmarkCreatePayload(task_id=task.get())
+        return BenchmarkCreatePayload(task_id=benchmark_task_id)
 
     def get_benchmark_task(self, db: Session, task_id: str, api_key: str) -> BenchmarkResponse:
         """Get benchmark task status and details"""

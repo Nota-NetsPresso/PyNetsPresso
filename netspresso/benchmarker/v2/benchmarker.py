@@ -194,18 +194,32 @@ class BenchmarkerV2(NetsPressoBase):
         data_type: Union[str, DataType],
         input_model_id: Optional[str] = None,
         model_id: Optional[str] = None,
+        benchmark_task_id: Optional[str] = None,
     ) -> BenchmarkTask:
         with get_db_session() as db:
-            benchmark_task = BenchmarkTask(
-                framework=framework,
-                device_name=device_name,
-                software_version=software_version,
-                precision=data_type,
-                status=Status.NOT_STARTED,
-                input_model_id=input_model_id,
-                model_id=model_id,
-                user_id=self.user_info.user_id,
-            )
+            if benchmark_task_id:
+                benchmark_task = BenchmarkTask(
+                    task_id=benchmark_task_id,
+                    framework=framework,
+                    device_name=device_name,
+                    software_version=software_version,
+                    precision=data_type,
+                    status=Status.NOT_STARTED,
+                    input_model_id=input_model_id,
+                    model_id=model_id,
+                    user_id=self.user_info.user_id,
+                )
+            else:
+                benchmark_task = BenchmarkTask(
+                    framework=framework,
+                    device_name=device_name,
+                    software_version=software_version,
+                    precision=data_type,
+                    status=Status.NOT_STARTED,
+                    input_model_id=input_model_id,
+                    model_id=model_id,
+                    user_id=self.user_info.user_id,
+                )
             benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
             return benchmark_task
 
@@ -218,6 +232,7 @@ class BenchmarkerV2(NetsPressoBase):
         wait_until_done: bool = True,
         sleep_interval: int = 30,
         input_model_id: Optional[str] = None,
+        benchmark_task_id: Optional[str] = None,
     ) -> BenchmarkerMetadata:
         """Benchmark the specified model on the specified device.
 
@@ -278,6 +293,7 @@ class BenchmarkerV2(NetsPressoBase):
             data_type=data_type,
             input_model_id=input_model_id,
             model_id=model.model_id,
+            benchmark_task_id=benchmark_task_id,
         )
 
         try:

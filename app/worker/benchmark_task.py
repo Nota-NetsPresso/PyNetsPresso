@@ -15,6 +15,7 @@ def benchmark_model(
     target_software_version: str = None,
     target_hardware_type: str = None,
     input_model_id: str = None,
+    benchmark_task_id: str = None,
 ):
     netspresso = NetsPresso(api_key=api_key)
 
@@ -25,6 +26,7 @@ def benchmark_model(
         target_software_version=target_software_version,
         target_hardware_type=target_hardware_type,
         input_model_id=input_model_id,
+        benchmark_task_id=benchmark_task_id,
         wait_until_done=False,
     )
 
