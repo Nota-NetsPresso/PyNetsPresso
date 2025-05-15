@@ -10,7 +10,7 @@ from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.dataforge.schemas.response_body import DatasetPayload, DatasetVersionInfo
 from netspresso.clients.launcher import launcher_client_v2
-from netspresso.enums import Framework, ServiceTask, Status, Task
+from netspresso.enums import Framework, Status, Task
 from netspresso.enums.project import SubFolder
 from netspresso.enums.train import StorageLocation
 from netspresso.exceptions.trainer import (
@@ -679,6 +679,27 @@ class Trainer(NetsPressoBase):
 
             return train_task
 
+    def update_task_status(self, task_id: str, status: Status, error_message: Optional[str] = None) -> None:
+        """
+        Update the task status.
+
+        Args:
+            task_id: The ID of the task to update.
+            status: The new status (Status enum value).
+            error_message: The error message (optional).
+        """
+        logger.info(f"작업 상태 업데이트: {task_id} -> {status}")
+        if error_message:
+            logger.error(f"오류 메시지: {error_message}")
+
+        with get_db_session() as session:
+            training_task_repository.update_status(
+                db=session,
+                task_id=task_id,
+                status=status,
+                error_message=error_message,
+            )
+
     def _save_model(self, model) -> Model:
         with get_db_session() as db:
             model = model_repository.save(db=db, model=model)
@@ -787,7 +808,7 @@ class Trainer(NetsPressoBase):
         project_id: str,
         output_dir: Optional[str] = "./outputs",
         task_id: Optional[str] = None,
-    ) -> TrainingTask:
+    ) -> str:
         """Train the model with the specified configuration.
 
         Args:
@@ -869,34 +890,67 @@ class Trainer(NetsPressoBase):
 
             train_task = self._save_train_task(train_task=train_task)
 
-            # Zenko에 모델 파일 업로드
-            if train_task.status == Status.COMPLETED:
-                try:
-                    # 모델 파일 찾기
-                    pt_file, onnx_file = self.find_model_files(destination_folder)
+        # Handle model files upload outside the finally block
+        if train_task.status == Status.COMPLETED:
+            try:
+                pt_file, onnx_file = self.find_model_files(destination_folder)
 
-                    # PT 파일 업로드
-                    if pt_file:
+                errors = []
+
+                if not pt_file:
+                    errors.append("PyTorch (PT) model file not found")
+
+                if not onnx_file:
+                    errors.append("ONNX model file not found")
+
+                if errors:
+                    error_msg = f"Required model files missing after training: {', '.join(errors)}"
+                    logger.error(error_msg)
+                    self.update_task_status(task_id=train_task.task_id, status=Status.ERROR, error_message=error_msg)
+                    return train_task.task_id
+
+                max_retries = 3
+                retry_delay = 5
+
+                for attempt in range(max_retries):
+                    try:
                         storage_handler.upload_file_to_s3(
                             bucket_name=BUCKET_NAME,
                             local_path=str(pt_file),
                             object_path=f"{model.object_path}/model.pt",
                         )
                         logger.info(f"Uploaded PT file to Zenko: {model.object_path}/model.pt")
+                        break
+                    except Exception as e:
+                        if attempt < max_retries - 1:
+                            logger.warning(f"PT file upload attempt {attempt+1}/{max_retries} failed: {e}. Retrying in {retry_delay} seconds...")
+                            import time
+                            time.sleep(retry_delay)
+                        else:
+                            raise Exception(f"Failed to upload PT file after {max_retries} attempts: {e}")
 
-                    # ONNX 파일 업로드
-                    if onnx_file:
+                for attempt in range(max_retries):
+                    try:
                         storage_handler.upload_file_to_s3(
                             bucket_name=BUCKET_NAME,
                             local_path=str(onnx_file),
                             object_path=f"{model.object_path}/model.onnx",
                         )
                         logger.info(f"Uploaded ONNX file to Zenko: {model.object_path}/model.onnx")
+                        break
+                    except Exception as e:
+                        if attempt < max_retries - 1:
+                            logger.warning(f"ONNX file upload attempt {attempt+1}/{max_retries} failed: {e}. Retrying in {retry_delay} seconds...")
+                            import time
+                            time.sleep(retry_delay)
+                        else:
+                            raise Exception(f"Failed to upload ONNX file after {max_retries} attempts: {e}")
 
-                except Exception as e:
-                    logger.error(f"Failed to upload model files to Zenko: {e}")
-                    # 업로드 실패해도 학습은 성공으로 처리
-                    pass
+            except Exception as e:
+                error_msg = f"Failed to upload model files to Zenko: {e}"
+                logger.error(error_msg)
+                self.update_task_status(task_id=train_task.task_id, status=Status.ERROR, error_message=error_msg)
+                return train_task.task_id
 
         return train_task.task_id
 
@@ -934,16 +988,22 @@ class Trainer(NetsPressoBase):
             logger.error(f"Folder not found: {folder_path}")
             return None, None
 
-        pt_files = list(folder_path.glob("*.pt"))
-        onnx_files = list(folder_path.glob("*.onnx"))
+        pt_files = list(folder_path.glob("*best*.pt")) or list(folder_path.glob("*.pt"))
+        onnx_files = list(folder_path.glob("*best*.onnx")) or list(folder_path.glob("*.onnx"))
 
-        pt_file = pt_files[0] if pt_files else None
-        onnx_file = onnx_files[0] if onnx_files else None
+        if not pt_files:
+            logger.warning(f"No PyTorch model files found in {folder_path}")
+            pt_file = None
+        else:
+            pt_file = max(pt_files, key=lambda p: p.stat().st_mtime)
+            logger.info(f"Found PT file: {pt_file.name} (Last modified: {pt_file.stat().st_mtime})")
 
-        if pt_file:
-            logger.info(f"Found PT file: {pt_file.name}")
-        if onnx_file:
-            logger.info(f"Found ONNX file: {onnx_file.name}")
+        if not onnx_files:
+            logger.warning(f"No ONNX model files found in {folder_path}")
+            onnx_file = None
+        else:
+            onnx_file = max(onnx_files, key=lambda p: p.stat().st_mtime)
+            logger.info(f"Found ONNX file: {onnx_file.name} (Last modified: {onnx_file.stat().st_mtime})")
 
         return pt_file, onnx_file
 
