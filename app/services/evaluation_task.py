@@ -524,6 +524,8 @@ class EvaluationTaskService:
         temp_dir = tempfile.mkdtemp(prefix="evaluation_results_")
         temp_path = Path(temp_dir)
 
+        logger.info(f"evaluation_tasks: {len(evaluation_tasks)}")
+
         try:
             # Get list of image files and presigned URLs using the first completed task
             # (image URLs should be the same for all tasks with the same dataset)
@@ -533,24 +535,35 @@ class EvaluationTaskService:
             # Sort image paths to ensure consistent ordering
             image_paths.sort()
 
-            # Organize tasks by confidence score
+            # Organize tasks by confidence score and add logging
             tasks_by_confidence = {
                 task.confidence_score: task
                 for task in evaluation_tasks
             }
 
+            # Log available confidence scores for debugging
+            logger.info(f"Available confidence scores: {list(tasks_by_confidence.keys())}")
+
             # 1. Initialize prediction objects for all images
             image_predictions = self._initialize_image_predictions(image_paths, image_urls)
 
-            # 2. Process each threshold
+            # 2. Process each threshold with tolerance for floating point comparisons
             for threshold in [0.3, 0.5, 0.6]:
-                if threshold not in tasks_by_confidence:
+                # Find the closest confidence score with a tolerance of 0.001
+                closest_match = None
+                for conf_score in tasks_by_confidence:
+                    if abs(conf_score - threshold) < 0.001:  # 0.001 tolerance
+                        closest_match = conf_score
+                        break
+
+                if closest_match is None:
                     logger.warning(f"No completed task found for threshold {threshold}")
                     continue
 
+                logger.info(f"Processing threshold {threshold} with matched confidence score {closest_match}")
                 self._process_threshold_predictions(
-                    threshold=threshold,
-                    task=tasks_by_confidence[threshold],
+                    threshold=threshold,  # Use the exact threshold for the prediction
+                    task=tasks_by_confidence[closest_match],
                     image_paths=image_paths,
                     image_predictions=image_predictions,
                     temp_path=temp_path
