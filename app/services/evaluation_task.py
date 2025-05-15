@@ -539,6 +539,8 @@ class EvaluationTaskService:
                 for task in evaluation_tasks
             }
 
+            logger.info(f"tasks_by_confidence: {tasks_by_confidence}")
+
             # 1. Initialize prediction objects for all images
             image_predictions = self._initialize_image_predictions(image_paths, image_urls)
 
@@ -548,6 +550,7 @@ class EvaluationTaskService:
                     logger.warning(f"No completed task found for threshold {threshold}")
                     continue
 
+                logger.info(threshold)
                 self._process_threshold_predictions(
                     threshold=threshold,
                     task=tasks_by_confidence[threshold],
