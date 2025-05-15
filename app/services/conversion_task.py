@@ -84,6 +84,38 @@ class ConversionTaskService:
     def create_conversion_task(
         self, db: Session, conversion_in: ConversionCreate, api_key: str
     ) -> ConversionCreatePayload:
+        # Check if a task with the same options already exists
+        existing_tasks = conversion_task_repository.get_all_by_model_id(
+            db=db,
+            model_id=conversion_in.input_model_id
+        )
+
+        # Filter tasks by conversion parameters
+        for task in existing_tasks:
+            # Check if this task has the same conversion parameters
+            is_same_options = (
+                task.framework == conversion_in.framework and
+                task.device_name == conversion_in.device_name and
+                task.precision == conversion_in.precision
+            )
+
+            # Software version can be None, handle it separately
+            is_same_software_version = (
+                conversion_in.software_version is None or
+                task.software_version == conversion_in.software_version
+            )
+
+            if is_same_options and is_same_software_version:
+                # If task is in NOT_STARTED, IN_PROGRESS, or COMPLETED state, return it
+                reusable_states = [Status.NOT_STARTED, Status.IN_PROGRESS, Status.COMPLETED]
+                if task.status in reusable_states:
+                    logger.info(f"Returning existing conversion task with status {task.status}: {task.task_id}")
+                    return ConversionCreatePayload(task_id=task.task_id)
+
+                # For STOPPED or ERROR, we'll create a new task below
+                logger.info(f"Previous conversion task ended with status {task.status}, creating new task")
+                break
+
         # Get model from trained models repository
         model = model_repository.get_by_model_id(db=db, model_id=conversion_in.input_model_id)
         project = project_service.get_project(db=db, project_id=model.project_id, api_key=api_key)
