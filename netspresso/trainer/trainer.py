@@ -45,6 +45,7 @@ from netspresso.trainer.training.logging import Metrics, ModelSaveOptions
 from netspresso.utils import FileHandler
 from netspresso.utils.db.models.evaluation import EvaluationDataset
 from netspresso.utils.db.models.model import Model
+from netspresso.utils.db.models.project import Project
 from netspresso.utils.db.models.training import (
     Augmentation,
     Dataset,
@@ -871,7 +872,7 @@ class Trainer(NetsPressoBase):
         destination_folder = Path(project_abs_path) / SubFolder.TRAINED_MODELS.value / model_name
         return FileHandler.create_unique_folder(folder_path=destination_folder)
 
-    def _initialize_model(self, model_name, project):
+    def _initialize_model(self, model_name: str, project: Project) -> Model:
         """Initialize and save the trained model object."""
         model = self.save_trained_model(
             model_name=model_name,
@@ -899,7 +900,7 @@ class Trainer(NetsPressoBase):
             self.environment,
         )
 
-    def _execute_training(self, gpus, configs):
+    def _execute_training(self, gpus: str, configs: TrainerConfigs):
         """Execute model training."""
         from netspresso_trainer import train_with_yaml
 
@@ -913,13 +914,13 @@ class Trainer(NetsPressoBase):
             environment=configs.environment,
         )
 
-    def _handle_training_error(self, train_task, error):
+    def _handle_training_error(self, train_task: TrainingTask, error):
         """Handle training errors."""
         e = FailedTrainingException(error_log=error.args[0])
         train_task.status = Status.ERROR
-        train_task.error_detail = e.args[0]
+        train_task.error_detail = e
 
-    def _cleanup_and_move_files(self, configs, destination_folder):
+    def _cleanup_and_move_files(self, configs: TrainerConfigs, destination_folder: Path):
         """Clean up temporary files and move result files."""
         FileHandler.remove_folder(configs.temp_folder)
         logger.info(f"Removed {configs.temp_folder} folder.")
@@ -927,7 +928,7 @@ class Trainer(NetsPressoBase):
         FileHandler.move_and_cleanup_folders(source_folder=self.logging_dir, destination_folder=destination_folder)
         logger.info(f"Files in {self.logging_dir} were moved to {destination_folder}.")
 
-    def _process_training_summary(self, train_task, destination_folder):
+    def _process_training_summary(self, train_task: TrainingTask, destination_folder):
         """Process training summary file and update training task status."""
         summary_path = destination_folder / "training_summary.json"
 
@@ -936,7 +937,7 @@ class Trainer(NetsPressoBase):
             error_msg = f"Training summary file not found at {summary_path}"
             training_summary = self._create_default_error_summary(error_msg)
             train_task.status = Status.ERROR
-            train_task.error_detail = error_msg
+            train_task.error_detail = FailedTrainingException(error_log=error_msg)
         else:
             try:
                 training_summary = FileHandler.load_json(file_path=summary_path)
@@ -945,19 +946,19 @@ class Trainer(NetsPressoBase):
                 error_msg = f"Failed to load training summary: {str(e)}"
                 training_summary = self._create_default_error_summary(error_msg)
                 train_task.status = Status.ERROR
-                train_task.error_detail = error_msg
+                train_task.error_detail = FailedTrainingException(error_log=error_msg)
 
         try:
             train_task = self.create_performance(train_task, training_summary)
         except Exception as e:
             logger.error(f"Error creating performance record: {e}")
             train_task.status = Status.ERROR
-            train_task.error_detail = f"Failed to create performance record: {str(e)}"
+            train_task.error_detail = FailedTrainingException(error_log=f"Failed to create performance record: {str(e)}")
 
         train_task.status = self._get_status_by_training_summary(training_summary.get("status"))
         if train_task.status == Status.ERROR:
             error_stats = training_summary.get("error_stats", "")
-            train_task.error_detail = error_stats
+            train_task.error_detail = FailedTrainingException(error_log=error_stats)
 
         return train_task
 
@@ -987,7 +988,7 @@ class Trainer(NetsPressoBase):
             if errors:
                 error_msg = f"Required model files missing after training: {', '.join(errors)}"
                 logger.error(error_msg)
-                self.update_task_status(task_id=train_task.task_id, status=Status.ERROR, error_message=error_msg)
+                self.update_task_status(task_id=train_task.task_id, status=Status.ERROR, error_message=FailedTrainingException(error_log=error_msg))
                 return
 
             self._upload_file_with_retry(
@@ -1005,7 +1006,7 @@ class Trainer(NetsPressoBase):
         except Exception as e:
             error_msg = f"Failed to upload model files to Zenko: {e}"
             logger.error(error_msg)
-            self.update_task_status(task_id=train_task.task_id, status=Status.ERROR, error_message=error_msg)
+            self.update_task_status(task_id=train_task.task_id, status=Status.ERROR, error_message=FailedTrainingException(error_log=error_msg))
 
     def _upload_file_with_retry(self, local_path, object_path, file_type, max_retries=3, retry_delay=5):
         """Execute file upload with retry mechanism."""
