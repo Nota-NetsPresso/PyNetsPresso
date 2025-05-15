@@ -850,7 +850,7 @@ class Trainer(NetsPressoBase):
             self._handle_training_error(train_task, e)
         except KeyboardInterrupt:
             train_task.status = Status.STOPPED
-            train_task.error_detail = "Training stopped by user"
+            train_task.error_detail = FailedTrainingException(error_log="Training stopped by user").args[0]
         finally:
             # 정리 및 파일 이동
             self._cleanup_and_move_files(configs, destination_folder)
@@ -937,7 +937,7 @@ class Trainer(NetsPressoBase):
             error_msg = f"Training summary file not found at {summary_path}"
             training_summary = self._create_default_error_summary(error_msg)
             train_task.status = Status.ERROR
-            train_task.error_detail = FailedTrainingException(error_log=error_msg)
+            train_task.error_detail = FailedTrainingException(error_log=error_msg).args[0]
         else:
             try:
                 training_summary = FileHandler.load_json(file_path=summary_path)
@@ -946,19 +946,19 @@ class Trainer(NetsPressoBase):
                 error_msg = f"Failed to load training summary: {str(e)}"
                 training_summary = self._create_default_error_summary(error_msg)
                 train_task.status = Status.ERROR
-                train_task.error_detail = FailedTrainingException(error_log=error_msg)
+                train_task.error_detail = FailedTrainingException(error_log=error_msg).args[0]
 
         try:
             train_task = self.create_performance(train_task, training_summary)
         except Exception as e:
             logger.error(f"Error creating performance record: {e}")
             train_task.status = Status.ERROR
-            train_task.error_detail = FailedTrainingException(error_log=f"Failed to create performance record: {str(e)}")
+            train_task.error_detail = FailedTrainingException(error_log=f"Failed to create performance record: {str(e)}").args[0]
 
         train_task.status = self._get_status_by_training_summary(training_summary.get("status"))
         if train_task.status == Status.ERROR:
             error_stats = training_summary.get("error_stats", "")
-            train_task.error_detail = FailedTrainingException(error_log=error_stats)
+            train_task.error_detail = FailedTrainingException(error_log=error_stats).args[0]
 
         return train_task
 
