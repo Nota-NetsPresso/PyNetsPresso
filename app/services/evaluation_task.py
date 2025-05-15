@@ -554,6 +554,11 @@ class EvaluationTaskService:
 
             # 3. Convert results and apply pagination
             results = list(image_predictions.values())
+
+            # Sort predictions by threshold in ascending order for each image
+            for image_prediction in results:
+                image_prediction.predictions.sort(key=lambda x: x.threshold)
+
             total_count = len(results)
 
             # Check for empty results
