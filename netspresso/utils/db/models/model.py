@@ -11,7 +11,7 @@ class Model(BaseModel):
     model_id = Column(
         String(36), index=True, unique=True, nullable=False, default=lambda: generate_uuid(entity="model")
     )
-    name = Column(String(100), nullable=False)
+    name = Column(String(255), nullable=False)
     type = Column(String(30), nullable=False)
     is_retrainable = Column(Boolean, nullable=False, default=False)
     object_path = Column(String(255), nullable=True)
