@@ -535,7 +535,7 @@ class EvaluationTaskService:
             # Sort image paths to ensure consistent ordering
             image_paths.sort()
 
-            # Organize tasks by confidence score and add logging
+            # Organize tasks by confidence score
             tasks_by_confidence = {
                 task.confidence_score: task
                 for task in evaluation_tasks
@@ -548,24 +548,16 @@ class EvaluationTaskService:
             # 1. Initialize prediction objects for all images
             image_predictions = self._initialize_image_predictions(image_paths, image_urls)
 
-            # 2. Process each threshold with tolerance for floating point comparisons
+            # 2. Process each threshold
             for threshold in [0.3, 0.5, 0.6]:
-                # Find the closest confidence score with a tolerance of 0.001
-                closest_match = None
-                for conf_score in tasks_by_confidence:
-                    if abs(conf_score - threshold) < 0.001:  # 0.001 tolerance
-                        closest_match = conf_score
-                        break
-
-                if closest_match is None:
+                if threshold not in tasks_by_confidence:
                     logger.warning(f"No completed task found for threshold {threshold}")
                     continue
 
-                logger.info(f"Processing threshold {threshold} with matched confidence score {closest_match}")
-                logger.info(threshold)
+                logger.info(f"Processing threshold {threshold}")
                 self._process_threshold_predictions(
-                    threshold=threshold,  # Use the exact threshold for the prediction
-                    task=tasks_by_confidence[closest_match],
+                    threshold=threshold,
+                    task=tasks_by_confidence[threshold],
                     image_paths=image_paths,
                     image_predictions=image_predictions,
                     temp_path=temp_path
