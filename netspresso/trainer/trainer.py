@@ -10,7 +10,7 @@ from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.dataforge.schemas.response_body import DatasetPayload, DatasetVersionInfo
 from netspresso.clients.launcher import launcher_client_v2
-from netspresso.enums import Framework, ServiceTask, Status, Task
+from netspresso.enums import Framework, Status, Task
 from netspresso.enums.project import SubFolder
 from netspresso.enums.train import StorageLocation
 from netspresso.exceptions.trainer import (
@@ -45,6 +45,7 @@ from netspresso.trainer.training.logging import Metrics, ModelSaveOptions
 from netspresso.utils import FileHandler
 from netspresso.utils.db.models.evaluation import EvaluationDataset
 from netspresso.utils.db.models.model import Model
+from netspresso.utils.db.models.project import Project
 from netspresso.utils.db.models.training import (
     Augmentation,
     Dataset,
@@ -679,6 +680,27 @@ class Trainer(NetsPressoBase):
 
             return train_task
 
+    def update_task_status(self, task_id: str, status: Status, error_message: Optional[str] = None) -> None:
+        """
+        Update the task status.
+
+        Args:
+            task_id: The ID of the task to update.
+            status: The new status (Status enum value).
+            error_message: The error message (optional).
+        """
+        logger.info(f"Updating task status: {task_id} -> {status}")
+        if error_message:
+            logger.error(f"Error message: {error_message}")
+
+        with get_db_session() as session:
+            training_task_repository.update_status(
+                db=session,
+                task_id=task_id,
+                status=status,
+                error_message=error_message,
+            )
+
     def _save_model(self, model) -> Model:
         with get_db_session() as db:
             model = model_repository.save(db=db, model=model)
@@ -787,7 +809,7 @@ class Trainer(NetsPressoBase):
         project_id: str,
         output_dir: Optional[str] = "./outputs",
         task_id: Optional[str] = None,
-    ) -> TrainingTask:
+    ) -> str:
         """Train the model with the specified configuration.
 
         Args:
@@ -797,19 +819,61 @@ class Trainer(NetsPressoBase):
         Returns:
             Dict: A dictionary containing information about the training.
         """
-
         from netspresso_trainer import train_with_yaml
 
+        # Validate configuration and initialize
         self._validate_config()
         self._apply_img_size()
 
+        # Initialize project and model
         model_name = model_name if model_name else f"{self.task}_{self.model_name}".lower()
         project = self.get_project(project_id=project_id)
-        project_abs_path = project.project_abs_path
 
+        # Setup folder
+        destination_folder = self._prepare_destination_folder(project.project_abs_path, model_name)
+
+        # Create model and task
+        model = self._initialize_model(model_name, project)
+        train_task = self.create_training_task(model_id=model.model_id, task_id=task_id, user_id=project.user_id)
+
+        # Setup logging
+        self._setup_logging(output_dir, destination_folder.name)
+        self.environment.gpus = gpus
+
+        # Create training configurations
+        configs = self._create_training_configs()
+
+        try:
+            # Train model
+            self._execute_training(gpus, configs)
+        except Exception as e:
+            self._handle_training_error(train_task, e)
+        except KeyboardInterrupt:
+            train_task.status = Status.STOPPED
+            train_task.error_detail = FailedTrainingException(error_log="Training stopped by user").args[0]
+        finally:
+            # Cleanup and move files
+            self._cleanup_and_move_files(configs, destination_folder)
+
+            # Process training summary
+            train_task = self._process_training_summary(train_task, destination_folder)
+
+            # Save training task
+            train_task = self._save_train_task(train_task=train_task)
+
+        # Upload model files if completed
+        if train_task.status == Status.COMPLETED:
+            self._upload_model_files(train_task, model, destination_folder)
+
+        return train_task.task_id
+
+    def _prepare_destination_folder(self, project_abs_path, model_name):
+        """Prepare the folder to save the trained model."""
         destination_folder = Path(project_abs_path) / SubFolder.TRAINED_MODELS.value / model_name
-        destination_folder = FileHandler.create_unique_folder(folder_path=destination_folder)
+        return FileHandler.create_unique_folder(folder_path=destination_folder)
 
+    def _initialize_model(self, model_name: str, project: Project) -> Model:
+        """Initialize and save the trained model object."""
         model = self.save_trained_model(
             model_name=model_name,
             project_id=project.project_id,
@@ -817,88 +881,154 @@ class Trainer(NetsPressoBase):
         )
         object_path = f"{project.user_id}/{project.project_id}/{model.model_id}"
         model.object_path = object_path
-        model = self._save_model(model=model)
-        train_task = self.create_training_task(model_id=model.model_id, task_id=task_id, user_id=project.user_id)
+        return self._save_model(model=model)
+
+    def _setup_logging(self, output_dir, project_id):
+        """Set up the logging directory."""
+        self.logging.output_dir = output_dir
+        self.logging.project_id = project_id
+        self.logging_dir = Path(self.logging.output_dir) / self.logging.project_id / "version_0"
+
+    def _create_training_configs(self):
+        """Create training configurations."""
+        return TrainerConfigs(
+            self.data,
+            self.augmentation,
+            self.model,
+            self.training,
+            self.logging,
+            self.environment,
+        )
+
+    def _execute_training(self, gpus: str, configs: TrainerConfigs):
+        """Execute model training."""
+        from netspresso_trainer import train_with_yaml
+
+        train_with_yaml(
+            gpus=gpus,
+            data=configs.data,
+            augmentation=configs.augmentation,
+            model=configs.model,
+            training=configs.training,
+            logging=configs.logging,
+            environment=configs.environment,
+        )
+
+    def _handle_training_error(self, train_task: TrainingTask, error):
+        """Handle training errors."""
+        e = FailedTrainingException(error_log=error.args[0])
+        train_task.status = Status.ERROR
+        train_task.error_detail = e.args[0]
+
+    def _cleanup_and_move_files(self, configs: TrainerConfigs, destination_folder: Path):
+        """Clean up temporary files and move result files."""
+        FileHandler.remove_folder(configs.temp_folder)
+        logger.info(f"Removed {configs.temp_folder} folder.")
+
+        FileHandler.move_and_cleanup_folders(source_folder=self.logging_dir, destination_folder=destination_folder)
+        logger.info(f"Files in {self.logging_dir} were moved to {destination_folder}.")
+
+    def _process_training_summary(self, train_task: TrainingTask, destination_folder):
+        """Process training summary file and update training task status."""
+        summary_path = destination_folder / "training_summary.json"
+
+        if not summary_path.exists():
+            logger.error(f"Training summary file not found at {summary_path}")
+            error_msg = f"Training summary file not found at {summary_path}"
+            training_summary = self._create_default_error_summary(error_msg)
+            train_task.status = Status.ERROR
+            train_task.error_detail = FailedTrainingException(error_log=error_msg).args[0]
+        else:
+            try:
+                training_summary = FileHandler.load_json(file_path=summary_path)
+            except Exception as e:
+                logger.error(f"Failed to load training summary: {e}")
+                error_msg = f"Failed to load training summary: {str(e)}"
+                training_summary = self._create_default_error_summary(error_msg)
+                train_task.status = Status.ERROR
+                train_task.error_detail = FailedTrainingException(error_log=error_msg).args[0]
+                return train_task
 
         try:
-            self.logging.output_dir = output_dir
-            self.logging.project_id = destination_folder.name
-            self.logging_dir = Path(self.logging.output_dir) / self.logging.project_id / "version_0"
-            self.environment.gpus = gpus
+            train_task = self.create_performance(train_task, training_summary)
+        except Exception as e:
+            logger.error(f"Error creating performance record: {e}, {training_summary}")
+            train_task.status = Status.ERROR
+            train_task.error_detail = FailedTrainingException(error_log=f"Failed to create performance record: {str(e)}").args[0]
+            return train_task
 
-            configs = TrainerConfigs(
-                self.data,
-                self.augmentation,
-                self.model,
-                self.training,
-                self.logging,
-                self.environment,
+        train_task.status = self._get_status_by_training_summary(training_summary.get("status"))
+        if train_task.status == Status.ERROR:
+            error_stats = training_summary.get("error_stats", "")
+            train_task.error_detail = FailedTrainingException(error_log=error_stats).args[0]
+
+        return train_task
+
+    def _create_default_error_summary(self, error_msg):
+        """Create default error summary."""
+        return {
+            "train_losses": {}, "valid_losses": {},
+            "train_metrics": {}, "valid_metrics": {},
+            "metrics_list": [], "primary_metric": "",
+            "flops": "0", "params": "0",
+            "total_train_time": 0, "best_epoch": 0,
+            "last_epoch": 0, "total_epoch": 0, "status": "error",
+            "error_stats": error_msg
+        }
+
+    def _upload_model_files(self, train_task, model, destination_folder):
+        """Upload trained model files to storage."""
+        try:
+            pt_file, onnx_file = self.find_model_files(destination_folder)
+
+            errors = []
+            if not pt_file:
+                errors.append("PyTorch (PT) model file not found")
+            if not onnx_file:
+                errors.append("ONNX model file not found")
+
+            if errors:
+                error_msg = f"Required model files missing after training: {', '.join(errors)}"
+                logger.error(error_msg)
+                self.update_task_status(task_id=train_task.task_id, status=Status.ERROR, error_message=FailedTrainingException(error_log=error_msg))
+                return
+
+            self._upload_file_with_retry(
+                local_path=str(pt_file),
+                object_path=f"{model.object_path}/model.pt",
+                file_type="PT"
             )
-            train_with_yaml(
-                gpus=gpus,
-                data=configs.data,
-                augmentation=configs.augmentation,
-                model=configs.model,
-                training=configs.training,
-                logging=configs.logging,
-                environment=configs.environment,
+
+            self._upload_file_with_retry(
+                local_path=str(onnx_file),
+                object_path=f"{model.object_path}/model.onnx",
+                file_type="ONNX"
             )
 
         except Exception as e:
-            e = FailedTrainingException(error_log=e.args[0])
-            train_task.status = Status.ERROR
-            train_task.error_detail = e.args[0]
-        except KeyboardInterrupt:
-            train_task.status = Status.STOPPED
-            train_task.error_detail = "Training stopped by user"
-        finally:
-            FileHandler.remove_folder(configs.temp_folder)
-            logger.info(f"Removed {configs.temp_folder} folder.")
+            error_msg = f"Failed to upload model files to Zenko: {e}"
+            logger.error(error_msg)
+            self.update_task_status(task_id=train_task.task_id, status=Status.ERROR, error_message=FailedTrainingException(error_log=error_msg))
 
-            FileHandler.move_and_cleanup_folders(source_folder=self.logging_dir, destination_folder=destination_folder)
-            logger.info(f"Files in {self.logging_dir} were moved to {destination_folder}.")
+    def _upload_file_with_retry(self, local_path, object_path, file_type, max_retries=3, retry_delay=5):
+        """Execute file upload with retry mechanism."""
+        import time
 
-            training_summary = FileHandler.load_json(file_path=destination_folder / "training_summary.json")
-            train_task = self.create_performance(train_task, training_summary)
-
-            train_task.status = self._get_status_by_training_summary(training_summary.get("status"))
-            if train_task.status == Status.ERROR:
-                error_stats = training_summary.get("error_stats", "")
-                e = FailedTrainingException(error_log=error_stats)
-                train_task.error_detail = e.args[0]
-
-            train_task = self._save_train_task(train_task=train_task)
-
-            # Zenko에 모델 파일 업로드
-            if train_task.status == Status.COMPLETED:
-                try:
-                    # 모델 파일 찾기
-                    pt_file, onnx_file = self.find_model_files(destination_folder)
-
-                    # PT 파일 업로드
-                    if pt_file:
-                        storage_handler.upload_file_to_s3(
-                            bucket_name=BUCKET_NAME,
-                            local_path=str(pt_file),
-                            object_path=f"{model.object_path}/model.pt",
-                        )
-                        logger.info(f"Uploaded PT file to Zenko: {model.object_path}/model.pt")
-
-                    # ONNX 파일 업로드
-                    if onnx_file:
-                        storage_handler.upload_file_to_s3(
-                            bucket_name=BUCKET_NAME,
-                            local_path=str(onnx_file),
-                            object_path=f"{model.object_path}/model.onnx",
-                        )
-                        logger.info(f"Uploaded ONNX file to Zenko: {model.object_path}/model.onnx")
-
-                except Exception as e:
-                    logger.error(f"Failed to upload model files to Zenko: {e}")
-                    # 업로드 실패해도 학습은 성공으로 처리
-                    pass
-
-        return train_task.task_id
+        for attempt in range(max_retries):
+            try:
+                storage_handler.upload_file_to_s3(
+                    bucket_name=BUCKET_NAME,
+                    local_path=local_path,
+                    object_path=object_path,
+                )
+                logger.info(f"Uploaded {file_type} file to Zenko: {object_path}")
+                break
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    logger.warning(f"{file_type} file upload attempt {attempt+1}/{max_retries} failed: {e}. Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                else:
+                    raise Exception(f"Failed to upload {file_type} file after {max_retries} attempts: {e}")
 
     def get_all_available_models(self) -> Dict[str, List[str]]:
         """Get all available models for each task, excluding deprecated names.
@@ -934,16 +1064,22 @@ class Trainer(NetsPressoBase):
             logger.error(f"Folder not found: {folder_path}")
             return None, None
 
-        pt_files = list(folder_path.glob("*.pt"))
-        onnx_files = list(folder_path.glob("*.onnx"))
+        pt_files = list(folder_path.glob("*best*.pt")) or list(folder_path.glob("*.pt"))
+        onnx_files = list(folder_path.glob("*best*.onnx")) or list(folder_path.glob("*.onnx"))
 
-        pt_file = pt_files[0] if pt_files else None
-        onnx_file = onnx_files[0] if onnx_files else None
+        if not pt_files:
+            logger.warning(f"No PyTorch model files found in {folder_path}")
+            pt_file = None
+        else:
+            pt_file = max(pt_files, key=lambda p: p.stat().st_mtime)
+            logger.info(f"Found PT file: {pt_file.name} (Last modified: {pt_file.stat().st_mtime})")
 
-        if pt_file:
-            logger.info(f"Found PT file: {pt_file.name}")
-        if onnx_file:
-            logger.info(f"Found ONNX file: {onnx_file.name}")
+        if not onnx_files:
+            logger.warning(f"No ONNX model files found in {folder_path}")
+            onnx_file = None
+        else:
+            onnx_file = max(onnx_files, key=lambda p: p.stat().st_mtime)
+            logger.info(f"Found ONNX file: {onnx_file.name} (Last modified: {onnx_file.stat().st_mtime})")
 
         return pt_file, onnx_file
 
