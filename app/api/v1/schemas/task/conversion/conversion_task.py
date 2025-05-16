@@ -10,7 +10,7 @@ from app.api.v1.schemas.device import (
     TargetDevicePayload,
     TargetFrameworkPayload,
 )
-from netspresso.enums.conversion import PrecisionForConversion, TargetFramework
+from netspresso.enums.conversion import EvaluationTargetFramework, PrecisionForConversion, TargetFramework
 from netspresso.enums.device import DeviceName, SoftwareVersion
 
 
@@ -24,6 +24,10 @@ class ConversionCreateBase(BaseModel):
 class ConversionCreate(ConversionCreateBase):
     input_model_id: str = Field(description="Input model ID")
     calibration_dataset_path: Optional[str] = Field(default=None, description="Path to the calibration dataset")
+
+
+class ConversionForEvaluationCreate(ConversionCreateBase):
+    framework: EvaluationTargetFramework = Field(description="Framework name")
 
 
 class ConversionPayload(BaseModel):
