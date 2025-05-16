@@ -6,6 +6,7 @@ from loguru import logger
 
 from app.api.v1.schemas.task.train.train_task import TrainingCreate
 from app.worker.celery_app import celery_app
+from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso import NetsPresso
 from netspresso.enums.conversion import EvaluationTargetFramework
 from netspresso.enums.metadata import Status
@@ -23,7 +24,9 @@ from netspresso.utils.db.session import get_db_session
 NP_TRAINING_STUDIO_PATH = Path(os.environ.get("NP_TRAINING_STUDIO_PATH", "/np_training_studio"))
 DEFAULT_CONFIDENCE_SCORES = [0.3, 0.5, 0.6]
 DEFAULT_AUGMENTATIONS = [Resize(), Pad(fill=114), ToTensor(), Normalize()]
+BUCKET_NAME = "model"  # 모델 저장에 사용되는 버킷 이름
 
+storage_handler = ObjectStorageHandler()
 
 def prepare_training_data(trainer: Trainer, training_in: TrainingCreate) -> Path:
     """Download and prepare training dataset."""
@@ -152,8 +155,27 @@ def get_model_paths(training_task_id: str) -> Optional[Tuple[Path, Path]]:
         logger.info(f"Output directory: {output_dir}")
 
         if not input_model_path.exists():
-            logger.error(f"Model file not found at {input_model_path}")
-            return None
+            logger.info(f"Model file not found locally at {input_model_path}, trying to download from storage")
+
+            input_model_dir.mkdir(parents=True, exist_ok=True)
+
+            object_path = f"{model_info.object_path}/model.onnx"
+
+            try:
+                storage_handler.download_file_from_s3(
+                    bucket_name=BUCKET_NAME,
+                    object_path=object_path,
+                    local_path=str(input_model_path)
+                )
+                logger.info(f"Successfully downloaded model file from storage to {input_model_path}")
+
+                if not input_model_path.exists():
+                    logger.error(f"Failed to download model file: {input_model_path} still not found")
+                    return None
+
+            except Exception as e:
+                logger.error(f"Error downloading model file: {str(e)}")
+                return None
 
         return input_model_path, output_dir
 
