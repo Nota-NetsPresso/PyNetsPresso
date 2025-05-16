@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.enums import Status
-from netspresso.enums.conversion import TargetFramework
+from netspresso.enums.conversion import EvaluationTargetFramework, TargetFramework
+from netspresso.exceptions.conversion import ConversionTaskNotFoundException
 from netspresso.exceptions.evaluation import (
     EvaluationDownloadURLGenerationException,
     EvaluationResultFileNotFoundException,
@@ -16,6 +17,7 @@ from netspresso.exceptions.evaluation import (
     UnsupportedEvaluationFrameworkException,
 )
 from netspresso.exceptions.trainer import NotCompletedTrainingException
+from netspresso.exceptions.training import TrainingTaskNotFoundException
 from netspresso.trainer.trainer import Trainer
 from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.utils.db.models.evaluation import EvaluationDataset, EvaluationTask
@@ -142,19 +144,45 @@ class Evaluator:
         try:
             output_dir = tempfile.mkdtemp(prefix="netspresso_evaluate_")
 
-            # 1. Get conversion task
-            conversion_task = conversion_task_repository.get_by_model_id(db=db, model_id=model_id)
+            # 1. Get model information
+            input_model = model_repository.get_by_model_id(db=db, model_id=model_id)
+            if not input_model:
+                raise Exception(f"Model with ID {model_id} not found")
 
-            # 2. Get training task
-            training_task = training_task_repository.get_by_model_id(db=db, model_id=conversion_task.input_model_id)
+            # 2. Check if this is a direct ONNX model or converted model
+            conversion_task = None
 
-            # 3. Check training task is completed
-            if training_task.status != Status.COMPLETED:
-                raise NotCompletedTrainingException(training_task_id=training_task.task_id)
+            try:
+                # 변환된 모델인지 확인
+                conversion_task = conversion_task_repository.get_by_model_id(db=db, model_id=model_id)
 
-            # 4. Check conversion framework is supported
-            if conversion_task.framework != TargetFramework.TENSORFLOW_LITE:
-                raise UnsupportedEvaluationFrameworkException(framework=conversion_task.framework)
+                # 변환된 모델 처리 로직
+                # Get training task for the original model
+                training_task = training_task_repository.get_by_model_id(db=db, model_id=conversion_task.input_model_id)
+
+                # Check training task is completed
+                if training_task.status != Status.COMPLETED:
+                    raise NotCompletedTrainingException(training_task_id=training_task.task_id)
+
+                # Check conversion framework is supported
+                if conversion_task.framework not in [EvaluationTargetFramework.TENSORFLOW_LITE, EvaluationTargetFramework.ONNX]:
+                    raise UnsupportedEvaluationFrameworkException(framework=conversion_task.framework)
+
+
+            except ConversionTaskNotFoundException:
+                # 직접 평가하는 ONNX 모델인 경우 (conversion_task가 없음)
+                logger.info(f"No conversion task found for model {model_id}. Treating as direct ONNX model.")
+
+                # ONNX 모델의 경우 model_id가 training_task의 output_model_id와 동일
+                try:
+                    training_task = training_task_repository.get_by_output_model_id(db=db, output_model_id=model_id)
+
+                    # 3. Check training task is completed
+                    if training_task.status != Status.COMPLETED:
+                        raise NotCompletedTrainingException(training_task_id=training_task.task_id)
+
+                except TrainingTaskNotFoundException:
+                    raise Exception(f"No training task found for model {model_id}")
 
             # Create task with DB session
             if evaluation_task_id:
@@ -164,10 +192,10 @@ class Evaluator:
                         dataset_id=self.trainer.test_dataset_id,
                         input_model_id=model_id,
                         training_task_id=training_task.task_id,
-                        conversion_task_id=conversion_task.task_id,
+                        conversion_task_id=conversion_task.task_id if conversion_task else None,
                         confidence_score=confidence_score,
                         status=Status.NOT_STARTED,
-                        user_id=conversion_task.user_id,
+                        user_id=input_model.user_id,
                     )
                 if self.trainer.test_dataset:
                     evaluation_task = EvaluationTask(
@@ -175,26 +203,24 @@ class Evaluator:
                         dataset=self.trainer.test_dataset,
                         input_model_id=model_id,
                         training_task_id=training_task.task_id,
-                        conversion_task_id=conversion_task.task_id,
+                        conversion_task_id=conversion_task.task_id if conversion_task else None,
                         confidence_score=confidence_score,
                         status=Status.NOT_STARTED,
-                        user_id=conversion_task.user_id,
+                        user_id=input_model.user_id,
                     )
             else:
                 evaluation_task = EvaluationTask(
                     dataset_id=self.trainer.test_dataset,
                     input_model_id=model_id,
                     training_task_id=training_task.task_id,
-                    conversion_task_id=conversion_task.task_id,
+                    conversion_task_id=conversion_task.task_id if conversion_task else None,
                     confidence_score=confidence_score,
                     status=Status.NOT_STARTED,
-                    user_id=conversion_task.user_id,
+                    user_id=input_model.user_id,
                 )
             evaluation_task = evaluation_task_repository.save(db=db, model=evaluation_task)
             logger.info(f"Created new evaluation task with ID: {evaluation_task.task_id}")
 
-            # Query model info - Pass DB session
-            input_model = model_repository.get_by_model_id(db=db, model_id=model_id)
             local_path = self._download_model(input_model, output_dir)
 
             # Update status - Pass DB session

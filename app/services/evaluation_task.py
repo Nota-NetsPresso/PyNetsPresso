@@ -7,6 +7,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.device import (
+    EvaluationTargetFrameworkPayload,
     HardwareTypePayload,
     PrecisionForConversionPayload,
     SoftwareVersionPayload,
@@ -30,7 +31,7 @@ from app.worker.evaluation_task import chain_conversion_and_evaluation, run_mult
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums import DataType, DeviceName, SoftwareVersion, Status
-from netspresso.enums.conversion import SourceFramework, TargetFramework
+from netspresso.enums.conversion import EvaluationTargetFramework, SourceFramework, TargetFramework
 from netspresso.evaluator.evaluator import EVALUATION_BUCKET_NAME
 from netspresso.exceptions.conversion import ConversionTaskNotFoundException
 from netspresso.netspresso import NetsPresso
@@ -62,7 +63,7 @@ class EvaluationTaskService:
         converter = netspresso.converter_v2()
         supported_options = converter.get_supported_options(framework=framework)
 
-        supported_framework = [TargetFramework.TENSORFLOW_LITE]
+        supported_framework = [EvaluationTargetFramework.TENSORFLOW_LITE, EvaluationTargetFramework.ONNX]
 
         return [self._create_supported_device_response(option) for option in supported_options if option.framework in supported_framework]
 
@@ -76,7 +77,7 @@ class EvaluationTaskService:
             SupportedDeviceResponse: Response containing framework and supported devices
         """
         return SupportedDeviceResponse(
-            framework=TargetFrameworkPayload(name=option.framework),
+            framework=EvaluationTargetFrameworkPayload(name=option.framework),
             devices=[self._create_device_payload(device) for device in option.devices],
         )
 
@@ -165,6 +166,42 @@ class EvaluationTaskService:
     ) -> str:
         confidence_scores = [0.3, 0.5, 0.6]
 
+        if evaluation_in.framework == EvaluationTargetFramework.ONNX:
+            logger.info("Processing ONNX model evaluation without conversion")
+
+            # Get model information
+            model = model_repository.get_by_model_id(
+                db=db,
+                model_id=evaluation_in.input_model_id
+            )
+
+            try:
+                for confidence_score in confidence_scores:
+                    self._check_evaluation_task_status(
+                        db=db,
+                        model_id=model.model_id,
+                        dataset_id=evaluation_in.dataset_id,
+                        confidence_score=confidence_score
+                    )
+            except EvaluationTaskAlreadyExistsException:
+                raise
+
+            task_result = run_multiple_evaluations.apply_async(
+                kwargs={
+                    "api_key": api_key,
+                    "model_id": model.model_id,
+                    "dataset_id": evaluation_in.dataset_id,
+                    "training_task_id": evaluation_in.training_task_id,
+                    "confidence_scores": confidence_scores,
+                },
+            )
+
+            evaluation_task_id = task_result.get(timeout=5)
+            logger.info(f"ONNX evaluation task ID: {evaluation_task_id}")
+
+            return evaluation_task_id
+
+        # 기존 로직: 변환 모델 평가
         try:
             # Check if a conversion task exists
             conversion_task = self._find_existing_conversion_task(

@@ -4,9 +4,12 @@ from pydantic import BaseModel, Field, model_validator
 
 from app.api.v1.schemas.base import ResponseListItems
 from netspresso.enums.conversion import (
+    EVALUATION_TARGET_FRAMEWORK_DISPLAY_MAP,
     PRECISION_FOR_BENCHMARK_DISPLAY_MAP,
     PRECISION_FOR_CONVERSION_DISPLAY_MAP,
     TARGET_FRAMEWORK_DISPLAY_MAP,
+    EvaluationTargetFramework,
+    EvaluationTargetFrameworkDisplay,
     PrecisionForBenchmark,
     PrecisionForBenchmarkDisplay,
     PrecisionForConversion,
@@ -164,6 +167,17 @@ class TargetFrameworkPayload(BaseModel):
         return self
 
 
+class EvaluationTargetFrameworkPayload(BaseModel):
+    name: EvaluationTargetFramework = Field(description="Framework name")
+    display_name: Optional[EvaluationTargetFrameworkDisplay] = Field(default=None, description="Framework display name")
+
+    @model_validator(mode="after")
+    def set_display_name(self) -> str:
+        self.display_name = EVALUATION_TARGET_FRAMEWORK_DISPLAY_MAP.get(self.name)
+
+        return self
+
+
 class SupportedDeviceResponse(BaseModel):
     framework: TargetFrameworkPayload
     devices: List[SupportedDevicePayload]
@@ -179,3 +193,12 @@ class SupportedDeviceForBenchmarkResponse(BaseModel):
 
 class SupportedDevicesForBenchmarkResponse(ResponseListItems):
     data: List[SupportedDeviceForBenchmarkPayload]
+
+
+class SupportedEvaluationDeviceResponse(BaseModel):
+    framework: EvaluationTargetFrameworkPayload
+    devices: List[SupportedDevicePayload]
+
+
+class SupportedEvaluationDevicesResponse(ResponseListItems):
+    data: List[SupportedEvaluationDeviceResponse]
