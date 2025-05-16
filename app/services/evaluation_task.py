@@ -13,6 +13,8 @@ from app.api.v1.schemas.device import (
     SoftwareVersionPayload,
     SupportedDevicePayload,
     SupportedDeviceResponse,
+    SupportedEvaluationDeviceResponse,
+    SupportedEvaluationDevicesResponse,
 )
 from app.api.v1.schemas.task.conversion.conversion_task import (
     TargetFrameworkPayload,
@@ -48,7 +50,7 @@ storage_handler = ObjectStorageHandler()
 class EvaluationTaskService:
     def get_supported_devices(
         self, db: Session, framework: SourceFramework, api_key: str
-    ) -> List[SupportedDeviceResponse]:
+    ) -> List[SupportedEvaluationDeviceResponse]:
         """Get supported devices for conversion tasks.
 
         Args:
@@ -57,7 +59,7 @@ class EvaluationTaskService:
             api_key (str): API key for authentication
 
         Returns:
-            List[SupportedDeviceResponse]: List of supported devices grouped by framework
+            List[SupportedEvaluationDeviceResponse]: List of supported devices grouped by framework
         """
         netspresso = NetsPresso(api_key=api_key)
         converter = netspresso.converter_v2()
@@ -67,16 +69,16 @@ class EvaluationTaskService:
 
         return [self._create_supported_device_response(option) for option in supported_options if option.framework in supported_framework]
 
-    def _create_supported_device_response(self, option) -> SupportedDeviceResponse:
-        """Create SupportedDeviceResponse from converter option.
+    def _create_supported_device_response(self, option) -> SupportedEvaluationDeviceResponse:
+        """Create SupportedEvaluationDeviceResponse from converter option.
 
         Args:
             option: Converter option containing framework and devices information
 
         Returns:
-            SupportedDeviceResponse: Response containing framework and supported devices
+            SupportedEvaluationDeviceResponse: Response containing framework and supported devices
         """
-        return SupportedDeviceResponse(
+        return SupportedEvaluationDeviceResponse(
             framework=EvaluationTargetFrameworkPayload(name=option.framework),
             devices=[self._create_device_payload(device) for device in option.devices],
         )
