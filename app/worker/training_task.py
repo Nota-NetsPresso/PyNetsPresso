@@ -7,6 +7,7 @@ from loguru import logger
 from app.api.v1.schemas.task.train.train_task import TrainingCreate
 from app.worker.celery_app import celery_app
 from netspresso import NetsPresso
+from netspresso.enums.conversion import EvaluationTargetFramework
 from netspresso.enums.metadata import Status
 from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize, ToTensor
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
@@ -166,29 +167,42 @@ def trigger_conversion_evaluation(
     training_task_id: str
 ):
     """Trigger the conversion and evaluation chain."""
-    from app.worker.evaluation_task import chain_conversion_and_evaluation
+    from app.worker.evaluation_task import chain_conversion_and_evaluation, run_multiple_evaluations
 
     conversion_option = training_in.conversion
 
-    _ = chain_conversion_and_evaluation.apply_async(
-        kwargs={
-            "api_key": api_key,
-            "input_model_path": input_model_path.as_posix(),
-            "output_dir": output_dir.as_posix(),
-            "target_framework": conversion_option.framework,
-            "target_device_name": conversion_option.device_name,
-            "target_data_type": conversion_option.precision,
-            "target_software_version": conversion_option.software_version,
-            "input_layer": None,
-            "dataset_path": None,
-            "input_model_id": model_id,
-            "dataset_id": training_in.dataset.test_path,
-            "training_task_id": training_task_id,
-            "confidence_scores": DEFAULT_CONFIDENCE_SCORES,
-        }
-    )
+    if conversion_option.framework == EvaluationTargetFramework.ONNX:
+        logger.info("ONNX model detected - skipping conversion and running evaluation directly")
 
-    logger.info("Successfully initiated conversion and evaluation chain")
+        _ = run_multiple_evaluations.apply_async(
+            kwargs={
+                "api_key": api_key,
+                "model_id": model_id,
+                "dataset_id": training_in.dataset.test_path,
+                "training_task_id": training_task_id,
+                "confidence_scores": DEFAULT_CONFIDENCE_SCORES,
+            }
+        )
+    else:
+        _ = chain_conversion_and_evaluation.apply_async(
+            kwargs={
+                "api_key": api_key,
+                "input_model_path": input_model_path.as_posix(),
+                "output_dir": output_dir.as_posix(),
+                "target_framework": conversion_option.framework,
+                "target_device_name": conversion_option.device_name,
+                "target_data_type": conversion_option.precision,
+                "target_software_version": conversion_option.software_version,
+                "input_layer": None,
+                "dataset_path": None,
+                "input_model_id": model_id,
+                "dataset_id": training_in.dataset.test_path,
+                "training_task_id": training_task_id,
+                "confidence_scores": DEFAULT_CONFIDENCE_SCORES,
+            }
+        )
+
+    logger.info("Successfully initiated conversion and evaluation process")
 
 
 @celery_app.task(bind=True, name='train_model')
