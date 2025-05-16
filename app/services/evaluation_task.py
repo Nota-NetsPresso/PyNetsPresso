@@ -67,7 +67,13 @@ class EvaluationTaskService:
 
         supported_framework = [EvaluationTargetFramework.TENSORFLOW_LITE, EvaluationTargetFramework.ONNX]
 
-        return [self._create_supported_device_response(option) for option in supported_options if option.framework in supported_framework]
+        supported_device_response = [self._create_supported_device_response(option) for option in supported_options if option.framework in supported_framework]
+        supported_device_response.append(SupportedEvaluationDeviceResponse(
+            framework=EvaluationTargetFrameworkPayload(name=EvaluationTargetFramework.ONNX),
+            devices=[self._create_device_payload(device) for device in supported_options[0].devices],
+        ))
+
+        return supported_device_response
 
     def _create_supported_device_response(self, option) -> SupportedEvaluationDeviceResponse:
         """Create SupportedEvaluationDeviceResponse from converter option.
