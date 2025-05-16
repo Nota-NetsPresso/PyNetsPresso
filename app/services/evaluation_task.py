@@ -165,7 +165,7 @@ class EvaluationTaskService:
     ) -> str:
         confidence_scores = [0.3, 0.5, 0.6]
 
-        if evaluation_in.framework == EvaluationTargetFramework.ONNX:
+        if evaluation_in.conversion.framework == EvaluationTargetFramework.ONNX:
             logger.info("Processing ONNX model evaluation without conversion")
 
             # Get model information
@@ -205,10 +205,10 @@ class EvaluationTaskService:
             conversion_task = self._find_existing_conversion_task(
                 db=db,
                 input_model_id=evaluation_in.input_model_id,
-                target_framework=evaluation_in.framework,
-                target_device_name=evaluation_in.device_name,
-                target_software_version=evaluation_in.software_version,
-                target_data_type=evaluation_in.precision
+                target_framework=evaluation_in.conversion.framework,
+                target_device_name=evaluation_in.conversion.device_name,
+                target_software_version=evaluation_in.conversion.software_version,
+                target_data_type=evaluation_in.conversion.precision
             )
 
             # If conversion task exists, start only the evaluation
@@ -264,10 +264,10 @@ class EvaluationTaskService:
                     "api_key": api_key,
                     "input_model_path": input_model_path.as_posix(),
                     "output_dir": output_dir.as_posix(),
-                    "target_framework": evaluation_in.framework,
-                    "target_device_name": evaluation_in.device_name,
-                    "target_data_type": evaluation_in.precision,
-                    "target_software_version": evaluation_in.software_version,
+                    "target_framework": evaluation_in.conversion.framework,
+                    "target_device_name": evaluation_in.conversion.device_name,
+                    "target_data_type": evaluation_in.conversion.precision,
+                    "target_software_version": evaluation_in.conversion.software_version,
                     "input_layer": None,
                     "dataset_path": None,
                     "input_model_id": evaluation_in.input_model_id,
