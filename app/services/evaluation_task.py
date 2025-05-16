@@ -111,7 +111,7 @@ class EvaluationTaskService:
         self,
         db: Session,
         input_model_id: str,
-        target_framework: TargetFramework,
+        target_framework: EvaluationTargetFramework,
         target_device_name: DeviceName,
         target_software_version: Optional[SoftwareVersion] = None,
         target_data_type: DataType = DataType.FP16
@@ -209,7 +209,6 @@ class EvaluationTaskService:
 
             return evaluation_task_id
 
-        # 기존 로직: 변환 모델 평가
         try:
             # Check if a conversion task exists
             conversion_task = self._find_existing_conversion_task(

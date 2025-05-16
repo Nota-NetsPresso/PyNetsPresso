@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.enums import Status
-from netspresso.enums.conversion import EvaluationTargetFramework, TargetFramework
+from netspresso.enums.conversion import EvaluationTargetFramework
 from netspresso.exceptions.conversion import ConversionTaskNotFoundException
 from netspresso.exceptions.evaluation import (
     EvaluationDownloadURLGenerationException,
@@ -153,10 +153,8 @@ class Evaluator:
             conversion_task = None
 
             try:
-                # 변환된 모델인지 확인
                 conversion_task = conversion_task_repository.get_by_model_id(db=db, model_id=model_id)
 
-                # 변환된 모델 처리 로직
                 # Get training task for the original model
                 training_task = training_task_repository.get_by_model_id(db=db, model_id=conversion_task.input_model_id)
 
@@ -170,14 +168,11 @@ class Evaluator:
 
 
             except ConversionTaskNotFoundException:
-                # 직접 평가하는 ONNX 모델인 경우 (conversion_task가 없음)
                 logger.info(f"No conversion task found for model {model_id}. Treating as direct ONNX model.")
 
-                # ONNX 모델의 경우 model_id가 training_task의 output_model_id와 동일
                 try:
                     training_task = training_task_repository.get_by_output_model_id(db=db, output_model_id=model_id)
 
-                    # 3. Check training task is completed
                     if training_task.status != Status.COMPLETED:
                         raise NotCompletedTrainingException(training_task_id=training_task.task_id)
 

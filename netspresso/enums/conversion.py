@@ -43,12 +43,14 @@ class EvaluationTargetFramework(str, Enum):
     DRPAI = "drpai"
     ONNX = "onnx"
 
+
 class EvaluationTargetFrameworkDisplay(str, Enum):
     TENSORRT = "TensorRT"
     TENSORFLOW_LITE = "TensorFlow Lite"
     OPENVINO = "OpenVINO"
     DRPAI = "DRPAI"
     ONNX = "ONNX"
+
 
 EVALUATION_TARGET_FRAMEWORK_DISPLAY_MAP = {
     EvaluationTargetFramework.TENSORRT: EvaluationTargetFrameworkDisplay.TENSORRT,

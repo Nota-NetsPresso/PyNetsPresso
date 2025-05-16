@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.api.v1.schemas.base import ResponseItem, ResponsePaginationItems
 from app.api.v1.schemas.task.train.dataset import EvaluationDatasetPayload
-from netspresso.enums.conversion import PrecisionForConversion, TargetFramework
+from netspresso.enums.conversion import EvaluationTargetFramework, PrecisionForConversion
 from netspresso.enums.device import DeviceName, SoftwareVersion
 
 
@@ -13,12 +13,26 @@ class EvaluationCreate(BaseModel):
     input_model_id: str = Field(description="Input model ID")
     dataset_id: str = Field(description="Dataset ID")
 
-    framework: TargetFramework = Field(description="Framework name")
-    device_name: DeviceName = Field(description="Device name")
+    framework: EvaluationTargetFramework = Field(description="Framework name")
+    device_name: Optional[DeviceName] = Field(default=None, description="Device name")
     software_version: Optional[SoftwareVersion] = Field(default=None, description="Software version")
-    precision: PrecisionForConversion = Field(description="Precision")
+    precision: Optional[PrecisionForConversion] = Field(default=None, description="Precision")
 
     training_task_id: str = Field(description="Training task ID")
+
+    @model_validator(mode='after')
+    def validate_device_fields(self) -> 'EvaluationCreate':
+        framework = self.framework
+        device_name = self.device_name
+        precision = self.precision
+
+        if framework != EvaluationTargetFramework.ONNX:
+            if device_name is None:
+                raise ValueError("device_name is required for non-ONNX frameworks")
+            if precision is None:
+                raise ValueError("precision is required for non-ONNX frameworks")
+
+        return self
 
 
 class EvaluationCreatePayload(BaseModel):
