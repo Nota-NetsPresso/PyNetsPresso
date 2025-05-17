@@ -15,7 +15,7 @@ def resize_img(img, size, interpolation, max_size, resize_criteria):
     if isinstance(size, list):
         size = size[0]
     assert isinstance(size, int), "Only support int type ``size`` now."
-    assert resize_criteria == "long", "Only support ``long`` type ``resize_criteria`` now."
+    # assert resize_criteria == "long", "Only support ``long`` type ``resize_criteria`` now."
     h, w = img.shape[:2]
     long_side, short_side = max(h, w), min(h, w)
     resize_factor = size / long_side
