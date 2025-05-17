@@ -233,7 +233,7 @@ class BenchmarkerV2(NetsPressoBase):
         sleep_interval: int = 30,
         input_model_id: Optional[str] = None,
         benchmark_task_id: Optional[str] = None,
-    ) -> BenchmarkerMetadata:
+    ) -> str:
         """Benchmark the specified model on the specified device.
 
         Args:
@@ -362,6 +362,7 @@ class BenchmarkerV2(NetsPressoBase):
                 # Save benchmark results
                 _benchmark_result = benchmark_response.data.benchmark_result
                 benchmark_task = self.save_benchmark_result(benchmark_task, _benchmark_result)
+                print(benchmark_task)
 
                 logger.info("Benchmark task was completed successfully.")
             elif benchmark_response.data.status in [
@@ -372,6 +373,7 @@ class BenchmarkerV2(NetsPressoBase):
                 benchmark_task.status = Status.ERROR
                 benchmark_task.error_detail = benchmark_response.data.error_log
                 benchmark_task = self._save_benchmark_task(benchmark_task)
+                print(benchmark_task)
                 logger.error(f"Benchmark task was failed. Error: {benchmark_response.data.error_log}")
 
         except Exception as e:
