@@ -5,6 +5,7 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError, NoCredentialsError
 from fastapi import HTTPException
+from loguru import logger
 
 from app.configs.settings import settings
 
@@ -175,6 +176,7 @@ class ObjectStorageHandler:
         """
         try:
             # Check if bucket exists
+            logger.info(f"Checking if bucket {bucket_name} exists")
             self.s3_client.head_bucket(Bucket=bucket_name)
             return True
         except ClientError as e:
@@ -185,6 +187,7 @@ class ObjectStorageHandler:
                 try:
                     # Try to create the bucket
                     self.create_bucket(bucket_name)
+                    logger.info(f"Bucket {bucket_name} created successfully")
                     return True
                 except Exception as create_error:
                     raise HTTPException(
