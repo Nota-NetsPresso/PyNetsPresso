@@ -154,14 +154,18 @@ def get_model_paths(training_task_id: str) -> Optional[Tuple[Path, Path]]:
         logger.info(f"Input model path: {input_model_path}")
         logger.info(f"Output directory: {output_dir}")
 
+        # If model file doesn't exist locally, download from storage
         if not input_model_path.exists():
             logger.info(f"Model file not found locally at {input_model_path}, trying to download from storage")
 
+            # Create directory if it doesn't exist
             input_model_dir.mkdir(parents=True, exist_ok=True)
 
+            # Set object path (storage path can be extracted from model_info.object_path)
             object_path = f"{model_info.object_path}/model.onnx"
 
             try:
+                # Download file from storage
                 storage_handler.download_file_from_s3(
                     bucket_name=BUCKET_NAME,
                     object_path=object_path,
@@ -169,6 +173,7 @@ def get_model_paths(training_task_id: str) -> Optional[Tuple[Path, Path]]:
                 )
                 logger.info(f"Successfully downloaded model file from storage to {input_model_path}")
 
+                # Check if file exists after download
                 if not input_model_path.exists():
                     logger.error(f"Failed to download model file: {input_model_path} still not found")
                     return None
@@ -193,19 +198,22 @@ def trigger_conversion_evaluation(
 
     conversion_option = training_in.conversion
 
+    # For ONNX models, skip conversion and run evaluation directly
     if conversion_option.framework == EvaluationTargetFramework.ONNX:
         logger.info("ONNX model detected - skipping conversion and running evaluation directly")
 
+        # Evaluate ONNX model directly
         _ = run_multiple_evaluations.apply_async(
             kwargs={
                 "api_key": api_key,
-                "model_id": model_id,
+                "model_id": model_id,  # Use the already trained ONNX model ID
                 "dataset_id": training_in.dataset.test_path,
                 "training_task_id": training_task_id,
                 "confidence_scores": DEFAULT_CONFIDENCE_SCORES,
             }
         )
     else:
+        # Original logic: conversion then evaluation
         _ = chain_conversion_and_evaluation.apply_async(
             kwargs={
                 "api_key": api_key,

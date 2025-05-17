@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.enums import Status
 from netspresso.enums.conversion import EvaluationTargetFramework
+from netspresso.exceptions.conversion import ConversionTaskNotFoundException
 from netspresso.exceptions.evaluation import (
     EvaluationDownloadURLGenerationException,
     EvaluationResultFileNotFoundException,
@@ -16,6 +17,7 @@ from netspresso.exceptions.evaluation import (
     UnsupportedEvaluationFrameworkException,
 )
 from netspresso.exceptions.trainer import NotCompletedTrainingException
+from netspresso.exceptions.training import TrainingTaskNotFoundException
 from netspresso.trainer.trainer import Trainer
 from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.utils.db.models.evaluation import EvaluationDataset, EvaluationTask
@@ -148,13 +150,32 @@ class Evaluator:
                 raise Exception(f"Model with ID {model_id} not found")
 
             # 2. Check if this is a direct ONNX model or converted model
-            conversion_task = conversion_task_repository.get_by_model_id(db=db, model_id=model_id)
+            conversion_task = None
+            try:
+                conversion_task = conversion_task_repository.get_by_model_id(db=db, model_id=model_id)
+            except ConversionTaskNotFoundException:
+                logger.info(f"No conversion task found for model {model_id}. Treating as direct ONNX model.")
+                # No conversion task for ONNX models
 
             if conversion_task is None:
-                training_task = training_task_repository.get_by_output_model_id(db=db, output_model_id=model_id)
+                # For ONNX models, model_id is the same as training_task's output_model_id
+                try:
+                    training_task = training_task_repository.get_by_output_model_id(db=db, output_model_id=model_id)
 
-                if training_task is None:
-                    raise Exception(f"No training task found for model {model_id}")
+                    if training_task is None:
+                        # Also try with the traditional approach
+                        training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
+
+                    if training_task is None:
+                        raise Exception(f"No training task found for model {model_id}")
+                except TrainingTaskNotFoundException:
+                    try:
+                        # Last attempt: query directly by model_id
+                        training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
+                        if training_task is None:
+                            raise Exception(f"No training task found for model {model_id}")
+                    except TrainingTaskNotFoundException:
+                        raise Exception(f"No training task found for model {model_id}")
 
                 # 3. Check training task is completed
                 if training_task.status != Status.COMPLETED:
