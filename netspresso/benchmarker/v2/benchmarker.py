@@ -159,7 +159,7 @@ class BenchmarkerV2(NetsPressoBase):
             return benchmark_task
 
     def save_benchmark_result(self, benchmark_task_id: str, benchmark_result: BenchmarkResult) -> BenchmarkTask:
-        """결과를 객체 공유 없이 태스크 ID로 저장"""
+        """Save the benchmark result using task ID without object sharing"""
         with get_db_session() as db:
             benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=benchmark_task_id)
 
@@ -197,13 +197,19 @@ class BenchmarkerV2(NetsPressoBase):
         benchmark_task_id: Optional[str] = None,
     ) -> BenchmarkTask:
         with get_db_session() as db:
+            # Ensure data_type is a string value, not an object
+            if data_type is None:
+                data_type_str = DataType.FP32
+            else:
+                data_type_str = str(data_type)
+
             if benchmark_task_id:
                 benchmark_task = BenchmarkTask(
                     task_id=benchmark_task_id,
                     framework=framework,
                     device_name=device_name,
                     software_version=software_version,
-                    precision=data_type,
+                    precision=data_type_str,  # Using the string value
                     status=Status.NOT_STARTED,
                     input_model_id=input_model_id,
                     model_id=model_id,
@@ -214,7 +220,7 @@ class BenchmarkerV2(NetsPressoBase):
                     framework=framework,
                     device_name=device_name,
                     software_version=software_version,
-                    precision=data_type,
+                    precision=data_type_str,  # Using the string value
                     status=Status.NOT_STARTED,
                     input_model_id=input_model_id,
                     model_id=model_id,
@@ -250,7 +256,7 @@ class BenchmarkerV2(NetsPressoBase):
         Returns:
             BenchmarkerMetadata: Benchmark metadata.
         """
-        # 임시 디렉토리 생성을 위한 변수 초기화
+        # Initialize variable for temporary directory
         temp_dir = None
 
         if input_model_id:
@@ -259,12 +265,13 @@ class BenchmarkerV2(NetsPressoBase):
             input_model_path = Path(input_model.object_path)
             conversion_task = self.get_conversion_task(input_model_id)
             framework = conversion_task.framework
-            data_type = conversion_task.precision
+            # Ensure data_type is a string, not an object
+            data_type = str(conversion_task.precision) if conversion_task.precision else DataType.FP32
 
-            # 임시 디렉토리 생성 - output_dir 오류 수정
+            # Create temporary directory - fix output_dir error
             temp_dir = tempfile.mkdtemp(prefix="netspresso_benchmark_")
             download_dir = Path(temp_dir) / "input_model"
-            download_dir.mkdir(parents=True, exist_ok=True)  # 다운로드 폴더 생성
+            download_dir.mkdir(parents=True, exist_ok=True)  # Create download folder
 
             local_path = download_dir / input_model_path.name
             input_model_path_str = str(input_model_path)
@@ -277,7 +284,7 @@ class BenchmarkerV2(NetsPressoBase):
             )
             logger.info(f"Downloaded input model from Zenko: {local_path}")
 
-            # input_model_path를 local_path로 업데이트
+            # Update input_model_path to local_path
             input_model_path = str(local_path)
 
         model = self.save_model(
@@ -384,7 +391,7 @@ class BenchmarkerV2(NetsPressoBase):
         finally:
             benchmark_task = self._save_benchmark_task(benchmark_task)
 
-            # 임시 파일 및 디렉토리 정리
+            # Clean up temporary files and directories
             if temp_dir and os.path.exists(temp_dir):
                 logger.info(f"Cleaning up temporary files in: {temp_dir}")
                 try:
