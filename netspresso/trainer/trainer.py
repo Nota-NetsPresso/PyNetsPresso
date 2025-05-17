@@ -1237,7 +1237,7 @@ class Trainer(NetsPressoBase):
         input["images"] = np.concatenate(inputs_array, axis=0)
 
         # save chunk data
-        calibration_dataset_path = Path(dataset_path).parts[0] / "calibration_dataset.npy"
+        calibration_dataset_path = f"{Path(dataset_path).parts[0]}/calibration_dataset.npy"
         np.save(calibration_dataset_path, input, allow_pickle=True)
         logger.info(f"Calibration dataset saved to {calibration_dataset_path}")
 
