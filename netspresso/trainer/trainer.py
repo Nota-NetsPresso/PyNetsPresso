@@ -1195,8 +1195,6 @@ class Trainer(NetsPressoBase):
         """Create a calibration dataset."""
         logger.info("Creating calibration dataset")
 
-        img_size = self.img_size
-
         preprocess_list = [
             asdict(aug) for aug in self.augmentation.train
         ]
@@ -1238,7 +1236,7 @@ class Trainer(NetsPressoBase):
         input["images"] = np.concatenate(inputs_array, axis=0)
 
         # save chunk data
-        calibration_dataset_path = f"./calibration_dataset_{img_size}x{img_size}.npy"
+        calibration_dataset_path = Path(dataset_path).parts[0] / "calibration_dataset.npy"
         np.save(calibration_dataset_path, input, allow_pickle=True)
         logger.info(f"Calibration dataset saved to {calibration_dataset_path}")
 
