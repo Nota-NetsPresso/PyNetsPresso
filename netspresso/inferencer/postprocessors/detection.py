@@ -36,16 +36,28 @@ def anchor_free_decoupled_head_decode(pred, original_shape, score_thresh=0.7):
     box_corner[:, :, 3] = pred[:, :, 1] + pred[:, :, 3] / 2
     pred[:, :, :4] = box_corner[:, :, :4]
 
-    # Discard boxes with low score
+    # Get only the box with highest score
     detections = []
     for p in pred:
         class_pred = np.argmax(p[:, 5:], 1, keepdims=True)
         class_conf = p[np.arange(p.shape[0]), 5 + class_pred.squeeze()][:, np.newaxis]
 
-        conf_mask = (p[:, 4] * class_conf.squeeze() >= score_thresh).squeeze()
+        # Calculate total confidence score (objectness * class confidence)
+        total_conf = p[:, 4] * class_conf.squeeze()
 
-        # x1, y1, x2, y2, obj_conf, pred_score, pred_label
-        detections.append(np.concatenate((p[:, :5], class_conf, class_pred), axis=1)[conf_mask])
+        # Apply confidence threshold
+        conf_mask = (total_conf >= score_thresh)
+
+        if np.any(conf_mask):
+            # Discard boxes with low score
+            filtered_boxes = np.concatenate((p[:, :5], class_conf, class_pred), axis=1)[conf_mask]
+            # Get only the box with highest score
+            best_idx = np.argmax(total_conf[conf_mask])
+            best_box = filtered_boxes[best_idx:best_idx+1]  # Keep dimension
+            detections.append(best_box)
+        else:
+            # No box with high score
+            detections.append(np.array([]))
 
     return detections
 
