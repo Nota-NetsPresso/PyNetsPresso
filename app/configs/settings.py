@@ -23,7 +23,8 @@ class Settings(BaseSettings):
 
     # Zenko Storage Info
     ZENKO_SERVER_URL: str = os.environ.get("ZENKO_SERVER_URL")
-    MODEL_BUCKET_NAME: str = os.environ.get("MODEL_BUCKET_NAME")
+    MODEL_BUCKET_NAME: str = os.environ.get("MODEL_BUCKET_NAME", "model")
+    EVALUATION_BUCKET_NAME: str = os.environ.get("EVALUATION_BUCKET_NAME", "evaluation")
     SCALITY_ACCESS_KEY_ID: str = os.environ.get("SCALITY_ACCESS_KEY_ID")
     SCALITY_SECRET_ACCESS_KEY: str = os.environ.get("SCALITY_SECRET_ACCESS_KEY")
 
