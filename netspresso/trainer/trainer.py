@@ -1197,6 +1197,7 @@ class Trainer(NetsPressoBase):
 
         preprocess_list = [
             asdict(aug) for aug in self.augmentation.train
+            if aug.name != "totensor"
         ]
         logger.info(f"Using preprocess_list: {preprocess_list}")
         preprocessor = Preprocessor(preprocess_list)
