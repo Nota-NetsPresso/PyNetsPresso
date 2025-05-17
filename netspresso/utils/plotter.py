@@ -177,20 +177,20 @@ class Plotter:
                 "mAP50_95": "mAP@[.50:.95]",
             }
             metric = labels[_metric]
-            bars_original = Plotter._plot_single_bar(axs[idx], "Original Model", metric_data1[_metric], "slategray")
-            bars_compressed = Plotter._plot_single_bar(axs[idx], "Quantized Model", metric_data2[_metric], "dodgerblue")
+            bars_original = Plotter._plot_single_bar(axs[idx], "Original Model", metric_data1[_metric]["mean"], "slategray")
+            bars_compressed = Plotter._plot_single_bar(axs[idx], "Quantized Model", metric_data2[_metric]["mean"], "dodgerblue")
 
             for bar in bars_original:
-                Plotter._add_value_annotations(axs[idx], bar, metric_data1[_metric])
+                Plotter._add_value_annotations(axs[idx], bar, metric_data1[_metric]["mean"])
 
             for bar in bars_compressed:
-                Plotter._add_value_annotations(axs[idx], bar, metric_data2[_metric])
+                Plotter._add_value_annotations(axs[idx], bar, metric_data2[_metric]["mean"])
 
             Plotter._add_difference_annotations(
                 axs[idx],
-                metric_data1[_metric],
-                metric_data2[_metric],
-                metric_data1[_metric] - metric_data2[_metric],
+                metric_data1[_metric]["mean"],
+                metric_data2[_metric]["mean"],
+                metric_data1[_metric]["mean"] - metric_data2[_metric]["mean"],
                 ["Original Model", "Quantized Model"],
             )
 
