@@ -36,6 +36,29 @@ TARGET_FRAMEWORK_DISPLAY_MAP = {
 }
 
 
+class EvaluationTargetFramework(str, Enum):
+    TENSORRT = "tensorrt"
+    TENSORFLOW_LITE = "tensorflow_lite"
+    OPENVINO = "openvino"
+    DRPAI = "drpai"
+    ONNX = "onnx"
+
+class EvaluationTargetFrameworkDisplay(str, Enum):
+    TENSORRT = "TensorRT"
+    TENSORFLOW_LITE = "TensorFlow Lite"
+    OPENVINO = "OpenVINO"
+    DRPAI = "DRPAI"
+    ONNX = "ONNX"
+
+EVALUATION_TARGET_FRAMEWORK_DISPLAY_MAP = {
+    EvaluationTargetFramework.TENSORRT: EvaluationTargetFrameworkDisplay.TENSORRT,
+    EvaluationTargetFramework.TENSORFLOW_LITE: EvaluationTargetFrameworkDisplay.TENSORFLOW_LITE,
+    EvaluationTargetFramework.OPENVINO: EvaluationTargetFrameworkDisplay.OPENVINO,
+    EvaluationTargetFramework.DRPAI: EvaluationTargetFrameworkDisplay.DRPAI,
+    EvaluationTargetFramework.ONNX: EvaluationTargetFrameworkDisplay.ONNX,
+}
+
+
 class PrecisionForConversion(str, Enum):
     FP16 = "FP16"
     INT8 = "INT8"

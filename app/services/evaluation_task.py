@@ -30,7 +30,7 @@ from app.worker.evaluation_task import chain_conversion_and_evaluation, run_mult
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
 from netspresso.enums import DataType, DeviceName, SoftwareVersion, Status
-from netspresso.enums.conversion import SourceFramework, TargetFramework
+from netspresso.enums.conversion import EvaluationTargetFramework, SourceFramework, TargetFramework
 from netspresso.evaluator.evaluator import EVALUATION_BUCKET_NAME
 from netspresso.exceptions.conversion import ConversionTaskNotFoundException
 from netspresso.netspresso import NetsPresso
@@ -165,15 +165,50 @@ class EvaluationTaskService:
     ) -> str:
         confidence_scores = [0.3, 0.5, 0.6]
 
+        if evaluation_in.conversion.framework == EvaluationTargetFramework.ONNX:
+            logger.info("Processing ONNX model evaluation without conversion")
+
+            # Get model information
+            model = model_repository.get_by_model_id(
+                db=db,
+                model_id=evaluation_in.input_model_id
+            )
+
+            try:
+                for confidence_score in confidence_scores:
+                    self._check_evaluation_task_status(
+                        db=db,
+                        model_id=model.model_id,
+                        dataset_id=evaluation_in.dataset_id,
+                        confidence_score=confidence_score
+                    )
+            except EvaluationTaskAlreadyExistsException:
+                raise
+
+            task_result = run_multiple_evaluations.apply_async(
+                kwargs={
+                    "api_key": api_key,
+                    "model_id": model.model_id,
+                    "dataset_id": evaluation_in.dataset_id,
+                    "training_task_id": evaluation_in.training_task_id,
+                    "confidence_scores": confidence_scores,
+                },
+            )
+
+            evaluation_task_id = task_result.get(timeout=5)
+            logger.info(f"ONNX evaluation task ID: {evaluation_task_id}")
+
+            return evaluation_task_id
+
         try:
             # Check if a conversion task exists
             conversion_task = self._find_existing_conversion_task(
                 db=db,
                 input_model_id=evaluation_in.input_model_id,
-                target_framework=evaluation_in.framework,
-                target_device_name=evaluation_in.device_name,
-                target_software_version=evaluation_in.software_version,
-                target_data_type=evaluation_in.precision
+                target_framework=evaluation_in.conversion.framework,
+                target_device_name=evaluation_in.conversion.device_name,
+                target_software_version=evaluation_in.conversion.software_version,
+                target_data_type=evaluation_in.conversion.precision
             )
 
             # If conversion task exists, start only the evaluation
@@ -229,10 +264,10 @@ class EvaluationTaskService:
                     "api_key": api_key,
                     "input_model_path": input_model_path.as_posix(),
                     "output_dir": output_dir.as_posix(),
-                    "target_framework": evaluation_in.framework,
-                    "target_device_name": evaluation_in.device_name,
-                    "target_data_type": evaluation_in.precision,
-                    "target_software_version": evaluation_in.software_version,
+                    "target_framework": evaluation_in.conversion.framework,
+                    "target_device_name": evaluation_in.conversion.device_name,
+                    "target_data_type": evaluation_in.conversion.precision,
+                    "target_software_version": evaluation_in.conversion.software_version,
                     "input_layer": None,
                     "dataset_path": None,
                     "input_model_id": evaluation_in.input_model_id,
