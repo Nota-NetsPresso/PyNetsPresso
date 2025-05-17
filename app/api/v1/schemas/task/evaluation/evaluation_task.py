@@ -51,7 +51,7 @@ class EvaluationPayload(BaseModel):
 
     input_model_id: str
     training_task_id: str
-    conversion_task_id: str
+    conversion_task_id: Optional[str] = None
     user_id: str
 
     status: str
