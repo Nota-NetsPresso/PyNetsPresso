@@ -30,10 +30,10 @@ def pad_img(img, size, fill):
     return padded
 
 
-def normalize(img):
+def normalize(img, mean, std):
     img = img.astype("float32") / 255.0
-    img = img - np.array(IMAGENET_DEFAULT_MEAN).reshape(1, 1, -1).astype("float32")
-    img = img / np.array(IMAGENET_DEFAULT_STD).reshape(1, 1, -1).astype("float32")
+    img = img - np.array(mean).reshape(1, 1, -1).astype("float32")
+    img = img / np.array(std).reshape(1, 1, -1).astype("float32")
     img = img[np.newaxis, ...]
     return img
 
@@ -42,11 +42,14 @@ class Preprocessor:
     DEVICE_TRANSFORM_DICT = {
         "resize": resize_img,
         "pad": pad_img,
+        "normalize": normalize,
     }
 
     def __init__(self, preprocess_list):
         self.transforms = []
         for transform in preprocess_list:
+            if transform["name"] == "totensor":
+                continue
             name = transform["name"]
             augment_kwargs = list(transform.keys())
             augment_kwargs.remove("name")
@@ -57,5 +60,4 @@ class Preprocessor:
     def __call__(self, img):
         for transform in self.transforms:
             img = transform(img)
-        img = normalize(img)
         return img
