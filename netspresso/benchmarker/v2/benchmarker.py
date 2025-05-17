@@ -259,6 +259,15 @@ class BenchmarkerV2(NetsPressoBase):
         # Initialize variable for temporary directory
         temp_dir = None
 
+        # Get existing benchmark task if ID provided
+        benchmark_task = None
+        if benchmark_task_id:
+            with get_db_session() as db:
+                benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=benchmark_task_id)
+                if not benchmark_task:
+                    logger.error(f"Benchmark task with ID {benchmark_task_id} not found")
+                    raise ValueError(f"Benchmark task with ID {benchmark_task_id} not found")
+
         if input_model_id:
             input_model = self.get_input_model(input_model_id, self.user_info.user_id)
             input_model.user_id = self.user_info.user_id
@@ -287,24 +296,34 @@ class BenchmarkerV2(NetsPressoBase):
             # Update input_model_path to local_path
             input_model_path = str(local_path)
 
-        model = self.save_model(
-            model_name=f"{input_model.name}_benchmarked",
-            project_id=input_model.project_id,
-            user_id=self.user_info.user_id,
-            object_path=input_model_path,
-        )
-        benchmark_task = self.create_benchmark_task(
-            framework=framework,
-            device_name=target_device_name,
-            software_version=target_software_version,
-            data_type=data_type,
-            input_model_id=input_model_id,
-            model_id=model.model_id,
-            benchmark_task_id=benchmark_task_id,
-        )
+        # Create model entry if needed
+        model = None
+        if input_model_id and not benchmark_task:
+            model = self.save_model(
+                model_name=f"{input_model.name}_benchmarked",
+                project_id=input_model.project_id,
+                user_id=self.user_info.user_id,
+                object_path=input_model_path,
+            )
+
+        # If no existing task, create one
+        if not benchmark_task and not benchmark_task_id:
+            benchmark_task = self.create_benchmark_task(
+                framework=framework,
+                device_name=target_device_name,
+                software_version=target_software_version,
+                data_type=data_type,
+                input_model_id=input_model_id,
+                model_id=model.model_id if model else None,
+            )
+            benchmark_task_id = benchmark_task.task_id
+        elif benchmark_task and model:
+            # Update existing task with model_id
+            with get_db_session() as db:
+                benchmark_task.model_id = model.model_id
+                benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
 
         try:
-
             self.validate_token_and_check_credit(service_task=ServiceTask.MODEL_BENCHMARK)
 
             # Get presigned_model_upload_url
@@ -338,9 +357,15 @@ class BenchmarkerV2(NetsPressoBase):
                 software_version=target_software_version,
             )
 
-            benchmark_task.benchmark_task_id = benchmark_response.data.benchmark_task_id
-            benchmark_task = self._save_benchmark_task(benchmark_task)
-            benchmark_task = self.create_benchmark_result(benchmark_task, validate_model_response.data.file_size_in_mb)
+            # Set benchmark task ID and save
+            with get_db_session() as db:
+                benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=benchmark_task_id)
+                benchmark_task.benchmark_task_id = benchmark_response.data.benchmark_task_id
+                benchmark_task.status = Status.IN_PROGRESS
+                benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
+
+            # Create benchmark result with file size
+            self.create_benchmark_result(benchmark_task, validate_model_response.data.file_size_in_mb)
 
             if wait_until_done:
                 while True:
@@ -359,38 +384,45 @@ class BenchmarkerV2(NetsPressoBase):
 
                     time.sleep(sleep_interval)
 
-            if benchmark_response.data.status in [TaskStatusForDisplay.IN_PROGRESS, TaskStatusForDisplay.IN_QUEUE]:
-                benchmark_task.status = Status.IN_PROGRESS
-                logger.info(f"Benchmark task was running. Status: {benchmark_response.data.status}")
-            elif benchmark_response.data.status == TaskStatusForDisplay.FINISHED:
-                self.print_remaining_credit(service_task=ServiceTask.MODEL_BENCHMARK)
-                benchmark_task.status = Status.COMPLETED
+            with get_db_session() as db:
+                benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=benchmark_task_id)
 
-                # Save benchmark results
-                _benchmark_result = benchmark_response.data.benchmark_result
-                benchmark_task = self.save_benchmark_result(benchmark_task, _benchmark_result)
-                print(benchmark_task)
+                if benchmark_response.data.status in [TaskStatusForDisplay.IN_PROGRESS, TaskStatusForDisplay.IN_QUEUE]:
+                    benchmark_task.status = Status.IN_PROGRESS
+                    logger.info(f"Benchmark task was running. Status: {benchmark_response.data.status}")
+                elif benchmark_response.data.status == TaskStatusForDisplay.FINISHED:
+                    self.print_remaining_credit(service_task=ServiceTask.MODEL_BENCHMARK)
+                    benchmark_task.status = Status.COMPLETED
 
-                logger.info("Benchmark task was completed successfully.")
-            elif benchmark_response.data.status in [
-                TaskStatusForDisplay.ERROR,
-                TaskStatusForDisplay.USER_CANCEL,
-                TaskStatusForDisplay.TIMEOUT,
-            ]:
-                benchmark_task.status = Status.ERROR
-                benchmark_task.error_detail = benchmark_response.data.error_log
-                benchmark_task = self._save_benchmark_task(benchmark_task)
-                print(benchmark_task)
-                logger.error(f"Benchmark task was failed. Error: {benchmark_response.data.error_log}")
+                    # Save benchmark results
+                    _benchmark_result = benchmark_response.data.benchmark_result
+                    benchmark_task = self.save_benchmark_result(benchmark_task.task_id, _benchmark_result)
+                    logger.info("Benchmark task was completed successfully.")
+                elif benchmark_response.data.status in [
+                    TaskStatusForDisplay.ERROR,
+                    TaskStatusForDisplay.USER_CANCEL,
+                    TaskStatusForDisplay.TIMEOUT,
+                ]:
+                    benchmark_task.status = Status.ERROR
+                    benchmark_task.error_detail = benchmark_response.data.error_log
+                    benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
+                    logger.error(f"Benchmark task was failed. Error: {benchmark_response.data.error_log}")
+
+                benchmark_task_repository.save(db=db, model=benchmark_task)
 
         except Exception as e:
-            benchmark_task.status = Status.ERROR
-            benchmark_task.error_detail = e.args[0]
+            with get_db_session() as db:
+                benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=benchmark_task_id)
+                benchmark_task.status = Status.ERROR
+                benchmark_task.error_detail = {"error": str(e)}
+                benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
+                logger.error(f"Error in benchmark_model: {str(e)}")
         except KeyboardInterrupt:
-            benchmark_task.status = Status.STOPPED
+            with get_db_session() as db:
+                benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=benchmark_task_id)
+                benchmark_task.status = Status.STOPPED
+                benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
         finally:
-            benchmark_task = self._save_benchmark_task(benchmark_task)
-
             # Clean up temporary files and directories
             if temp_dir and os.path.exists(temp_dir):
                 logger.info(f"Cleaning up temporary files in: {temp_dir}")
@@ -400,7 +432,7 @@ class BenchmarkerV2(NetsPressoBase):
                 except Exception as cleanup_error:
                     logger.error(f"Error cleaning up temporary files: {cleanup_error}")
 
-        return benchmark_task.task_id
+        return benchmark_task_id
 
     def get_benchmark_task(self, benchmark_task_id: str) -> BenchmarkTaskInfo:
         """Get information about the specified benchmark task using the benchmark task UUID.

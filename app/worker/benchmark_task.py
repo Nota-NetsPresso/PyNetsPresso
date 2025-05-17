@@ -21,21 +21,38 @@ def benchmark_model(
     benchmark_task_id: str = None,
 ):
     try:
+        # Check if the task already exists in DB
+        if benchmark_task_id:
+            with get_db_session() as db:
+                task = benchmark_task_repository.get_by_task_id(db, benchmark_task_id)
+                if task and task.status == Status.NOT_STARTED:
+                    # Task exists, update status to IN_PROGRESS
+                    task.status = Status.IN_PROGRESS
+                    benchmark_task_repository.save(db, task)
+
         netspresso = NetsPresso(api_key=api_key)
-
         benchmarker = netspresso.benchmarker_v2()
-        task_id = benchmarker.benchmark_model(
-            input_model_path=input_model_path,
-            target_device_name=target_device_name,
-            target_software_version=target_software_version,
-            target_hardware_type=target_hardware_type,
-            input_model_id=input_model_id,
-            benchmark_task_id=benchmark_task_id,
-            wait_until_done=False,
-        )
 
-        chain(poll_benchmark_status.s(api_key, task_id).set(countdown=POLLING_INTERVAL))()
-        return task_id
+        # Don't create a new task in benchmarker, just use the existing task_id
+        if benchmark_task_id:
+            task_id = benchmarker.benchmark_model(
+                input_model_path=input_model_path,
+                target_device_name=target_device_name,
+                target_software_version=target_software_version,
+                target_hardware_type=target_hardware_type,
+                input_model_id=input_model_id,
+                benchmark_task_id=benchmark_task_id,
+                wait_until_done=False,
+            )
+
+            chain(poll_benchmark_status.s(api_key, task_id).set(countdown=POLLING_INTERVAL))()
+            return task_id
+        else:
+            # No task_id provided, this shouldn't happen with our updated workflow
+            from loguru import logger
+            logger.error("No benchmark_task_id provided to benchmark_model task")
+            return None
+
     except Exception as e:
         from loguru import logger
         logger.error(f"Error in benchmark_model task: {str(e)}")

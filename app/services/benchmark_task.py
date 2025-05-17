@@ -164,7 +164,37 @@ class BenchmarkTaskService:
         input_model_path = Path(project.project_abs_path) / model.object_path
         logger.info(f"Input model path: {input_model_path}")
 
+        # Create new benchmark task in database first
         benchmark_task_id = generate_uuid(entity="task")
+        # Get conversion_task to determine framework and precision
+        try:
+            conversion_tasks = conversion_task_repository.get_all_by_model_id(db=db, model_id=benchmark_in.input_model_id)
+            if conversion_tasks:
+                # Find matching conversion task
+                matching_task = None
+                for task in conversion_tasks:
+                    if task.device_name == benchmark_in.device_name:
+                        matching_task = task
+                        break
+
+                if matching_task:
+                    # Create benchmark task manually instead of relying on benchmark_model to create it
+                    benchmark_task = BenchmarkTask(
+                        task_id=benchmark_task_id,
+                        framework=matching_task.framework,
+                        device_name=benchmark_in.device_name,
+                        software_version=benchmark_in.software_version,
+                        precision=str(matching_task.precision),  # Ensure this is a string
+                        status=Status.NOT_STARTED,
+                        input_model_id=benchmark_in.input_model_id,
+                        user_id=model.user_id
+                    )
+                    benchmark_task = benchmark_task_repository.save(db=db, model=benchmark_task)
+        except Exception as e:
+            logger.error(f"Error preparing benchmark task: {e}")
+            # Continue anyway, the worker will handle it
+
+        # Start the celery task
         _ = benchmark_model.apply_async(
             kwargs={
                 "api_key": api_key,
@@ -173,6 +203,7 @@ class BenchmarkTaskService:
                 "target_software_version": benchmark_in.software_version,
                 "target_hardware_type": benchmark_in.hardware_type,
                 "input_model_id": benchmark_in.input_model_id,
+                "benchmark_task_id": benchmark_task_id,
             },
             benchmark_task_id=benchmark_task_id,
         )
