@@ -24,6 +24,12 @@ class ObjectStorageHandler:
             }
             client_params["endpoint_url"] = settings.ZENKO_SERVER_URL
             self.s3_client = boto3.client(**client_params)
+
+            # Ensure required buckets exist
+            required_buckets = ["model", "evaluation"]
+            for bucket in required_buckets:
+                self._ensure_bucket_exists(bucket)
+
         except NoCredentialsError:
             raise HTTPException(
                 status_code=500,
@@ -153,6 +159,49 @@ class ObjectStorageHandler:
 
     def create_bucket(self, bucket_name: str):
         return self.s3_client.create_bucket(Bucket=bucket_name)
+
+    def _ensure_bucket_exists(self, bucket_name: str) -> bool:
+        """
+        Check if a bucket exists and create it if it doesn't.
+
+        Args:
+            bucket_name: Name of the bucket to check/create
+
+        Returns:
+            bool: True if bucket exists or was created successfully
+
+        Raises:
+            HTTPException: If bucket creation fails
+        """
+        try:
+            # Check if bucket exists
+            self.s3_client.head_bucket(Bucket=bucket_name)
+            return True
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code')
+
+            # If bucket doesn't exist (404) or we don't have permission to check (403)
+            if error_code == '404' or error_code == '403':
+                try:
+                    # Try to create the bucket
+                    self.create_bucket(bucket_name)
+                    return True
+                except Exception as create_error:
+                    raise HTTPException(
+                        status_code=500,
+                        detail=f"Failed to create required bucket {bucket_name}: {str(create_error)}"
+                    )
+            else:
+                # Other unexpected error
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Error checking bucket {bucket_name}: {str(e)}"
+                )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Unexpected error checking bucket {bucket_name}: {str(e)}"
+            )
 
     def upload_file_to_s3(
         self,
