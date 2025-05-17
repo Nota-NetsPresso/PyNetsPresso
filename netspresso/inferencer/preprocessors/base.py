@@ -25,6 +25,8 @@ def resize_img(img, size, interpolation, max_size, resize_criteria):
 
 
 def pad_img(img, size, fill):
+    if isinstance(size, list):
+        size = size[0]
     assert isinstance(size, int), "Only support int type ``size`` now."
     h, w = img.shape[:2]
     padded = np.full((size, size, 3), fill, dtype="uint8")
