@@ -162,8 +162,6 @@ class BenchmarkerV2(NetsPressoBase):
         """결과를 객체 공유 없이 태스크 ID로 저장"""
         with get_db_session() as db:
             benchmark_task = benchmark_task_repository.get_by_task_id(db=db, task_id=benchmark_task_id)
-            if not benchmark_task:
-                return
 
             result = BenchmarkResult(
                 processor=benchmark_result.processor,
@@ -177,6 +175,8 @@ class BenchmarkerV2(NetsPressoBase):
             benchmark_task.result = result
             db.add(benchmark_task)
             db.commit()
+
+            return benchmark_task
 
     def create_benchmark_result(self, benchmark_task: BenchmarkTask, file_size: float) -> BenchmarkTask:
         benchmark_result = BenchmarkResult(file_size=file_size, task_id=benchmark_task.task_id)
