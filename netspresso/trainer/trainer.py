@@ -1,7 +1,11 @@
 import warnings
+from dataclasses import asdict
+from glob import glob
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+import cv2
+import numpy as np
 from loguru import logger
 from omegaconf import OmegaConf
 
@@ -25,6 +29,7 @@ from netspresso.exceptions.trainer import (
     RetrainingFunctionException,
     TaskOrYamlPathException,
 )
+from netspresso.inferencer.preprocessors.base import Preprocessor
 from netspresso.metadata.common import InputShape
 from netspresso.trainer.augmentations import AUGMENTATION_CONFIG_TYPE, AugmentationConfig, Transform
 from netspresso.trainer.data import DATA_CONFIG_TYPE, ImageLabelPathConfig, PathConfig
@@ -863,7 +868,8 @@ class Trainer(NetsPressoBase):
 
         # Upload model files if completed
         if train_task.status == Status.COMPLETED:
-            self._upload_model_files(train_task, model, destination_folder)
+            calibration_dataset = self.prepare_calibration_dataset(dataset_path=self.data.path.train.image, num_dataset=100)
+            self._upload_model_files(train_task, model, destination_folder, calibration_dataset)
 
         return train_task.task_id
 
@@ -976,7 +982,7 @@ class Trainer(NetsPressoBase):
             "error_stats": error_msg
         }
 
-    def _upload_model_files(self, train_task, model, destination_folder):
+    def _upload_model_files(self, train_task, model, destination_folder, calibration_dataset):
         """Upload trained model files to storage."""
         try:
             pt_file, onnx_file = self.find_model_files(destination_folder)
@@ -1004,6 +1010,13 @@ class Trainer(NetsPressoBase):
                 object_path=f"{model.object_path}/model.onnx",
                 file_type="ONNX"
             )
+
+            if Path(calibration_dataset).exists():
+                self._upload_file_with_retry(
+                    local_path=calibration_dataset,
+                    object_path=f"{model.object_path}/{Path(calibration_dataset).name}",
+                    file_type="Numpy"
+                )
 
         except Exception as e:
             error_msg = f"Failed to upload model files to Zenko: {e}"
@@ -1177,3 +1190,54 @@ class Trainer(NetsPressoBase):
         dataset_info = self.dataset_manager.get_dataset_info_from_dataforge(project_id=project_id, dataset_uuid=dataset_uuid, split=split)
 
         return dataset_info
+
+    def prepare_calibration_dataset(self, dataset_path, num_dataset: int = 100) -> str:
+        """Create a calibration dataset."""
+        logger.info("Creating calibration dataset")
+
+        preprocess_list = [
+            asdict(aug) for aug in self.augmentation.train
+        ]
+        logger.info(f"Using preprocess_list: {preprocess_list}")
+        preprocessor = Preprocessor(preprocess_list)
+
+        input = {"images": []}
+        inputs_array = []
+
+        # Support multiple image extensions
+        image_extensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.tif", "*.tiff"]
+        image_paths = []
+        for ext in image_extensions:
+            image_paths.extend(glob(f"{dataset_path}/{ext}"))
+
+        # Limit the number of images to num_dataset
+        image_paths = image_paths[:num_dataset]
+
+        if not image_paths:
+            logger.warning(f"No images found in {dataset_path} with extensions {image_extensions}")
+            return
+
+        logger.info(f"Processing {len(image_paths)} images for calibration dataset")
+
+        for image_path in image_paths:
+            img = cv2.imread(image_path)
+            if img is None:
+                logger.warning(f"Failed to read image: {image_path}")
+                continue
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = preprocessor(img)
+            img = np.transpose(img, (0, 3, 1, 2))
+            inputs_array.append(img)
+
+        if not inputs_array:
+            logger.warning("No valid images were processed")
+            return
+
+        input["images"] = np.concatenate(inputs_array, axis=0)
+
+        # save chunk data
+        calibration_dataset_path = Path(dataset_path).parts[0] / "calibration_dataset.npy"
+        np.save(calibration_dataset_path, input, allow_pickle=True)
+        logger.info(f"Calibration dataset saved to {calibration_dataset_path}")
+
+        return calibration_dataset_path

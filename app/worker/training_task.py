@@ -24,7 +24,7 @@ from netspresso.utils.db.session import get_db_session
 NP_TRAINING_STUDIO_PATH = Path(os.environ.get("NP_TRAINING_STUDIO_PATH", "/np_training_studio"))
 DEFAULT_CONFIDENCE_SCORES = [0.3, 0.5, 0.6]
 DEFAULT_AUGMENTATIONS = [Resize(), Pad(fill=114), ToTensor(), Normalize()]
-BUCKET_NAME = "model"  # 모델 저장에 사용되는 버킷 이름
+BUCKET_NAME = "model"
 
 storage_handler = ObjectStorageHandler()
 
