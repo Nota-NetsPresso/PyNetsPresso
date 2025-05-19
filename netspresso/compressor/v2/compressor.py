@@ -4,6 +4,7 @@ from urllib import request
 
 from loguru import logger
 
+from netspresso.analytics import netspresso_analytics
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.compressor import compressor_client_v2
@@ -354,6 +355,13 @@ class CompressorV2(NetsPressoBase):
             CompressorMetadata: Compress metadata.
         """
 
+        netspresso_analytics.send_event(
+            event_name="manual_compression",
+            event_params={
+                "compression_method": compression.compression_method,
+            },
+        )
+
         output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
         metadata: CompressorMetadata = self.initialize_metadata(
             output_dir=output_dir,
@@ -446,6 +454,16 @@ class CompressorV2(NetsPressoBase):
         Returns:
             CompressorMetadata: Compress metadata.
         """
+
+        netspresso_analytics.send_event(
+            event_name="recommendation_compression",
+            event_params={
+                "framework": framework,
+                "compression_method": compression_method,
+                "recommendation_method": recommendation_method,
+                "recommendation_ratio": recommendation_ratio,
+            },
+        )
 
         output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
         metadata = self.initialize_metadata(
@@ -545,6 +563,14 @@ class CompressorV2(NetsPressoBase):
         Returns:
             CompressorMetadata: Compress metadata.
         """
+        netspresso_analytics.send_event(
+            event_name="automatic_compression",
+            event_params={
+                "framework": framework,
+                "compression_ratio": compression_ratio,
+            },
+        )
+
         output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
         metadata = self.initialize_metadata(
             output_dir=output_dir,

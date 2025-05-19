@@ -24,3 +24,9 @@ class CommonOptions:
     """
 
     compute_unit: Optional[List[ComputeUnit]] = None
+
+    def normalize_compute_units(self):
+        if self.compute_unit is None:
+            return None
+        sorted_units = sorted(self.compute_unit)
+        return ",".join(sorted_units)

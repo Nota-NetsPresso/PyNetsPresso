@@ -6,6 +6,7 @@ from urllib import request
 
 from loguru import logger
 
+from netspresso.analytics import netspresso_analytics
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.auth.response_body import UserResponse
@@ -308,6 +309,15 @@ class Quantizer(NetsPressoBase):
         Returns:
             QuantizerMetadata: Quantize metadata.
         """
+        netspresso_analytics.send_event(
+            event_name="uniform_precision_quantization",
+            event_params={
+                "weight_precision": weight_precision,
+                "activation_precision": activation_precision,
+                "metric": metric,
+            },
+        )
+
         quantization_options = PlainQuantizationOption(
             metric=metric,
             weight_precision=weight_precision,
@@ -366,6 +376,16 @@ class Quantizer(NetsPressoBase):
         Returns:
             QuantizerMetadata: Quantize metadata.
         """
+        netspresso_analytics.send_event(
+            event_name="automatic_quantization",
+            event_params={
+                "weight_precision": weight_precision,
+                "activation_precision": activation_precision,
+                "metric": metric,
+                "threshold": threshold,
+            },
+        )
+
         quantization_options = AutomaticQuantizeOption(
             metric=metric,
             threshold=threshold,
@@ -471,6 +491,15 @@ class Quantizer(NetsPressoBase):
         Returns:
             QuantizerMetadata: Quantization metadata containing status, paths, etc.
         """
+        netspresso_analytics.send_event(
+            event_name="custom_precision_quantization_by_layer_name",
+            event_params={
+                "weight_precision": default_weight_precision,
+                "activation_precision": default_activation_precision,
+                "metric": metric,
+            },
+        )
+
         layers = {layer.name: layer.precision for layer in precision_by_layer_name}
 
         custom_quantization_dictionary = {"layers": layers, "operators": {}}
@@ -542,6 +571,15 @@ class Quantizer(NetsPressoBase):
         Returns:
             QuantizerMetadata: Quantization metadata containing status, paths, etc.
         """
+        netspresso_analytics.send_event(
+            event_name="custom_precision_quantization_by_operator_type",
+            event_params={
+                "weight_precision": default_weight_precision,
+                "activation_precision": default_activation_precision,
+                "metric": metric,
+            },
+        )
+
         operators = {layer.type: layer.precision for layer in precision_by_operator_type}
         custom_quantization_dictionary = {"layers": {}, "operators": operators}
 
@@ -604,6 +642,16 @@ class Quantizer(NetsPressoBase):
             QuantizerMetadata: Quantize metadata.
 
         """
+        netspresso_analytics.send_event(
+            event_name="get_recommendation_precision",
+            event_params={
+                "weight_precision": weight_precision,
+                "activation_precision": activation_precision,
+                "metric": metric,
+                "threshold": threshold,
+            },
+        )
+
         quantization_options = RecommendationOption(
             metric=metric,
             threshold=threshold,

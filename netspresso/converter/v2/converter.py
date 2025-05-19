@@ -5,6 +5,7 @@ from urllib import request
 
 from loguru import logger
 
+from netspresso.analytics import netspresso_analytics
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.auth.response_body import UserResponse
@@ -140,6 +141,16 @@ class ConverterV2(NetsPressoBase):
         Returns:
             ConverterMetadata: Convert metadata.
         """
+
+        netspresso_analytics.send_event(
+            event_name="convert_model",
+            event_params={
+                "target_framework": target_framework,
+                "target_device_name": target_device_name,
+                "target_data_type": target_data_type,
+                "target_software_version": target_software_version,
+            },
+        )
 
         FileHandler.check_input_model_path(input_model_path)
         output_dir = FileHandler.create_unique_folder(folder_path=output_dir)

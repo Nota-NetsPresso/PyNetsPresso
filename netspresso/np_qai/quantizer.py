@@ -7,6 +7,7 @@ from qai_hub import JobStatus, QuantizeDtype
 from qai_hub.client import Dataset, QuantizeJob
 from qai_hub.public_rest_api import DatasetEntries
 
+from netspresso.analytics import netspresso_analytics
 from netspresso.enums import Status
 from netspresso.metadata.quantizer import NPQAIQuantizerMetadata
 from netspresso.np_qai.base import NPQAIBase
@@ -90,6 +91,14 @@ class NPQAIQuantizer(NPQAIBase):
         Note:
             For details, see `submit_quantize_job in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.submit_quantize_job.html>`_.
         """
+        netspresso_analytics.send_event(
+            event_name="quantize_model",
+            event_params={
+                "weights_dtype": weights_dtype.name,
+                "activations_dtype": activations_dtype.name,
+            },
+        )
+
         output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
         default_model_path = (Path(output_dir) / f"{Path(output_dir).name}.ext").resolve()
         metadata = NPQAIQuantizerMetadata()
