@@ -4,7 +4,6 @@ import uuid
 from typing import Any, Dict, Optional
 
 import pkg_resources
-
 import requests
 
 # Debug mode controlled by environment variable
