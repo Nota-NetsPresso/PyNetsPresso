@@ -179,8 +179,8 @@ class GoogleAnalyticsTracker:
 # Create reusable tracker based on environment variables (for easy integration)
 def create_default_tracker() -> GoogleAnalyticsTracker:
     """Create a tracker using environment variables for configuration"""
-    measurement_id = "G-6YLW06QTKP"  # os.getenv("GA_MEASUREMENT_ID")
-    api_secret = "A076CePlSPC4_EppLhKdjA"  # os.getenv("GA_API_SECRET")
+    measurement_id = "G-L9L1VV8J87"  # os.getenv("GA_MEASUREMENT_ID")
+    api_secret = "0xsQ54pBSy6M7r_tUi-xiA"  # os.getenv("GA_API_SECRET")
 
     return GoogleAnalyticsTracker(
         measurement_id=measurement_id,
