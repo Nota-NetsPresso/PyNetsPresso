@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+from qai_hub.client import Device
+
 from netspresso.enums.base import StrEnum
 
 
@@ -30,3 +32,14 @@ class CommonOptions:
             return None
         sorted_units = sorted(self.compute_unit)
         return ",".join(sorted_units)
+
+
+def normalize_device_name(device: Optional[List[Device]] = None):
+    if device is None:
+        return None
+
+    if not isinstance(device, list):
+        return device.name
+
+    sorted_devices = sorted([d.name for d in device])
+    return ",".join(sorted_devices)

@@ -12,6 +12,7 @@ from netspresso.enums import Status
 from netspresso.metadata.converter import ConverterMetadata
 from netspresso.np_qai.base import NPQAIBase
 from netspresso.np_qai.options import CompileOptions
+from netspresso.np_qai.options.common import normalize_device_name
 from netspresso.utils import FileHandler
 from netspresso.utils.metadata import MetadataHandler
 
@@ -107,10 +108,10 @@ class NPQAIConverter(NPQAIBase):
         netspresso_analytics.send_event(
             event_name="convert_model",
             event_params={
-                "target_device_name": target_device_name.name,
+                "target_device_name": normalize_device_name(target_device_name),
                 "target_runtime": options.target_runtime.name,
-                "quantize_full_type": options.quantize_full_type.name,
-                "quantize_weight_type": options.quantize_weight_type.name,
+                "quantize_full_type": options.quantize_full_type,
+                "quantize_weight_type": options.quantize_weight_type,
                 "compute_unit": options.normalize_compute_units(),
             },
         )

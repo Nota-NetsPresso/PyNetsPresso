@@ -12,6 +12,7 @@ from netspresso.enums import Status
 from netspresso.metadata.benchmarker import BenchmarkerMetadata
 from netspresso.np_qai.base import NPQAIBase
 from netspresso.np_qai.options import InferenceOptions, ProfileOptions
+from netspresso.np_qai.options.common import normalize_device_name
 from netspresso.utils import FileHandler
 from netspresso.utils.metadata import MetadataHandler
 
@@ -138,7 +139,7 @@ class NPQAIBenchmarker(NPQAIBase):
         netspresso_analytics.send_event(
             event_name="benchmark_model",
             event_params={
-                "target_device_name": target_device_name.name,
+                "target_device_name": normalize_device_name(target_device_name),
                 "compute_unit": options.normalize_compute_units(),
             },
         )
@@ -234,7 +235,7 @@ class NPQAIBenchmarker(NPQAIBase):
         netspresso_analytics.send_event(
             event_name="benchmark_model",
             event_params={
-                "target_device_name": target_device_name.name,
+                "target_device_name": normalize_device_name(target_device_name),
             },
         )
 
