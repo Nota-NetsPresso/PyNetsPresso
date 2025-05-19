@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 from loguru import logger
 
+from netspresso.analytics import netspresso_analytics
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.auth.response_body import UserResponse
@@ -92,6 +93,15 @@ class BenchmarkerV2(NetsPressoBase):
         Returns:
             BenchmarkerMetadata: Benchmark metadata.
         """
+
+        netspresso_analytics.send_event(
+            event_name="benchmark_model",
+            event_params={
+                "target_device_name": target_device_name,
+                "target_software_version": target_software_version,
+                "target_hardware_type": target_hardware_type,
+            },
+        )
 
         FileHandler.check_input_model_path(input_model_path)
         metadatas = self.initialize_metadata(input_model_path=input_model_path)

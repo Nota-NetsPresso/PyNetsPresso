@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 from loguru import logger
 from omegaconf import OmegaConf
 
+from netspresso.analytics import netspresso_analytics
 from netspresso.base import NetsPressoBase
 from netspresso.clients.auth import TokenHandler
 from netspresso.clients.launcher import launcher_client_v2
@@ -580,6 +581,14 @@ class Trainer(NetsPressoBase):
         """
 
         from netspresso_trainer import train_with_yaml
+
+        netspresso_analytics.send_event(
+            event_name="train_model",
+            event_params={
+                "task": self.task,
+                "model": self.model_name,
+            },
+        )
 
         self._validate_config()
         self._apply_img_size()
