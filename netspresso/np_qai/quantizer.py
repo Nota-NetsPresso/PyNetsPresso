@@ -91,6 +91,14 @@ class NPQAIQuantizer(NPQAIBase):
         Note:
             For details, see `submit_quantize_job in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.submit_quantize_job.html>`_.
         """
+        netspresso_analytics.send_event(
+            event_name="quantize_model",
+            event_params={
+                "weights_dtype": weights_dtype.name,
+                "activations_dtype": activations_dtype.name,
+            },
+        )
+
         output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
         default_model_path = (Path(output_dir) / f"{Path(output_dir).name}.ext").resolve()
         metadata = NPQAIQuantizerMetadata()
@@ -105,13 +113,6 @@ class NPQAIQuantizer(NPQAIBase):
 
             cli_string = options.to_cli_string() if isinstance(options, QuantizeOptions) else options
 
-            netspresso_analytics.send_event(
-                event_name="quantize_model",
-                event_params={
-                    "weights_dtype": weights_dtype.name,
-                    "activations_dtype": activations_dtype.name,
-                },
-            )
             job = hub.submit_quantize_job(
                 model=input_model_path,
                 calibration_data=calibration_data,

@@ -104,6 +104,16 @@ class NPQAIConverter(NPQAIBase):
         Note:
             For details, see `submit_compile_job in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.submit_compile_job.html>`_.
         """
+        netspresso_analytics.send_event(
+            event_name="convert_model",
+            event_params={
+                "target_device_name": target_device_name.name,
+                "target_runtime": options.target_runtime.name,
+                "quantize_full_type": options.quantize_full_type.name,
+                "quantize_weight_type": options.quantize_weight_type.name,
+                "compute_unit": options.normalize_compute_units(),
+            },
+        )
 
         output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
         default_model_path = (Path(output_dir) / f"{Path(output_dir).name}.ext").resolve()
@@ -120,13 +130,6 @@ class NPQAIConverter(NPQAIBase):
 
             cli_string = options.to_cli_string() if isinstance(options, CompileOptions) else options
 
-            netspresso_analytics.send_event(
-                event_name="convert_model",
-                event_params={
-                    "target_device_name": target_device_name.name,
-                    "target_runtime": options.target_runtime.name,
-                },
-            )
             job = hub.submit_compile_job(
                 model=input_model_path,
                 device=target_device_name,
