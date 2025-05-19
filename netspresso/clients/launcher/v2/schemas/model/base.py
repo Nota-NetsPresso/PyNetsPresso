@@ -50,6 +50,24 @@ class ModelStatus:
     is_uploaded: Optional[bool] = False
     is_optimizable: Optional[bool] = False
 
+    def __init__(self, **kwargs):
+        default_fields = {
+            "is_deleted": False,
+            "is_convertible": False,
+            "is_quantizable": False,
+            "is_compressible": False,
+            "is_benchmarkable": False,
+            "is_uploaded": False,
+            "is_optimizable": False,
+        }
+
+        for field_name, default_value in default_fields.items():
+            setattr(self, field_name, kwargs.get(field_name, default_value))
+
+        for key, value in kwargs.items():
+            if key not in default_fields:
+                setattr(self, key, value)
+
 
 @dataclass
 class ModelBase:
