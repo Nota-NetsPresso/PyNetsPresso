@@ -139,8 +139,8 @@ class NPQAIBenchmarker(NPQAIBase):
         netspresso_analytics.send_event(
             event_name="benchmark_model_using_qai",
             event_params={
-                "target_device_name": normalize_device_name(target_device_name),
-                "compute_unit": options.normalize_compute_units(),
+                "target_device_name": normalize_device_name(target_device_name) or "",
+                "compute_unit": options.normalize_compute_units() or "",
             },
         )
 
@@ -235,7 +235,7 @@ class NPQAIBenchmarker(NPQAIBase):
         netspresso_analytics.send_event(
             event_name="inference_model_using_qai",
             event_params={
-                "target_device_name": normalize_device_name(target_device_name),
+                "target_device_name": normalize_device_name(target_device_name) or "",
             },
         )
 

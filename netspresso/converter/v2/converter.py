@@ -148,7 +148,7 @@ class ConverterV2(NetsPressoBase):
                 "target_framework": target_framework,
                 "target_device_name": target_device_name,
                 "target_data_type": target_data_type,
-                "target_software_version": target_software_version,
+                "target_software_version": target_software_version or "",
             },
         )
 

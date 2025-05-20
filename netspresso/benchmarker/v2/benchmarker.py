@@ -98,8 +98,8 @@ class BenchmarkerV2(NetsPressoBase):
             event_name="benchmark_model_using_np",
             event_params={
                 "target_device_name": target_device_name,
-                "target_software_version": target_software_version,
-                "target_hardware_type": target_hardware_type,
+                "target_software_version": target_software_version or "",
+                "target_hardware_type": target_hardware_type or "",
             },
         )
 

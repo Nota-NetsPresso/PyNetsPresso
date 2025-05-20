@@ -94,8 +94,8 @@ class NPQAIQuantizer(NPQAIBase):
         netspresso_analytics.send_event(
             event_name="quantize_model_using_qai",
             event_params={
-                "weights_dtype": weights_dtype.name,
-                "activations_dtype": activations_dtype.name,
+                "weights_dtype": weights_dtype.name if weights_dtype else "",
+                "activations_dtype": activations_dtype.name if activations_dtype else "",
             },
         )
 

@@ -108,11 +108,11 @@ class NPQAIConverter(NPQAIBase):
         netspresso_analytics.send_event(
             event_name="convert_model_using_qai",
             event_params={
-                "target_device_name": normalize_device_name(target_device_name),
-                "target_runtime": options.target_runtime.name,
-                "quantize_full_type": options.quantize_full_type,
-                "quantize_weight_type": options.quantize_weight_type,
-                "compute_unit": options.normalize_compute_units(),
+                "target_device_name": normalize_device_name(target_device_name) or "",
+                "target_runtime": options.target_runtime or "",
+                "quantize_full_type": options.quantize_full_type or "",
+                "quantize_weight_type": options.quantize_weight_type or "",
+                "compute_unit": options.normalize_compute_units() or "",
             },
         )
 
