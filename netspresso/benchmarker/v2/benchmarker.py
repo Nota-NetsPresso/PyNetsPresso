@@ -95,7 +95,7 @@ class BenchmarkerV2(NetsPressoBase):
         """
 
         netspresso_analytics.send_event(
-            event_name="benchmark_model (NP)",
+            event_name="benchmark_model_using_np",
             event_params={
                 "target_device_name": target_device_name,
                 "target_software_version": target_software_version,

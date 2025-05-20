@@ -92,7 +92,7 @@ class NPQAIQuantizer(NPQAIBase):
             For details, see `submit_quantize_job in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.submit_quantize_job.html>`_.
         """
         netspresso_analytics.send_event(
-            event_name="quantize_model (NP QAI)",
+            event_name="quantize_model_using_qai",
             event_params={
                 "weights_dtype": weights_dtype.name,
                 "activations_dtype": activations_dtype.name,
