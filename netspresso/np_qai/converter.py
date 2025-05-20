@@ -106,7 +106,7 @@ class NPQAIConverter(NPQAIBase):
             For details, see `submit_compile_job in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.submit_compile_job.html>`_.
         """
         netspresso_analytics.send_event(
-            event_name="convert_model",
+            event_name="convert_model (NP QAI)",
             event_params={
                 "target_device_name": normalize_device_name(target_device_name),
                 "target_runtime": options.target_runtime.name,
