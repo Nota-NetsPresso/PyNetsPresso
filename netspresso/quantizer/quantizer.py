@@ -310,7 +310,7 @@ class Quantizer(NetsPressoBase):
             QuantizerMetadata: Quantize metadata.
         """
         netspresso_analytics.send_event(
-            event_name="uniform_precision_quantization (NP)",
+            event_name="uniform_precision_quantization_using_np",
             event_params={
                 "weight_precision": weight_precision,
                 "activation_precision": activation_precision,
@@ -377,7 +377,7 @@ class Quantizer(NetsPressoBase):
             QuantizerMetadata: Quantize metadata.
         """
         netspresso_analytics.send_event(
-            event_name="automatic_quantization (NP)",
+            event_name="automatic_quantization_using_np",
             event_params={
                 "weight_precision": weight_precision,
                 "activation_precision": activation_precision,
@@ -492,7 +492,7 @@ class Quantizer(NetsPressoBase):
             QuantizerMetadata: Quantization metadata containing status, paths, etc.
         """
         netspresso_analytics.send_event(
-            event_name="custom_precision_quantization_by_layer_name (NP)",
+            event_name="custom_precision_quantization_by_layer_name_using_np",
             event_params={
                 "weight_precision": default_weight_precision,
                 "activation_precision": default_activation_precision,
@@ -572,7 +572,7 @@ class Quantizer(NetsPressoBase):
             QuantizerMetadata: Quantization metadata containing status, paths, etc.
         """
         netspresso_analytics.send_event(
-            event_name="custom_precision_quantization_by_operator_type (NP)",
+            event_name="custom_precision_quantization_by_operator_type_using_np",
             event_params={
                 "weight_precision": default_weight_precision,
                 "activation_precision": default_activation_precision,
@@ -643,7 +643,7 @@ class Quantizer(NetsPressoBase):
 
         """
         netspresso_analytics.send_event(
-            event_name="get_recommendation_precision (NP)",
+            event_name="get_recommendation_precision_using_np",
             event_params={
                 "weight_precision": weight_precision,
                 "activation_precision": activation_precision,
