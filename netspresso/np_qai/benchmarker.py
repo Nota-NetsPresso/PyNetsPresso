@@ -233,7 +233,7 @@ class NPQAIBenchmarker(NPQAIBase):
             For details, see `submit_inference_job in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.submit_inference_job.html>`_.
         """
         netspresso_analytics.send_event(
-            event_name="benchmark_model",
+            event_name="benchmark_model (NP QAI)",
             event_params={
                 "target_device_name": normalize_device_name(target_device_name),
             },

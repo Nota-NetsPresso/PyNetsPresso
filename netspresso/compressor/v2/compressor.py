@@ -356,7 +356,7 @@ class CompressorV2(NetsPressoBase):
         """
 
         netspresso_analytics.send_event(
-            event_name="manual_compression",
+            event_name="manual_compression (NP)",
             event_params={
                 "compression_method": compression.compression_method,
             },
@@ -456,7 +456,7 @@ class CompressorV2(NetsPressoBase):
         """
 
         netspresso_analytics.send_event(
-            event_name="recommendation_compression",
+            event_name="recommendation_compression (NP)",
             event_params={
                 "framework": framework,
                 "compression_method": compression_method,
@@ -564,7 +564,7 @@ class CompressorV2(NetsPressoBase):
             CompressorMetadata: Compress metadata.
         """
         netspresso_analytics.send_event(
-            event_name="automatic_compression",
+            event_name="automatic_compression (NP)",
             event_params={
                 "framework": framework,
                 "compression_ratio": compression_ratio,

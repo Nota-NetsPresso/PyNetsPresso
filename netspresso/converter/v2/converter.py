@@ -143,7 +143,7 @@ class ConverterV2(NetsPressoBase):
         """
 
         netspresso_analytics.send_event(
-            event_name="convert_model",
+            event_name="convert_model (NP)",
             event_params={
                 "target_framework": target_framework,
                 "target_device_name": target_device_name,

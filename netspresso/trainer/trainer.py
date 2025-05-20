@@ -583,7 +583,7 @@ class Trainer(NetsPressoBase):
         from netspresso_trainer import train_with_yaml
 
         netspresso_analytics.send_event(
-            event_name="train_model",
+            event_name="train_model (NP)",
             event_params={
                 "task": self.task,
                 "model": self.model_name,
