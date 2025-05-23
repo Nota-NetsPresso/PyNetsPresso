@@ -1,9 +1,11 @@
 import copy
+import os
 from pathlib import Path
 from typing import Dict, List
 
 from sqlalchemy.orm import Session
 
+from app.api.v1.schemas.task.train.dataset import LocalTrainingDatasetPayload, LocalTrainingDatasetsResponse
 from app.api.v1.schemas.task.train.hyperparameter import OptimizerPayload, SchedulerPayload, TrainerModel
 from app.api.v1.schemas.task.train.train_task import (
     FrameworkPayload,
@@ -147,5 +149,27 @@ class TrainTaskService:
         training_task_repository.soft_delete(db=db, model=training_task)
 
         return self._convert_to_payload_format(training_task)
+
+    def get_training_datasets_from_local(self) -> LocalTrainingDatasetsResponse:
+        """Get training datasets from local directory.
+
+        Returns:
+            LocalTrainingDatasetsResponse: List of dataset information including name and path
+        """
+        NP_TRAINING_STUDIO_PATH = Path(os.environ.get("NP_TRAINING_STUDIO_PATH", "/np_training_studio"))
+        training_datasets_dir = NP_TRAINING_STUDIO_PATH / "datasets" / "local"
+
+        training_datasets = [d for d in training_datasets_dir.iterdir() if d.is_dir()]
+
+        training_datasets_payload = [
+            LocalTrainingDatasetPayload(
+                name=dataset.name,
+                path=str(dataset.absolute()),
+            )
+            for dataset in training_datasets
+        ]
+
+        return LocalTrainingDatasetsResponse(data=training_datasets_payload)
+
 
 train_task_service = TrainTaskService()
