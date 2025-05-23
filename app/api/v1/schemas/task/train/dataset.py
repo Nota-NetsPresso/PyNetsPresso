@@ -9,6 +9,7 @@ from netspresso.enums.train import StorageLocation
 class DatasetCreate(BaseModel):
     train_path: str
     test_path: Optional[str] = None
+    storage_location: StorageLocation
 
 
 class DatasetBasePayload(BaseModel):
