@@ -150,7 +150,7 @@ class TrainTaskService:
 
         return self._convert_to_payload_format(training_task)
 
-    def get_training_datasets_from_local(self) -> LocalTrainingDatasetsResponse:
+    def get_training_datasets_from_local(self) -> List[LocalTrainingDatasetPayload]:
         """Get training datasets from local directory.
 
         Returns:
@@ -169,7 +169,7 @@ class TrainTaskService:
             for dataset in training_datasets
         ]
 
-        return LocalTrainingDatasetsResponse(data=training_datasets_payload)
+        return training_datasets_payload
 
 
 train_task_service = TrainTaskService()
