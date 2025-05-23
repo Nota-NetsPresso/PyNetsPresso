@@ -71,7 +71,7 @@ def get_training_task(
     return TrainingResponse(data=training_task)
 
 
-@router.get("trainings/datasets/local")
+@router.get("/trainings/datasets/local", response_model=LocalTrainingDatasetsResponse)
 def get_training_datasets() -> LocalTrainingDatasetsResponse:
     training_datasets = train_task_service.get_training_datasets_from_local()
 
