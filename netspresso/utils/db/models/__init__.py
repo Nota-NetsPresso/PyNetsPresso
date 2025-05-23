@@ -1,4 +1,5 @@
 from netspresso.utils.db.models.benchmark import BenchmarkResult, BenchmarkTask
+from netspresso.utils.db.models.compression import CompressionModelResult, CompressionTask
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.models.evaluation import EvaluationTask
 from netspresso.utils.db.models.model import Model
@@ -17,4 +18,6 @@ __all__ = [
     "BenchmarkTask",
     "BenchmarkResult",
     "EvaluationTask",
+    "CompressionTask",
+    "CompressionModelResult",
 ]
