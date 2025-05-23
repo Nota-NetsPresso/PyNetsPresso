@@ -259,13 +259,14 @@ class Trainer(NetsPressoBase):
         ]
 
         # Check for the existence of required directories and files
+        logger.info(f"Checking paths exist: {base_path}")
         for relative_path in paths:
             path = Path(base_path) / relative_path
             if not path.exists():
                 if path.suffix:  # It's a file
-                    raise FileNotFoundErrorException(relative_path)
+                    raise FileNotFoundErrorException(path.as_posix())
                 else:  # It's a directory
-                    raise DirectoryNotFoundException(relative_path)
+                    raise DirectoryNotFoundException(path.as_posix())
 
     def check_test_paths_exist(self, base_path):
         paths = [

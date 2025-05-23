@@ -1,15 +1,18 @@
+import logging
 import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 from loguru import logger
 
+from app.api.v1.schemas.task.train.dataset import DatasetCreate
 from app.api.v1.schemas.task.train.train_task import TrainingCreate
 from app.worker.celery_app import celery_app
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso import NetsPresso
 from netspresso.enums.conversion import EvaluationTargetFramework
 from netspresso.enums.metadata import Status
+from netspresso.enums.train import StorageLocation
 from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize, ToTensor
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
@@ -29,34 +32,69 @@ BUCKET_NAME = "model"
 storage_handler = ObjectStorageHandler()
 
 def prepare_training_data(trainer: Trainer, training_in: TrainingCreate) -> Path:
-    """Download and prepare training dataset."""
-    dataset_dir = NP_TRAINING_STUDIO_PATH / "datasets"
-    dataset_dir.mkdir(parents=True, exist_ok=True)
+    """Prepare training data based on storage location.
 
-    logger.info(f"Downloading training dataset: {training_in.dataset.train_path}")
-    train_dataset_path = trainer.download_dataset_for_training(
-        dataset_uuid=training_in.dataset.train_path,
-        output_dir=dataset_dir.as_posix()
-    )
+    This function handles both local and storage datasets:
+    - For local datasets: Validates and uses the specified local path
+    - For storage datasets: Downloads and prepares data from storage
 
-    train_dataset_version = trainer.get_dataset_version_from_storage(
-        dataset_uuid=training_in.dataset.train_path,
-        split=Split.TRAIN
-    )
+    Args:
+        trainer: Trainer object for model training
+        training_in: Training configuration dictionary
 
-    train_dataset_info = trainer.get_dataset_info_from_storage(
-        project_id=train_dataset_version.project_id,
-        dataset_uuid=training_in.dataset.train_path,
-        split=Split.TRAIN
-    )
+    Returns:
+        Path: Directory path containing the prepared dataset
 
-    trainer.set_dataset(
-        dataset_root_path=train_dataset_path,
-        dataset_name=train_dataset_info.dataset.dataset_title,
-    )
+    Raises:
+        ValueError: If local dataset paths don't exist
+    """
+    dataset_info = training_in.dataset
 
-    return dataset_dir
+    if dataset_info.storage_location == StorageLocation.LOCAL:
+        # Use local dataset
+        train_dataset_path = Path(dataset_info.train_path)
+        if not train_dataset_path.exists():
+            raise ValueError(f"Training dataset not found at path: {train_dataset_path}")
 
+        if dataset_info.test_path:
+            test_dataset_path = Path(dataset_info.test_path)
+            if not test_dataset_path.exists():
+                raise ValueError(f"Test dataset not found at path: {test_dataset_path}")
+
+        # Configure local dataset
+        trainer.set_dataset(
+            dataset_root_path=str(train_dataset_path),
+            dataset_name=train_dataset_path.name,
+        )
+        return train_dataset_path
+
+    else:  # StorageLocation.STORAGE
+        dataset_dir = NP_TRAINING_STUDIO_PATH / "datasets" / "storage"
+        dataset_dir.mkdir(parents=True, exist_ok=True)
+
+        logger.info(f"Downloading training dataset: {dataset_info.train_path}")
+        train_dataset_path = trainer.download_dataset_for_training(
+            dataset_uuid=dataset_info.train_path,
+            output_dir=dataset_dir.as_posix()
+        )
+
+        train_dataset_version = trainer.get_dataset_version_from_storage(
+            dataset_uuid=dataset_info.train_path,
+            split=Split.TRAIN
+        )
+
+        train_dataset_info = trainer.get_dataset_info_from_storage(
+            project_id=train_dataset_version.project_id,
+            dataset_uuid=dataset_info.train_path,
+            split=Split.TRAIN
+        )
+
+        trainer.set_dataset(
+            dataset_root_path=train_dataset_path,
+            dataset_name=train_dataset_info.dataset.dataset_title,
+        )
+
+        return dataset_dir
 
 def configure_model_and_training(trainer: Trainer, training_in: TrainingCreate):
     """Configure model, augmentations, and training parameters."""
