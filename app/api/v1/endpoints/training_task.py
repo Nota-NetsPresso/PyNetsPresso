@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.api.deps import api_key_header
+from app.api.v1.schemas.task.train.dataset import LocalTrainingDatasetsResponse
 from app.api.v1.schemas.task.train.hyperparameter import (
     SupportedModelResponse,
     SupportedOptimizersResponse,
@@ -68,3 +69,10 @@ def get_training_task(
     training_task = train_task_service.get_training_task(db=db, task_id=task_id, api_key=api_key)
 
     return TrainingResponse(data=training_task)
+
+
+@router.get("/trainings/datasets/local", response_model=LocalTrainingDatasetsResponse)
+def get_training_datasets() -> LocalTrainingDatasetsResponse:
+    training_datasets = train_task_service.get_training_datasets_from_local()
+
+    return LocalTrainingDatasetsResponse(data=training_datasets)

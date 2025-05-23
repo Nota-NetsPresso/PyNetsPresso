@@ -2,6 +2,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from app.api.v1.schemas.base import ResponseItem, ResponseListItems
 from netspresso.enums.train import StorageLocation
 
 
@@ -36,3 +37,14 @@ class TrainingDatasetPayload(DatasetBasePayload):
 
 class EvaluationDatasetPayload(DatasetBasePayload):
     pass
+
+
+class LocalTrainingDatasetPayload(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    name: str
+    path: str
+
+
+class LocalTrainingDatasetsResponse(ResponseListItems):
+    data: List[LocalTrainingDatasetPayload]
