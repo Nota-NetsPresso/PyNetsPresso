@@ -63,10 +63,10 @@ def prepare_training_data(trainer: Trainer, training_in: TrainingCreate) -> Path
 
         # Configure local dataset
         trainer.set_dataset(
-            dataset_root_path=str(train_dataset_path.parent),
+            dataset_root_path=str(train_dataset_path),
             dataset_name=train_dataset_path.name,
         )
-        return train_dataset_path.parent
+        return train_dataset_path
 
     else:  # StorageLocation.STORAGE
         dataset_dir = NP_TRAINING_STUDIO_PATH / "datasets" / "storage"
