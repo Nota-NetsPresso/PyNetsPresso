@@ -29,7 +29,7 @@
 </div>
 
 <div align="center">
-  <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20QAI%20Hub).ipynb">Qualcomm AI Hub x NetsPresso</a>
+  <a href="https://colab.research.google.com/drive/10lLpgnJaRVkYIYFr0ga6FP238haUs4Ol">Qualcomm AI Hub x NetsPresso</a>
 </div>
 
 <div align="center">
@@ -52,8 +52,8 @@
 
 <div align="center">
   🔥 NetsPresso Model Optimization Tutorials 🔥 <br>
-    <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20Compressor).ipynb"> A Practical Guide to Using NetsPresso's Compressor Module </a></br>
-    <a href="https://github.com/Nota-NetsPresso/PyNetsPresso/blob/develop/notebooks/NetsPresso_Tutorial(with%20Quantizer).ipynb"> A Practical Guide to Using NetsPresso's Quantizer Module </a></br>
+    <a href="https://colab.research.google.com/drive/1XxkFWcoVQrIrUI8PlAlToWg3PQw1MHD1"> A Practical Guide to Using NetsPresso's Compressor Module </a></br>
+    <a href="https://colab.research.google.com/drive/1DTmxfSVWiAOxRGrKd0FtLBv6pYFryj_o"> A Practical Guide to Using NetsPresso's Quantizer Module </a></br>
 </div>
 </br>
 
