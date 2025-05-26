@@ -148,29 +148,65 @@ def check_training_result(training_task_id: str) -> bool:
 
 
 def prepare_evaluation_data(trainer: Trainer, training_in: TrainingCreate, dataset_dir: Path):
-    """Download and prepare evaluation dataset."""
-    logger.info(f"Downloading test dataset: {training_in.dataset.test_path}")
+    """Download and prepare evaluation dataset.
 
-    test_dataset_path = trainer.download_dataset_for_evaluation(
-        dataset_uuid=training_in.dataset.test_path,
-        output_dir=dataset_dir.as_posix()
-    )
+    This function handles both local and storage datasets for evaluation:
+    - For local datasets: Validates and uses the specified local path
+    - For storage datasets: Downloads and prepares data from storage
 
-    test_dataset_version = trainer.get_dataset_version_from_storage(
-        dataset_uuid=training_in.dataset.test_path,
-        split=Split.TEST
-    )
+    Args:
+        trainer: Trainer object for model training
+        training_in: Training configuration containing dataset info
+        dataset_dir: Base directory for datasets
 
-    test_dataset_info = trainer.get_dataset_info_from_storage(
-        project_id=test_dataset_version.project_id,
-        dataset_uuid=training_in.dataset.test_path,
-        split=Split.TEST
-    )
+    Raises:
+        ValueError: If local dataset paths don't exist or have invalid structure
+    """
+    if training_in.dataset.storage_location == StorageLocation.LOCAL:
+        # Handle local dataset
+        logger.info(f"Using local test dataset: {training_in.dataset.test_path}")
+        test_dataset_path = Path(training_in.dataset.test_path)
 
-    trainer.set_test_dataset(
-        test_dataset_path,
-        test_dataset_info.dataset.dataset_title
-    )
+        if not test_dataset_path.exists():
+            raise ValueError(f"Test dataset not found at path: {test_dataset_path}")
+
+        # Verify required directory structure
+        images_test_path = test_dataset_path / "images" / "test"
+        if not images_test_path.exists():
+            raise ValueError(
+                f"Invalid dataset structure. Expected 'images/test' directory in {test_dataset_path}. "
+                "Please ensure the dataset follows the required structure."
+            )
+
+        trainer.set_test_dataset(
+            str(test_dataset_path),
+            test_dataset_path.name
+        )
+
+    else:  # StorageLocation.STORAGE
+        # Handle storage dataset
+        logger.info(f"Downloading test dataset: {training_in.dataset.test_path}")
+
+        test_dataset_path = trainer.download_dataset_for_evaluation(
+            dataset_uuid=training_in.dataset.test_path,
+            output_dir=dataset_dir.as_posix()
+        )
+
+        test_dataset_version = trainer.get_dataset_version_from_storage(
+            dataset_uuid=training_in.dataset.test_path,
+            split=Split.TEST
+        )
+
+        test_dataset_info = trainer.get_dataset_info_from_storage(
+            project_id=test_dataset_version.project_id,
+            dataset_uuid=training_in.dataset.test_path,
+            split=Split.TEST
+        )
+
+        trainer.set_test_dataset(
+            test_dataset_path,
+            test_dataset_info.dataset.dataset_title
+        )
 
 
 def get_model_paths(training_task_id: str) -> Optional[Tuple[Path, Path]]:
