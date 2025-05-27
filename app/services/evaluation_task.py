@@ -179,7 +179,7 @@ class EvaluationTaskService:
                     self._check_evaluation_task_status(
                         db=db,
                         model_id=model.model_id,
-                        dataset_id=evaluation_in.dataset_path,
+                        dataset_path=evaluation_in.dataset_path,
                         confidence_score=confidence_score
                     )
             except EvaluationTaskAlreadyExistsException:
@@ -214,7 +214,12 @@ class EvaluationTaskService:
             # If conversion task exists, start only the evaluation
             try:
                 for confidence_score in confidence_scores:
-                    self._check_evaluation_task_status(db=db, model_id=conversion_task.model_id, dataset_id=evaluation_in.dataset_id, confidence_score=confidence_score)
+                    self._check_evaluation_task_status(
+                        db=db,
+                        model_id=conversion_task.model_id,
+                        dataset_path=evaluation_in.dataset_path,
+                        confidence_score=confidence_score
+                    )
             except EvaluationTaskAlreadyExistsException:
                 raise
 
