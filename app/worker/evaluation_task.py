@@ -102,7 +102,12 @@ def evaluate_model_task(
                     "Please ensure the dataset follows the required structure."
                 )
 
-            trainer.set_test_dataset(str(test_dataset_path), test_dataset_path.name)
+            evaluation_dataset = evaluation_dataset_repository.get_by_dataset_path(db=session, dataset_path=test_dataset_path)
+            if evaluation_dataset:
+                trainer.set_test_dataset_no_create(test_dataset_path, evaluation_dataset.name)
+                trainer.test_dataset_id = evaluation_dataset.dataset_id
+            else:
+                trainer.set_test_dataset(str(test_dataset_path), test_dataset_path.name)
 
         else:  # StorageLocation.STORAGE
             # Handle storage dataset

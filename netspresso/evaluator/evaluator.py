@@ -195,8 +195,6 @@ class Evaluator:
 
             # Create task with DB session
             if evaluation_task_id:
-                print(self.trainer.test_dataset_id)
-                print(self.trainer.test_dataset)
                 if self.trainer.test_dataset_id:
                     evaluation_task = EvaluationTask(
                         task_id=evaluation_task_id,
