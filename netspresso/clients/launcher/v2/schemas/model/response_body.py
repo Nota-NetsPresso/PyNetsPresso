@@ -35,7 +35,8 @@ class ResponseModelStatus(ResponseItem):
     data: ModelStatus = field(default_factory=ModelStatus)
 
     def __post_init__(self):
-        self.data = ModelStatus(**self.data)
+        if isinstance(self.data, dict):
+            self.data = ModelStatus(**self.data)
 
 
 @dataclass
