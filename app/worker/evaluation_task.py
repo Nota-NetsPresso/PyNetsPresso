@@ -69,8 +69,8 @@ def evaluate_model_task(
             task=training_task.task.name,
             input_shapes=training_task.input_shapes,
             dataset=DatasetCreate(
-                train_path=training_task.dataset.storage_info.get("dataset_id", training_task.dataset.path),
-                test_path=training_task.dataset.storage_info.get("dataset_id", training_task.dataset.path),
+                train_path=training_task.dataset.path,
+                test_path=training_task.dataset.path,
                 storage_location=training_task.dataset.storage_location,
             ),
             hyperparameter=HyperparameterCreate(
