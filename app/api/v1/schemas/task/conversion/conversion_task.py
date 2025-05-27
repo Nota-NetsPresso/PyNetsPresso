@@ -25,7 +25,7 @@ class ConversionCreate(BaseModel):
     input_model_id: str = Field(description="Input model ID")
     framework: TargetFramework = Field(description="Framework name")
     device_name: DeviceName = Field(description="Device name")
-    software_version: SoftwareVersion = Field(description="Software version")
+    software_version: Optional[SoftwareVersion] = Field(default=None, description="Software version")
     precision: PrecisionForConversion = Field(description="Precision")
     calibration_dataset_path: Optional[str] = Field(default=None, description="Path to the calibration dataset")
 

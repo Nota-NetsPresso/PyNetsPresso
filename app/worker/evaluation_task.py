@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import List
 
 from celery import chain, signature
@@ -11,6 +12,7 @@ from app.api.v1.schemas.task.train.train_task import TrainingCreate
 from app.worker.celery_app import celery_app
 from netspresso import NetsPresso
 from netspresso.enums.metadata import Status
+from netspresso.enums.train import StorageLocation
 from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize, ToTensor
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
@@ -41,11 +43,10 @@ def evaluate_model_task(
     Args:
         api_key: API key for authentication
         model_id: ID of the model to evaluate
-        dataset_id: ID of the dataset to use for evaluation
+        dataset_id: ID of the dataset to use for evaluation (or local path if using local dataset)
         training_task_id: ID of the related training task
-        conversion_task_id: ID of the related conversion task
-        confidence_score: Confidence score for evaluation (one of 0.3, 0.5, 0.6)
         evaluation_task_id: Evaluation task ID
+        confidence_score: Confidence score for evaluation (one of 0.3, 0.5, 0.6)
         gpus: Number of GPUs to use
 
     Returns:
@@ -68,8 +69,9 @@ def evaluate_model_task(
             task=training_task.task.name,
             input_shapes=training_task.input_shapes,
             dataset=DatasetCreate(
-                train_path=training_task.dataset.storage_info["dataset_id"],
-                test_path=training_task.dataset.storage_info["dataset_id"],
+                train_path=training_task.dataset.path,
+                test_path=training_task.dataset.path,
+                storage_location=training_task.dataset.storage_location,
             ),
             hyperparameter=HyperparameterCreate(
                 epochs=training_task.hyperparameter.epochs,
@@ -85,26 +87,47 @@ def evaluate_model_task(
             name="",
         )
 
-        # Get NP_TRAINING_STUDIO_PATH
-        dataset_dir = os.path.join(NP_TRAINING_STUDIO_PATH, "datasets")
+        if training_in.dataset.storage_location == StorageLocation.LOCAL:
+            # Handle local dataset
+            logger.info(f"Using local dataset path: {dataset_id}")
+            test_dataset_path = Path(dataset_id)
+            if not test_dataset_path.exists():
+                raise ValueError(f"Local test dataset not found at path: {test_dataset_path}")
 
-        # Create datasets directory if it doesn't exist
-        os.makedirs(dataset_dir, exist_ok=True)
+            # Verify required directory structure
+            images_test_path = test_dataset_path / "images" / "test"
+            if not images_test_path.exists():
+                raise ValueError(
+                    f"Invalid dataset structure. Expected 'images/test' directory in {test_dataset_path}. "
+                    "Please ensure the dataset follows the required structure."
+                )
 
-        logger.info(f"Downloading dataset from DataForge: {dataset_id}")
+            evaluation_dataset = evaluation_dataset_repository.get_by_dataset_path(db=session, dataset_path=test_dataset_path)
+            if evaluation_dataset:
+                trainer.set_test_dataset_no_create(test_dataset_path, evaluation_dataset.name)
+                trainer.test_dataset_id = evaluation_dataset.dataset_id
+            else:
+                trainer.set_test_dataset(str(test_dataset_path), test_dataset_path.name)
 
-        existing_dataset = evaluation_dataset_repository.get_by_dataforge_dataset_id(db=session, dataset_id=dataset_id)
-        logger.info(f"Existing dataset: {existing_dataset}")
-        if existing_dataset:
-            logger.info(f"Found existing evaluation dataset for dataforge dataset {dataset_id}")
-            test_dataset_path = existing_dataset.path
-            trainer.set_test_dataset_no_create(test_dataset_path, existing_dataset.name)
-            trainer.test_dataset_id = existing_dataset.dataset_id
-        else:
-            test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)
-            test_dataset_version = trainer.get_dataset_version_from_storage(dataset_uuid=dataset_id, split=Split.TEST)
-            test_dataset_info = trainer.get_dataset_info_from_storage(project_id=test_dataset_version.project_id, dataset_uuid=dataset_id, split=Split.TEST)
-            trainer.set_test_dataset(test_dataset_path, test_dataset_info.dataset.dataset_title)
+        else:  # StorageLocation.STORAGE
+            # Handle storage dataset
+            dataset_dir = os.path.join(NP_TRAINING_STUDIO_PATH, "datasets", "storage")
+            os.makedirs(dataset_dir, exist_ok=True)
+
+            logger.info(f"Downloading dataset from DataForge: {dataset_id}")
+
+            existing_dataset = evaluation_dataset_repository.get_by_dataforge_dataset_id(db=session, dataset_id=dataset_id)
+            logger.info(f"Existing dataset: {existing_dataset}")
+            if existing_dataset:
+                logger.info(f"Found existing evaluation dataset for dataforge dataset {dataset_id}")
+                test_dataset_path = existing_dataset.path
+                trainer.set_test_dataset_no_create(test_dataset_path, existing_dataset.name)
+                trainer.test_dataset_id = existing_dataset.dataset_id
+            else:
+                test_dataset_path = trainer.download_dataset_for_evaluation(dataset_uuid=dataset_id, output_dir=dataset_dir)
+                test_dataset_version = trainer.get_dataset_version_from_storage(dataset_uuid=dataset_id, split=Split.TEST)
+                test_dataset_info = trainer.get_dataset_info_from_storage(project_id=test_dataset_version.project_id, dataset_uuid=dataset_id, split=Split.TEST)
+                trainer.set_test_dataset(test_dataset_path, test_dataset_info.dataset.dataset_title)
 
         logger.info(f"Using dataset path: {test_dataset_path}")
 
