@@ -7,11 +7,14 @@ from app.api.v1.schemas.base import ResponseItem, ResponsePaginationItems
 from app.api.v1.schemas.task.conversion.conversion_task import ConversionForEvaluationCreate
 from app.api.v1.schemas.task.train.dataset import EvaluationDatasetPayload
 from netspresso.enums.conversion import EvaluationTargetFramework
+from netspresso.enums.train import StorageLocation
 
 
 class EvaluationCreate(BaseModel):
     input_model_id: str = Field(description="Input model ID")
-    dataset_id: str = Field(description="Dataset ID")
+
+    dataset_path: str = Field(description="Dataset path")
+    storage_location: StorageLocation = Field(description="Storage location")
 
     conversion: ConversionForEvaluationCreate
 
@@ -41,6 +44,7 @@ class EvaluationPayload(BaseModel):
 
     task_id: str
     dataset_id: str
+    dataset: EvaluationDatasetPayload
     is_dataset_deleted: bool
 
     confidence_score: float

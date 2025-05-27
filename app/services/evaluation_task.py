@@ -136,11 +136,11 @@ class EvaluationTaskService:
 
         raise ConversionTaskNotFoundException()
 
-    def _check_evaluation_task_status(self, db: Session, model_id: str, dataset_id: str, confidence_score: float):
+    def _check_evaluation_task_status(self, db: Session, model_id: str, dataset_path: str, confidence_score: float):
         evaluation_task = evaluation_task_repository.get_by_model_dataset_and_confidence(
             db=db,
             model_id=model_id,
-            dataset_id=dataset_id,
+            dataset_id=dataset_path,
             confidence_score=confidence_score
         )
 
@@ -179,7 +179,7 @@ class EvaluationTaskService:
                     self._check_evaluation_task_status(
                         db=db,
                         model_id=model.model_id,
-                        dataset_id=evaluation_in.dataset_id,
+                        dataset_id=evaluation_in.dataset_path,
                         confidence_score=confidence_score
                     )
             except EvaluationTaskAlreadyExistsException:
@@ -189,7 +189,7 @@ class EvaluationTaskService:
                 kwargs={
                     "api_key": api_key,
                     "model_id": model.model_id,
-                    "dataset_id": evaluation_in.dataset_id,
+                    "dataset_id": evaluation_in.dataset_path,
                     "training_task_id": evaluation_in.training_task_id,
                     "confidence_scores": confidence_scores,
                 },
@@ -222,7 +222,7 @@ class EvaluationTaskService:
                 kwargs={
                     "api_key": api_key,
                     "model_id": conversion_task.model_id,
-                    "dataset_id": evaluation_in.dataset_id,
+                    "dataset_id": evaluation_in.dataset_path,
                     "training_task_id": evaluation_in.training_task_id,
                     "confidence_scores": confidence_scores,
                 },
@@ -271,7 +271,7 @@ class EvaluationTaskService:
                     "input_layer": None,
                     "dataset_path": None,
                     "input_model_id": evaluation_in.input_model_id,
-                    "dataset_id": evaluation_in.dataset_id,
+                    "dataset_id": evaluation_in.dataset_path,
                     "training_task_id": evaluation_in.training_task_id,
                     "confidence_scores": confidence_scores,
                 }
