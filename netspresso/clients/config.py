@@ -25,14 +25,9 @@ class Config:
         if dotenv_path:
             load_dotenv(dotenv_path)
 
-        if self.SERVICE_NAME == ServiceName.TAO:
-            self.HOST = config_parser[ServiceName.TAO][EndPointProperty.HOST]
-            self.PORT = int(config_parser[ServiceName.TAO][EndPointProperty.PORT])
-            self.URI_PREFIX = config_parser[f"TAO.{self.MODULE}"][EndPointProperty.URI_PREFIX]
-        else:
-            self.HOST = os.environ.get("HOST", config_parser[ServiceName.NP][EndPointProperty.HOST])
-            self.PORT = int(os.environ.get("PORT", config_parser[ServiceName.NP][EndPointProperty.PORT]))
-            self.URI_PREFIX = config_parser[f"NP.{self.MODULE}"][EndPointProperty.URI_PREFIX]
+        self.HOST = os.environ.get("HOST", config_parser[ServiceName.NP][EndPointProperty.HOST])
+        self.PORT = int(os.environ.get("PORT", config_parser[ServiceName.NP][EndPointProperty.PORT]))
+        self.URI_PREFIX = config_parser[f"NP.{self.MODULE}"][EndPointProperty.URI_PREFIX]
 
         self._print_host_and_port()
 
