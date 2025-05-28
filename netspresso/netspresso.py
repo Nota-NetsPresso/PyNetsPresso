@@ -11,7 +11,6 @@ from packaging import version
 from netspresso.benchmarker import BenchmarkerV2
 from netspresso.clients.auth import TokenHandler, auth_client
 from netspresso.clients.auth.response_body import UserResponse
-from netspresso.clients.tao import TAOTokenHandler
 from netspresso.compressor import CompressorV2
 from netspresso.converter import ConverterV2
 from netspresso.enums import Task
@@ -21,7 +20,6 @@ from netspresso.np_qai.benchmarker import NPQAIBenchmarker
 from netspresso.np_qai.converter import NPQAIConverter
 from netspresso.np_qai.quantizer import NPQAIQuantizer
 from netspresso.quantizer import Quantizer
-from netspresso.tao import TAOTrainer
 from netspresso.trainer import Trainer
 from netspresso.utils.file import FileHandler
 
@@ -189,25 +187,6 @@ class NetsPresso:
             Inferencer: Initialized Inferencer instance.
         """
         return CustomInferencer(input_model_path=input_model_path)
-
-
-class TAO:
-    def __init__(self, ngc_api_key: str) -> None:
-        """Initialize TAO instance and perform user authentication.
-
-        Args:
-            ngc_api_key (str): API key for TAO authentication.
-        """
-        self.ngc_api_key = ngc_api_key
-        self.token_handler = TAOTokenHandler(ngc_api_key=ngc_api_key)
-
-    def trainer(self) -> TAOTrainer:
-        """Initialize and return a Trainer instance.
-
-        Returns:
-            TAO: Initialized Trainer instance.
-        """
-        return TAOTrainer(token_handler=self.token_handler)
 
 
 class NPQAI:

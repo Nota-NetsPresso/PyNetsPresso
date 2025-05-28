@@ -7,7 +7,6 @@ from .metadata import Status, TaskType
 from .model import DataType, Extension, Framework, OriginFrom
 from .module import Module
 from .quantize import OnnxOperator, QuantizationMode, QuantizationPrecision, SimilarityMetric
-from .tao.action import ConvertAction, ExperimentAction
 from .task import LauncherTask, Task, TaskStatusForDisplay
 from .train import Optimizer, Scheduler
 
@@ -23,7 +22,6 @@ __all__ = [
     "LayerNorm",
     "Task",
     "Framework",
-    "Framework",
     "Extension",
     "OriginFrom",
     "DataType",
@@ -33,8 +31,6 @@ __all__ = [
     "HardwareType",
     "TaskStatus",
     "Module",
-    "ConvertAction",
-    "ExperimentAction",
     "StepOp",
     "MembershipType",
     "DisplaySoftwareVersion",
