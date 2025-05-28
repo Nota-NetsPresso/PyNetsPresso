@@ -17,10 +17,6 @@ def get_headers(access_token=None, json_type=False):
     return headers
 
 
-def create_tao_headers(token):
-    return {"Authorization": f"Bearer {token}"}
-
-
 def read_file_bytes(file_path: str) -> bytes:
     with open(file_path, "rb") as f:
         file_byte = f.read()

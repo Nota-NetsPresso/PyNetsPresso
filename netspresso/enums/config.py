@@ -12,7 +12,6 @@ class EnvironmentType(StrEnum):
 
 class ServiceName(StrEnum):
     NP = "NP"
-    TAO = "TAO"
 
 
 class ServiceModule(StrEnum):
