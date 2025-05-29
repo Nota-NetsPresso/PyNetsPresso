@@ -47,6 +47,7 @@ celery_app.conf.update(
         "app.worker.conversion_task",
         "app.worker.benchmark_task",
         "app.worker.evaluation_task",
+        "app.worker.compression_task",
     ],
     result_expires=86400,  # one day,
 )
