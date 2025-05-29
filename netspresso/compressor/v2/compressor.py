@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import os
 import shutil
 import tempfile
@@ -781,7 +782,7 @@ class CompressorV2(NetsPressoBase):
             )
             compression_info = update_compression_response.data
 
-            compression_task.layers = compression_info.available_layers
+            compression_task.layers = [asdict(available_layer) for available_layer in compression_info.available_layers]
             compression_task = self._save_compression_task(compression_task)
 
             download_dir = Path(model.object_path).parent
