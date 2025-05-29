@@ -24,9 +24,9 @@ def compress_model(
 
     try:
         task_id = compressor.recommendation_compression_from_id(
-            method=method,
+            compression_method=method,
             recommendation_method=recommendation_method,
-            ratio=ratio,
+            recommendation_ratio=ratio,
             options=options,
             input_model_id=input_model_id,
             compression_task_id=compression_task_id,
