@@ -37,8 +37,10 @@ from netspresso.metadata.compressor import CompressorMetadata
 from netspresso.utils import FileHandler
 from netspresso.utils.db.models.compression import CompressionTask
 from netspresso.utils.db.models.model import Model
+from netspresso.utils.db.models.training import TrainingTask
 from netspresso.utils.db.repositories.compression import compression_task_repository
 from netspresso.utils.db.repositories.model import model_repository
+from netspresso.utils.db.repositories.training import training_task_repository
 from netspresso.utils.db.session import get_db_session
 from netspresso.utils.metadata import MetadataHandler
 
@@ -629,13 +631,17 @@ class CompressorV2(NetsPressoBase):
             compression_task = compression_task_repository.save(db=db, model=compression_task)
             return compression_task
 
+    def get_training_task(self, model_id) -> TrainingTask:
+        with get_db_session() as db:
+            training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
+            return training_task
+
     def recommendation_compression_from_id(
         self,
         input_model_id: str,
         compression_method: CompressionMethod,
         recommendation_method: RecommendationMethod,
         recommendation_ratio: float,
-        input_shapes: List[Dict[str, int]],
         framework: Framework = Framework.PYTORCH,
         options: RecommendationOptions = RecommendationOptions(),
         dataset_path: Optional[str] = None,
@@ -706,7 +712,8 @@ class CompressorV2(NetsPressoBase):
             compression_task.status = Status.IN_PROGRESS
             compression_task = self._save_compression_task(compression_task)
 
-            model_info = self.upload_model(local_path, input_shapes, framework)
+            training_task = self.get_training_task(input_model.model_id)
+            model_info = self.upload_model(local_path, training_task.input_shapes, framework)
 
             create_compression_request = RequestCreateCompression(
                 ai_model_id=model_info.ai_model_id,
