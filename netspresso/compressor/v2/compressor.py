@@ -636,6 +636,19 @@ class CompressorV2(NetsPressoBase):
             training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
             return training_task
 
+    def _get_enum_value(self, enum_obj: Any) -> str:
+        """Safely extract the string value from an enum or string.
+
+        Args:
+            enum_obj: Enum object or string
+
+        Returns:
+            String value of the enum or the original string
+        """
+        if hasattr(enum_obj, 'value'):
+            return enum_obj.value
+        return str(enum_obj)
+
     def recommendation_compression_from_id(
         self,
         input_model_id: str,
