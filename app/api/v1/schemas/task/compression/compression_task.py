@@ -41,7 +41,7 @@ class CompressionCreate(BaseModel):
     method: CompressionMethod = Field(description="Compression method")
     recommendation_method: RecommendationMethod = Field(description="Recommendation method")
     ratio: float = Field(description="Compression ratio")
-    options: Optional[Options] = Field(default_factory=Options, description="Compression options")
+    options: Optional[RecommendationOptions] = Field(default_factory=RecommendationOptions, description="Compression options")
 
     @field_validator('ratio')
     def validate_ratio(cls, v, values):
@@ -73,7 +73,7 @@ class CompressionPayload(BaseModel):
     method: CompressionMethod
     recommendation_method: RecommendationMethod
     ratio: float
-    options: Options
+    options: RecommendationOptions
     model_results: CompressionModelResult
     user_id: str
     status: str
