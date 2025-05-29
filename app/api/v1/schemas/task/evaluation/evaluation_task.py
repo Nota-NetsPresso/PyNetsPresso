@@ -44,7 +44,6 @@ class EvaluationPayload(BaseModel):
 
     task_id: str
     dataset_id: str
-    dataset: EvaluationDatasetPayload
     is_dataset_deleted: bool
 
     confidence_score: float
