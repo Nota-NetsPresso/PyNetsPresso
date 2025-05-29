@@ -225,7 +225,7 @@ class NetsPresso:
         Returns:
             Compressor: Initialized Compressor instance.
         """
-        return CompressorV2(token_handler=self.token_handler)
+        return CompressorV2(token_handler=self.token_handler, user_info=self.user_info)
 
     def converter_v2(self) -> ConverterV2:
         """Initialize and return a Converter instance.
