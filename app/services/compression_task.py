@@ -17,6 +17,7 @@ class CompressionTaskService:
                 "ratio": compression_in.ratio,
                 "options": compression_in.options.model_dump(),
                 "input_model_id": compression_in.input_model_id,
+                "compression_task_id": compression_task_id,
             },
             compression_task_id=compression_task_id,
         )
