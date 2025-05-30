@@ -71,7 +71,6 @@ class CompressionPayload(BaseModel):
     model_id: Optional[str] = None
     input_model_id: str
     method: CompressionMethod
-    recommendation_method: RecommendationMethod
     ratio: float
     options: RecommendationOptions
     model_results: CompressionModelResult
