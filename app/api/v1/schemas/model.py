@@ -9,10 +9,10 @@ from netspresso.enums import Status
 
 
 class ExperimentStatus(BaseModel):
+    compress: Status = Field(default=Status.NOT_STARTED, description="The status of the compression experiment.")
     convert: Status = Field(default=Status.NOT_STARTED, description="The status of the conversion experiment.")
     benchmark: Status = Field(default=Status.NOT_STARTED, description="The status of the benchmark experiment.")
     evaluate: Status = Field(default=Status.NOT_STARTED, description="The status of the evaluation experiment.")
-
 
 class ModelPayload(BaseModel):
     model_config = ConfigDict(from_attributes=True)
