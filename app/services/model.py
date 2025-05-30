@@ -160,15 +160,28 @@ class ModelService:
 
         new_models = []
         for model in models:
-            if task_type and task_type in [TaskType.BENCHMARK, TaskType.EVALUATE, TaskType.CONVERT]:
+            # Handle compression task separately as it only needs trained models
+            if task_type == TaskType.COMPRESS:
                 if model.type != SubFolder.TRAINED_MODELS:
                     continue
+            # Handle other conversion/evaluation tasks that can use both trained and compressed models
+            elif task_type in [TaskType.BENCHMARK, TaskType.EVALUATE, TaskType.CONVERT]:
+                if model.type not in [SubFolder.TRAINED_MODELS, SubFolder.COMPRESSED_MODELS]:
+                    continue
+            # For other cases (like listing), exclude converted and benchmarked models
             else:
                 if model.type in [SubFolder.CONVERTED_MODELS, SubFolder.BENCHMARKED_MODELS]:
                     continue
 
             model_payload = ModelPayload.model_validate(model)
-            training_task = training_task_repository.get_by_model_id(db=db, model_id=model.model_id)
+
+            # Get training task based on model type
+            if model.type == SubFolder.COMPRESSED_MODELS:
+                compression_task = compression_task_repository.get_by_model_id(db=db, model_id=model.model_id)
+                training_task = training_task_repository.get_by_model_id(db=db, model_id=compression_task.input_model_id)
+            else:
+                training_task = training_task_repository.get_by_model_id(db=db, model_id=model.model_id)
+
             model_payload.train_task_id = training_task.task_id
             model_payload.status = training_task.status
             model_payload = self._attach_child_task_info(db, model_payload)
