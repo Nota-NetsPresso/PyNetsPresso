@@ -53,7 +53,7 @@ class CompressionCreate(BaseModel):
         return v
 
 
-class CompressionModelResult(BaseModel):
+class ModelResult(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     size: int
@@ -73,7 +73,7 @@ class CompressionPayload(BaseModel):
     method: CompressionMethod
     ratio: float
     options: RecommendationOptions
-    model_results: CompressionModelResult
+    model_results: List[ModelResult]
     related_task_ids: List[str] = Field(default_factory=list)
     user_id: str
     status: str
