@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from netspresso.exceptions.compression import CompressionTaskIsDeletedException, CompressionTaskNotFoundException
-from netspresso.utils.db.models.compression import CompressionTask
+from netspresso.utils.db.models.compression import CompressionModelResult, CompressionTask
 from netspresso.utils.db.repositories.base import BaseRepository
 
 
@@ -39,4 +39,9 @@ class CompressionTaskRepository(BaseRepository[CompressionTask]):
         return tasks
 
 
+class CompressionModelResultRepository(BaseRepository[CompressionModelResult]):
+    pass
+
+
 compression_task_repository = CompressionTaskRepository(CompressionTask)
+compression_model_result_repository = CompressionModelResultRepository(CompressionModelResult)
