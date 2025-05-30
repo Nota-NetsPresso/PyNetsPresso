@@ -14,6 +14,7 @@ from netspresso.exceptions.model import ModelCannotBeDeletedException
 from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.repositories.base import Order, TimeSort
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
+from netspresso.utils.db.repositories.compression import compression_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.evaluation import evaluation_task_repository
 from netspresso.utils.db.repositories.model import model_repository
@@ -177,7 +178,11 @@ class ModelService:
 
     def get_model(self, db: Session, model_id: str, api_key: str) -> ModelPayload:
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
-        training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
+        if model.type == SubFolder.COMPRESSED_MODELS:
+            compression_task = compression_task_repository.get_by_model_id(db=db, model_id=model_id)
+            training_task = training_task_repository.get_by_model_id(db=db, model_id=compression_task.input_model_id)
+        else:
+            training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
 
         model_payload = ModelPayload.model_validate(model)
         model_payload.train_task_id = training_task.task_id
