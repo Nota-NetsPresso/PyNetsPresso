@@ -108,6 +108,26 @@ class ModelService:
 
         return latest_status, task_ids
 
+    def _get_compression_info(self, db: Session, model_id: str) -> tuple[Optional[str], List[str]]:
+        """Get compression task information for a model
+
+        Args:
+            db: Database session
+            model_id: Model ID to get compression tasks for
+
+        Returns:
+            tuple: (latest status, task IDs)
+        """
+        compression_tasks = compression_task_repository.get_all_by_input_model_id(db=db, input_model_id=model_id)
+        if not compression_tasks:
+            return None, []
+
+        task_ids = [task.task_id for task in compression_tasks]
+        compression_task = compression_task_repository.get_latest_compression_task(db=db, input_model_id=model_id)
+        latest_status = compression_task.status
+
+        return latest_status, task_ids
+
     def _attach_child_task_info(self, db: Session, model: ModelPayload) -> ModelPayload:
         """Attach child tasks (conversion, benchmark, evaluation) information to model
 
@@ -123,6 +143,12 @@ class ModelService:
         if eval_status:
             model.latest_experiments.evaluate = eval_status
             model.evaluation_task_ids.extend(eval_task_ids)
+
+        # Get compression tasks
+        comp_status, comp_task_ids = self._get_compression_info(db, model.model_id)
+        if comp_status:
+            model.latest_experiments.compress = comp_status
+            model.compress_task_ids.extend(comp_task_ids)
 
         # Get conversion tasks and their benchmark tasks
         conv_status, conv_task_ids, conv_model_ids = self._get_conversion_info(db, model.model_id)
