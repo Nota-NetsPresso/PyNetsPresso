@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -75,6 +75,7 @@ class CompressionPayload(BaseModel):
     ratio: float
     options: RecommendationOptions
     model_results: CompressionModelResult
+    related_task_ids: List[str] = Field(default_factory=list)
     user_id: str
     status: str
     is_deleted: bool
