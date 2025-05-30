@@ -26,6 +26,7 @@ class TaskStatusForDisplay(NamedConstant):
 
 
 class TaskType(str, Enum):
+    COMPRESS = "compress"
     CONVERT = "convert"
     BENCHMARK = "benchmark"
     EVALUATE = "evaluate"
