@@ -1,8 +1,13 @@
 from sqlalchemy.orm import Session
 
-from app.api.v1.schemas.task.compression.compression_task import CompressionCreate, CompressionCreatePayload
+from app.api.v1.schemas.task.compression.compression_task import (
+    CompressionCreate,
+    CompressionCreatePayload,
+    CompressionPayload,
+)
 from app.worker.compression_task import compress_model
 from netspresso.utils.db.models.base import generate_uuid
+from netspresso.utils.db.repositories.compression import compression_task_repository
 
 
 class CompressionTaskService:
@@ -22,6 +27,17 @@ class CompressionTaskService:
             compression_task_id=compression_task_id,
         )
         return CompressionCreatePayload(task_id=compression_task_id)
+
+    def get_compression_task(self, db: Session, compression_task_id: str, api_key: str) -> CompressionPayload:
+        compression_task = compression_task_repository.get_by_task_id(db=db, task_id=compression_task_id)
+
+        compression_task = CompressionPayload.model_validate(compression_task)
+        related_tasks = compression_task_repository.get_all_by_input_model_id(
+            db=db, input_model_id=compression_task.input_model_id
+        )
+        compression_task.related_task_ids = [task.task_id for task in related_tasks]
+
+        return compression_task
 
 
 compression_task_service = CompressionTaskService()

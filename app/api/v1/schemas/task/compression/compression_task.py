@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -53,7 +53,7 @@ class CompressionCreate(BaseModel):
         return v
 
 
-class CompressionModelResult(BaseModel):
+class ModelResult(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     size: int
@@ -61,7 +61,8 @@ class CompressionModelResult(BaseModel):
     number_of_parameters: int
     trainable_parameters: int
     non_trainable_parameters: int
-    number_of_layers: int
+    number_of_layers: Optional[int]
+    result_type: str  # 'original' or 'compressed'
 
 
 class CompressionPayload(BaseModel):
@@ -71,10 +72,10 @@ class CompressionPayload(BaseModel):
     model_id: Optional[str] = None
     input_model_id: str
     method: CompressionMethod
-    recommendation_method: RecommendationMethod
     ratio: float
     options: RecommendationOptions
-    model_results: CompressionModelResult
+    model_results: List[ModelResult]
+    related_task_ids: List[str] = Field(default_factory=list)
     user_id: str
     status: str
     is_deleted: bool

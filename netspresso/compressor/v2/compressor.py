@@ -36,10 +36,13 @@ from netspresso.enums.project import SubFolder
 from netspresso.exceptions.compressor import FailedUploadModelException
 from netspresso.metadata.compressor import CompressorMetadata
 from netspresso.utils import FileHandler
-from netspresso.utils.db.models.compression import CompressionTask
+from netspresso.utils.db.models.compression import CompressionModelResult, CompressionTask
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.models.training import TrainingTask
-from netspresso.utils.db.repositories.compression import compression_task_repository
+from netspresso.utils.db.repositories.compression import (
+    compression_model_result_repository,
+    compression_task_repository,
+)
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
 from netspresso.utils.db.session import get_db_session
@@ -809,6 +812,34 @@ class CompressorV2(NetsPressoBase):
                 )
 
             logger.info(f"Uploaded Compressed Model file to Zenko: {model.object_path}")
+
+            # Save model results for original and compressed models
+            original_result = CompressionModelResult(
+                size=model_info.file_size_in_mb,
+                flops=model_info.detail.flops,
+                number_of_parameters=model_info.detail.trainable_parameters + model_info.detail.non_trainable_parameters,
+                trainable_parameters=model_info.detail.trainable_parameters,
+                non_trainable_parameters=model_info.detail.non_trainable_parameters,
+                number_of_layers=model_info.detail.number_of_layers if model_info.detail.number_of_layers != 0 else None,
+                compression_task_id=compression_task.task_id,
+                result_type='original'
+            )
+
+            compressed_model_info = self.get_model(model_id=compression_info.input_model_id)
+            compressed_result = CompressionModelResult(
+                size=compressed_model_info.file_size_in_mb,
+                flops=compressed_model_info.detail.flops,
+                number_of_parameters=compressed_model_info.detail.trainable_parameters + compressed_model_info.detail.non_trainable_parameters,
+                trainable_parameters=compressed_model_info.detail.trainable_parameters,
+                non_trainable_parameters=compressed_model_info.detail.non_trainable_parameters,
+                number_of_layers=compressed_model_info.detail.number_of_layers if compressed_model_info.detail.number_of_layers != 0 else None,
+                compression_task_id=compression_task.task_id,
+                result_type='compressed'
+            )
+
+            self._save_compression_model_result(original_result)
+            self._save_compression_model_result(compressed_result)
+
             self.print_remaining_credit(service_task=ServiceTask.ADVANCED_COMPRESSION)
             compression_task.status = Status.COMPLETED
             logger.info(
@@ -897,3 +928,8 @@ class CompressorV2(NetsPressoBase):
             MetadataHandler.save_metadata(data=metadata, folder_path=output_dir)
 
         return metadata
+
+    def _save_compression_model_result(self, result: CompressionModelResult) -> CompressionModelResult:
+        with get_db_session() as db:
+            result = compression_model_result_repository.save(db=db, model=result)
+            return result
