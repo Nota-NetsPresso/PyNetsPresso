@@ -181,7 +181,8 @@ class ModelService:
         if model.type == SubFolder.COMPRESSED_MODELS:
             compression_task = compression_task_repository.get_by_model_id(db=db, model_id=model_id)
             training_task = training_task_repository.get_by_model_id(db=db, model_id=compression_task.input_model_id)
-        training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
+        else:
+            training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
 
         model_payload = ModelPayload.model_validate(model)
         model_payload.train_task_id = training_task.task_id
