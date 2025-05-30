@@ -61,7 +61,8 @@ class ModelResult(BaseModel):
     number_of_parameters: int
     trainable_parameters: int
     non_trainable_parameters: int
-    number_of_layers: int
+    number_of_layers: Optional[int] = 0
+    result_type: str  # 'original' or 'compressed'
 
 
 class CompressionPayload(BaseModel):
