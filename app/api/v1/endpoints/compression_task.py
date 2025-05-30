@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from app.api.deps import api_key_header
 from app.api.v1.schemas.task.compression.compression_task import (
@@ -7,6 +8,7 @@ from app.api.v1.schemas.task.compression.compression_task import (
     CompressionResponse,
 )
 from app.services.compression_task import compression_task_service
+from netspresso.utils.db.session import get_db
 
 router = APIRouter()
 
@@ -24,8 +26,11 @@ def create_compressions_task(
 @router.get("/compressions/{task_id}", response_model=CompressionResponse)
 def get_compression_task(
     task_id: str,
+    db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> CompressionResponse:
-    compression_task = compression_task_service.get_compression_task(compression_task_id=task_id, api_key=api_key)
+    compression_task = compression_task_service.get_compression_task(
+        db=db, compression_task_id=task_id, api_key=api_key
+    )
 
     return CompressionResponse(data=compression_task)
