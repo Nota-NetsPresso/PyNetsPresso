@@ -48,6 +48,7 @@ def create_evaluations_task(
     return EvaluationCreateResponse(data=response_data)
 
 
+# TODO: Will be removed after the evaluation task is migrated to the new task system
 @router.get("/evaluations/{model_id}", response_model=EvaluationsResponse, status_code=200)
 def get_evaluation_tasks(
     model_id: str = Path(..., description="Trained Model ID to get all related evaluation tasks"),

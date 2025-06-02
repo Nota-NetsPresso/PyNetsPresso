@@ -8,7 +8,9 @@ from app.api.v1.schemas.model import ModelDetailResponse, ModelsResponse, ModelU
 from app.api.v1.schemas.task.compression.compression_task import (
     CompressionsResponse,
 )
+from app.api.v1.schemas.task.evaluation.evaluation_task import EvaluationsResponse
 from app.services.compression_task import compression_task_service
+from app.services.evaluation_task import evaluation_task_service
 from app.services.model import model_service
 from netspresso.enums.task import TaskType
 from netspresso.utils.db.session import get_db
@@ -77,3 +79,42 @@ def get_model_compression_tasks(
     )
 
     return CompressionsResponse(data=compression_tasks)
+
+
+@router.get("/{model_id}/evaluations", response_model=EvaluationsResponse)
+def get_model_evaluation_tasks(
+    model_id: str = Path(..., description="Model ID to get all related evaluation tasks"),
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> EvaluationsResponse:
+    # 1. Get all converted model IDs derived from the trained model
+    _, _, converted_model_ids = model_service._get_conversion_info(db, model_id)
+
+    # 2. Get all evaluation tasks using original model ID and converted model IDs
+    evaluation_tasks = []
+
+    # Add evaluation tasks directly linked to the original model ID
+    original_model_tasks = evaluation_task_service.get_evaluation_tasks(
+        db=db,
+        api_key=api_key,
+        model_id=model_id
+    )
+    evaluation_tasks.extend(original_model_tasks)
+
+    # Add evaluation tasks for each converted model
+    for converted_id in converted_model_ids:
+        converted_model_tasks = evaluation_task_service.get_evaluation_tasks(
+            db=db,
+            api_key=api_key,
+            model_id=converted_id
+        )
+        evaluation_tasks.extend(converted_model_tasks)
+
+    # Remove duplicates (based on task_id)
+    unique_tasks = {}
+    for task in evaluation_tasks:
+        unique_tasks[task.task_id] = task
+
+    evaluation_tasks = list(unique_tasks.values())
+
+    return EvaluationsResponse(data=evaluation_tasks, result_count=len(evaluation_tasks), total_count=len(evaluation_tasks))
