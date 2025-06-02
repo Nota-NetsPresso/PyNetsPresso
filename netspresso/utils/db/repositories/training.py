@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
+from netspresso.enums.metadata import Status
 from netspresso.exceptions.training import TrainingTaskIsDeletedException, TrainingTaskNotFoundException
 from netspresso.utils.db.models.training import TrainingTask
 from netspresso.utils.db.repositories.base import BaseRepository
@@ -53,5 +54,15 @@ class TrainingTaskRepository(BaseRepository[TrainingTask]):
         )
 
         return self.__is_available(task=task)
+
+    def get_completed_tasks(self, db: Session, user_id: str) -> List[TrainingTask]:
+        conditions = [self.model.status == Status.COMPLETED, self.model.user_id == user_id]
+        tasks = self.find_all(
+            db=db,
+            conditions=conditions,
+        )
+
+        return tasks
+
 
 training_task_repository = TrainingTaskRepository(TrainingTask)

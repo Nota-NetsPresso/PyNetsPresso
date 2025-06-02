@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
+from netspresso.enums.metadata import Status
 from netspresso.exceptions.compression import CompressionTaskIsDeletedException, CompressionTaskNotFoundException
 from netspresso.utils.db.models.compression import CompressionModelResult, CompressionTask
 from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
@@ -58,6 +59,14 @@ class CompressionTaskRepository(BaseRepository[CompressionTask]):
         task = self.find_first(db=db, conditions=conditions, order=order, time_sort=time_sort)
 
         return self.__is_available(task=task)
+
+    def get_completed_tasks(self, db: Session, user_id: str) -> List[CompressionTask]:
+        conditions = [self.model.status == Status.COMPLETED, self.model.user_id == user_id]
+        tasks = self.find_all(
+            db=db,
+            conditions=conditions,
+        )
+        return tasks
 
 
 class CompressionModelResultRepository(BaseRepository[CompressionModelResult]):
