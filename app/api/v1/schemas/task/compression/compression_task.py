@@ -94,3 +94,9 @@ class CompressionCreateResponse(ResponseItem):
 
 class CompressionResponse(ResponseItem):
     data: CompressionPayload
+
+
+class CompressionsResponse(ResponseItem):
+    data: List[CompressionPayload]
+    result_count: int
+    total_count: int

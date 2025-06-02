@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.task.compression.compression_task import (
@@ -38,6 +40,14 @@ class CompressionTaskService:
         compression_task.related_task_ids = [task.task_id for task in related_tasks]
 
         return compression_task
+
+    def get_compression_tasks(self, db: Session, model_id: str, api_key: str) -> List[CompressionPayload]:
+        compression_tasks = compression_task_repository.get_all_by_input_model_id(
+            db=db, input_model_id=model_id
+        )
+        compression_tasks = [CompressionPayload.model_validate(task) for task in compression_tasks]
+
+        return compression_tasks
 
 
 compression_task_service = CompressionTaskService()
