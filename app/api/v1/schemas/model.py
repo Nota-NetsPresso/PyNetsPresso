@@ -14,6 +14,7 @@ class ExperimentStatus(BaseModel):
     benchmark: Status = Field(default=Status.NOT_STARTED, description="The status of the benchmark experiment.")
     evaluate: Status = Field(default=Status.NOT_STARTED, description="The status of the evaluation experiment.")
 
+
 class ModelPayload(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
