@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from netspresso.exceptions.compression import CompressionTaskIsDeletedException, CompressionTaskNotFoundException
 from netspresso.utils.db.models.compression import CompressionModelResult, CompressionTask
-from netspresso.utils.db.repositories.base import BaseRepository
+from netspresso.utils.db.repositories.base import BaseRepository, Order, TimeSort
 
 
 class CompressionTaskRepository(BaseRepository[CompressionTask]):
@@ -32,11 +32,32 @@ class CompressionTaskRepository(BaseRepository[CompressionTask]):
 
         return self.__is_available(task=task)
 
-    def get_all_by_input_model_id(self, db: Session, input_model_id: str) -> List[CompressionTask]:
+    def get_all_by_input_model_id(
+        self, db: Session, input_model_id: str, order: Order = Order.DESC, time_sort: TimeSort = TimeSort.CREATED_AT
+    ) -> List[CompressionTask]:
         conditions = [self.model.input_model_id == input_model_id]
-        tasks = self.find_all(db=db, conditions=conditions)
+        tasks = self.find_all(db=db, conditions=conditions, order=order, time_sort=time_sort)
 
         return tasks
+
+    def get_latest_compression_task(
+        self, db: Session, input_model_id: str, order: Order = Order.DESC, time_sort: TimeSort = TimeSort.UPDATED_AT
+    ) -> Optional[CompressionTask]:
+        """Get the latest compression task for a model.
+
+        Args:
+            db: Database session
+            input_model_id: Input model ID
+            order: Order of results (default: DESC)
+            time_sort: Time field to sort by (default: UPDATED_AT)
+
+        Returns:
+            Optional[CompressionTask]: Latest compression task if exists
+        """
+        conditions = [self.model.input_model_id == input_model_id]
+        task = self.find_first(db=db, conditions=conditions, order=order, time_sort=time_sort)
+
+        return self.__is_available(task=task)
 
 
 class CompressionModelResultRepository(BaseRepository[CompressionModelResult]):
