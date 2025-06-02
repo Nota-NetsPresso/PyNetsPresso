@@ -5,8 +5,13 @@ from typing import Dict, List
 
 from sqlalchemy.orm import Session
 
-from app.api.v1.schemas.task.train.dataset import LocalTrainingDatasetPayload, LocalTrainingDatasetsResponse
-from app.api.v1.schemas.task.train.hyperparameter import OptimizerPayload, SchedulerPayload, TrainerModel
+from app.api.v1.schemas.task.train.dataset import LocalTrainingDatasetPayload
+from app.api.v1.schemas.task.train.hyperparameter import (
+    OptimizerPayload,
+    SchedulerPayload,
+    SupportedRetrainableModelPayload,
+    TrainerModel,
+)
 from app.api.v1.schemas.task.train.train_task import (
     FrameworkPayload,
     PretrainedModelPayload,
@@ -16,16 +21,16 @@ from app.api.v1.schemas.task.train.train_task import (
     TrainingPayload,
 )
 from app.worker.training_task import train_model
+from netspresso.enums.project import SubFolder
 from netspresso.enums.train import MODEL_DISPLAY_MAP, MODEL_GROUP_MAP
-from netspresso.trainer.augmentations.augmentation import Normalize, Resize, ToTensor
+from netspresso.netspresso import NetsPresso
 from netspresso.trainer.models import get_all_available_models
-from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.optimizers.optimizers import get_supported_optimizers
-from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
 from netspresso.trainer.schedulers.schedulers import get_supported_schedulers
-from netspresso.trainer.trainer import Trainer
 from netspresso.utils.db.models.base import generate_uuid
+from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.models.training import TrainingTask
+from netspresso.utils.db.repositories.compression import compression_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
 
@@ -62,29 +67,29 @@ class TrainTaskService:
 
     def _convert_to_payload_format(self, training_task: TrainingTask) -> TrainingPayload:
         """Convert training task to payload format."""
-        # 원본 데이터를 변경하지 않기 위해 깊은 복사 수행
+        # Perform deep copy to avoid modifying the original data
         task_data = copy.deepcopy(training_task.__dict__)
 
-        # 필요한 필드들을 Payload 객체로 변환
+        # Convert required fields to Payload objects
         task_data['task'] = TaskPayload(name=training_task.task)
         task_data['framework'] = FrameworkPayload(name=training_task.framework)
         task_data['pretrained_model'] = PretrainedModelPayload(name=training_task.pretrained_model)
 
-        # 하이퍼파라미터 정보 변환
+        # Convert hyperparameter information
         hyperparameter_data = copy.deepcopy(training_task.hyperparameter.__dict__)
         hyperparameter_data['learning_rate'] = training_task.hyperparameter.optimizer["lr"]
         hyperparameter_data['optimizer'] = OptimizerPayload(name=training_task.hyperparameter.optimizer["name"])
         hyperparameter_data['scheduler'] = SchedulerPayload(name=training_task.hyperparameter.scheduler["name"])
         task_data['hyperparameter'] = hyperparameter_data
 
-        # 모델 ID 설정
+        # Set model ID
         task_data['model_id'] = training_task.model.model_id if training_task.model else None
 
-        # SQLAlchemy 내부 상태 속성 제거
+        # Remove SQLAlchemy internal state attributes
         if '_sa_instance_state' in task_data:
             del task_data['_sa_instance_state']
 
-        # Pydantic 모델로 변환하여 반환
+        # Convert to Pydantic model and return
         return TrainingPayload.model_validate(task_data)
 
     def _generate_unique_model_name(self, db: Session, project_id: str, name: str, api_key: str) -> str:
@@ -170,6 +175,69 @@ class TrainTaskService:
         ]
 
         return training_datasets_payload
+
+    def get_supported_retrainable_models(self, db: Session, api_key: str) -> List[SupportedRetrainableModelPayload]:
+        """Get all models that can be retrained.
+
+        Args:
+            db (Session): Database session
+            api_key (str): API key for authentication
+
+        Returns:
+            List[SupportedRetrainableModelPayload]: List of retrainable models
+        """
+        # Get all trained models from the database
+        netspresso = NetsPresso(api_key=api_key)
+        completed_training_tasks = training_task_repository.get_completed_tasks(
+            db=db,
+            user_id=netspresso.user_info.user_id,
+        )
+        completed_compression_tasks = compression_task_repository.get_completed_tasks(
+            db=db,
+            user_id=netspresso.user_info.user_id,
+        )
+
+        # Create retrainable models from training tasks
+        retrainable_models = [
+            SupportedRetrainableModelPayload(
+                name=task.model.name,
+                model_id=task.model.model_id,
+                type=task.model.type,
+                training_task_id=task.task_id  # Use task_id directly from training task
+            )
+            for task in completed_training_tasks
+            if task.model  # Ensure model exists
+        ]
+
+        # Add compressed models
+        compressed_models = [
+            SupportedRetrainableModelPayload(
+                name=task.model.name,
+                model_id=task.model.model_id,
+                type=task.model.type,
+                training_task_id=self._get_original_training_task_id(db, task.model)
+            )
+            for task in completed_compression_tasks
+            if task.model  # Ensure model exists
+        ]
+
+        retrainable_models.extend(compressed_models)
+        return retrainable_models
+
+    def _get_original_training_task_id(self, db: Session, model: Model) -> str:
+        """Get the original training task ID for a compressed model.
+        This method should only be called for compressed models.
+
+        Args:
+            db (Session): Database session
+            model (Model): Compressed model to get training task ID for
+
+        Returns:
+            str: Training task ID of the original model
+        """
+        compression_task = compression_task_repository.get_by_model_id(db=db, model_id=model.model_id)
+        training_task = training_task_repository.get_by_model_id(db=db, model_id=compression_task.input_model_id)
+        return training_task.task_id
 
 
 train_task_service = TrainTaskService()

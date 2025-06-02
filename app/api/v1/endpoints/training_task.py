@@ -6,6 +6,7 @@ from app.api.v1.schemas.task.train.dataset import LocalTrainingDatasetsResponse
 from app.api.v1.schemas.task.train.hyperparameter import (
     SupportedModelResponse,
     SupportedOptimizersResponse,
+    SupportedRetrainableModelResponse,
     SupportedSchedulersResponse,
 )
 from app.api.v1.schemas.task.train.train_task import TrainingCreate, TrainingCreateResponse, TrainingResponse
@@ -46,6 +47,20 @@ def get_supported_schedulers() -> SupportedSchedulersResponse:
     supported_schedulers = train_task_service.get_supported_schedulers()
 
     return SupportedSchedulersResponse(data=supported_schedulers)
+
+
+@router.get(
+    "/trainings/configuration/retrainable-models",
+    response_model=SupportedRetrainableModelResponse,
+    description="Get list of models that can be retrained.",
+)
+def get_supported_retrainable_models(
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> SupportedRetrainableModelResponse:
+    retrainable_models = train_task_service.get_supported_retrainable_models(db=db, api_key=api_key)
+
+    return SupportedRetrainableModelResponse(data=retrainable_models)
 
 
 @router.post("/trainings", response_model=TrainingCreateResponse, status_code=201)
