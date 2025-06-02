@@ -1,10 +1,14 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import api_key_header
 from app.api.v1.schemas.model import ModelDetailResponse, ModelsResponse, ModelUrlResponse
+from app.api.v1.schemas.task.compression.compression_task import (
+    CompressionsResponse,
+)
+from app.services.compression_task import compression_task_service
 from app.services.model import model_service
 from netspresso.enums.task import TaskType
 from netspresso.utils.db.session import get_db
@@ -58,3 +62,18 @@ def download_model(
     presigned_url = model_service.download_model(db=db, model_id=model_id, api_key=api_key)
 
     return ModelUrlResponse(data=presigned_url)
+
+
+@router.get("/{model_id}/compressions", response_model=CompressionsResponse)
+def get_model_compression_tasks(
+    model_id: str = Path(..., description="Model ID to get all related compression tasks"),
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> CompressionsResponse:
+    compression_tasks = compression_task_service.get_compression_tasks(
+        db=db,
+        model_id=model_id,
+        api_key=api_key,
+    )
+
+    return CompressionsResponse(data=compression_tasks)
