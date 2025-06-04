@@ -34,7 +34,8 @@ class InputShape(BaseModel):
 class TrainingCreate(BaseModel):
     project_id: str
     name: str
-    pretrained_model: str
+    pretrained_model: Optional[str] = None
+    input_model_id: Optional[str] = None
     task: Task = Field(default=Task.OBJECT_DETECTION, description="Task")
     input_shapes: List[InputShape] = Field(default_factory=list, description="List of input shapes")
     dataset: Optional[DatasetCreate]
@@ -87,6 +88,7 @@ class TrainingPayload(BaseModel):
 
     task_id: str
     model_id: Optional[str] = None
+    input_model_id: Optional[str] = None
     pretrained_model: PretrainedModelPayload
     task: TaskPayload
     framework: FrameworkPayload
