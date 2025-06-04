@@ -9,7 +9,6 @@ from app.api.v1.schemas.task.train.dataset import LocalTrainingDatasetPayload
 from app.api.v1.schemas.task.train.hyperparameter import (
     OptimizerPayload,
     SchedulerPayload,
-    SupportedRetrainableModelPayload,
     TrainerModel,
 )
 from app.api.v1.schemas.task.train.train_task import (
