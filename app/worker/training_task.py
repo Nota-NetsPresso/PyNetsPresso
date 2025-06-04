@@ -101,10 +101,31 @@ def configure_model_and_training(trainer: Trainer, training_in: TrainingCreate):
     img_size = training_in.input_shapes[0].dimension[0]
     logger.info(f"Setting model config with size: {img_size} and model: {training_in.pretrained_model}")
 
-    trainer.set_model_config(
-        model_name=training_in.pretrained_model,
-        img_size=img_size
-    )
+    if training_in.pretrained_model:
+        trainer.set_model_config(
+            model_name=training_in.pretrained_model,
+            img_size=img_size,
+        )
+    elif training_in.input_model_id:
+        with get_db_session() as session:
+            input_model = model_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
+            training_task = training_task_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
+
+            model_path = Path(input_model.object_path) / "model.pt"
+            if not model_path.exists():
+                logger.info(f"Downloading input model from Zenko: {model_path}")
+                storage_handler.download_file_from_s3(
+                    bucket_name=BUCKET_NAME,
+                    local_path=model_path.as_posix(),
+                    object_path=model_path.as_posix(),
+                )
+                logger.info(f"Downloaded input model from Zenko: {model_path}")
+
+            trainer.set_model_config(
+                model_name=training_task.pretrained_model,
+                img_size=img_size,
+                fx_model_path=model_path.as_posix(),
+            )
 
     trainer.set_augmentation_config(
         train_transforms=DEFAULT_AUGMENTATIONS,
@@ -336,6 +357,13 @@ def train_model(
         # Step 2: Configure model and training parameters
         configure_model_and_training(trainer, training_in)
 
+        if training_in.pretrained_model:
+            training_type = "training"
+        elif training_in.input_model_id:
+            training_type = "retraining"
+        else:
+            training_type = "training"
+
         # Step 3: Execute training
         logger.info(f"Starting training with task_id: {task_id}")
         training_task_id = trainer.train(
@@ -343,6 +371,8 @@ def train_model(
             model_name=unique_model_name,
             project_id=training_in.project_id,
             task_id=task_id,
+            training_type=training_type,
+            input_model_id=training_in.input_model_id,
         )
         logger.info(f"Training completed with task_id: {training_task_id}")
 
