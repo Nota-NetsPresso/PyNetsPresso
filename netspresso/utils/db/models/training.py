@@ -24,6 +24,7 @@ class TrainingTask(BaseModel):
     pretrained_model = Column(String(100), nullable=False)
     task = Column(String(30), nullable=False)
     framework = Column(String(30), nullable=False)
+    training_type = Column(String(30), nullable=False, default="training")  # training, retraining
     input_shapes = Column(JSON, nullable=False)
     status = Column(String(30), nullable=False)
     error_detail = Column(JSON, nullable=True)
@@ -40,6 +41,15 @@ class TrainingTask(BaseModel):
     )
     performance = relationship(
         "Performance", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy="joined"
+    )
+
+    # Relationship to Model (source model)
+    input_model_id = Column(String(36), ForeignKey("model.model_id"), nullable=True)
+    input_model = relationship(
+        "Model",
+        uselist=False,
+        lazy="joined",
+        foreign_keys=[input_model_id],
     )
 
     # Relationship to Model
