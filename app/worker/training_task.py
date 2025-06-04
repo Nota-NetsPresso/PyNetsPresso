@@ -132,7 +132,6 @@ def configure_model_and_training(trainer: Trainer, training_in: TrainingCreate):
                 model_name=training_task.pretrained_model,
                 img_size=img_size,
                 path=str(local_path),
-                fx_model_path=str(local_path),
             )
 
     logger.info(f"Setting model config with size: {img_size} and model: {training_in.pretrained_model}")
