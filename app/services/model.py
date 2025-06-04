@@ -8,6 +8,7 @@ from app.api.v1.schemas.model import ModelPayload, PresignedUrl
 from app.configs.settings import settings
 from app.services.training_task import train_task_service
 from app.zenko.storage_handler import ObjectStorageHandler
+from netspresso.enums.metadata import Status
 from netspresso.enums.project import SubFolder
 from netspresso.enums.task import TaskType
 from netspresso.exceptions.model import ModelCannotBeDeletedException
@@ -186,8 +187,25 @@ class ModelService:
 
         new_models = []
         for model in models:
+            # Handle retraining task - only return completed trained and compressed models
+            if task_type == TaskType.RETRAIN:
+                if model.type not in [SubFolder.TRAINED_MODELS, SubFolder.COMPRESSED_MODELS]:
+                    continue
+                training_task = (
+                    training_task_repository.get_by_model_id(db=db, model_id=model.model_id)
+                    if model.type == SubFolder.TRAINED_MODELS
+                    else training_task_repository.get_by_model_id(
+                        db=db,
+                        model_id=compression_task_repository.get_by_model_id(
+                            db=db,
+                            model_id=model.model_id
+                        ).input_model_id
+                    )
+                )
+                if not training_task or training_task.status != Status.COMPLETED:
+                    continue
             # Handle compression task separately as it only needs trained models
-            if task_type == TaskType.COMPRESS:
+            elif task_type == TaskType.COMPRESS:
                 if model.type != SubFolder.TRAINED_MODELS:
                     continue
             # Handle other conversion/evaluation tasks that can use both trained and compressed models

@@ -28,17 +28,6 @@ class SupportedModelResponse(BaseModel):
     data: SupportedModel = Field(..., description="Supported models for classification tasks")
 
 
-class SupportedRetrainableModelPayload(BaseModel):
-    name: str = Field(..., description="Name of the retrainable model")
-    model_id: str = Field(..., description="Model ID of the retrainable model")
-    type: str = Field(..., description="Type of the retrainable model (e.g., trained model, compressed model)")
-    training_task_id: str = Field(..., description="Training task ID of the retrainable model")
-
-
-class SupportedRetrainableModelResponse(BaseModel):
-    data: List[SupportedRetrainableModelPayload] = Field(..., description="List of supported retrainable models")
-
-
 class OptimizerPayload(BaseModel):
     name: Optimizer = Field(description="Optimizer name")
     display_name: Optional[OptimizerDisplay] = Field(default=None, description="Optimizer display name")

@@ -58,6 +58,7 @@ class TrainingTask(BaseModel):
         "Model",
         uselist=False,
         lazy="joined",
+        foreign_keys=[model_id],
     )
 
 
