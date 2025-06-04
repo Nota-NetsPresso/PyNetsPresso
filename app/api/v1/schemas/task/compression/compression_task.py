@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.api.v1.schemas.base import ResponseItem
+from app.api.v1.schemas.base import ResponseItem, ResponsePaginationItems
 from netspresso.enums.compression import CompressionMethod, GroupPolicy, LayerNorm, Policy, RecommendationMethod, StepOp
 from netspresso.exceptions.compressor import (
     NotValidChannelAxisRangeException,
@@ -96,7 +96,7 @@ class CompressionResponse(ResponseItem):
     data: CompressionPayload
 
 
-class CompressionsResponse(ResponseItem):
+class CompressionsResponse(ResponsePaginationItems):
     data: List[CompressionPayload]
     result_count: int
     total_count: int
