@@ -78,7 +78,7 @@ def get_model_compression_tasks(
         api_key=api_key,
     )
 
-    return CompressionsResponse(data=compression_tasks)
+    return CompressionsResponse(data=compression_tasks, result_count=len(compression_tasks), total_count=len(compression_tasks))
 
 
 @router.get("/{model_id}/evaluations", response_model=EvaluationsResponse)
