@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+import tempfile
 from typing import Any, Dict, Optional, Tuple
 
 from loguru import logger
@@ -99,7 +100,6 @@ def prepare_training_data(trainer: Trainer, training_in: TrainingCreate) -> Path
 def configure_model_and_training(trainer: Trainer, training_in: TrainingCreate):
     """Configure model, augmentations, and training parameters."""
     img_size = training_in.input_shapes[0].dimension[0]
-    logger.info(f"Setting model config with size: {img_size} and model: {training_in.pretrained_model}")
 
     if training_in.pretrained_model:
         trainer.set_model_config(
@@ -111,21 +111,30 @@ def configure_model_and_training(trainer: Trainer, training_in: TrainingCreate):
             input_model = model_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
             training_task = training_task_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
 
-            model_path = Path(input_model.object_path) / "model.pt"
-            if not model_path.exists():
-                logger.info(f"Downloading input model from Zenko: {model_path}")
-                storage_handler.download_file_from_s3(
-                    bucket_name=BUCKET_NAME,
-                    local_path=model_path.as_posix(),
-                    object_path=model_path.as_posix(),
-                )
-                logger.info(f"Downloaded input model from Zenko: {model_path}")
+            temp_dir = tempfile.mkdtemp(prefix="netspresso_training_")
+            output_dir = temp_dir
+
+            download_dir = Path(output_dir) / "input_model"
+            download_dir.mkdir(parents=True, exist_ok=True)
+
+            remote_model_path = Path(input_model.object_path) / "model.pt"
+            local_path = download_dir / "model.pt"
+
+            logger.info(f"Downloading input model from Zenko: {remote_model_path}")
+            storage_handler.download_file_from_s3(
+                bucket_name=BUCKET_NAME,
+                local_path=str(local_path),
+                object_path=str(remote_model_path),
+            )
+            logger.info(f"Downloaded input model from Zenko: {local_path}")
 
             trainer.set_model_config(
                 model_name=training_task.pretrained_model,
                 img_size=img_size,
-                fx_model_path=model_path.as_posix(),
+                fx_model_path=str(local_path),
             )
+
+    logger.info(f"Setting model config with size: {img_size} and model: {training_in.pretrained_model}")
 
     trainer.set_augmentation_config(
         train_transforms=DEFAULT_AUGMENTATIONS,
