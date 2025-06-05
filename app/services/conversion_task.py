@@ -26,6 +26,7 @@ from netspresso.enums.conversion import SourceFramework
 from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.models.base import generate_uuid
 from netspresso.utils.db.models.conversion import ConversionTask
+from netspresso.utils.db.repositories.base import Order, TimeSort
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 
@@ -234,7 +235,9 @@ class ConversionTaskService:
         )
 
     def get_conversion_tasks(self, db: Session, model_id: str, api_key: str) -> List[ConversionPayload]:
-        conversion_tasks = conversion_task_repository.get_all_by_model_id(db=db, model_id=model_id)
+        conversion_tasks = conversion_task_repository.get_all_by_model_id(
+            db=db, model_id=model_id, order=Order.DESC, time_sort=TimeSort.CREATED_AT,
+        )
 
         return [self._create_conversion_payload(task) for task in conversion_tasks]
 

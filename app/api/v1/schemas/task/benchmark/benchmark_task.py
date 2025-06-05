@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.api.v1.schemas.base import ResponseItem
+from app.api.v1.schemas.base import ResponseItem, ResponsePaginationItems
 from app.api.v1.schemas.device import (
     BenchmarkResultPayload,
     HardwareTypePayload,
@@ -51,3 +51,9 @@ class BenchmarkCreateResponse(ResponseItem):
 
 class BenchmarkResponse(ResponseItem):
     data: BenchmarkPayload
+
+
+class BenchmarksResponse(ResponsePaginationItems):
+    data: List[BenchmarkPayload]
+    result_count: int
+    total_count: int
