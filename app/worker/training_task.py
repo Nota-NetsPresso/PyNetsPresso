@@ -123,8 +123,12 @@ def configure_model_and_training(trainer: Trainer, training_in: TrainingCreate):
             download_dir = Path(output_dir) / "input_model"
             download_dir.mkdir(parents=True, exist_ok=True)
 
-            remote_model_path = Path(input_model.object_path) / "model.pt"
-            local_path = download_dir / "model.pt"
+            if input_model.type == SubFolder.TRAINED_MODELS:
+                remote_model_path = Path(input_model.object_path) / "model.pt"
+                local_path = download_dir / "model.pt"
+            else:
+                remote_model_path = Path(input_model.object_path)
+                local_path = download_dir / Path(input_model.object_path).name
 
             logger.info(f"Downloading input model from Zenko: {remote_model_path}")
             storage_handler.download_file_from_s3(
