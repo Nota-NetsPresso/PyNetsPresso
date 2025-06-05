@@ -1,7 +1,7 @@
 import logging
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 from loguru import logger
@@ -13,12 +13,14 @@ from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso import NetsPresso
 from netspresso.enums.conversion import EvaluationTargetFramework
 from netspresso.enums.metadata import Status
+from netspresso.enums.project import SubFolder
 from netspresso.enums.train import StorageLocation
 from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize, ToTensor
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
 from netspresso.trainer.storage.dataforge import Split
 from netspresso.trainer.trainer import Trainer
+from netspresso.utils.db.repositories.compression import compression_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.project import project_repository
 from netspresso.utils.db.repositories.training import training_task_repository
@@ -109,7 +111,11 @@ def configure_model_and_training(trainer: Trainer, training_in: TrainingCreate):
     elif training_in.input_model_id:
         with get_db_session() as session:
             input_model = model_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
-            training_task = training_task_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
+            if input_model.type == SubFolder.TRAINED_MODELS:
+                training_task = training_task_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
+            else:
+                compression_task = compression_task_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
+                training_task = training_task_repository.get_by_model_id(db=session, model_id=compression_task.input_model_id)
 
             temp_dir = tempfile.mkdtemp(prefix="netspresso_training_")
             output_dir = temp_dir
