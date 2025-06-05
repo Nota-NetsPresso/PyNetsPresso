@@ -725,7 +725,7 @@ class Trainer(NetsPressoBase):
             model = model_repository.save(db=db, model=model)
             return model
 
-    def create_training_task(self, model_id, task_id, user_id) -> TrainingTask:
+    def create_training_task(self, model_id, task_id, user_id, training_type, input_model_id) -> TrainingTask:
         with get_db_session() as db:
             augs = [
                 Augmentation(
@@ -767,6 +767,8 @@ class Trainer(NetsPressoBase):
                     environment=environment,
                     model_id=model_id,
                     user_id=user_id,
+                    training_type=training_type,
+                    input_model_id=input_model_id,
                 )
             else:
                 task = TrainingTask(
@@ -780,6 +782,8 @@ class Trainer(NetsPressoBase):
                     environment=environment,
                     model_id=model_id,
                     user_id=user_id,
+                    training_type=training_type,
+                    input_model_id=input_model_id,
                 )
             task = training_task_repository.save(db=db, model=task)
 
@@ -815,6 +819,8 @@ class Trainer(NetsPressoBase):
         project_id: str,
         output_dir: Optional[str] = "./outputs",
         task_id: Optional[str] = None,
+        training_type: Optional[str] = "training",
+        input_model_id: Optional[str] = None,
     ) -> str:
         """Train the model with the specified configuration.
 
@@ -840,7 +846,13 @@ class Trainer(NetsPressoBase):
 
         # Create model and task
         model = self._initialize_model(model_name, project)
-        train_task = self.create_training_task(model_id=model.model_id, task_id=task_id, user_id=project.user_id)
+        train_task = self.create_training_task(
+            model_id=model.model_id,
+            task_id=task_id,
+            user_id=project.user_id,
+            training_type=training_type,
+            input_model_id=input_model_id,
+        )
 
         # Setup logging
         self._setup_logging(output_dir, destination_folder.name)

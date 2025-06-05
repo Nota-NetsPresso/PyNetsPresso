@@ -29,7 +29,8 @@ class LoggingConfig:
     project_id: Optional[str] = None
     output_dir: Union[Path, str] = "./outputs"
     tensorboard: bool = True
-    image: bool = True
+    mlflow: bool = False
+    num_save_samples: Optional[int] = 100
     stdout: bool = True
     model_save_options: ModelSaveOptions = field(default_factory=ModelSaveOptions)
     metrics: Metrics = field(default_factory=Metrics)

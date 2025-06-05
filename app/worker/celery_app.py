@@ -13,13 +13,13 @@ LOGS_DIR = os.path.join(BASE_DIR, 'logs')
 os.makedirs(LOGS_DIR, exist_ok=True)
 
 # loguru 로깅 설정
-logger.remove()  # 기본 핸들러 제거
-logger.add(
-    os.path.join(LOGS_DIR, 'celery.log'),
-    rotation="10 MB",
-    level="INFO",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}"
-)
+#logger.remove()  # 기본 핸들러 제거
+#logger.add(
+#    os.path.join(LOGS_DIR, 'celery.log'),
+#    rotation="10 MB",
+#    level="INFO",
+#    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}"
+#)
 
 # 환경 변수에서 설정 값 가져오기
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'amqp://guest:guest@rabbitmq:5672//')

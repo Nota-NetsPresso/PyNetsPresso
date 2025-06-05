@@ -1,5 +1,6 @@
 import logging
 import os
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
@@ -12,12 +13,14 @@ from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso import NetsPresso
 from netspresso.enums.conversion import EvaluationTargetFramework
 from netspresso.enums.metadata import Status
+from netspresso.enums.project import SubFolder
 from netspresso.enums.train import StorageLocation
 from netspresso.trainer.augmentations.augmentation import Normalize, Pad, Resize, ToTensor
 from netspresso.trainer.optimizers.optimizer_manager import OptimizerManager
 from netspresso.trainer.schedulers.scheduler_manager import SchedulerManager
 from netspresso.trainer.storage.dataforge import Split
 from netspresso.trainer.trainer import Trainer
+from netspresso.utils.db.repositories.compression import compression_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.project import project_repository
 from netspresso.utils.db.repositories.training import training_task_repository
@@ -99,12 +102,49 @@ def prepare_training_data(trainer: Trainer, training_in: TrainingCreate) -> Path
 def configure_model_and_training(trainer: Trainer, training_in: TrainingCreate):
     """Configure model, augmentations, and training parameters."""
     img_size = training_in.input_shapes[0].dimension[0]
-    logger.info(f"Setting model config with size: {img_size} and model: {training_in.pretrained_model}")
 
-    trainer.set_model_config(
-        model_name=training_in.pretrained_model,
-        img_size=img_size
-    )
+    if training_in.pretrained_model:
+        trainer.set_model_config(
+            model_name=training_in.pretrained_model,
+            img_size=img_size,
+        )
+    elif training_in.input_model_id:
+        with get_db_session() as session:
+            input_model = model_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
+            if input_model.type == SubFolder.TRAINED_MODELS:
+                training_task = training_task_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
+            else:
+                compression_task = compression_task_repository.get_by_model_id(db=session, model_id=training_in.input_model_id)
+                training_task = training_task_repository.get_by_model_id(db=session, model_id=compression_task.input_model_id)
+
+            temp_dir = tempfile.mkdtemp(prefix="netspresso_training_")
+            output_dir = temp_dir
+
+            download_dir = Path(output_dir) / "input_model"
+            download_dir.mkdir(parents=True, exist_ok=True)
+
+            if input_model.type == SubFolder.TRAINED_MODELS:
+                remote_model_path = Path(input_model.object_path) / "model.pt"
+                local_path = download_dir / "model.pt"
+            else:
+                remote_model_path = Path(input_model.object_path)
+                local_path = download_dir / Path(input_model.object_path).name
+
+            logger.info(f"Downloading input model from Zenko: {remote_model_path}")
+            storage_handler.download_file_from_s3(
+                bucket_name=BUCKET_NAME,
+                local_path=str(local_path),
+                object_path=str(remote_model_path),
+            )
+            logger.info(f"Downloaded input model from Zenko: {local_path}")
+
+            trainer.set_model_config(
+                model_name=training_task.pretrained_model,
+                img_size=img_size,
+                path=str(local_path),
+            )
+
+    logger.info(f"Setting model config with size: {img_size} and model: {training_in.pretrained_model}")
 
     trainer.set_augmentation_config(
         train_transforms=DEFAULT_AUGMENTATIONS,
@@ -336,6 +376,13 @@ def train_model(
         # Step 2: Configure model and training parameters
         configure_model_and_training(trainer, training_in)
 
+        if training_in.pretrained_model:
+            training_type = "training"
+        elif training_in.input_model_id:
+            training_type = "retraining"
+        else:
+            training_type = "training"
+
         # Step 3: Execute training
         logger.info(f"Starting training with task_id: {task_id}")
         training_task_id = trainer.train(
@@ -343,6 +390,8 @@ def train_model(
             model_name=unique_model_name,
             project_id=training_in.project_id,
             task_id=task_id,
+            training_type=training_type,
+            input_model_id=training_in.input_model_id,
         )
         logger.info(f"Training completed with task_id: {training_task_id}")
 
