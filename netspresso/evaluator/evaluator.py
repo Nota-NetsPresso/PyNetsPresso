@@ -185,8 +185,12 @@ class Evaluator:
                     raise NotCompletedTrainingException(training_task_id=training_task.task_id)
 
             else:
-                # 2. Get training task
-                training_task = training_task_repository.get_by_model_id(db=db, model_id=conversion_task.input_model_id)
+                conversion_task_input_model = model_repository.get_by_model_id(db=db, model_id=conversion_task.input_model_id)
+                if conversion_task_input_model.type == SubFolder.COMPRESSED_MODELS:
+                    compression_task = compression_task_repository.get_by_model_id(db=db, model_id=conversion_task_input_model.model_id)
+                    training_task = training_task_repository.get_by_model_id(db=db, model_id=compression_task.input_model_id)
+                else:
+                    training_task = training_task_repository.get_by_model_id(db=db, model_id=conversion_task_input_model.model_id)
 
                 # 3. Check training task is completed
                 if training_task.status != Status.COMPLETED:
@@ -311,7 +315,7 @@ class Evaluator:
         download_dir = Path(output_dir) / "input_model"
         download_dir.mkdir(parents=True, exist_ok=True)
 
-        if input_model.type == "trained_models":
+        if input_model.type == SubFolder.TRAINED_MODELS:
             remote_model_path = Path(input_model.object_path) / "model.onnx"
         else:
             remote_model_path = Path(input_model.object_path)
