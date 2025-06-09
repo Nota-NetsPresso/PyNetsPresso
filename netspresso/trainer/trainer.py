@@ -1205,15 +1205,7 @@ class Trainer(NetsPressoBase):
         return dataset_info
 
     def prepare_calibration_dataset(self, dataset_path, num_dataset: int = 100) -> str:
-        """Create a calibration dataset.
-
-        Args:
-            dataset_path: Path to the dataset directory
-            num_dataset: Number of images to use for calibration
-
-        Returns:
-            str: Path to the saved calibration dataset
-        """
+        """Create a calibration dataset."""
         logger.info("Creating calibration dataset")
 
         preprocess_list = [
@@ -1223,8 +1215,7 @@ class Trainer(NetsPressoBase):
         logger.info(f"Using preprocess_list: {preprocess_list}")
         preprocessor = Preprocessor(preprocess_list)
 
-        error_files = []
-        valid_images = []
+        inputs_array = []
 
         # Support multiple image extensions
         image_extensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.tif", "*.tiff"]
@@ -1237,49 +1228,29 @@ class Trainer(NetsPressoBase):
 
         if not image_paths:
             logger.warning(f"No images found in {dataset_path} with extensions {image_extensions}")
-            return None
+            return
 
         logger.info(f"Processing {len(image_paths)} images for calibration dataset")
 
-        def is_valid_image(image):
-            return image is not None and image.size > 0
-
         for image_path in image_paths:
-            try:
-                img = cv2.imread(image_path)
-                if not is_valid_image(img):
-                    logger.warning(f"Invalid image found: {image_path}")
-                    error_files.append(image_path)
-                    continue
+            img = cv2.imread(image_path)
+            if img is None:
+                logger.warning(f"Failed to read image: {image_path}")
+                continue
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = preprocessor(img)
+            img = np.transpose(img, (0, 3, 1, 2))
+            inputs_array.append(img)
 
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                img = preprocessor(img)
-                img = np.transpose(img, (0, 3, 1, 2))
-                valid_images.append(img)
-            except Exception as e:
-                logger.error(f"Error processing image {image_path}: {str(e)}")
-                error_files.append(image_path)
+        if not inputs_array:
+            logger.warning("No valid images were processed")
+            return
 
-        if not valid_images:
-            logger.error("No valid images were processed")
-            return None
-
-        try:
-            input_array = np.concatenate(valid_images, axis=0)
-        except Exception as e:
-            logger.error(f"Failed to concatenate images: {str(e)}")
-            return None
+        result_array = np.concatenate(inputs_array, axis=0)
 
         # save chunk data
         calibration_dataset_path = f"{Path(dataset_path).parts[0]}/calibration_dataset.npy"
-        try:
-            np.save(calibration_dataset_path, {"images": input_array}, allow_pickle=True)
-            logger.info(f"Calibration dataset saved to {calibration_dataset_path}")
+        np.save(calibration_dataset_path, result_array, allow_pickle=True)
+        logger.info(f"Calibration dataset saved to {calibration_dataset_path}")
 
-            if error_files:
-                logger.warning(f"Failed to process {len(error_files)} images")
-
-            return calibration_dataset_path
-        except Exception as e:
-            logger.error(f"Failed to save calibration dataset: {str(e)}")
-            return None
+        return calibration_dataset_path
