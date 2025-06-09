@@ -311,7 +311,7 @@ class Evaluator:
         download_dir = Path(output_dir) / "input_model"
         download_dir.mkdir(parents=True, exist_ok=True)
 
-        if input_model.type == "trained_models":
+        if input_model.type == SubFolder.TRAINED_MODELS:
             remote_model_path = Path(input_model.object_path) / "model.onnx"
         else:
             remote_model_path = Path(input_model.object_path)
