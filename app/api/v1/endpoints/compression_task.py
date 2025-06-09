@@ -34,3 +34,14 @@ def get_compression_task(
     )
 
     return CompressionResponse(data=compression_task)
+
+
+@router.delete("/compressions/{task_id}", response_model=CompressionResponse)
+def delete_compression_task(
+    task_id: str,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> CompressionResponse:
+    compression_task = compression_task_service.delete_compression_task(db=db, task_id=task_id, api_key=api_key)
+
+    return CompressionResponse(data=compression_task)
