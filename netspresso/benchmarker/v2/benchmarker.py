@@ -361,7 +361,7 @@ class BenchmarkerV2(NetsPressoBase):
 
                 # Save benchmark results
                 _benchmark_result = benchmark_response.data.benchmark_result
-                benchmark_task = self.save_benchmark_result(benchmark_task, _benchmark_result)
+                benchmark_task = self.save_benchmark_result(benchmark_task.task_id, _benchmark_result)
 
                 logger.info("Benchmark task was completed successfully.")
             elif benchmark_response.data.status in [
