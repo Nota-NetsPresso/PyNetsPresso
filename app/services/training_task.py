@@ -154,6 +154,13 @@ class TrainTaskService:
 
         return self._convert_to_payload_format(training_task)
 
+    def delete_training_task_by_task_id(self, db: Session, task_id: str) -> TrainingPayload:
+        """Delete training task by task ID."""
+        training_task = training_task_repository.get_by_task_id(db=db, task_id=task_id)
+        training_task_repository.soft_delete(db=db, model=training_task)
+
+        return self._convert_to_payload_format(training_task)
+
     def get_training_datasets_from_local(self) -> List[LocalTrainingDatasetPayload]:
         """Get training datasets from local directory.
 
@@ -174,6 +181,12 @@ class TrainTaskService:
         ]
 
         return training_datasets_payload
+
+    def get_training_task_by_model_id(self, db: Session, model_id: str) -> TrainingPayload:
+        """Get training task by model ID."""
+        training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
+
+        return self._convert_to_payload_format(training_task)
 
 
 train_task_service = TrainTaskService()
