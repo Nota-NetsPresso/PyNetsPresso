@@ -10,6 +10,7 @@ from app.api.v1.schemas.task.compression.compression_task import (
 from app.worker.compression_task import compress_model
 from netspresso.utils.db.models.base import generate_uuid
 from netspresso.utils.db.repositories.compression import compression_task_repository
+from netspresso.utils.db.repositories.model import model_repository
 
 
 class CompressionTaskService:
@@ -48,6 +49,22 @@ class CompressionTaskService:
         compression_tasks = [CompressionPayload.model_validate(task) for task in compression_tasks]
 
         return compression_tasks
+
+    def delete_compression_task(self, db: Session, compression_task_id: str, api_key: str) -> CompressionPayload:
+        compression_task = compression_task_repository.get_by_task_id(db=db, task_id=compression_task_id)
+        compression_task = compression_task_repository.soft_delete(db=db, model=compression_task)
+
+        # Delete compressed model from model repository
+        model = model_repository.get_by_model_id(db=db, model_id=compression_task.model_id)
+        model = model_repository.soft_delete(db=db, model=model)
+
+        compression_task = CompressionPayload.model_validate(compression_task)
+        related_tasks = compression_task_repository.get_all_by_input_model_id(
+            db=db, input_model_id=compression_task.input_model_id
+        )
+        compression_task.related_task_ids = [task.task_id for task in related_tasks]
+
+        return compression_task
 
 
 compression_task_service = CompressionTaskService()
