@@ -185,8 +185,12 @@ class Evaluator:
                     raise NotCompletedTrainingException(training_task_id=training_task.task_id)
 
             else:
-                # 2. Get training task
-                training_task = training_task_repository.get_by_model_id(db=db, model_id=conversion_task.input_model_id)
+                conversion_task_input_model = model_repository.get_by_model_id(db=db, model_id=conversion_task.input_model_id)
+                if conversion_task_input_model.type == SubFolder.COMPRESSED_MODELS:
+                    compression_task = compression_task_repository.get_by_model_id(db=db, model_id=conversion_task_input_model.model_id)
+                    training_task = training_task_repository.get_by_model_id(db=db, model_id=compression_task.input_model_id)
+                else:
+                    training_task = training_task_repository.get_by_model_id(db=db, model_id=conversion_task_input_model.model_id)
 
                 # 3. Check training task is completed
                 if training_task.status != Status.COMPLETED:
