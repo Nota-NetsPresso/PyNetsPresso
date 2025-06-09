@@ -125,11 +125,43 @@ class BenchmarkTaskService:
 
     def create_benchmark_task(self, db: Session, benchmark_in: BenchmarkCreate, api_key: str) -> BenchmarkCreatePayload:
         """Create new benchmark task"""
+        # Check if a task with the same options already exists
+        existing_tasks = benchmark_task_repository.get_all_by_model_id(
+            db=db,
+            model_id=benchmark_in.input_model_id
+        )
+
+        # Filter tasks by benchmark parameters
+        for task in existing_tasks:
+            # Check if this task has the same benchmark parameters
+            is_same_options = (
+                task.device_name == benchmark_in.device_name and
+                task.hardware_type == benchmark_in.hardware_type
+            )
+
+            # Software version can be None, handle it separately
+            is_same_software_version = (
+                benchmark_in.software_version is None or
+                task.software_version == benchmark_in.software_version
+            )
+
+            if is_same_options and is_same_software_version:
+                # If task is in NOT_STARTED, IN_PROGRESS, or COMPLETED state, return it
+                reusable_states = [Status.NOT_STARTED, Status.IN_PROGRESS, Status.COMPLETED]
+                if task.status in reusable_states:
+                    logger.info(f"Returning existing benchmark task with status {task.status}: {task.task_id}")
+                    return BenchmarkCreatePayload(task_id=task.task_id)
+
+                # For STOPPED or ERROR, we'll create a new task below
+                logger.info(f"Previous benchmark task ended with status {task.status}, creating new task")
+                break
+
         model = model_repository.get_by_model_id(db=db, model_id=benchmark_in.input_model_id)
         project = project_service.get_project(db=db, project_id=model.project_id, api_key=api_key)
 
         input_model_path = Path(project.project_abs_path) / model.object_path
         logger.info(f"Input model path: {input_model_path}")
+        logger.info(f"Benchmark Info: {benchmark_in.model_dump()}")
 
         benchmark_task_id = generate_uuid(entity="task")
         _ = benchmark_model.apply_async(
