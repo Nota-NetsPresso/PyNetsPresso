@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.zenko.storage_handler import ObjectStorageHandler
 from netspresso.enums import Status
 from netspresso.enums.conversion import EvaluationTargetFramework
+from netspresso.enums.project import SubFolder
 from netspresso.exceptions.conversion import ConversionTaskNotFoundException
 from netspresso.exceptions.evaluation import (
     EvaluationDownloadURLGenerationException,
@@ -22,6 +23,7 @@ from netspresso.trainer.trainer import Trainer
 from netspresso.trainer.trainer_configs import TrainerConfigs
 from netspresso.utils.db.models.evaluation import EvaluationDataset, EvaluationTask
 from netspresso.utils.db.models.model import Model
+from netspresso.utils.db.repositories.compression import compression_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.evaluation import evaluation_dataset_repository, evaluation_task_repository
 from netspresso.utils.db.repositories.model import model_repository
@@ -160,11 +162,12 @@ class Evaluator:
             if conversion_task is None:
                 # For ONNX models, model_id is the same as training_task's output_model_id
                 try:
-                    training_task = training_task_repository.get_by_output_model_id(db=db, output_model_id=model_id)
-
-                    if training_task is None:
-                        # Also try with the traditional approach
-                        training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
+                    # Get training task based on model type
+                    if input_model.type == SubFolder.COMPRESSED_MODELS:
+                        compression_task = compression_task_repository.get_by_model_id(db=db, model_id=input_model.model_id)
+                        training_task = training_task_repository.get_by_model_id(db=db, model_id=compression_task.input_model_id)
+                    else:
+                        training_task = training_task_repository.get_by_model_id(db=db, model_id=input_model.model_id)
 
                     if training_task is None:
                         raise Exception(f"No training task found for model {model_id}")
