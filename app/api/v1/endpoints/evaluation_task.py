@@ -9,6 +9,7 @@ from app.api.v1.schemas.task.evaluation.evaluation_task import (
     EvaluationCreateResponse,
     EvaluationDatasetsPayload,
     EvaluationDatasetsResponse,
+    EvaluationResponse,
     EvaluationResultsResponse,
     EvaluationsResponse,
 )
@@ -133,3 +134,14 @@ def get_evaluation_results(
     )
 
     return EvaluationResultsResponse(data=evaluation_result)
+
+
+@router.delete("/evaluations/{task_id}", response_model=EvaluationResponse)
+def delete_evaluation_task(
+    task_id: str,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_header),
+) -> EvaluationResponse:
+    evaluation_task = evaluation_task_service.delete_evaluation_task(db=db, task_id=task_id, api_key=api_key)
+
+    return EvaluationResponse(data=evaluation_task)
