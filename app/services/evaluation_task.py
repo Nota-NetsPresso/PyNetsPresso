@@ -635,4 +635,11 @@ class EvaluationTaskService:
             # Clean up temporary directory
             shutil.rmtree(temp_dir, ignore_errors=True)
 
+    def delete_evaluation_task(self, db: Session, evaluation_task_id: str, api_key: str) -> EvaluationPayload:
+        evaluation_task = evaluation_task_repository.get_by_task_id(db=db, task_id=evaluation_task_id)
+        evaluation_task_repository.soft_delete(db=db, model=evaluation_task)
+
+        return EvaluationPayload.model_validate(evaluation_task)
+
+
 evaluation_task_service = EvaluationTaskService()
