@@ -36,25 +36,6 @@ class TrainingTaskRepository(BaseRepository[TrainingTask]):
 
         return self.__is_available(task=task)
 
-    def get_by_output_model_id(self, db: Session, output_model_id: str) -> Optional[TrainingTask]:
-        """
-        Get training task by output model ID
-
-        Args:
-            db: Database session
-            output_model_id: Output model ID
-
-        Returns:
-            TrainingTask or None if not found
-        """
-        conditions = [self.model.model_id == output_model_id]
-        task = self.find_first(
-            db=db,
-            conditions=conditions,
-        )
-
-        return self.__is_available(task=task)
-
     def get_completed_tasks(self, db: Session, user_id: str) -> List[TrainingTask]:
         conditions = [self.model.status == Status.COMPLETED, self.model.user_id == user_id]
         tasks = self.find_all(
