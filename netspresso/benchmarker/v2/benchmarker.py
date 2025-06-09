@@ -178,6 +178,8 @@ class BenchmarkerV2(NetsPressoBase):
             db.add(benchmark_task)
             db.commit()
 
+            return benchmark_task
+
     def create_benchmark_result(self, benchmark_task: BenchmarkTask, file_size: float) -> BenchmarkTask:
         benchmark_result = BenchmarkResult(file_size=file_size, task_id=benchmark_task.task_id)
         with get_db_session() as db:
