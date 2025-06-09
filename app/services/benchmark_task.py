@@ -19,6 +19,7 @@ from app.api.v1.schemas.task.benchmark.benchmark_task import (
     BenchmarkResponse,
     TargetFrameworkPayload,
 )
+from app.services.conversion_task import conversion_task_service
 from app.services.project import project_service
 from app.worker.benchmark_task import benchmark_model
 from netspresso.clients.launcher.v2.schemas.common import DeviceInfo
@@ -29,6 +30,7 @@ from netspresso.enums.task import TaskStatusForDisplay
 from netspresso.netspresso import NetsPresso
 from netspresso.utils.db.models.base import generate_uuid
 from netspresso.utils.db.models.benchmark import BenchmarkTask
+from netspresso.utils.db.repositories.base import Order, TimeSort
 from netspresso.utils.db.repositories.benchmark import benchmark_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
@@ -149,6 +151,23 @@ class BenchmarkTaskService:
         benchmark_task = benchmark_task_repository.get_by_task_id(db, task_id)
 
         return self._create_benchmark_payload(benchmark_task)
+
+    def get_benchmark_tasks(self, db: Session, model_id: str, api_key: str) -> List[BenchmarkPayload]:
+        """Get benchmark tasks for a model"""
+        conversion_tasks = conversion_task_service.get_conversion_tasks(db, model_id, api_key)
+
+        if not conversion_tasks:
+            return []
+
+        conv_model_ids = [task.model_id for task in conversion_tasks]
+
+        benchmark_tasks = benchmark_task_repository.get_all_by_converted_models(
+            db=db,
+            converted_model_ids=conv_model_ids,
+            order=Order.DESC,
+            time_sort=TimeSort.CREATED_AT,
+        )
+        return [self._create_benchmark_payload(benchmark_task) for benchmark_task in benchmark_tasks]
 
     def cancel_benchmark_task(self, db: Session, task_id: str, api_key: str) -> BenchmarkPayload:
         """Cancel benchmark task"""

@@ -264,7 +264,11 @@ class ConverterV2(NetsPressoBase):
             download_dir = Path(output_dir) / "input_model"
             download_dir.mkdir(parents=True, exist_ok=True)
 
-            remote_model_path = Path(input_model.object_path) / "model.onnx"
+            if input_model.type == SubFolder.COMPRESSED_MODELS:
+                remote_model_path = Path(input_model.object_path).parent / "model.onnx"
+            else:
+                remote_model_path = Path(input_model.object_path) / "model.onnx"
+
             local_path = download_dir / "model.onnx"
 
             logger.info(f"Downloading input model from Zenko: {remote_model_path}")
@@ -275,16 +279,22 @@ class ConverterV2(NetsPressoBase):
             )
             logger.info(f"Downloaded input model from Zenko: {local_path}")
 
-            remote_calibration_dataset_path = Path(input_model.object_path) / "calibration_dataset.npy"
-            local_calibration_dataset_path = download_dir / "calibration_dataset.npy"
+            if target_data_type == DataType.INT8:
+                if input_model.type == SubFolder.COMPRESSED_MODELS:
+                    remote_calibration_dataset_path = Path(input_model.object_path).parent / "calibration_dataset.npy"
+                else:
+                    remote_calibration_dataset_path = Path(input_model.object_path) / "calibration_dataset.npy"
+                local_calibration_dataset_path = download_dir / "calibration_dataset.npy"
 
-            logger.info(f"Downloading calibration dataset from Zenko: {remote_calibration_dataset_path}")
-            storage_handler.download_file_from_s3(
-                bucket_name=BUCKET_NAME,
-                local_path=str(local_calibration_dataset_path),
-                object_path=str(remote_calibration_dataset_path)
-            )
-            logger.info(f"Downloaded calibration dataset from Zenko: {local_calibration_dataset_path}")
+                logger.info(f"Downloading calibration dataset from Zenko: {remote_calibration_dataset_path}")
+                storage_handler.download_file_from_s3(
+                    bucket_name=BUCKET_NAME,
+                    local_path=str(local_calibration_dataset_path),
+                    object_path=str(remote_calibration_dataset_path)
+                )
+                logger.info(f"Downloaded calibration dataset from Zenko: {local_calibration_dataset_path}")
+
+                dataset_path = local_calibration_dataset_path.as_posix()
 
             # Execute common conversion logic
             return self._perform_conversion(
