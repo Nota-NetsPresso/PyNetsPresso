@@ -263,12 +263,17 @@ class ModelService:
         """
         # Get model before deletion
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
-        if model.type not in [SubFolder.TRAINED_MODELS]:
+        if model.type not in [SubFolder.TRAINED_MODELS, SubFolder.COMPRESSED_MODELS]:
             raise ModelCannotBeDeletedException(model_id=model_id)
 
         # Delete model and training task
         model = model_repository.soft_delete(db=db, model=model)
-        training_task = train_task_service.delete_training_task_by_model_id(db=db, model_id=model_id)
+
+        if model.type == SubFolder.COMPRESSED_MODELS:
+            compression_task = compression_task_repository.get_by_model_id(db=db, model_id=model_id)
+            training_task = train_task_service.get_training_task_by_model_id(db=db, model_id=compression_task.input_model_id)
+        else:
+            training_task = train_task_service.get_training_task_by_model_id(db=db, model_id=model_id)
 
         # Process and return model info
         model_payload = ModelPayload.model_validate(model)
