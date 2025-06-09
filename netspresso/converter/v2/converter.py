@@ -279,7 +279,7 @@ class ConverterV2(NetsPressoBase):
             )
             logger.info(f"Downloaded input model from Zenko: {local_path}")
 
-            remote_calibration_dataset_path = Path(input_model.object_path) / "calibration_dataset.npy"
+            remote_calibration_dataset_path = Path(input_model.object_path).parent / "calibration_dataset.npy"
             local_calibration_dataset_path = download_dir / "calibration_dataset.npy"
 
             logger.info(f"Downloading calibration dataset from Zenko: {remote_calibration_dataset_path}")
