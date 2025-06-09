@@ -1215,7 +1215,6 @@ class Trainer(NetsPressoBase):
         logger.info(f"Using preprocess_list: {preprocess_list}")
         preprocessor = Preprocessor(preprocess_list)
 
-        input = {"images": []}
         inputs_array = []
 
         # Support multiple image extensions
@@ -1240,18 +1239,17 @@ class Trainer(NetsPressoBase):
                 continue
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             img = preprocessor(img)
-            img = np.transpose(img, (0, 3, 1, 2))
             inputs_array.append(img)
 
         if not inputs_array:
             logger.warning("No valid images were processed")
             return
 
-        input["images"] = np.concatenate(inputs_array, axis=0)
+        result_array = np.concatenate(inputs_array, axis=0)
 
         # save chunk data
         calibration_dataset_path = f"{Path(dataset_path).parts[0]}/calibration_dataset.npy"
-        np.save(calibration_dataset_path, input, allow_pickle=True)
+        np.save(calibration_dataset_path, result_array, allow_pickle=True)
         logger.info(f"Calibration dataset saved to {calibration_dataset_path}")
 
         return calibration_dataset_path
