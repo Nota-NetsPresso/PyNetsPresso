@@ -20,9 +20,11 @@ from netspresso.enums import DataType, DeviceName, ServiceTask, SoftwareVersion,
 from netspresso.enums.conversion import SourceFramework, TargetFramework
 from netspresso.enums.project import SubFolder
 from netspresso.utils import FileHandler
+from netspresso.utils.db.models.compression import CompressionTask
 from netspresso.utils.db.models.conversion import ConversionTask
 from netspresso.utils.db.models.model import Model
 from netspresso.utils.db.models.project import Project
+from netspresso.utils.db.repositories.compression import compression_task_repository
 from netspresso.utils.db.repositories.conversion import conversion_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.session import get_db_session
@@ -100,6 +102,11 @@ class ConverterV2(NetsPressoBase):
         with get_db_session() as db:
             input_model = model_repository.get_by_model_id(db=db, model_id=input_model_id)
             return input_model
+
+    def get_compression_task(self, model_id: str) -> CompressionTask:
+        with get_db_session() as db:
+            compression_task = compression_task_repository.get_by_model_id(db=db, model_id=model_id)
+            return compression_task
 
     def save_model(self, model_name: str, project_id: str, user_id: str) -> Model:
         """Create and save a new converted model.
@@ -281,6 +288,8 @@ class ConverterV2(NetsPressoBase):
 
             if target_data_type == DataType.INT8:
                 if input_model.type == SubFolder.COMPRESSED_MODELS:
+                    compression_task = self.get_compression_task(model_id=input_model.model_id)
+                    input_model = self.get_input_model(input_model_id=compression_task.input_model_id, user_id=self.user_info.user_id)
                     remote_calibration_dataset_path = Path(input_model.object_path).parent / "calibration_dataset.npy"
                 else:
                     remote_calibration_dataset_path = Path(input_model.object_path) / "calibration_dataset.npy"
