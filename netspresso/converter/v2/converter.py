@@ -264,7 +264,11 @@ class ConverterV2(NetsPressoBase):
             download_dir = Path(output_dir) / "input_model"
             download_dir.mkdir(parents=True, exist_ok=True)
 
-            remote_model_path = Path(input_model.object_path) / "model.onnx"
+            if input_model.type == SubFolder.COMPRESSED_MODELS:
+                remote_model_path = Path(input_model.object_path).parent / "model.onnx"
+            else:
+                remote_model_path = Path(input_model.object_path) / "model.onnx"
+
             local_path = download_dir / "model.onnx"
 
             logger.info(f"Downloading input model from Zenko: {remote_model_path}")
