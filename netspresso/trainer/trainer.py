@@ -1239,7 +1239,6 @@ class Trainer(NetsPressoBase):
                 continue
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             img = preprocessor(img)
-            img = np.transpose(img, (0, 3, 1, 2))
             inputs_array.append(img)
 
         if not inputs_array:
