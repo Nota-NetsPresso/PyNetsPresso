@@ -202,6 +202,8 @@ class Evaluator:
 
             # Create task with DB session
             if evaluation_task_id:
+                logger.info(f"test_dataset_id: {self.trainer.test_dataset_id}")
+                logger.info(f"test_dataset: {self.trainer.test_dataset}")
                 if self.trainer.test_dataset_id:
                     evaluation_task = EvaluationTask(
                         task_id=evaluation_task_id,
