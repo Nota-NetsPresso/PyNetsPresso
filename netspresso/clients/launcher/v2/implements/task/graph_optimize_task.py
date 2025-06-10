@@ -1,5 +1,6 @@
 from dataclasses import asdict
 from enum import Enum
+from typing import Optional
 
 from loguru import logger
 
@@ -36,7 +37,7 @@ class GraphOptimizeTaskAPI(TaskInterface):
         self,
         request_body: RequestCreateGraphOptimizeTask,
         headers: AuthorizationHeader,
-        file: UploadFile = None,
+        file: Optional[UploadFile] = None,
     ) -> ResponseGraphOptimizeTaskItem:
         endpoint = f"{self.task_base_url}"
 
