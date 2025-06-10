@@ -235,16 +235,17 @@ class ModelService:
 
     def get_model(self, db: Session, model_id: str, api_key: str) -> ModelPayload:
         model = model_repository.get_by_model_id(db=db, model_id=model_id)
+        model_payload = ModelPayload.model_validate(model)
+
         if model.type == SubFolder.COMPRESSED_MODELS:
             compression_task = compression_task_repository.get_by_model_id(db=db, model_id=model_id)
             training_task = training_task_repository.get_by_model_id(db=db, model_id=compression_task.input_model_id)
+            model_payload.status = compression_task.status
         else:
             training_task = training_task_repository.get_by_model_id(db=db, model_id=model_id)
+            model_payload.status = training_task.status
 
-        model_payload = ModelPayload.model_validate(model)
         model_payload.train_task_id = training_task.task_id
-        model_payload.status = training_task.status
-
         return self._attach_child_task_info(db, model_payload)
 
     def delete_model(self, db: Session, model_id: str, api_key: str) -> ModelPayload:
