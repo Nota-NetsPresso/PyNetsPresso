@@ -1,5 +1,6 @@
 from typing import List
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from app.api.v1.schemas.task.compression.compression_task import (
@@ -8,13 +9,39 @@ from app.api.v1.schemas.task.compression.compression_task import (
     CompressionPayload,
 )
 from app.worker.compression_task import compress_model
+from netspresso.enums.metadata import Status
 from netspresso.utils.db.models.base import generate_uuid
 from netspresso.utils.db.repositories.compression import compression_task_repository
 from netspresso.utils.db.repositories.model import model_repository
 
 
 class CompressionTaskService:
-    def create_compression_task(self, compression_in: CompressionCreate, api_key: str) -> CompressionCreatePayload:
+    def create_compression_task(self, db: Session, compression_in: CompressionCreate, api_key: str) -> CompressionCreatePayload:
+        # Check if a task with the same options already exists
+        existing_tasks = compression_task_repository.get_all_by_input_model_id(
+            db=db,
+            input_model_id=compression_in.input_model_id
+        )
+
+        # Filter tasks by compression parameters
+        for task in existing_tasks:
+            # Check if this task has the same compression parameters
+            is_same_options = (
+                task.method == compression_in.method and
+                float(task.ratio) == float(compression_in.ratio)  # Convert to float for comparison
+            )
+
+            if is_same_options:
+                # If task is in NOT_STARTED, IN_PROGRESS, or COMPLETED state, return it
+                reusable_states = [Status.NOT_STARTED, Status.IN_PROGRESS, Status.COMPLETED]
+                if task.status in reusable_states:
+                    logger.info(f"Returning existing compression task with status {task.status}: {task.task_id}")
+                    return CompressionCreatePayload(task_id=task.task_id)
+
+                # For STOPPED or ERROR, we'll create a new task below
+                logger.info(f"Previous compression task ended with status {task.status}, creating new task")
+                break
+
         # Get model from trained models repository
         compression_task_id = generate_uuid(entity="task")
         _ = compress_model.apply_async(
