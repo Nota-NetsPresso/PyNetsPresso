@@ -272,6 +272,7 @@ class ModelService:
         if model.type == SubFolder.COMPRESSED_MODELS:
             compression_task = compression_task_repository.get_by_model_id(db=db, model_id=model_id)
             training_task = train_task_service.get_training_task_by_model_id(db=db, model_id=compression_task.input_model_id)
+            compression_task_repository.soft_delete(db=db, compression_task=compression_task)
         else:
             training_task = train_task_service.get_training_task_by_model_id(db=db, model_id=model_id)
 
