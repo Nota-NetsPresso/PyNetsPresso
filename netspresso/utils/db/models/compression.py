@@ -34,7 +34,7 @@ class CompressionTask(BaseModel):
 
     # Compression settings
     method = Column(String(30), nullable=False)
-    ratio = Column(Numeric(precision=2, scale=1), nullable=False)
+    ratio = Column(Numeric(precision=5, scale=4), nullable=False)
     options = Column(JSON, nullable=True)
     layers = Column(JSON, nullable=True)
 
