@@ -26,6 +26,7 @@ from .model import (
 from .task import (
     RequestBenchmark,
     RequestConvert,
+    RequestCreateGraphOptimizeTask,
     RequestQuantizeTask,
     ResponseBenchmarkFrameworkOptionItems,
     ResponseBenchmarkOptionItems,
@@ -36,6 +37,9 @@ from .task import (
     ResponseConvertOptionItems,
     ResponseConvertStatusItem,
     ResponseConvertTaskItem,
+    ResponseGraphOptimizeDownloadModelUrlItem,
+    ResponseGraphOptimizeStatusItem,
+    ResponseGraphOptimizeTaskItem,
     ResponseQuantizeDownloadModelUrlItem,
     ResponseQuantizeOptionItems,
     ResponseQuantizeStatusItem,
