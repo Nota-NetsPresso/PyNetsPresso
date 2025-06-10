@@ -13,6 +13,7 @@ class LauncherTask(StrEnum):
     CONVERT = "convert"
     BENCHMARK = "benchmark"
     QUANTIZE = "quantize"
+    GRAPH_OPTIMIZE = "graph-optimize"
 
 
 class TaskStatusForDisplay(NamedConstant):
