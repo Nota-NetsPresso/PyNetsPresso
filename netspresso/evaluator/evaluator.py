@@ -202,8 +202,6 @@ class Evaluator:
 
             # Create task with DB session
             if evaluation_task_id:
-                logger.info(f"test_dataset_id: {self.trainer.test_dataset_id}")
-                logger.info(f"test_dataset: {self.trainer.test_dataset}")
                 if self.trainer.test_dataset_id:
                     evaluation_task = EvaluationTask(
                         task_id=evaluation_task_id,
@@ -218,7 +216,7 @@ class Evaluator:
                 if self.trainer.test_dataset:
                     evaluation_task = EvaluationTask(
                         task_id=evaluation_task_id,
-                        dataset=self.trainer.test_dataset,
+                        dataset_id=self.trainer.test_dataset.dataset_id,
                         input_model_id=model_id,
                         training_task_id=training_task.task_id,
                         conversion_task_id=conversion_task.task_id if conversion_task else None,
@@ -228,7 +226,7 @@ class Evaluator:
                     )
             else:
                 evaluation_task = EvaluationTask(
-                    dataset_id=self.trainer.test_dataset,
+                    dataset_id=self.trainer.test_dataset.dataset_id,
                     input_model_id=model_id,
                     training_task_id=training_task.task_id,
                     conversion_task_id=conversion_task.task_id if conversion_task else None,
