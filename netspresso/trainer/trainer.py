@@ -341,7 +341,7 @@ class Trainer(NetsPressoBase):
 
     def _save_evaluation_dataset(self, evaluation_dataset):
         with get_db_session() as db:
-            evaluation_dataset = evaluation_dataset_repository.save(db=db, evaluation_dataset=evaluation_dataset)
+            evaluation_dataset = evaluation_dataset_repository.save(db=db, model=evaluation_dataset)
 
             return evaluation_dataset
 
