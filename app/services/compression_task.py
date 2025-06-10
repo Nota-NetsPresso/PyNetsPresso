@@ -28,7 +28,7 @@ class CompressionTaskService:
             # Check if this task has the same compression parameters
             is_same_options = (
                 task.method == compression_in.method and
-                task.ratio == compression_in.ratio  # Compare exact ratio values
+                float(task.ratio) == float(compression_in.ratio)  # Convert to float for comparison
             )
 
             if is_same_options:
