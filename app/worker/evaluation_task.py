@@ -107,8 +107,11 @@ def evaluate_model_task(
             if evaluation_dataset:
                 trainer.set_test_dataset_no_create(test_dataset_path, evaluation_dataset.name)
                 trainer.test_dataset_id = evaluation_dataset.dataset_id
+                logger.info(f"trainer.test_dataset_id: {trainer.test_dataset_id}")
             else:
                 trainer.set_test_dataset(str(test_dataset_path), test_dataset_path.name)
+                trainer.test_dataset_id = trainer.test_dataset.dataset_id
+                logger.info(f"trainer.test_dataset_id: {trainer.test_dataset_id}")
 
         else:  # StorageLocation.STORAGE
             # Handle storage dataset
