@@ -16,9 +16,12 @@ router = APIRouter()
 @router.post("/compressions", response_model=CompressionCreateResponse, status_code=201)
 def create_compressions_task(
     request_body: CompressionCreate,
+    db: Session = Depends(get_db),
     api_key: str = Depends(api_key_header),
 ) -> CompressionCreateResponse:
-    compression_task = compression_task_service.create_compression_task(compression_in=request_body, api_key=api_key)
+    compression_task = compression_task_service.create_compression_task(
+        db=db, compression_in=request_body, api_key=api_key
+    )
 
     return CompressionCreateResponse(data=compression_task)
 
