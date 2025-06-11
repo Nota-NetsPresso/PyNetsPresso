@@ -22,9 +22,8 @@ class EvaluationDataset(BaseModel):
     storage_location = Column(String(50), nullable=False)
     storage_info = Column(JSON, nullable=True)
 
-    # Relationship to EvaluationTask
-    task_id = Column(String(36), ForeignKey("evaluation_task.task_id", ondelete="CASCADE"), unique=True, nullable=False)
-    task = relationship("EvaluationTask", back_populates="dataset")
+    # Updated: Changed to support multiple tasks per dataset
+    tasks = relationship("EvaluationTask", back_populates="dataset")
 
 
 class EvaluationTask(BaseModel):
@@ -33,8 +32,9 @@ class EvaluationTask(BaseModel):
     id = Column(Integer, primary_key=True, index=True, unique=True, autoincrement=True, nullable=False)
     task_id = Column(String(36), index=True, unique=True, nullable=False, default=lambda: generate_uuid(entity="task"))
 
-    dataset_id = Column(String(36), nullable=True)
-    dataset = relationship("EvaluationDataset", back_populates="task", uselist=False, cascade="all, delete-orphan", lazy="joined")
+    # Updated: Changed to support many-to-one relationship with dataset
+    dataset_id = Column(String(36), ForeignKey("evaluation_dataset.dataset_id"), nullable=True)
+    dataset = relationship("EvaluationDataset", back_populates="tasks", uselist=False)
     is_dataset_deleted = Column(Boolean, nullable=False, default=False)
 
     # 평가 설정
