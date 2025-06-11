@@ -59,6 +59,7 @@ from netspresso.utils.db.models.training import (
     Performance,
     TrainingTask,
 )
+from netspresso.utils.db.repositories.evaluation import evaluation_dataset_repository
 from netspresso.utils.db.repositories.model import model_repository
 from netspresso.utils.db.repositories.training import training_task_repository
 from netspresso.utils.db.session import get_db_session
@@ -338,6 +339,12 @@ class Trainer(NetsPressoBase):
             storage_info={"dataset_id": Path(root_path).name}
         )
 
+    def _save_evaluation_dataset(self, evaluation_dataset):
+        with get_db_session() as db:
+            evaluation_dataset = evaluation_dataset_repository.save(db=db, model=evaluation_dataset)
+
+            return evaluation_dataset
+
     def set_test_dataset(self, dataset_root_path: str, dataset_name: Optional[str] = None):
         if dataset_name is None:
             dataset_name = Path(dataset_root_path).name
@@ -363,6 +370,9 @@ class Trainer(NetsPressoBase):
         test_image_path = Path(images_test)
         test_image_count = len(list(test_image_path.glob("*.*"))) if test_image_path.is_dir() else 1
 
+        storage_location = StorageLocation.STORAGE if self.is_dataforge else StorageLocation.LOCAL
+        storage_info = {"dataset_id": Path(root_path).name} if self.is_dataforge else None
+
         self.test_dataset = EvaluationDataset(
             name=dataset_name,
             path=root_path,
@@ -371,9 +381,10 @@ class Trainer(NetsPressoBase):
             task_type=self.task,
             class_count=len(self.data.id_mapping),
             count=test_image_count,
-            storage_location=StorageLocation.STORAGE if self.is_dataforge else StorageLocation.LOCAL,
-            storage_info={"dataset_id": Path(root_path).name}
+            storage_location=storage_location,
+            storage_info=storage_info
         )
+        self.test_dataset = self._save_evaluation_dataset(self.test_dataset)
 
     def set_test_dataset_no_create(self, dataset_root_path: str, dataset_name: Optional[str] = None):
         if dataset_name is None:
