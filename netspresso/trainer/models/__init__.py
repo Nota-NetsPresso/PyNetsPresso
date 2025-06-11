@@ -67,10 +67,6 @@ DETECTION_MODELS = {
     "yolox_m": DetectionYoloXMModelConfig,
     "yolox_l": DetectionYoloXLModelConfig,
     "yolox_x": DetectionYoloXXModelConfig,
-    "yolo_fastest_v2": DetectionYoloFastestV2ModelConfig,
-    "yolov9_s": DetectionYoloV9SModelConfig,
-    "yolov9_m": DetectionYoloV9MModelConfig,
-    "yolov9_c": DetectionYoloV9CModelConfig,
 }
 
 SEGMENTATION_MODELS = {
