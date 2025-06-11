@@ -216,7 +216,7 @@ class Evaluator:
                 if self.trainer.test_dataset:
                     evaluation_task = EvaluationTask(
                         task_id=evaluation_task_id,
-                        dataset=self.trainer.test_dataset,
+                        dataset_id=self.trainer.test_dataset.dataset_id,
                         input_model_id=model_id,
                         training_task_id=training_task.task_id,
                         conversion_task_id=conversion_task.task_id if conversion_task else None,
