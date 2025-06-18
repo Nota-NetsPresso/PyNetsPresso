@@ -20,7 +20,7 @@ class GraphOptimizeTask:
     status: TaskStatusForDisplay = ""
     error_log: Optional[dict] = None
     created_at: datetime = field(default_factory=datetime.now)
-    input_layers: List[InputLayer] = field(default_factory=[])
+    input_layer: List[InputLayer] = field(default_factory=[])
 
     def __init__(self, **kwargs):
         names = {f.name for f in dataclasses.fields(self)}
@@ -28,7 +28,7 @@ class GraphOptimizeTask:
             if k in names:
                 setattr(self, k, v)
 
-        self.input_layers = [InputLayer(**input_layers) for input_layers in self.input_layers]
+        self.input_layer = [InputLayer(**self.input_layer)]
 
 
 @dataclass
