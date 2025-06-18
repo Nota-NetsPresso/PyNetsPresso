@@ -80,10 +80,10 @@ class GraphOptimizer:
         logger.info(f"Request Graph Optimize validate_model result: {validated_model}")
         return validated_model
 
-    def download_model_file(self, access_token, graph_optimize_task_uuid) -> ResponseGraphOptimizeDownloadModelUrlItem:
+    def download_model_file(self, access_token, graph_optimize_task_id) -> ResponseGraphOptimizeDownloadModelUrlItem:
         token_header = AuthorizationHeader(access_token=access_token)
         download_url = self.graph_optimize_task.get_download_url(
-            headers=token_header, graph_optimize_task_uuid=graph_optimize_task_uuid
+            headers=token_header, graph_optimize_task_uuid=graph_optimize_task_id
         )
         logger.info(f"Request graph optimized model download_url: {download_url}")
         return download_url
@@ -102,7 +102,7 @@ class GraphOptimizer:
     ) -> ResponseGraphOptimizeTaskItem:
         token_header = AuthorizationHeader(access_token=access_token)
         request_body = RequestCreateGraphOptimizeTask(
-            input_model_id=input_model_id,
+            ai_model_id=input_model_id,
             pattern_handlers=pattern_handlers,
         )
         logger.info(f"Request Graph Optimize body: {request_body}")
