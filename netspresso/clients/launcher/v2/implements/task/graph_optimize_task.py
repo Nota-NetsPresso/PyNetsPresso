@@ -42,12 +42,7 @@ class GraphOptimizeTaskAPI(TaskInterface):
         endpoint = f"{self.task_base_url}"
 
         logger.info(f"Request_Body: {asdict(request_body)}")
-        response = Requester().post_as_form(
-            url=endpoint,
-            request_body=asdict(request_body, dict_factory=self.custom_asdict_factory),
-            headers=headers.to_dict(),
-            binary=file.files if file else None,
-        )
+        response = Requester().post_as_json(url=endpoint, request_body=asdict(request_body), headers=headers.to_dict())
         return ResponseGraphOptimizeTaskItem(**response.json())
 
     def cancel(self, headers: AuthorizationHeader, task_id: str) -> ResponseGraphOptimizeTaskItem:
@@ -71,6 +66,9 @@ class GraphOptimizeTaskAPI(TaskInterface):
         endpoint = f"{self.task_base_url}/{graph_optimize_task_uuid}/models/download"
         response = Requester().get(url=endpoint, headers=headers.to_dict())
         return ResponseGraphOptimizeDownloadModelUrlItem(**response.json())
+
+    def options(self, headers: AuthorizationHeader):
+        pass
 
     def options_by_model_framework(self, headers: AuthorizationHeader, model_framework: str):
         pass
