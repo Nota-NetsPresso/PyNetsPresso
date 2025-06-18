@@ -12,14 +12,14 @@ from netspresso.enums.graph_optimize import GraphOptimizePatternHandler
 @dataclass
 class GraphOptimizeTask:
     graph_optimize_task_id: str
-    status: TaskStatusForDisplay = ""
     input_model_id: str
     user_id: str
     output_model_id: str
     model_file_name: str
+    pattern_handlers: List[GraphOptimizePatternHandler]
+    status: TaskStatusForDisplay = ""
     error_log: Optional[dict] = None
     created_at: datetime = field(default_factory=datetime.now)
-    pattern_handlers: List[GraphOptimizePatternHandler]
     input_layers: List[InputLayer] = field(default_factory=[])
 
     def __init__(self, **kwargs):
