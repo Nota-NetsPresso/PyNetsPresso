@@ -14,6 +14,12 @@ from .convert import (
     ResponseConvertStatusItem,
     ResponseConvertTaskItem,
 )
+from .graph_optimize import (
+    RequestCreateGraphOptimizeTask,
+    ResponseGraphOptimizeDownloadModelUrlItem,
+    ResponseGraphOptimizeStatusItem,
+    ResponseGraphOptimizeTaskItem,
+)
 from .quantize import (
     RequestQuantizeTask,
     ResponseQuantizeDownloadModelUrlItem,
@@ -40,4 +46,8 @@ __all__ = [
     ResponseQuantizeOptionItems,
     ResponseQuantizeStatusItem,
     ResponseQuantizeTaskItem,
+    RequestCreateGraphOptimizeTask,
+    ResponseGraphOptimizeTaskItem,
+    ResponseGraphOptimizeStatusItem,
+    ResponseGraphOptimizeDownloadModelUrlItem,
 ]
