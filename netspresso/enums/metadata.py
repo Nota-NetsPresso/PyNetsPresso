@@ -7,6 +7,7 @@ class TaskType(StrEnum):
     CONVERT = "convert"
     QUANTIZE = "quantize"
     BENCHMARK = "benchmark"
+    GRAPH_OPTIMIZE = "graph_optimize"
 
 
 class Status(StrEnum):

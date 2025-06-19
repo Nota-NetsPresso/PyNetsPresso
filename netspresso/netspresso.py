@@ -15,6 +15,7 @@ from netspresso.compressor import CompressorV2
 from netspresso.converter import ConverterV2
 from netspresso.enums import Task
 from netspresso.exceptions.common import FailedFetchPackageException
+from netspresso.graph_optimizer.graph_optimizer import GraphOptimizer
 from netspresso.inferencer.inferencer import CustomInferencer, NPInferencer
 from netspresso.np_qai.benchmarker import NPQAIBenchmarker
 from netspresso.np_qai.converter import NPQAIConverter
@@ -170,6 +171,14 @@ class NetsPresso:
             Benchmarker: Initialized Benchmarker instance.
         """
         return BenchmarkerV2(token_handler=self.token_handler, user_info=self.user_info)
+
+    def graph_optimizer(self) -> GraphOptimizer:
+        """Initialize and return a GraphOptimizer instance.
+
+        Returns:
+            GraphOptimizer: Initialized GraphOptimizer instance.
+        """
+        return GraphOptimizer(token_handler=self.token_handler, user_info=self.user_info)
 
     def np_inferencer(self, config_path: str, input_model_path: str) -> NPInferencer:
         """Initialize and return a Inferencer instance.

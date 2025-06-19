@@ -8,6 +8,7 @@ class ServiceTask(StrEnum):
     MODEL_CONVERT = "Conversion"
     MODEL_BENCHMARK = "Benchmark"
     MODEL_QUANTIZE = "Quantization"
+    MODEL_GRAPH_OPTIMIZE = "Graph Optimize"
 
 
 class ServiceCredit:
@@ -17,6 +18,7 @@ class ServiceCredit:
         ServiceTask.MODEL_CONVERT: 50,
         ServiceTask.MODEL_BENCHMARK: 25,
         ServiceTask.MODEL_QUANTIZE: 50,
+        ServiceTask.MODEL_GRAPH_OPTIMIZE: 50,
     }
 
     @staticmethod
