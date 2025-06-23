@@ -21,6 +21,7 @@ from netspresso.np_qai.converter import NPQAIConverter
 from netspresso.np_qai.quantizer import NPQAIQuantizer
 from netspresso.profiler import Profiler
 from netspresso.quantizer import Quantizer
+from netspresso.simulator.simulator import Simulator
 from netspresso.trainer import Trainer
 from netspresso.utils.file import FileHandler
 
@@ -179,6 +180,14 @@ class NetsPresso:
             GraphOptimizer: Initialized GraphOptimizer instance.
         """
         return GraphOptimizer(token_handler=self.token_handler, user_info=self.user_info)
+
+    def simulator(self) -> Simulator:
+        """Initialize and return a Simulator instance.
+
+        Returns:
+            Simulator: Initialized Simulator instance.
+        """
+        return Simulator(token_handler=self.token_handler, user_info=self.user_info)
 
     def np_inferencer(self, config_path: str, input_model_path: str) -> NPInferencer:
         """Initialize and return a Inferencer instance.

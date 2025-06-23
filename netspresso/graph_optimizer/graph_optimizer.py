@@ -111,8 +111,6 @@ class GraphOptimizer(NetsPressoBase):
             if metadata.status in [Status.ERROR, Status.STOPPED]:
                 return metadata
 
-            self.validate_token_and_check_credit(service_task=ServiceTask.MODEL_GRAPH_OPTIMIZE)
-
             # Get presigned_model_upload_url
             presigned_url_response = launcher_client_v2.graph_optimizer.presigned_model_upload_url(
                 access_token=self.token_handler.tokens.access_token,

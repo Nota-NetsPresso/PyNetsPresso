@@ -9,6 +9,7 @@ class ServiceTask(StrEnum):
     MODEL_PROFILE = "Profile"
     MODEL_QUANTIZE = "Quantization"
     MODEL_GRAPH_OPTIMIZE = "Graph Optimize"
+    MODEL_SIMULATE = "Simulate"
 
 
 class ServiceCredit:
