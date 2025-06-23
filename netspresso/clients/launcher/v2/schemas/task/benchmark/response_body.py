@@ -12,8 +12,8 @@ from netspresso.clients.launcher.v2.schemas import (
 )
 from netspresso.clients.launcher.v2.schemas.task.common import TaskStatusInfo
 from netspresso.enums import Framework, TaskStatusForDisplay
-from netspresso.metadata import benchmarker
-from netspresso.metadata.benchmarker import BenchmarkTaskInfo
+from netspresso.metadata import profiler
+from netspresso.metadata.profiler import BenchmarkTaskInfo
 
 
 @dataclass
@@ -26,8 +26,8 @@ class BenchmarkResult:
     memory_footprint_cpu: float
     memory_footprint_gpu: float
 
-    def to(self, file_size: float) -> benchmarker.BenchmarkResult:
-        benchmark_result = benchmarker.BenchmarkResult()
+    def to(self, file_size: float) -> profiler.BenchmarkResult:
+        benchmark_result = profiler.BenchmarkResult()
         benchmark_result.memory_footprint_cpu = self.memory_footprint_cpu
         benchmark_result.memory_footprint_gpu = self.memory_footprint_gpu
         benchmark_result.power_consumption = self.power_consumption

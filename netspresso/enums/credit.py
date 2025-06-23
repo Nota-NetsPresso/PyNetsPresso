@@ -6,7 +6,7 @@ class ServiceTask(StrEnum):
     ADVANCED_COMPRESSION = "Advanced Compression"
     AUTOMATIC_COMPRESSION = "Automatic Compression"
     MODEL_CONVERT = "Conversion"
-    MODEL_BENCHMARK = "Benchmark"
+    MODEL_PROFILE = "Profile"
     MODEL_QUANTIZE = "Quantization"
     MODEL_GRAPH_OPTIMIZE = "Graph Optimize"
 
@@ -16,7 +16,7 @@ class ServiceCredit:
         ServiceTask.ADVANCED_COMPRESSION: 50,
         ServiceTask.AUTOMATIC_COMPRESSION: 25,
         ServiceTask.MODEL_CONVERT: 50,
-        ServiceTask.MODEL_BENCHMARK: 25,
+        ServiceTask.MODEL_PROFILE: 25,
         ServiceTask.MODEL_QUANTIZE: 50,
         ServiceTask.MODEL_GRAPH_OPTIMIZE: 50,
     }

@@ -8,6 +8,7 @@ class TaskType(StrEnum):
     QUANTIZE = "quantize"
     BENCHMARK = "benchmark"
     GRAPH_OPTIMIZE = "graph_optimize"
+    PROFILE = "profile"
 
 
 class Status(StrEnum):
