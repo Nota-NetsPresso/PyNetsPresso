@@ -123,7 +123,6 @@ class Simulator(NetsPressoBase):
             metadata.target_model_info = target_model.data.to()
             metadata.simulate_task_info = simulate_response.data.to()
             metadata.status = Status.COMPLETED
-            MetadataHandler.save_metadata(data=metadata, folder_path=output_dir)
 
         except Exception as e:
             metadata = self.handle_error(metadata, ServiceTask.MODEL_SIMULATE, e.args[0])
