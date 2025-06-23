@@ -27,6 +27,7 @@ from .task import (
     RequestBenchmark,
     RequestConvert,
     RequestCreateGraphOptimizeTask,
+    RequestCreateSimulateTask,
     RequestQuantizeTask,
     ResponseBenchmarkFrameworkOptionItems,
     ResponseBenchmarkOptionItems,
@@ -44,4 +45,6 @@ from .task import (
     ResponseQuantizeOptionItems,
     ResponseQuantizeStatusItem,
     ResponseQuantizeTaskItem,
+    ResponseSimulateStatusItem,
+    ResponseSimulateTaskItem,
 )
