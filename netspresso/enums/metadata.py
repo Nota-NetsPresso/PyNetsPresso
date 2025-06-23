@@ -9,6 +9,7 @@ class TaskType(StrEnum):
     BENCHMARK = "benchmark"
     GRAPH_OPTIMIZE = "graph_optimize"
     PROFILE = "profile"
+    SIMULATE = "simulate"
 
 
 class Status(StrEnum):

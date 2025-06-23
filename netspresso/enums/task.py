@@ -14,6 +14,7 @@ class LauncherTask(StrEnum):
     BENCHMARK = "benchmark"
     QUANTIZE = "quantize"
     GRAPH_OPTIMIZE = "graph-optimize"
+    SIMULATE = "simulate"
 
 
 class TaskStatusForDisplay(NamedConstant):
