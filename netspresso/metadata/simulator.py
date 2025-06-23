@@ -24,5 +24,6 @@ class SimulatorMetadata(BaseMetadata):
     task_type: TaskType = TaskType.SIMULATE
     base_model_path: str = ""
     target_model_path: str = ""
-    model_info: ModelInfo = field(default_factory=ModelInfo)
+    base_model_info: ModelInfo = field(default_factory=ModelInfo)
+    target_model_info: ModelInfo = field(default_factory=ModelInfo)
     simulate_task_info: SimulatorInfo = field(default_factory=SimulatorInfo)
