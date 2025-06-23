@@ -11,10 +11,9 @@ from netspresso.enums import DeviceName, Framework
 #
 
 ###
-# Available devices for Framework.DRPAI (target_framework)
+# Available devices for Framework.OPENVINO (target_framework)
 #
-# DeviceName.RENESAS_RZ_V2L
-# DeviceName.RENESAS_RZ_V2M
+# DeviceName.INTEL_XEON_W_2233
 #
 
 EMAIL = "YOUR_EMAIL"
@@ -26,10 +25,10 @@ netspresso = NetsPresso(email=EMAIL, password=PASSWORD)
 converter = netspresso.converter_v2()
 
 # 2. Set variables for convert
-INPUT_MODEL_PATH = "./examples/sample_models/yolo-fastest.onnx"
-OUTPUT_DIR = "./outputs/converted/DRPAI_RENESAS_RZ_V2L"
-TARGET_FRAMEWORK = Framework.DRPAI
-TARGET_DEVICE_NAME = DeviceName.RENESAS_RZ_V2L
+INPUT_MODEL_PATH = "./examples/sample_models/test.onnx"
+OUTPUT_DIR = "./outputs/converted/INTEL_XEON_W_2233"
+TARGET_FRAMEWORK = Framework.OPENVINO
+TARGET_DEVICE_NAME = DeviceName.INTEL_XEON_W_2233
 
 # 3. Run convert
 conversion_task = converter.convert_model(
@@ -40,12 +39,12 @@ conversion_task = converter.convert_model(
 )
 print(conversion_task)
 
-# 4. Declare benchmarker
-benchmarker = netspresso.benchmarker_v2()
+# 4. Declare profiler
+profiler = netspresso.profiler()
 
-# 5. Run benchmark
-benchmark_task = benchmarker.benchmark_model(
+# 5. Run profile
+profile_task = profiler.profile_model(
     input_model_path=conversion_task.converted_model_path,
     target_device_name=TARGET_DEVICE_NAME,
 )
-print(f"model inference latency: {benchmark_task.benchmark_result.latency} ms")
+print(f"model inference latency: {profile_task.profile_result.latency} ms")

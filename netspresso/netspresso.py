@@ -8,7 +8,6 @@ import requests
 from loguru import logger
 from packaging import version
 
-from netspresso.benchmarker import BenchmarkerV2
 from netspresso.clients.auth import TokenHandler, auth_client
 from netspresso.clients.auth.response_body import UserResponse
 from netspresso.compressor import CompressorV2
@@ -20,6 +19,7 @@ from netspresso.inferencer.inferencer import CustomInferencer, NPInferencer
 from netspresso.np_qai.benchmarker import NPQAIBenchmarker
 from netspresso.np_qai.converter import NPQAIConverter
 from netspresso.np_qai.quantizer import NPQAIQuantizer
+from netspresso.profiler import Profiler
 from netspresso.quantizer import Quantizer
 from netspresso.trainer import Trainer
 from netspresso.utils.file import FileHandler
@@ -164,13 +164,13 @@ class NetsPresso:
         """
         return Quantizer(token_handler=self.token_handler, user_info=self.user_info)
 
-    def benchmarker_v2(self) -> BenchmarkerV2:
-        """Initialize and return a Benchmarker instance.
+    def profiler(self) -> Profiler:
+        """Initialize and return a Profiler instance.
 
         Returns:
-            Benchmarker: Initialized Benchmarker instance.
+            Profiler: Initialized Profiler instance.
         """
-        return BenchmarkerV2(token_handler=self.token_handler, user_info=self.user_info)
+        return Profiler(token_handler=self.token_handler, user_info=self.user_info)
 
     def graph_optimizer(self) -> GraphOptimizer:
         """Initialize and return a GraphOptimizer instance.
