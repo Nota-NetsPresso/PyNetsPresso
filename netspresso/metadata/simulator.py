@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from netspresso.clients.launcher.v2.schemas.task.simulate.response_body import SnrScore
 from netspresso.enums.metadata import TaskType
 from netspresso.enums.simulate import SimulateTaskType
 from netspresso.enums.task import TaskStatusForDisplay
@@ -14,7 +13,7 @@ class SimulatorInfo:
     user_id: str = ""
     base_model_id: str = ""
     target_model_id: str = ""
-    snr_scores: List[SnrScore] = field(default_factory=list)
+    snr_scores: List[dict] = field(default_factory=list)
     type: SimulateTaskType = ""
     status: TaskStatusForDisplay = ""
     error_log: str = ""
