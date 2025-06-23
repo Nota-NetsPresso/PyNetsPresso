@@ -40,12 +40,12 @@ conversion_task = converter.convert_model(
 )
 print(conversion_task)
 
-# 4. Declare benchmarker
-benchmarker = netspresso.benchmarker_v2()
+# 4. Declare profiler
+profiler = netspresso.profiler()
 
-# 5. Run benchmark
-benchmark_task = benchmarker.benchmark_model(
+# 5. Run profile
+profile_task = profiler.profile_model(
     input_model_path=conversion_task.converted_model_path,
     target_device_name=TARGET_DEVICE_NAME,
 )
-print(f"model inference latency: {benchmark_task.benchmark_result.latency} ms")
+print(f"model inference latency: {profile_task.profile_result.latency} ms")
