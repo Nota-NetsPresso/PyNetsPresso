@@ -27,6 +27,11 @@ from .quantize import (
     ResponseQuantizeStatusItem,
     ResponseQuantizeTaskItem,
 )
+from .simulate import (
+    RequestCreateSimulateTask,
+    ResponseSimulateStatusItem,
+    ResponseSimulateTaskItem,
+)
 
 __all__ = [
     TaskStatusInfo,
@@ -50,4 +55,7 @@ __all__ = [
     ResponseGraphOptimizeTaskItem,
     ResponseGraphOptimizeStatusItem,
     ResponseGraphOptimizeDownloadModelUrlItem,
+    RequestCreateSimulateTask,
+    ResponseSimulateStatusItem,
+    ResponseSimulateTaskItem,
 ]
