@@ -23,3 +23,8 @@ class MembershipType(StrEnum):
 class CreditType(StrEnum):
     FREE = "FREE"
     PAID = "PAID"
+
+
+class ApiKeyStatus(StrEnum):
+    ACTIVE = "ACTIVE"
+    DEACTIVATED = "DEACTIVATED"
