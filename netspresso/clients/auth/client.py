@@ -3,6 +3,7 @@ from datetime import datetime
 import jwt
 import pytz
 from loguru import logger
+import warnings
 
 from netspresso.clients.auth.response_body import TokenResponse, UserResponse
 from netspresso.clients.auth.v2.client import AuthClientV2
@@ -22,8 +23,18 @@ class AuthClient:
         # TODO
         return self.config.is_cloud()
 
-    def login(self, email, password, verify_ssl: bool = True) -> TokenResponse:
-        return self.api_client.login(email=email, password=password, verify_ssl=verify_ssl)
+    def login(self, api_key: str = None, email: str = None, password: str = None, verify_ssl: bool = True) -> TokenResponse:
+        if api_key is not None:
+            return self.api_client.login_by_api_key(api_key=api_key, verify_ssl=verify_ssl)
+        elif email is not None and password is not None:
+            warnings.warn(
+                "Email/password login is deprecated and will be removed in a future release. Please use API Key login.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self.api_client.login(email=email, password=password, verify_ssl=verify_ssl)
+        else:
+            raise ValueError("You must provide either api_key or both email and password.")
 
     def get_user_info(self, access_token, verify_ssl: bool = True) -> UserResponse:
         return self.api_client.get_user_info(access_token=access_token, verify_ssl=verify_ssl)
@@ -40,10 +51,24 @@ class AuthClient:
 
 
 class TokenHandler:
-    def __init__(self, email, password, verify_ssl: bool = True) -> None:
-        self.tokens = auth_client.login(email=email, password=password, verify_ssl=verify_ssl)
-        self.email = email
-        self.password = password
+    def __init__(self, api_key: str = None, email: str = None, password: str = None, verify_ssl: bool = True) -> None:
+        if api_key is not None:
+            self.tokens = auth_client.login(api_key=api_key, verify_ssl=verify_ssl)
+            self.api_key = api_key
+            self.email = None
+            self.password = None
+        elif email is not None and password is not None:
+            warnings.warn(
+                "Email/password login is deprecated and will be removed in a future release. Please use API Key login.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            self.tokens = auth_client.login(email=email, password=password, verify_ssl=verify_ssl)
+            self.api_key = None
+            self.email = email
+            self.password = password
+        else:
+            raise ValueError("You must provide either api_key or both email and password.")
         self.verify_ssl = verify_ssl
 
     def check_jwt_exp(self):
@@ -52,7 +77,15 @@ class TokenHandler:
 
     def validate_token(self):
         if not self.check_jwt_exp():
-            self.tokens = auth_client.login(email=self.email, password=self.password, verify_ssl=self.verify_ssl)
+            if self.api_key is not None:
+                self.tokens = auth_client.login(api_key=self.api_key, verify_ssl=self.verify_ssl)
+            elif self.email is not None and self.password is not None:
+                warnings.warn(
+                    "Email/password login is deprecated and will be removed in a future release. Please use API Key login.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                self.tokens = auth_client.login(email=self.email, password=self.password, verify_ssl=self.verify_ssl)
             logger.info("The token has expired. the token has been reissued.")
 
 

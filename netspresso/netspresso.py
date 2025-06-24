@@ -27,12 +27,13 @@ from netspresso.utils.file import FileHandler
 
 
 class NetsPresso:
-    def __init__(self, email: str, password: str, verify_ssl: bool = True, dev_mode: bool = False) -> None:
+    def __init__(self, email: str = None, password: str = None, api_key: str = None, verify_ssl: bool = True, dev_mode: bool = False) -> None:
         """Initialize NetsPresso instance and perform user authentication.
 
         Args:
-            email (str): User's email for authentication.
-            password (str): User's password for authentication.
+            email (str, optional): User's email for authentication (deprecated).
+            password (str, optional): User's password for authentication (deprecated).
+            api_key (str, optional): API Key for authentication.
             verify_ssl (bool): Flag to indicate whether SSL certificates should be verified. Defaults to True.
             dev_mode (bool): If True, skip version check for development. Defaults to False.
 
@@ -42,7 +43,7 @@ class NetsPresso:
         self.dev_mode = dev_mode
         if not self._check_version():
             sys.exit(1)
-        self.token_handler = TokenHandler(email=email, password=password, verify_ssl=verify_ssl)
+        self.token_handler = TokenHandler(api_key=api_key, email=email, password=password, verify_ssl=verify_ssl)
         self.user_info = self.get_user()
 
     def _check_version(self) -> bool:
