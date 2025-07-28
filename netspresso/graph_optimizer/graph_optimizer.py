@@ -16,6 +16,7 @@ from netspresso.enums.graph_optimize import GraphOptimizePatternHandler
 from netspresso.metadata.graph_optimizer import GraphOptimizerMetadata
 from netspresso.utils import FileHandler
 from netspresso.utils.metadata import MetadataHandler
+from netspresso.utils.onnx import update_onnx_input_batch_size_as_1
 
 
 class GraphOptimizer(NetsPressoBase):
@@ -99,6 +100,8 @@ class GraphOptimizer(NetsPressoBase):
 
         netspresso_analytics.send_event(event_name="optimize_model_using_np")
 
+        self.token_handler.validate_token()
+
         FileHandler.check_input_model_path(input_model_path)
         output_dir = FileHandler.create_unique_folder(folder_path=output_dir)
         metadata = self.initialize_metadata(
@@ -110,6 +113,10 @@ class GraphOptimizer(NetsPressoBase):
         try:
             if metadata.status in [Status.ERROR, Status.STOPPED]:
                 return metadata
+
+            # Check if the model is supported
+            batch_size_1_model_path = Path(output_dir) / f"{Path(input_model_path).stem}_batch_size_1.onnx"
+            input_model_path = update_onnx_input_batch_size_as_1(input_model_path, batch_size_1_model_path.as_posix())
 
             # Get presigned_model_upload_url
             presigned_url_response = launcher_client_v2.graph_optimizer.presigned_model_upload_url(
