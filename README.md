@@ -159,7 +159,17 @@ We offer a comprehensive guide to walk you through the process of optimizing an 
       <tr>
           <td width="30%" align="center">Compress</td>
           <td width="30%" align="center">np.compressor</td>
-          <td width="40%" align="center">Compress and optimize the user’s model.</td>
+          <td width="40%" align="center">Compress the user’s model.</td>
+      </tr>
+      <tr>
+          <td width="30%" align="center">Optimize</td>
+          <td width="30%" align="center">np.optimizer</td>
+          <td width="40%" align="center">Optimize the user’s model.</td>
+      </tr>
+      <tr>
+          <td width="30%" align="center">Simulate</td>
+          <td width="30%" align="center">np.simulator</td>
+          <td width="40%" align="center">Simulate the user’s model.</td>
       </tr>
       <tr>
           <td width="30%" align="center">Quantize</td>
@@ -172,9 +182,9 @@ We offer a comprehensive guide to walk you through the process of optimizing an 
           <td width="40%" align="center">Convert and quantize the user’s model to run efficiently on device.</td>
       </tr>
       <tr>
-          <td width="30%" align="center">Benchmark</td>
-          <td width="30%" align="center">np.benchmarker</td>
-          <td width="40%" align="center">Benchmark the user's model to measure model inference speed on diverse device.</td>
+          <td width="30%" align="center">Profile</td>
+          <td width="30%" align="center">np.profiler</td>
+          <td width="40%" align="center">Profile the user's model to measure model inference speed on diverse device.</td>
       </tr>
   </table>
 </div>
@@ -204,6 +214,11 @@ Log-in to your netspresso account. Please sign-up [here](https://netspresso.ai/?
 ```python
 from netspresso import NetsPresso
 
+# Login with API key (recommended)
+# Get your API token from: https://account.netspresso.ai/api-token
+netspresso = NetsPresso(api_key="YOUR_API_KEY")
+
+# Note: Email/password login will be deprecated soon
 netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
 ```
 
@@ -398,11 +413,11 @@ conversion_result = converter.convert_model(
 )
 ```
 
-### Benchmarker
+### Profiler
 
-#### Benchmark
+#### Profile
 
-To start benchmarking a model, enter the model path to benchmark and the target device name.
+To start profiling a model, enter the model path to profile and the target device name.
 
 For NVIDIA GPUs and Jetson devices, device name and software version have to be matched with the target device of the conversion.
 
@@ -411,18 +426,18 @@ TensorRT Model has strong dependency with the device type and its jetpack versio
 ```python
 from netspresso.enums import DeviceName, SoftwareVersion
 
-# 1. Declare benchmarker
-benchmarker = netspresso.benchmarker_v2()
+# 1. Declare profiler
+profiler = netspresso.profiler_v2()
 
-# 2. Run benchmark
-benchmark_result = benchmarker.benchmark_model(
+# 2. Run profile
+profile_result = profiler.profile_model(
     input_model_path="./outputs/converted/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1/TENSORRT_JETSON_AGX_ORIN_JETPACK_5_0_1.trt",
     target_device_name=DeviceName.JETSON_AGX_ORIN,
     target_software_version=SoftwareVersion.JETPACK_5_0_1,
 )
-print(f"model inference latency: {benchmark_result.benchmark_result.latency} ms")
-print(f"model gpu memory footprint: {benchmark_result.benchmark_result.memory_footprint_gpu} MB")
-print(f"model cpu memory footprint: {benchmark_result.benchmark_result.memory_footprint_cpu} MB")
+print(f"model inference latency: {profile_result.profile_result.latency} ms")
+print(f"model gpu memory footprint: {profile_result.profile_result.memory_footprint_gpu} MB")
+print(f"model cpu memory footprint: {profile_result.profile_result.memory_footprint_cpu} MB")
 ```
 
 <details open>
@@ -438,7 +453,7 @@ print(f"model cpu memory footprint: {benchmark_result.benchmark_result.memory_fo
   | OPENVINO                  |  ✔️  |                  |            |
   | TENSORFLOW_LITE           |  ✔️  |        ✔️        |     ✔️     |
 
-  ### Devices that support benchmarks for model's framework
+  ### Devices that support profiles for model's framework
 
   | Device / Framework           | ONNX | TENSORRT | TENSORFLOW_LITE | DRPAI | OPENVINO |
   |:-----------------------------|:----:|:--------:|:---------------:|:-----:|:--------:|
@@ -463,7 +478,7 @@ print(f"model cpu memory footprint: {benchmark_result.benchmark_result.memory_fo
   | AWS_T4                       |  ✔️  |    ✔️    |                 |       |          |
   | INTEL_XEON_W_2233            |      |          |                 |       |    ✔️    |
 
-  ### Software versions that support conversions and benchmarks for specific devices 
+  ### Software versions that support conversions and profiles for specific devices 
 
   Software Versions requires for Jetson Device. If you are using a different device, you do not need to enter it.
 
@@ -485,25 +500,25 @@ print(f"model cpu memory footprint: {benchmark_result.benchmark_result.memory_fo
       target_device_name=DeviceName.JETSON_AGX_ORIN,
       target_software_version=SoftwareVersion.JETPACK_5_0_1,
   )
-  benchmark_result = benchmarker.benchmark_model(
+  profile_result = profiler.profile_model(
       input_model_path=CONVERTED_MODEL_PATH,
       target_device_name=DeviceName.JETSON_AGX_ORIN,
       target_software_version=SoftwareVersion.JETPACK_5_0_1,
   )
   ```
 
-  ### Hardware type that support benchmarks for specific devices
+  ### Hardware type that support profiles for specific devices
 
   Benchmark and compare models with and without Arm Helium.
 
   `RENESAS_RA8D1` and `ALIF_ENSEMBLE_E7_DEVKIT_GEN2` are available for use.
 
-  The benchmark results with Helium can be up to twice as fast as without Helium.
+  The profile results with Helium can be up to twice as fast as without Helium.
 
   The code below is an example of using hardware type.
 
   ```python
-  benchmark_result = benchmarker.benchmark_model(
+  profile_result = profiler.profile_model(
       input_model_path=CONVERTED_MODEL_PATH,
       target_device_name=DeviceName.RENESAS_RA8D1,
       target_data_type=DataType.INT8,

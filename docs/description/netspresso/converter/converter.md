@@ -19,7 +19,12 @@ from netspresso import NetsPresso
 from netspresso.enums import DeviceName, Framework, SoftwareVersion
 
 
-netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+# Login with API key (recommended)
+# Get your API token from: https://account.netspresso.ai/api-token
+netspresso = NetsPresso(api_key="YOUR_API_KEY")
+
+# Note: Email/password login will be deprecated soon
+# netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
 
 converter = netspresso.converter_v2()
 conversion_task = converter.convert_model(
