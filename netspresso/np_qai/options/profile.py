@@ -520,7 +520,7 @@ class ProfileOptions(ProfileCommonOptions):
     Profile options for the model.
 
     Note:
-        For details, see `ProfileOptions in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/api.html#profile-inference-options>`_.
+        For details, see [ProfileOptions in QAI Hub API](https://app.aihub.qualcomm.com/docs/hub/api.html#profile-inference-options).
     """
 
     pass
@@ -532,7 +532,7 @@ class InferenceOptions(ProfileCommonOptions):
     Inference options for the model.
 
     Note:
-        For details, see `InferenceOptions in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/api.html#profile-inference-options>`_.
+        For details, see [InferenceOptions in QAI Hub API](https://app.aihub.qualcomm.com/docs/hub/api.html#profile-inference-options).
     """
 
     pass

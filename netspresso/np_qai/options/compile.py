@@ -50,7 +50,7 @@ class CompileOptions(CommonOptions):
     Compile options for the model.
 
     Note:
-        For details, see `CompileOptions in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/api.html#compile-options>`_.
+        For details, see [CompileOptions in QAI Hub API](https://app.aihub.qualcomm.com/docs/hub/api.html#compile-options).
     """
 
     target_runtime: Optional[Runtime] = Runtime.TFLITE
