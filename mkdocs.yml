@@ -116,7 +116,7 @@ nav:
       - "Base":
         - "Dataset":
           - "Get Dataset": description/netspresso_qai/base/dataset/get_dataset.md
-          - "Get Datasets": description/netspresso_qai/base/dataset/get_dataset.md
+          - "Get Datasets": description/netspresso_qai/base/dataset/get_datasets.md
           - "Upload Dataset": description/netspresso_qai/base/dataset/upload_dataset.md
         - "Model":
           - "Get Model": description/netspresso_qai/base/model/get_model.md
