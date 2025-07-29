@@ -1,0 +1,212 @@
+# Project information
+site_name: Docs for PyNetsPresso
+site_url: https://nota-netspresso.github.io/pynetspresso/
+site_author: Nota
+site_description: >-
+  Start training, compression, conversion, quantization, and profiling your model with NetsPresso!
+
+# Repository
+repo_name: nota-netspresso/pynetspresso
+repo_url: https://github.com/nota-netspresso/pynetspresso
+
+# Copyright
+copyright: © 2025 Nota Inc.
+
+# Configuration
+theme:
+  name: material
+  custom_dir: docs/.material/.overrides
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    # - content.code.select
+    # - content.tabs.link
+    - content.tooltips
+    # - header.autohide
+    # - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    # - navigation.instant
+    # - navigation.prune
+    # - navigation.sections
+    - navigation.expand
+    - navigation.tabs
+    # - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    # - toc.integrate
+  palette:
+    - scheme: default
+      primary: black
+      accent: light blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: black
+      accent: light blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: assets/images/favicon.png
+  # logo: assets/images/NetsPresso.svg
+
+extra_javascript:
+  - assets/javascripts/katex.js
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js  
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js
+
+extra_css:
+  - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css
+
+nav:
+  - "Home": index.md
+  - "Installation": installation.md
+  - "API Description":
+    - "NetsPresso":
+      - "Trainer": description/netspresso/trainer/trainer.md
+      - "Compressor":
+        - "Advanced Compression":
+          - "Manual Compression": description/netspresso/compressor/advanced_compression/manual_compression.md
+          - "Recommendation Compression": description/netspresso/compressor/advanced_compression/recommendation_compression.md
+          - "Compression Method": description/netspresso/compressor/advanced_compression/compression_method.md
+          - "Pruning Options": description/netspresso/compressor/advanced_compression/pruning_options.md
+        - "Automatic Compression": description/netspresso/compressor/automatic_compression.md
+      - "Converter": description/netspresso/converter/converter.md
+      - "Quantizer":
+        - "Quantization": description/netspresso/quantizer/quantizer.md
+        - "Automatic Quantization": description/netspresso/quantizer/automatic_quantization.md
+        - "Custom Precision Quantization by Layer Name": description/netspresso/quantizer/custom_precision_quantization_by_layer_name.md
+        - "Custom Precision Quantization by Operator Type": description/netspresso/quantizer/custom_precision_quantization_by_operator_type.md
+        - "Recommendation Precision": description/netspresso/quantizer/recommendation_precision.md
+        - "Uniform Precision Quantization": description/netspresso/quantizer/uniform_precision_quantization.md
+      - "Profiler": description/netspresso/profiler/profiler.md
+      - "Enums":
+        - "Framework": description/netspresso/enums/framework.md
+        - "Compression Method": description/netspresso/enums/compression_method.md
+        - "Recommendation Method": description/netspresso/enums/recommendation_method.md
+        - "Policy": description/netspresso/enums/policy.md
+        - "Group Policy": description/netspresso/enums/group_policy.md
+        - "Layer Norm": description/netspresso/enums/layer_norm.md
+        - "Data Type": description/netspresso/enums/data_type.md
+        - "Extension": description/netspresso/enums/extension.md
+        - "Origin From": description/netspresso/enums/origin_from.md
+        - "Device Name": description/netspresso/enums/device_name.md
+        - "Hardware Type": description/netspresso/enums/hardware_type.md
+        - "Software Version": description/netspresso/enums/software_version.md
+        - "Task": description/netspresso/enums/task.md
+        - "Task Status": description/netspresso/enums/task_status.md
+        - "Quantization Mode": description/netspresso/enums/quantization_mode.md
+        - "Quantization Precision": description/netspresso/enums/quantization_precision.md
+        - "Similarity Metric": description/netspresso/enums/similarity_metric.md
+    - "NetsPressoQAI":
+      - "Base":
+        - "Dataset":
+          - "Get Dataset": description/netspresso_qai/base/dataset/get_dataset.md
+          - "Get Datasets": description/netspresso_qai/base/dataset/get_dataset.md
+          - "Upload Dataset": description/netspresso_qai/base/dataset/upload_dataset.md
+        - "Model":
+          - "Get Model": description/netspresso_qai/base/model/get_model.md
+          - "Get Models": description/netspresso_qai/base/model/get_models.md
+          - "Upload Model": description/netspresso_qai/base/model/upload_model.md
+        - "Device":
+          - "Get Devices": description/netspresso_qai/base/device/get_devices.md
+          - "Get Device Attributes": description/netspresso_qai/base/device/get_device_attributes.md
+        - "Job":
+          - "Get Job": description/netspresso_qai/base/job/get_job.md
+          - "Get Job Summaries": description/netspresso_qai/base/job/get_job_summaries.md
+
+      - "Quantizer":
+        - "Quantize Model": description/netspresso_qai/quantizer/quantize_model.md
+        - "Download Quantized Model": description/netspresso_qai/quantizer/download_model.md
+        - "Get Quantization Task Status": description/netspresso_qai/quantizer/get_quantization_task_status.md
+        - "Update Quantization Task": description/netspresso_qai/quantizer/update_quantization_task.md
+      - "Converter":
+        - "Convert Model": description/netspresso_qai/converter/convert_model.md
+        - "Download Converted Model": description/netspresso_qai/converter/download_model.md
+        - "Get Conversion Task Status": description/netspresso_qai/converter/get_conversion_task_status.md
+        - "Update Conversion Task": description/netspresso_qai/converter/update_conversion_task.md
+      - "Profiler":
+        - "Profile Model": description/netspresso_qai/profiler/profile_model.md
+        - "Download Profile Results": description/netspresso_qai/profiler/download_benchmark_results.md
+        - "Download Profile": description/netspresso_qai/profiler/download_profile.md
+        - "Get Profile Task Status": description/netspresso_qai/profiler/get_benchmark_task_status.md
+        - "Update Profile Task": description/netspresso_qai/profiler/update_benchmark_task.md
+        - "Get Inference Task Status": description/netspresso_qai/profiler/get_inference_task_status.md
+        - "Inference Model": description/netspresso_qai/profiler/inference_model.md
+      - "Options":
+        - "Common": description/netspresso_qai/options/common.md
+        - "Compile": description/netspresso_qai/options/compile.md
+        - "Profile": description/netspresso_qai/options/profile.md
+        - "Quantize": description/netspresso_qai/options/quantize.md
+
+# Plugins
+plugins:
+  - mkdocstrings:
+      default_handler: python
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+
+# Customization
+extra:
+  annotate:
+    json: [.s2]
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Nota-NetsPresso
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/netspresso/
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/company/notaai
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:materialx.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: squidfunk
+      repo: mkdocs-material
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
