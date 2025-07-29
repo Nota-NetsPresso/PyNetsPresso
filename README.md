@@ -441,7 +441,7 @@ print(f"model cpu memory footprint: {profile_result.profile_result.memory_footpr
 ```
 
 <details open>
-  <summary>Supported options for Converter & Benchmarker</summary>
+  <summary>Supported options for Converter & Profier</summary>
   <div markdown="1">
 
   ### Frameworks that support conversion for model's framework
@@ -509,7 +509,7 @@ print(f"model cpu memory footprint: {profile_result.profile_result.memory_footpr
 
   ### Hardware type that support profiles for specific devices
 
-  Benchmark and compare models with and without Arm Helium.
+  Profile and compare models with and without Arm Helium.
 
   `RENESAS_RA8D1` and `ALIF_ENSEMBLE_E7_DEVKIT_GEN2` are available for use.
 
@@ -552,8 +552,8 @@ print(f"model cpu memory footprint: {profile_result.profile_result.memory_footpr
       <td align="center">50</td>
   </tr>
   <tr>
-      <td align="center">Benchmarker</td>
-      <td align="center">Benchmark</td>
+      <td align="center">Profiler</td>
+      <td align="center">Profile</td>
       <td align="center">25</td>
   </tr>
 </table>
