@@ -36,7 +36,7 @@ class NPQAIConverter(NPQAIBase):
             JobStatus: The status of the convert task.
 
         Note:
-            For details, see `JobStatus in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.JobStatus.html>`_.
+            For details, see [JobStatus in QAI Hub API](https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.JobStatus.html).
         """
         job: CompileJob = hub.get_job(convert_task_id)
         status = job.get_status()
@@ -103,7 +103,7 @@ class NPQAIConverter(NPQAIBase):
             Union[ConverterMetadata, List[ConverterMetadata]]: Returns a converter metadata object if successful.
 
         Note:
-            For details, see `submit_compile_job in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.submit_compile_job.html>`_.
+            For details, see [submit_compile_job in QAI Hub API](https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.submit_compile_job.html).
         """
         netspresso_analytics.send_event(
             event_name="convert_model_using_qai",
@@ -172,6 +172,6 @@ class NPQAIConverter(NPQAIBase):
             filename: The filename to save the model to.
 
         Note:
-            For details, see `download_target_model in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.CompileJob.html#qai_hub.CompileJob.download_target_model>`_.
+            For details, see [download_target_model in QAI Hub API](https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.CompileJob.html#qai_hub.CompileJob.download_target_model).
         """
         job.download_target_model(filename=filename)

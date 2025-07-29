@@ -22,7 +22,7 @@ class CommonOptions:
         compute_unit: Specifies the target compute unit(s)
 
     Note:
-        For details, see `CommonOptions in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/api.html#common-options>`_.
+        For details, see [CommonOptions in QAI Hub API](https://app.aihub.qualcomm.com/docs/hub/api.html#common-options).
     """
 
     compute_unit: Optional[List[ComputeUnit]] = None
