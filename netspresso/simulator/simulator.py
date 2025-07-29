@@ -48,20 +48,20 @@ class Simulator(NetsPressoBase):
 
     def _upload_model_file(self, model_path: str) -> ResponseModelItem:
         # Get presigned_model_upload_url
-        presigned_url_response = launcher_client_v2.graph_optimizer.presigned_model_upload_url(
+        presigned_url_response = launcher_client_v2.simulator.presigned_model_upload_url(
             access_token=self.token_handler.tokens.access_token,
             input_model_path=model_path,
         )
 
         # Upload model_file
-        launcher_client_v2.graph_optimizer.upload_model_file(
+        launcher_client_v2.simulator.upload_model_file(
             access_token=self.token_handler.tokens.access_token,
             input_model_path=model_path,
             presigned_upload_url=presigned_url_response.data.presigned_upload_url,
         )
 
         # Validate model_file
-        validate_model_response = launcher_client_v2.graph_optimizer.validate_model_file(
+        validate_model_response = launcher_client_v2.simulator.validate_model_file(
             access_token=self.token_handler.tokens.access_token,
             input_model_path=model_path,
             ai_model_id=presigned_url_response.data.ai_model_id,
@@ -76,20 +76,19 @@ class Simulator(NetsPressoBase):
         output_dir: str,
         dataset_path: Optional[str] = None,
     ) -> SimulatorMetadata:
-        """Optimize a model to the specified framework.
+        """Simulate a model to the specified framework.
 
         Args:
-            input_model_path (str): The file path where the model is located.
-            output_dir (str): The local folder path to save the optimized model.
-            pattern_handlers (List[GraphOptimizePatternHandler]): The pattern handlers to optimize the model.
-            wait_until_done (bool): If True, wait for the graph optimize result before returning the function.
-                                If False, request the graph optimize and return  the function immediately.
+            base_model_path (str): The file path where the base model is located.
+            target_model_path (str): The file path where the target model is located.
+            output_dir (str): The local folder path to save the simulation result.
+            dataset_path (str): The file path where the dataset is located.
 
         Raises:
-            e: If an error occurs during the graph optimize.
+            e: If an error occurs during the simulation.
 
         Returns:
-            GraphOptimizerMetadata: Graph optimize metadata.
+            SimulatorMetadata: Simulator metadata.
         """
 
         netspresso_analytics.send_event(event_name="simulate_model_using_np")
