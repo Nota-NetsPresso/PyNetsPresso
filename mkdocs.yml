@@ -83,6 +83,8 @@ nav:
           - "Pruning Options": description/netspresso/compressor/advanced_compression/pruning_options.md
         - "Automatic Compression": description/netspresso/compressor/automatic_compression.md
       - "Converter": description/netspresso/converter/converter.md
+      - "Optimizer": description/netspresso/optimizer/optimizer.md
+      - "Simulator": description/netspresso/simulator/simulator.md
       - "Quantizer":
         - "Quantization": description/netspresso/quantizer/quantizer.md
         - "Automatic Quantization": description/netspresso/quantizer/automatic_quantization.md
