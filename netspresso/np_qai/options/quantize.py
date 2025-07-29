@@ -24,7 +24,7 @@ class QuantizeOptions:
     Quantize options for the model.
 
     Note:
-        For details, see [QuantizeOptions in QAI Hub API](https://app.aihub.qualcomm.com/docs/hub/api.html#quantize-options).
+        For details, see `QuantizeOptions in QAI Hub API <https://app.aihub.qualcomm.com/docs/hub/api.html#quantize-options>`_.
     """
 
     range_scheme: Optional[RangeScheme] = RangeScheme.AUTO
