@@ -14,18 +14,30 @@ Graph optimization enums for configuring pattern handlers in NetsPresso's graph 
 
 ## Available Pattern Handlers
 
-| Category | Pattern Name | Status | Description |
-|----------|--------------|--------|-------------|
-| **Fuse** | `PatternHandlerFuseBNToConv` | ✓ | Fuse batch normalization to convolution layers |
-| **Fuse** | `PatternHandlerFuseMathIntoConv` | ✓ | Fuse math operators (add, sub, mul, div) to convolution recursively |
-| **Fuse** | `PatternHandlerFuseMultiReshapeTranspose` | ✓ | Fuse multiple reshapes and transposes into one |
-| **Fuse** | `PatternHandlerFuseMultiBranchReshapeTranspose` | To do | Fuse multiple branched reshapes and transposes into one |
-| **Fuse** | `PatternHandlerFuseContinuousConcat` | ✓ | Fuse continuous concatenation operations |
-| **Fuse** | `PatternHandlerFoldingGeLU` | ✓ | Optimize GeLU activation functions by folding |
-| **Fuse** | `PatternHandlerFoldingSilu` | ✓ | Optimize SiLU activation functions by folding |
-| **Fuse** | `PatternHandlerFoldingRMSNorm` | ✓ | Optimize RMS normalization layers by folding |
-| **Fuse** | `PatternHandlerFoldingLayerNorm` | ✓ | Optimize layer normalization operations by folding |
-| **Remove** | `PatternHandlerRemoveUselessSlice` | ✓ | Remove meaningless tensor slice operators |
-| **Replace** | `PatternHandlerReplaceNegToConv` | ✓ | Replace negation by depthwise convolution |
-| **Replace** | `PatternHandlerReplaceMatmulToConv` | ✓ | Replace matrix multiplication with convolution operations |
-| **Optimize** | `PatternHandlerChangeAxisOfSoftmax` | ✓ | Optimize softmax operations by changing axis configurations |
+| Category | Pattern Name | Status |
+|----------|--------------|--------|
+| **Fuse** | `PatternHandlerFoldingGeLU` | ✓ |
+| **Fuse** | `PatternHandlerFoldingSilu` | ✓ |
+| **Fuse** | `PatternHandlerFoldingRMSNorm` | ✓ |
+| **Fuse** | `PatternHandlerFoldingLayerNorm` | ✓ |
+| **Optimize** | `PatternHandlerChangeAxisOfSoftmax` | ✓ |
+| **Replace** | `PatternHandlerReplaceNegToConv` | ✓ |
+| **Fuse** | `PatternHandlerFuseBNToConv` | ✓ |
+| **Fuse** | `PatternHandlerFuseContinuousConcat` | ✓ |
+| **Fuse** | `PatternHandlerFuseMathIntoConv` | ✓ |
+| **Replace** | `PatternHandlerReplaceMatmulToConv` | ✓ |
+| **Fuse** | `PatternHandlerFuseMultiReshapeTranspose` | ✓ |
+| **Fuse** | `PatternHandlerFuseMultiBranchReshapeTranspose` | ✓ |
+| **Remove** | `PatternHandlerRemoveUselessSlice` | ✓ |
+
+## Usage Examples
+
+### Get All Available Pattern Handlers
+
+```python
+from netspresso.enums.graph_optimize import GraphOptimizePatternHandler
+
+# Get all available pattern handlers
+all_patterns = GraphOptimizePatternHandler.get_all()
+print(f"Available patterns: {len(all_patterns)}")
+```
