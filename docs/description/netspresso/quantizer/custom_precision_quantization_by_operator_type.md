@@ -1,4 +1,4 @@
-# Quantizer(Custom Precision Quantization by Operator Type)
+# Custom Precision Quantization by Operator Type
 
 ## Description
 

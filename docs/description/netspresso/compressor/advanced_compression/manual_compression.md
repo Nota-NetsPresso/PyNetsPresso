@@ -1,4 +1,4 @@
-# Compressor(Manual Compression)
+# Manual Compression
 
 ## Upload Model
 

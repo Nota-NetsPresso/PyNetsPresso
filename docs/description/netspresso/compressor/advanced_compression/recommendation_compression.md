@@ -1,4 +1,4 @@
-# Compressor(Recommendation Compression)
+# Recommendation Compression
 
 ## Description
 

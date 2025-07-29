@@ -1,4 +1,4 @@
-# Quantizer(Uniform Precision Quantization)
+# Uniform Precision Quantization
 
 ## Description
 

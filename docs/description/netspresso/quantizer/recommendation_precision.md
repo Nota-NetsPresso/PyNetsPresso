@@ -1,4 +1,4 @@
-# Quantizer(Recommendation precision)
+# Recommendation precision
 
 ## Description
 

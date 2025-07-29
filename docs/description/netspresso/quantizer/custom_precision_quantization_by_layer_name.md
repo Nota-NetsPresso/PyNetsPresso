@@ -1,4 +1,4 @@
-# Quantizer(Custom Precision Quantization by Layer Name)
+# Custom Precision Quantization by Layer Name
 
 ## Description
 

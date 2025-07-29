@@ -1,4 +1,4 @@
-# Quantizer(Automatic Quantization)
+# Automatic Quantization
 
 ## Description
 
