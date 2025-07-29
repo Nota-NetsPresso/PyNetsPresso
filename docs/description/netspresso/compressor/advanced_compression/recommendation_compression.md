@@ -113,7 +113,12 @@ from netspresso import NetsPresso
 from netspresso.enums import CompressionMethod, RecommendationMethod
 
 
-netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+# Login with API key (recommended)
+# Get your API token from: https://account.netspresso.ai/api-token
+netspresso = NetsPresso(api_key="YOUR_API_KEY")
+
+# Note: Email/password login will be deprecated soon
+# netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
 
 compressor = netspresso.compressor_v2()
 compressed_model = compressor.recommendation_compression(

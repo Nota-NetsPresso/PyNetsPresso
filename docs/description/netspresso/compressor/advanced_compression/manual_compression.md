@@ -75,8 +75,12 @@ FRAMEWORK = Framework.PYTORCH
 ```python
 from netspresso import NetsPresso
 
+# Login with API key (recommended)
+# Get your API token from: https://account.netspresso.ai/api-token
+netspresso = NetsPresso(api_key="YOUR_API_KEY")
 
-netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+# Note: Email/password login will be deprecated soon
+# netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
 
 compressor = netspresso.compressor_v2()
 model = compressor.upload_model(
@@ -165,8 +169,12 @@ from netspresso import NetsPresso
 from netspresso.enums import CompressionMethod, Policy, LayerNorm, GroupPolicy
 from netspresso.clients.compressor.v2.schemas import Options
 
+# Login with API key (recommended)
+# Get your API token from: https://account.netspresso.ai/api-token
+netspresso = NetsPresso(api_key="YOUR_API_KEY")
 
-netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+# Note: Email/password login will be deprecated soon
+# netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
 
 compressor = netspresso.compressor_v2()
 compression_info = compressor.select_compression_method(
@@ -291,8 +299,12 @@ from netspresso import NetsPresso
 from netspresso.enums import CompressionMethod, GroupPolicy, LayerNorm, Policy
 from netspresso.clients.compressor.v2.schemas import Options
 
+# Login with API key (recommended)
+# Get your API token from: https://account.netspresso.ai/api-token
+netspresso = NetsPresso(api_key="YOUR_API_KEY")
 
-netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+# Note: Email/password login will be deprecated soon
+# netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
 
 # 1. Declare compressor
 compressor = netspresso.compressor_v2()

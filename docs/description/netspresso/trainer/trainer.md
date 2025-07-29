@@ -21,8 +21,12 @@ from netspresso.trainer.augmentations import Resize
 from netspresso.trainer.optimizers import AdamW
 from netspresso.trainer.schedulers import CosineAnnealingWarmRestartsWithCustomWarmUp
 
+# Login with API key (recommended)
+# Get your API token from: https://account.netspresso.ai/api-token
+netspresso = NetsPresso(api_key="YOUR_API_KEY")
 
-netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+# Note: Email/password login will be deprecated soon
+# netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
 
 # 1. Declare trainer
 trainer = netspresso.trainer(task=Task.OBJECT_DETECTION)
@@ -69,8 +73,12 @@ training_result = trainer.train(gpus="0, 1", project_name="project_sample")
 from netspresso import NetsPresso
 from netspresso.trainer.optimizers import AdamW
 
+# Login with API key (recommended)
+# Get your API token from: https://account.netspresso.ai/api-token
+netspresso = NetsPresso(api_key="YOUR_API_KEY")
 
-netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
+# Note: Email/password login will be deprecated soon
+# netspresso = NetsPresso(email="YOUR_EMAIL", password="YOUR_PASSWORD")
 
 # 1. Declare trainer
 trainer = netspresso.trainer(yaml_path="./temp/hparams.yaml")
