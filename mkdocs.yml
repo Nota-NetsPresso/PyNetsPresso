@@ -86,7 +86,6 @@ nav:
       - "Optimizer": description/netspresso/optimizer/optimizer.md
       - "Simulator": description/netspresso/simulator/simulator.md
       - "Quantizer":
-        - "Quantization": description/netspresso/quantizer/quantizer.md
         - "Automatic Quantization": description/netspresso/quantizer/automatic_quantization.md
         - "Custom Precision Quantization by Layer Name": description/netspresso/quantizer/custom_precision_quantization_by_layer_name.md
         - "Custom Precision Quantization by Operator Type": description/netspresso/quantizer/custom_precision_quantization_by_operator_type.md
