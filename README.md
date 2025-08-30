@@ -52,6 +52,7 @@
 
 <div align="center">
   🔥 NetsPresso Model Optimization Tutorials 🔥 <br>
+    <a href="https://colab.research.google.com/drive/1pmauCnWLYog3iW0Km6ZsLD1G5rnm9Bcd"> A Practical Guide to Using NetsPresso's Optimizer and Simulator Modules</a></br>  
     <a href="https://colab.research.google.com/drive/1XxkFWcoVQrIrUI8PlAlToWg3PQw1MHD1"> A Practical Guide to Using NetsPresso's Compressor Module </a></br>
     <a href="https://colab.research.google.com/drive/1DTmxfSVWiAOxRGrKd0FtLBv6pYFryj_o"> A Practical Guide to Using NetsPresso's Quantizer Module </a></br>
 </div>
