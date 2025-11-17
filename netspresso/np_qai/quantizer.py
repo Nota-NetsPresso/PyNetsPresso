@@ -1,10 +1,6 @@
-import os
-import shutil
-import zipfile
 from pathlib import Path
 from typing import List, Optional, Union
 
-import onnx
 import qai_hub as hub
 from loguru import logger
 from qai_hub import JobStatus, QuantizeDtype
@@ -137,86 +133,3 @@ class NPQAIQuantizer(NPQAIBase):
             MetadataHandler.save_metadata(data=metadata, folder_path=output_dir)
 
         return metadata
-
-    def download_model(self, job: QuantizeJob, filename: str) -> str:
-        """
-        Download a model from the QAI Hub and handle .onnx.zip conversion.
-
-        Args:
-            job: The job to download the model from.
-            filename: The filename to save the model to.
-
-        Returns:
-            str: The actual path of the downloaded and processed model.
-
-        Note:
-            For details, see [download_target_model in QAI Hub API](https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.QuantizeJob.html#qai_hub.QuantizeJob.download_target_model).
-            Since QAI Hub update, ONNX models are downloaded as .onnx.zip files.
-            This function automatically extracts and converts them to .onnx format.
-        """
-        # Download the model (QAI Hub may save it as .zip file for ONNX models)
-        downloaded_filename = job.download_target_model(filename=filename)
-
-        # Use the original filename as fallback if download doesn't return a path
-        if downloaded_filename is None:
-            downloaded_filename = filename
-
-        # Check if the downloaded file exists and is a zip file
-        if os.path.exists(downloaded_filename) and zipfile.is_zipfile(downloaded_filename):
-            logger.info(f"Downloaded file is a zip archive: {downloaded_filename}")
-            logger.info("Extracting model from zip file...")
-
-            # Extract the zip file
-            extract_dir = f"{downloaded_filename}_extracted"
-            os.makedirs(extract_dir, exist_ok=True)
-
-            with zipfile.ZipFile(downloaded_filename, 'r') as zip_ref:
-                zip_ref.extractall(extract_dir)
-
-            # Find the model file in the extracted directory (recursively search subdirectories)
-            model_files = []
-            for root, _, files in os.walk(extract_dir):
-                for file in files:
-                    if file.endswith(('.onnx', '.tflite', '.so', '.bin')):
-                        model_files.append(os.path.join(root, file))
-                        break
-                if model_files:
-                    break
-
-            if not model_files:
-                raise FileNotFoundError(f"No model file found in extracted zip: {downloaded_filename}")
-
-            # Load and save the model to the desired location
-            extracted_model_path = model_files[0]
-
-            # Determine the final path based on the model type
-            if extracted_model_path.endswith('.onnx'):
-                # For ONNX models, reload and save to ensure proper format
-                onnx_model = onnx.load(extracted_model_path)
-
-                # Save to the original filename with .onnx extension
-                # Remove .zip extension first
-                final_path = downloaded_filename.replace('.zip', '')
-                # Remove duplicate .onnx if present (e.g., .onnx.onnx -> .onnx)
-                if final_path.endswith('.onnx.onnx'):
-                    final_path = final_path[:-5]  # Remove one .onnx to leave just one
-                # Ensure it ends with .onnx
-                elif not final_path.endswith('.onnx'):
-                    final_path = f"{final_path}.onnx"
-
-                onnx.save(onnx_model, final_path)
-            else:
-                # For non-ONNX models, just copy the file
-                final_path = downloaded_filename.replace('.zip', '')
-                shutil.copy2(extracted_model_path, final_path)
-
-            logger.info(f"Model saved to: {final_path}")
-
-            # Clean up temporary files
-            os.remove(downloaded_filename)
-            shutil.rmtree(extract_dir)
-
-            return final_path
-
-        # If not a zip file, return the downloaded filename as is
-        return downloaded_filename

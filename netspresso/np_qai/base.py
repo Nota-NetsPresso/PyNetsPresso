@@ -1,8 +1,25 @@
+import os
+import shutil
+import zipfile
 from pathlib import Path
 from typing import List, Optional, Union
 
+import onnx
 import qai_hub as hub
-from qai_hub.client import Dataset, Device, Job, JobStatus, JobSummary, JobType, Model, SourceModel, SourceModelType
+from loguru import logger
+from qai_hub.client import (
+    CompileJob,
+    Dataset,
+    Device,
+    Job,
+    JobStatus,
+    JobSummary,
+    JobType,
+    Model,
+    QuantizeJob,
+    SourceModel,
+    SourceModelType,
+)
 
 from netspresso.np_qai.options import Extension, Framework, Runtime
 
@@ -268,3 +285,113 @@ class NPQAIBase:
             Framework.QNN: "QNN",
         }
         return RUNTIME_DISPLAY_MAP.get(framework, "Unknown runtime")
+
+    def download_model(self, job: Union[CompileJob, QuantizeJob], filename: str) -> str:
+        """
+        Download a model from the QAI Hub and handle ONNX zip conversion.
+
+        Args:
+            job: The job to download the model from (CompileJob or QuantizeJob).
+            filename: The filename to save the model to.
+
+        Returns:
+            str: The actual path of the downloaded and processed model.
+
+        Note:
+            Since QAI Hub July 2025 update, ONNX models are always downloaded as .zip files
+            with external weights. Other formats (.tflite, .so, .bin) are downloaded directly.
+            Reference: https://app.aihub.qualcomm.com/docs/hub/release_notes.html#released-july-14-2025
+
+            This function automatically extracts and converts ONNX zip files to single .onnx files
+            with embedded weights. Non-ONNX models are returned as-is.
+        """
+        # Download the model
+        downloaded_filename = job.download_target_model(filename=filename)
+
+        # Use the original filename as fallback if download doesn't return a path
+        if downloaded_filename is None:
+            downloaded_filename = filename
+
+        # Verify file exists
+        if not os.path.exists(downloaded_filename):
+            raise FileNotFoundError(f"Downloaded file not found: {downloaded_filename}")
+
+        # Only ONNX models are downloaded as .zip (since QAI Hub July 2025 update)
+        # Other formats (.tflite, .so, .bin) are downloaded directly
+        is_onnx_zip = downloaded_filename.endswith('.onnx.zip') or (
+            zipfile.is_zipfile(downloaded_filename) and '.onnx' in filename.lower()
+        )
+
+        if is_onnx_zip:
+            return self._extract_and_convert_onnx_zip(downloaded_filename)
+
+        # Non-ONNX models: return as-is
+        return downloaded_filename
+
+    def _extract_and_convert_onnx_zip(self, zip_path: str) -> str:
+        """
+        Extract and convert ONNX model from zip file to single .onnx file with embedded weights.
+
+        Args:
+            zip_path: Path to the .onnx.zip file.
+
+        Returns:
+            str: Path to the converted .onnx file.
+
+        Note:
+            Since QAI Hub July 2025 update, ONNX models are always produced with external
+            weights in .zip format. This method extracts the zip and saves as a single .onnx file.
+            Reference: https://app.aihub.qualcomm.com/docs/hub/release_notes.html#released-july-14-2025
+        """
+        logger.info(f"Extracting ONNX model from zip: {zip_path}")
+
+        extract_dir = None
+        try:
+            # Create temporary extraction directory
+            extract_dir = f"{zip_path}_extracted"
+            os.makedirs(extract_dir, exist_ok=True)
+
+            # Extract the zip file
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_dir)
+
+            # Find ONNX file (recursively search subdirectories)
+            onnx_files = []
+            for root, _, files in os.walk(extract_dir):
+                for file in files:
+                    if file.endswith('.onnx'):
+                        onnx_files.append(os.path.join(root, file))
+
+            if not onnx_files:
+                raise FileNotFoundError(f"No ONNX file found in zip: {zip_path}")
+
+            if len(onnx_files) > 1:
+                logger.warning(f"Multiple ONNX files found in zip, using first: {onnx_files[0]}")
+
+            # Load ONNX model
+            extracted_onnx_path = onnx_files[0]
+            onnx_model = onnx.load(extracted_onnx_path)
+
+            # Determine final path: remove .zip extension
+            if zip_path.endswith('.onnx.zip'):
+                final_path = zip_path[:-4]  # Remove .zip, keep .onnx
+            elif zip_path.endswith('.zip'):
+                final_path = zip_path[:-4] + '.onnx'
+            else:
+                final_path = f"{zip_path}.onnx"
+
+            # Save as single ONNX file with embedded weights
+            onnx.save(onnx_model, final_path)
+            logger.info(f"ONNX model saved to: {final_path}")
+
+            return final_path
+
+        finally:
+            # Always cleanup temporary files
+            try:
+                if os.path.exists(zip_path):
+                    os.remove(zip_path)
+                if extract_dir and os.path.exists(extract_dir):
+                    shutil.rmtree(extract_dir)
+            except Exception as e:
+                logger.warning(f"Failed to cleanup temporary files: {e}")
