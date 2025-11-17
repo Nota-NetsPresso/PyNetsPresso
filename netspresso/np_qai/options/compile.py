@@ -26,8 +26,9 @@ class Extension(StrEnum):
 
 class Runtime(StrEnum):
     TFLITE = "tflite"
-    QNN_LIB_AARCH64_ANDROID = "qnn_lib_aarch64_android"
+    QNN_LIB_AARCH64_ANDROID = "qnn_lib_aarch64_android"  # Deprecated in qai-hub 0.40.0
     QNN_CONTEXT_BINARY = "qnn_context_binary"
+    QNN_DLC = "qnn_dlc"  # Added in qai-hub 0.40.0 - Recommended for QNN deployment
     ONNX = "onnx"
     PRECOMPILED_QNN_ONNX = "precompiled_qnn_onnx"
 

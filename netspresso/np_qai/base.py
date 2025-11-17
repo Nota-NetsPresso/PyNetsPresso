@@ -208,8 +208,9 @@ class NPQAIBase:
     def get_target_extension(self, runtime=Runtime.TFLITE):
         runtime_extensions = {
             Runtime.TFLITE: ".tflite",
-            Runtime.QNN_LIB_AARCH64_ANDROID: ".so",
+            Runtime.QNN_LIB_AARCH64_ANDROID: ".so",  # Deprecated in qai-hub 0.40.0
             Runtime.QNN_CONTEXT_BINARY: ".bin",
+            Runtime.QNN_DLC: ".dlc",  # Added in qai-hub 0.40.0
             Runtime.ONNX: ".onnx",
             Runtime.PRECOMPILED_QNN_ONNX: ".zip",
         }
@@ -219,8 +220,9 @@ class NPQAIBase:
     def get_display_runtime(self, runtime: Runtime) -> str:
         RUNTIME_DISPLAY_MAP = {
             Runtime.TFLITE: "TensorFlow Lite",
-            Runtime.QNN_LIB_AARCH64_ANDROID: "Qualcomm® AI Engine Direct model library targeting AArch64 Android",
+            Runtime.QNN_LIB_AARCH64_ANDROID: "Qualcomm® AI Engine Direct model library targeting AArch64 Android (Deprecated - use QNN_DLC)",
             Runtime.QNN_CONTEXT_BINARY: "Qualcomm® AI Engine Direct context binary targeting the hardware specified in the compile job.",
+            Runtime.QNN_DLC: "Qualcomm® AI Engine Direct DLC (Deep Learning Container) - Recommended for QNN deployment",
             Runtime.ONNX: "ONNX",
             Runtime.PRECOMPILED_QNN_ONNX: "ONNX Runtime model with a pre-compiled QNN context binary.",
         }
@@ -231,6 +233,7 @@ class NPQAIBase:
             Runtime.TFLITE: Framework.TFLITE,
             Runtime.QNN_LIB_AARCH64_ANDROID: Framework.QNN,
             Runtime.QNN_CONTEXT_BINARY: Framework.QNN,
+            Runtime.QNN_DLC: Framework.QNN,  # Added in qai-hub 0.40.0
             Runtime.ONNX: Framework.ONNX,
             Runtime.PRECOMPILED_QNN_ONNX: Framework.QNN,
         }
