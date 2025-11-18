@@ -50,7 +50,8 @@ class NPQAIQuantizer(NPQAIBase):
 
         if status.success:
             logger.info(f"{status.symbol} {status.state.name}")
-            self.download_model(job=job, filename=metadata.quantized_model_path)
+            actual_model_path = self.download_model(job=job, filename=metadata.quantized_model_path)
+            metadata.quantized_model_path = actual_model_path
             target_model = job.get_target_model()
             metadata.quantize_info.output_model_uuid = target_model.model_id
             metadata.status = Status.COMPLETED
@@ -132,16 +133,3 @@ class NPQAIQuantizer(NPQAIBase):
             MetadataHandler.save_metadata(data=metadata, folder_path=output_dir)
 
         return metadata
-
-    def download_model(self, job: QuantizeJob, filename: str):
-        """
-        Download a model from the QAI hub.
-
-        Args:
-            job: The job to download the model from.
-            filename: The filename to save the model to.
-
-        Note:
-            For details, see [download_target_model in QAI Hub API](https://app.aihub.qualcomm.com/docs/hub/generated/qai_hub.QuantizeJob.html#qai_hub.QuantizeJob.download_target_model).
-        """
-        job.download_target_model(filename=filename)
