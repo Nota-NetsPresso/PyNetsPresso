@@ -2,9 +2,11 @@
 
 ## Prerequisites
 
-- Python `3.8` | `3.9` | `3.10`
-- PyTorch `1.13.0` (recommended) (compatible with: `1.11.x` - `1.13.x`)
-- TensorFlow `2.8.0` (recommended) (compatible with: `2.3.x` - `2.8.x`)
+- Python `3.10` | `3.11`
+- PyTorch `2.0.1` (recommended) or above
+- TensorFlow:
+  - Python `3.10`: `2.7.0` or above (recommended: `2.8.0`)
+  - Python `3.11`: `2.12.0` or above
 
 ## Install with PyPI (stable)
 

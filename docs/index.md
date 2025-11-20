@@ -7,9 +7,9 @@
    </p>
 
    <p align="center">
-      <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue?style=flat&logo=python&logoColor=blue" />
-      <a href="https://pytorch.org/" target="_blank"><img src="https://img.shields.io/badge/PyTorch-1.11.x ~ 1.13.x.-EE4C2C?style=flat&logo=pytorch&logoColor=#EE4C2C"/></a>
-      <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.3.x ~ 2.8.x.-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
+      <a href="https://www.python.org/downloads/" target="_blank"><img src="https://img.shields.io/badge/python-3.10%20%7C%203.11-blue?style=flat&logo=python&logoColor=blue" />
+      <a href="https://pytorch.org/" target="_blank"><img src="https://img.shields.io/badge/PyTorch-2.0.1%2B%20%28recommended%29-EE4C2C?style=flat&logo=pytorch&logoColor=#EE4C2C"/></a>
+      <a href="https://www.tensorflow.org/install/pip" target="_blank"><img src="https://img.shields.io/badge/TensorFlow-2.7%2B%20%283.10%29%20%7C%202.12%2B%20%283.11%29-FF6F00?style=flat&logo=tensorflow&logoColor=#FF6F00&link=https://www.tensorflow.org/install/pip"/></a>
       <a href="https://netspresso.ai/?utm_source=py_docs&utm_medium=badge_py&utm_campaign=np_renew"><img src="https://img.shields.io/badge/NetsPresso-Open in Website-1BD2EB?style=flat&link=https://netspresso.ai/"/></a>
    </p>    
 </div>

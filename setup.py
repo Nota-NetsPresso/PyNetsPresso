@@ -20,14 +20,13 @@ setup(
     install_requires=install_requires,
     packages=find_packages(exclude=("tests",)),
     package_data={"netspresso.clients": ["configs/*.ini"], "netspresso": ["VERSION"]},
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
 )
